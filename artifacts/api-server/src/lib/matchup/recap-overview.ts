@@ -34,6 +34,7 @@ import { BAR_ICON } from "./recap-premium";
 import type { GameOdds } from "./boxscore";
 import type { PbpDrive } from "./play-by-play";
 import { composeRecap, factsHash, recapFacts, resolver, type TeamRecord } from "./recap-narrative";
+import type { PlayerUrlFn } from "../team/links";
 
 const e = escapeHtml;
 
@@ -170,7 +171,7 @@ export interface OverviewInput {
   leaders: LeaderPick[];
   /** "Seattle", "New England": the clubs as the copy names them. */
   city: { away: string; home: string };
-  playerUrl: (name: string) => string | null;
+  playerUrl: PlayerUrlFn;
   /** A player's face, by box-score id; "" when there is none. */
   photo: (id: string) => string;
   /** The page's highlights section, as rendered elsewhere; "" when none. */
@@ -727,8 +728,8 @@ export function renderRecapOverviewParts(input: OverviewInput): { main: string; 
   const f = facts(input);
   if (!f) return { main: "", leaders: "" };
   const name = nameResolver(input.players, input.story.ids);
-  const link = (full: string) => {
-    const url = input.playerUrl(full);
+  const link = (full: string, gameKey?: string) => {
+    const url = input.playerUrl(full, gameKey ? { gameKey } : undefined);
     return url ? `<a href="${e(url)}">${e(full)}</a>` : e(full);
   };
 
@@ -821,7 +822,7 @@ export function renderRecapOverviewParts(input: OverviewInput): { main: string; 
         // the dt there. A player with no image key keeps an empty circle.
         `<dt><span class="sct-rb-pill">${e(LABEL[l.role])}</span></dt>` +
         `<dd><span class="sct-rb-leader-face">${input.photo(l.id)}</span>` +
-        `<span class="sct-rb-leader-who"><span class="sct-rb-leader-name">${link(l.player.name)}</span>` +
+        `<span class="sct-rb-leader-who"><span class="sct-rb-leader-name">${link(l.player.name, l.id)}</span>` +
         `<span class="sct-rb-leader-line">${e(`${l.player.team} · ${leaderLine(l, f, sealerName)}`)}</span></span></dd>`,
     )
     .join("");

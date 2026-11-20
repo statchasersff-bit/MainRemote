@@ -148,10 +148,19 @@ export interface DepthRow {
   rank: number;
   name: string;
   /**
-   * The tool's id for the row: a Sleeper id on the Fantasy columns, another
-   * source's elsewhere. Null when the document has none.
+   * The tool's id for the row: ESPN's on the football-chart slots, the
+   * tool's own PFR-style ids on the positional columns and FantasyPros' on
+   * the Fantasy columns (checked 2026-11-20: none of those match Sleeper's or
+   * PFR's for the same player). Never a link key; see `espnId`. Null when the
+   * document has none.
    */
   id: string | null;
+  /**
+   * The ESPN athlete id from the row's own headshot URL - the one id every
+   * view's rows share (the positional columns' ids are the tool's own and the
+   * Fantasy columns' are FantasyPros'). Null without a headshot of its own.
+   */
+  espnId: string | null;
   /**
    * The designation as the hub's badge reads it: "Questionable", "Out", "IR".
    * The tool stores one-letter codes for the first three.
@@ -343,6 +352,7 @@ export function getTeamDepthCharts(abbreviation: string): TeamDepthCharts | null
       rank: player.rank,
       name: player.name,
       id: typeof player.id === "string" && player.id ? player.id : null,
+      espnId: /\/full\/(\d+)\.png(?:$|\?)/.exec(player.headshot ?? "")?.[1] ?? null,
       injuryStatus: statusWord(status),
       injuryBodyPart: null,
       headshot: player.headshot ?? headshots.get(key) ?? null,

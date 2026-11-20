@@ -209,7 +209,7 @@ function yearCard(team: NflTeam, s: DraftSeason, statusDoc: DraftStatusDoc | nul
         `<tr class="sct-drp-row">` +
         `<td class="sct-drp-td is-num">${p.round}</td>` +
         `<td class="sct-drp-td is-num">${p.pick}</td>` +
-        `<th scope="row" class="sct-drp-td is-player"><span class="sct-drp-player">${face(team, p)}${playerCell(p)}</span></th>` +
+        `<th scope="row" class="sct-drp-td is-player"><span class="sct-drp-player">${face(team, p)}${playerCell(p, team.abbreviation)}</span></th>` +
         `<td class="sct-drp-td is-pos"><span class="sct-drp-pos">${e(p.position)}</span>${depthSlotCell(p, club, statusDoc)}</td>` +
         `<td class="sct-drp-td is-college">${college(p.college)}</td>` +
         `<td class="sct-drp-td is-status">${statusCell(status)}</td>` +
@@ -397,7 +397,7 @@ function roundOneCard(team: NflTeam, picks: DraftPick[]): string {
             `<tr class="sct-drp-row sct-drp-r1">` +
             `<td class="sct-drp-td is-num sct-drp-r1-year">${p.season}</td>` +
             `<td class="sct-drp-td is-num sct-drp-r1-pick">${p.pick}</td>` +
-            `<th scope="row" class="sct-drp-td is-player"><span class="sct-drp-player">${face(team, p)}${playerCell(p)}</span></th>` +
+            `<th scope="row" class="sct-drp-td is-player"><span class="sct-drp-player">${face(team, p)}${playerCell(p, team.abbreviation)}</span></th>` +
             `<td class="sct-drp-td is-pos"><span class="sct-drp-pos">${e(CATEGORY_LABEL[pickCategory(p)] ?? p.position)}</span></td>` +
             `</tr>`,
         )

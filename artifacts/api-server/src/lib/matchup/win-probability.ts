@@ -22,12 +22,13 @@ import type { GameOdds } from "./boxscore";
 import { playPoints, type ScoringPlay } from "./scoring-plays";
 import { playLabel, playShort } from "./scoring-summary";
 import { pairColors, scoreboardResult, type ScoreboardGame } from "./scoreboard-hero";
+import type { PlayerUrlFn } from "../team/links";
 
 export interface WinProbabilityInput {
   game: ScoreboardGame;
   plays: ScoringPlay[];
   odds: GameOdds | null;
-  playerUrl: (name: string) => string | null;
+  playerUrl: PlayerUrlFn;
 }
 
 const REGULATION = 3600;

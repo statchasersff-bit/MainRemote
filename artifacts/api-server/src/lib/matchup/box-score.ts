@@ -27,6 +27,7 @@
 import { escapeHtml } from "../render";
 import type { SheetRow } from "./boxscore";
 import type { ScoreboardGame } from "./scoreboard-hero";
+import type { PlayerUrlFn } from "../team/links";
 
 type Side = "away" | "home";
 const SIDES: readonly Side[] = ["away", "home"];
@@ -66,7 +67,7 @@ export interface BoxScoreInput {
   advanced: Record<Side, StoryAdvanced | null> | null;
   /** Forced fumbles from the game story, or null when the store has none for the game. */
   forcedFumbles: ForcedFumble[] | null;
-  playerUrl: (name: string) => string | null;
+  playerUrl: PlayerUrlFn;
   /** CSS colors for each side's ink. */
   inks: Record<Side, string>;
 }
@@ -400,7 +401,7 @@ function playerTable(input: BoxScoreInput, side: Side, title: string, columns: C
   if (!rows.length) return "";
   const team = input.game[side];
   const name = (r: SheetRow) => {
-    const url = input.playerUrl(r.name);
+    const url = input.playerUrl(r.name, r.espnId ? { espnId: r.espnId } : { team: team.abbr });
     const text = e(r.name);
     return (
       `<th scope="row" class="sct-bx-name">${url ? `<a href="${e(url)}">${text}</a>` : text}` +

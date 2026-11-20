@@ -21,7 +21,7 @@
 
 import { escapeHtml } from "../render";
 import { headshotImg } from "../headshot-html";
-import { getPlayerProfileUrl } from "../team/links";
+import { playerProfileUrl, type PlayerLinkRef } from "../team/links";
 import type { NflTeam } from "../team/teams";
 import { allowPhrase, ordinal, type Preview, type PreviewSide } from "./preview";
 import {
@@ -97,8 +97,9 @@ function withFaceTag(faceHtml: string, tag: string | null): string {
 const statusTag = (status: string | null): string | null =>
   status === "Questionable" ? "Q" : status === "Doubtful" ? "D" : null;
 
-function playerLink(name: string): string {
-  const url = getPlayerProfileUrl(name);
+/** A name linked by the row's ids (or its club and position when it has none). */
+function playerLink(name: string, ref: PlayerLinkRef): string {
+  const url = playerProfileUrl(name, ref);
   return url ? `<a href="${e(url)}">${e(name)}</a>` : e(name);
 }
 
@@ -457,10 +458,17 @@ function battlesCard(p: Preview): string {
       )
       .join("") +
     `</span>`;
-  const stats = (list: BattlePlayer[]) =>
+  // The club's own roster gave the Sleeper id where it has him and the
+  // defenders' season file its GSIS id; anyone with neither is matched by
+  // name only inside his club and position.
+  const battleRef = (x: BattlePlayer, club: PreviewSide): PlayerLinkRef =>
+    x.photo.id || x.gsisId
+      ? { sleeperId: x.photo.id ?? null, gsisId: x.gsisId ?? null }
+      : { team: club.team.abbreviation, pos: x.role };
+  const stats = (list: BattlePlayer[], club: PreviewSide) =>
     list
       .filter((x) => x.stat)
-      .map((x) => `<li><b>${playerLink(clean(x.name))}</b> ${e(x.stat)}</li>`)
+      .map((x) => `<li><b>${playerLink(clean(x.name), battleRef(x, club))}</b> ${e(x.stat)}</li>`)
       .join("");
   // Phones (mak, 2026-11-11): the collapsed row is surnames only, so the
   // photo, position and stat line of each player open underneath instead.
@@ -505,7 +513,7 @@ function battlesCard(p: Preview): string {
             `<span class="sct-mpp-bt-row">${people(b.offense, "is-off", o.key)}<span class="sct-mpp-bt-vs" aria-label="against">vs</span>${people(b.defense, "is-def", d.key)}</span>` +
             `</summary><div class="sct-mpp-bt-more">` +
             `<ul class="sct-mpp-bt-who" aria-hidden="true">${who(b.offense, o.key)}${who(b.defense, d.key)}</ul>` +
-            `<ul class="sct-mpp-bt-stats">${stats(b.offense)}${stats(b.defense)}</ul>` +
+            `<ul class="sct-mpp-bt-stats">${stats(b.offense, o)}${stats(b.defense, d)}</ul>` +
             (b.note ? `<p class="sct-mpp-bt-note">${e(b.note)}</p>` : "") +
             `</div></details></li>`,
         )
@@ -744,7 +752,7 @@ function fantasyCard(p: Preview): string {
           .map(
             (t) =>
               `<li class="sct-mpp-ff-item" data-kind="${t.kind}">${face(t.player.sleeperId, t.player.side, 52, statusTag(t.player.status))}` +
-              `<div class="sct-mpp-ff-body"><p class="sct-mpp-ff-top"><span class="sct-mpp-ff-name">${playerLink(t.player.name)}${badge(t.player.status)}</span>` +
+              `<div class="sct-mpp-ff-body"><p class="sct-mpp-ff-top"><span class="sct-mpp-ff-name">${playerLink(t.player.name, { sleeperId: t.player.sleeperId })}${badge(t.player.status)}</span>` +
               `<span class="sct-mpp-ff-kind">${e(TAKEAWAY_WORD[t.kind])}</span></p>` +
               // "Fantasy PPG" for quarterbacks, whose points barely move with
               // reception scoring (mak's 2026-11-18 brief); the format's own
@@ -762,7 +770,7 @@ function fantasyCard(p: Preview): string {
       .map(
         (pl) =>
           `<tr data-team="${e(pl.team)}" data-pos="${pl.pos}">` +
-          `<th scope="row"><span class="sct-mpp-ff-pl">${face(pl.sleeperId, pl.side, 28, statusTag(pl.status))}<span><span class="sct-mpp-ff-pname">${playerLink(pl.name)}${badge(pl.status)}</span>` +
+          `<th scope="row"><span class="sct-mpp-ff-pl">${face(pl.sleeperId, pl.side, 28, statusTag(pl.status))}<span><span class="sct-mpp-ff-pname">${playerLink(pl.name, { sleeperId: pl.sleeperId })}${badge(pl.status)}</span>` +
           // Team and position under the name, no column of their own (mak,
           // 2026-11-06); the rank joins them on phones, where its column hides.
           `<small class="sct-mpp-ff-sub2">${e(`${pl.pos} · ${pl.team}`)}` +
@@ -924,7 +932,7 @@ function injuryCard(p: Preview): string {
                 // position and designation; the note opens under them. Native
                 // <details>, so it works without script and from the keyboard.
                 `<li class="sct-mpp-inj"><details class="sct-mpp-inj-d"><summary>${face(r.sleeperId, s.key, 36, r.chip)}` +
-                `<span class="sct-mpp-inj-top"><span class="sct-mpp-inj-name">${playerLink(r.name)}</span>` +
+                `<span class="sct-mpp-inj-top"><span class="sct-mpp-inj-name">${playerLink(r.name, r.sleeperId ? { sleeperId: r.sleeperId } : { team: s.team.abbreviation, pos: r.pos })}</span>` +
                 (r.pos ? `<span class="sct-mpp-slot" data-pos="${e(r.pos)}">${e(r.pos)}</span>` : "") +
                 // The team code, shown only on phones where both teams share
                 // one list (mak, 2026-11-11).

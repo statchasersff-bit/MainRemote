@@ -16,12 +16,13 @@
 import { escapeHtml } from "../render";
 import { isTouchdown, playPoints, type ScoringPlay } from "./scoring-plays";
 import { pairColors, scoreboardResult, type ScoreboardGame } from "./scoreboard-hero";
+import type { PlayerUrlFn } from "../team/links";
 
 export interface ScoringSummaryInput {
   game: ScoreboardGame;
   plays: ScoringPlay[];
   /** A player's page, or null when the site has none. The same resolver every section uses. */
-  playerUrl: (name: string) => string | null;
+  playerUrl: PlayerUrlFn;
 }
 
 /* ------------------------------------------------------------ validation */

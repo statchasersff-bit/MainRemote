@@ -34,7 +34,8 @@
 import fs from "node:fs";
 import { dataPath } from "../data-dir";
 import { logger } from "../logger";
-import { getPlayerSlugByName, loadPlayers } from "../player/data";
+import { loadPlayers } from "../player/data";
+import { resolvePlayerSlug } from "../team/links";
 import { buildBoard, type Curation, type CurrentInfo, type EnginePlayer, type Pairing } from "./engine/build";
 import { canonicalTeam, lastGames, mergeStats, normalizeName, parseInjuries, TALENT_GAMES, type GameLog } from "./engine/stats";
 import { searchKey } from "../render";
@@ -272,9 +273,15 @@ function sleeperIdFor(name: string): string | null {
   return sleeperByName.get(searchKey(lookupName(name))) ?? null;
 }
 
-function slugFor(name: string | null): string | null {
+/**
+ * The published slug for a back on the board: by the snapshot's Sleeper id
+ * when it has one for him (never his name then), else by name inside his
+ * club among running backs (resolvePlayerSlug, lib/team/links.ts).
+ */
+function slugFor(name: string | null, sleeperId: string | null | undefined, team: string | null | undefined): string | null {
+  if (sleeperId) return resolvePlayerSlug(name, { sleeperId });
   if (!name) return null;
-  return getPlayerSlugByName(lookupName(name)) ?? getPlayerSlugByName(name);
+  return resolvePlayerSlug(lookupName(name), { team: team ?? null, pos: "RB" });
 }
 
 /* ------------------------------------------------------------------ loading */
@@ -412,9 +419,13 @@ export function getHandcuffBoard(now: Date = new Date()): HandcuffBoard | null {
         rank: i + 1,
         handcuffScore: scores[index]!,
         pathScore: p.pathToOpportunityScore ?? p.pathToWorkloadScore ?? null,
-        slug: slugFor(p.playerName),
+        slug: slugFor(p.playerName, sleeper, p.team),
         sleeperId: sleeper ?? sleeperIdFor(p.playerName),
-        starterSlug: slugFor(p.starterName),
+        starterSlug: slugFor(
+          p.starterName,
+          p.starterName ? depth.players?.[normalizeName(p.starterName)]?.sleeperId ?? null : null,
+          p.team,
+        ),
       };
     });
 

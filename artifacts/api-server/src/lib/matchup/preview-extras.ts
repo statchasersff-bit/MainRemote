@@ -122,6 +122,8 @@ export interface BattlePlayer {
   stat: string;
   /** Headshot: a Sleeper id, else a depth-chart image URL for headshotImg(). */
   photo: { id: string | null; src: string | null };
+  /** A defender's GSIS id from the season file, for his name's link. */
+  gsisId?: string | null;
 }
 
 export type BattleKind = "qbRush" | "tackles" | "receiver" | "run";
@@ -267,7 +269,7 @@ export function battlesFor(o: BattleSide, d: BattleSide, season: number): Battle
           photo: photoOf(o, qbName),
         },
       ],
-      defense: rushers.map((x) => ({ name: x.name, role: x.pos === "LB" || x.pos === "OLB" ? "EDGE" : x.pos, stat: `${plural(x.sacks, "sack")} · ${x.qbHits} QB hits`, photo: photoOf(d, x.name) })),
+      defense: rushers.map((x) => ({ name: x.name, role: x.pos === "LB" || x.pos === "OLB" ? "EDGE" : x.pos, stat: `${plural(x.sacks, "sack")} · ${x.qbHits} QB hits`, photo: photoOf(d, x.name), gsisId: x.id ?? null })),
       note:
         allowed && made
           ? `The ${O} have allowed ${allowed.value} sacks (${rank(allowed, "nfl")}); the ${D} have ${made.value} (${rank(made, "nfl")}).`
@@ -312,6 +314,7 @@ export function battlesFor(o: BattleSide, d: BattleSide, season: number): Battle
                 : `${st.pd} ${st.pd === 1 ? "pass" : "passes"} defended${st.int ? ` · ${st.int} INT` : ""}`
               : "No passes defended yet",
             photo: photoOf(d, c.name),
+            gsisId: st?.id ?? null,
           };
         }),
         note:
@@ -350,7 +353,7 @@ export function battlesFor(o: BattleSide, d: BattleSide, season: number): Battle
           photo: photoOf(o, back.name),
         },
       ],
-      defense: front.map((x) => ({ name: x.name, role: x.pos, stat: `${one(x.tfl)} tackles for loss · ${plural(x.sacks, "sack")}`, photo: photoOf(d, x.name) })),
+      defense: front.map((x) => ({ name: x.name, role: x.pos, stat: `${one(x.tfl)} tackles for loss · ${plural(x.sacks, "sack")}`, photo: photoOf(d, x.name), gsisId: x.id ?? null })),
       note:
         yds && rushAllowed
           ? `The ${O} run for ${yds.value} yards a game (${rank(yds, "nfl")}); the ${D} allow ${rushAllowed.value} (${rank(rushAllowed, "fewest")}).`

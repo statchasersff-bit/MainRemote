@@ -26,12 +26,13 @@ import { fantasyPoints } from "./fantasy-points";
 import { isKicker, type GamePlayer, type GamePlayers } from "./game-players";
 import { playerPhoto } from "./player-cell";
 import { pairColors, type ScoreboardGame } from "./scoreboard-hero";
+import type { PlayerUrlFn } from "../team/links";
 
 export interface LeadersStripInput {
   game: ScoreboardGame;
   players: GamePlayers;
   /** A player's page, or null when the site has none. The same resolver every section uses. */
-  playerUrl: (name: string) => string | null;
+  playerUrl: PlayerUrlFn;
   /** The image key (his Sleeper id) for a box-score id, or null; no key, no face. */
   playerId?: (id: string) => string | null;
 }
@@ -183,7 +184,7 @@ function card(input: LeadersStripInput, pick: LeaderPick): string {
   const p = pick.player;
   const colors = pairColors(input.game.away.abbr, input.game.home.abbr);
   const ink = p.team === input.game.home.abbr ? colors.home.ink : colors.away.ink;
-  const href = input.playerUrl(p.name);
+  const href = input.playerUrl(p.name, { gameKey: pick.id });
   const name = href
     ? `<a class="sct-ls-link sct-player-link" href="${escapeHtml(href)}" target="_top">${escapeHtml(p.name)}</a>`
     : escapeHtml(p.name);

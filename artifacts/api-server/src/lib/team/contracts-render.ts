@@ -16,7 +16,7 @@
  */
 
 import { escapeHtml } from "../render";
-import { getPlayerProfileUrl } from "./links";
+import { playerProfileUrl } from "./links";
 import { nameKeysForTeam, playerForSearchKey } from "./roster";
 import type { NamedPlayer } from "./roster";
 import type { NflTeam } from "./teams";
@@ -64,8 +64,11 @@ export const STATUS_WORD: Record<string, string> = {
 export const RANK_TOP_THIRD = 11;
 export const RANK_BOTTOM_THIRD = 22;
 
-export function playerCell(p: ContractLine, withShort = false): string {
-  const href = getPlayerProfileUrl(p.name);
+export function playerCell(p: ContractLine, withShort = false, club: string | null = null): string {
+  // By GSIS id (OverTheCap's, on nearly every line): a practice-squad corner
+  // named DeVonta Smith is not the Eagles receiver. A line without one is
+  // matched by name only inside the club and position.
+  const href = playerProfileUrl(p.name, { gsisId: p.gsisId ?? null, team: club, pos: p.position });
   const short = withShort ? shortName(p.name) : null;
   const attr = short && short !== p.name ? ` data-short="${e(short)}"` : "";
   return href

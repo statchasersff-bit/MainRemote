@@ -32,6 +32,7 @@ import { dataPath } from "../data-dir";
 import type { ScoringPlay } from "./scoring-plays";
 import { playLineHtml, runningScore } from "./scoring-summary";
 import type { ScoreboardGame } from "./scoreboard-hero";
+import type { PlayerUrlFn } from "../team/links";
 
 type Side = "away" | "home";
 const e = escapeHtml;
@@ -359,7 +360,7 @@ export interface PlayByPlayInput {
   game: ScoreboardGame;
   pbp: GamePbp | null;
   scoringPlays: ScoringPlay[];
-  playerUrl: (name: string) => string | null;
+  playerUrl: PlayerUrlFn;
   inks: Record<Side, string>;
 }
 

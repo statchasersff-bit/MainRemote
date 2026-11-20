@@ -109,11 +109,12 @@ import {
 } from "./matchup/recap";
 import {
   getFPAUrl,
-  getPlayerProfileUrl,
+  playerProfileUrl,
   getSOSUrl,
   getPlayerStatsUrl,
   getTeamScheduleUrl,
   getToolsUrl,
+  type PlayerLinkRef,
 } from "./team/links";
 
 export interface TeamRenderOptions {
@@ -1077,12 +1078,12 @@ function statsDash(
     : null;
   const L = teamLeaders(data);
   const leaders = [
-    L.passing && L.passing.yards > 0 ? { kind: "Passing", name: L.passing.name, line: `${L.passing.yards.toLocaleString("en-US")} yds, ${L.passing.td} TD` } : null,
-    L.rushing && L.rushing.yards > 0 ? { kind: "Rushing", name: L.rushing.name, line: `${L.rushing.yards.toLocaleString("en-US")} yds, ${L.rushing.td} TD` } : null,
-    L.receiving && L.receiving.yards > 0 ? { kind: "Receiving", name: L.receiving.name, line: `${L.receiving.yards.toLocaleString("en-US")} yds, ${L.receiving.td} TD` } : null,
+    L.passing && L.passing.yards > 0 ? { kind: "Passing", id: L.passing.id, name: L.passing.name, line: `${L.passing.yards.toLocaleString("en-US")} yds, ${L.passing.td} TD` } : null,
+    L.rushing && L.rushing.yards > 0 ? { kind: "Rushing", id: L.rushing.id, name: L.rushing.name, line: `${L.rushing.yards.toLocaleString("en-US")} yds, ${L.rushing.td} TD` } : null,
+    L.receiving && L.receiving.yards > 0 ? { kind: "Receiving", id: L.receiving.id, name: L.receiving.name, line: `${L.receiving.yards.toLocaleString("en-US")} yds, ${L.receiving.td} TD` } : null,
   ]
     .filter((x): x is NonNullable<typeof x> => !!x)
-    .map((x) => ({ ...x, href: getPlayerProfileUrl(x.name) }));
+    .map((x) => ({ ...x, href: playerProfileUrl(x.name, { sleeperId: x.id }) }));
   return {
     rows,
     throughWeek: (effDoc as { snapshot?: { throughWeek: number } }).snapshot?.throughWeek ?? effDoc.throughWeek ?? null,
@@ -1211,19 +1212,19 @@ function injuryDetail(player: Designated): string {
 }
 
 /**
- * A player name, linked to their StatChasers profile when one is configured.
+ * A player name, linked to their StatChasers profile when the site has one.
  *
- * Unlinked by default and on purpose: this server cannot tell whether a profile
- * exists for a given player, and a page of names pointing at 404s is worse than
- * a page of names. Set SC_PLAYER_PROFILE_URL_TEMPLATE and every name here
- * becomes a link - see lib/team/links.ts.
+ * `ref` is every id the row carries, or its club and position when it has
+ * none: the link is resolved by id and a name alone never links outside its
+ * club (playerProfileUrl, lib/team/links.ts). Anything uncertain prints as
+ * plain text, which is better than a name pointing at someone else's page.
  */
-export function playerName(name: string, className: string, label?: string): string {
+export function playerName(name: string, className: string, ref: PlayerLinkRef, label?: string): string {
   // `label` is already-escaped markup, for the one caller that needs the name
   // rendered as two alternative spellings rather than as one string - see
   // briefName(). It never carries anything a caller did not build here.
   const inner = label ?? escapeHtml(name);
-  const href = getPlayerProfileUrl(name);
+  const href = playerProfileUrl(name, ref);
   if (!href) return `<span class="${className}">${inner}</span>`;
   return (
     `<a class="${className} sct-player-link" href="${escapeHtml(href)}" target="_top">` +
@@ -1863,12 +1864,13 @@ export function resourceCards(team: NflTeam): ResourceCard[] {
  * span is aria-hidden, and the long one is only ever hidden visually - so a
  * screen reader reads "Rhamondre Stevenson" at every width, once.
  */
-function depthName(player: { name: string }, every = false): string {
+function depthName(player: { name: string }, ref: PlayerLinkRef, every = false): string {
   const brief = briefName(player.name, every ? 0 : 20);
-  if (!brief) return playerName(player.name, "sct-depth-name");
+  if (!brief) return playerName(player.name, "sct-depth-name", ref);
   return playerName(
     player.name,
     "sct-depth-name",
+    ref,
     `<span class="sct-depth-name-long">${escapeHtml(player.name)}</span>` +
       `<span class="sct-depth-name-brief" aria-hidden="true">${escapeHtml(brief)}</span>`,
   );
@@ -2138,7 +2140,9 @@ function renderDepthChart(
     experience: (name) => depthExperience(team, name),
     // Every name carries its brief form, not only the long ones: a phone
     // shows "D. Maye" down the whole chart (mak, 2026-11-15).
-    name: (player) => depthName(player, true),
+    // By the row's own ESPN id where it has one (the tool's other ids are
+    // its own, not Sleeper's or PFR's), else by name inside this club.
+    name: (player, pos) => depthName(player, { espnId: player.espnId, team: team.abbreviation, pos }, true),
     movement: depthMovement,
     badge: (row) => injuryBadge(row, "sct-dpp-tag"),
     sidelined: (row) => isOutDesignation(row.injuryStatus),

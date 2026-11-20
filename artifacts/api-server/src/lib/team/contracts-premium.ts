@@ -248,7 +248,7 @@ function row(team: NflTeam, p: ContractLine, scenario: boolean, doc: WorthDoc | 
     ` data-post-save="${p.june1Save}" data-post-dead="${p.june1Dead}"${p.cutEstimated ? ` data-est="1"` : ""}>` +
     pick +
     `<th scope="row" class="sct-ctp-td is-player" data-sort="${e(sortName(p.name))}">` +
-    `<span class="sct-ctp-player">${face(team, p, 30, "sct-ctp-face")}<span class="sct-ctp-who">${playerCell(p, true)}${statusBadge(p)}</span></span>` +
+    `<span class="sct-ctp-player">${face(team, p, 30, "sct-ctp-face")}<span class="sct-ctp-who">${playerCell(p, true, team.abbreviation)}${statusBadge(p)}</span></span>` +
     `</th>` +
     `<td class="sct-ctp-td is-pos" data-sort="${e(p.position)}"><span class="sct-ctp-pos" data-group="${positionGroup(p.position)}">${e(p.position)}</span></td>` +
     `<td class="sct-ctp-td is-num is-cap" data-sort="${p.capNumber}"><abbr class="sct-ctp-fig" title="${e(capTitle)}">${e(money(p.capNumber))}</abbr></td>` +
@@ -432,7 +432,7 @@ function releaseCard(team: NflTeam, v: ContractsView): string {
         (p) =>
           `<li class="sct-ctp-rel" data-sct-ct-cut="${e(lineKey(p))}">` +
           face(team, p, 28, "sct-ctp-rel-face") +
-          `<span class="sct-ctp-rel-who">${playerCell(p)}<span class="sct-ctp-pos" data-group="${positionGroup(p.position)}">${e(p.position)}</span></span>` +
+          `<span class="sct-ctp-rel-who">${playerCell(p, false, team.abbreviation)}<span class="sct-ctp-pos" data-group="${positionGroup(p.position)}">${e(p.position)}</span></span>` +
           `<button type="button" class="sct-ctp-rel-nums" data-sct-ct-cut-tick aria-pressed="false" aria-label="${e(`Cut ${p.name} in the scenario`)}">` +
           `<span class="sct-ctp-rel-line"><span class="sct-ctp-rel-k">saves</span><span class="sct-ctp-num is-save">${e(money(p.cutSave))}</span></span>` +
           `<span class="sct-ctp-rel-line"><span class="sct-ctp-rel-k">dead</span><span class="sct-ctp-num">${e(money(p.cutDead))}</span></span>` +

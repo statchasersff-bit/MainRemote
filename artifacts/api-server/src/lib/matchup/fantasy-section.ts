@@ -18,6 +18,7 @@
  */
 
 import { escapeHtml } from "../render";
+import type { PlayerLinkRef, PlayerUrlFn } from "../team/links";
 import {
   fantasyPoints,
   idpPoints,
@@ -59,11 +60,12 @@ export interface FantasySectionInput {
   /** Each defense's game, keyed by abbr. */
   defense: Record<string, DefenseLine>;
   rates: XfpRates | null;
-  playerUrl: (name: string) => string | null;
+  /** By the row's ids where it has them; see gameLinks() in matchup-render.ts. */
+  playerUrl: PlayerUrlFn;
   /** The start/sit launcher for one player, or null when he has no slug. */
-  startSitUrl: (name: string) => string | null;
+  startSitUrl: (name: string, ref?: PlayerLinkRef) => string | null;
   /** The start/sit comparison of two players, or null when either has no slug. */
-  startSitCompareUrl: (a: string, b: string) => string | null;
+  startSitCompareUrl: (a: string, b: string, refA?: PlayerLinkRef, refB?: PlayerLinkRef) => string | null;
   /** Sleeper's rostered and started rates for a player, 0–100; null when unknown. */
   rosterRate: (sleeperId: string) => { owned: number; started: number } | null;
   /** False for a playoff game, whose points most season-long leagues never score. */
@@ -670,8 +672,8 @@ function fantasyNotes(
   const stockOf = (name: string): StockItem | null =>
     Object.values(stock).flat().find((i) => i.name === name) ?? null;
 
-  const nameLink = (name: string): string => {
-    const href = input.playerUrl(name);
+  const nameLink = (name: string, ref?: PlayerLinkRef): string => {
+    const href = input.playerUrl(name, ref);
     return href
       ? `<a class="sct-player-link" href="${escapeHtml(href)}" target="_top">${escapeHtml(name)}</a>`
       : escapeHtml(name);
@@ -717,7 +719,7 @@ function fantasyNotes(
             `<div class="sct-fp-card-head">` +
             face +
             `<div class="sct-fp-card-text">` +
-            `<h4 class="sct-fp-card-name">${nameLink(p.name)}` +
+            `<h4 class="sct-fp-card-name">${nameLink(p.name, { gameKey: u.row.id })}` +
             ` <span class="sct-fp-tag is-${c.tag}"><span aria-hidden="true">${c.arrow} </span>${escapeHtml(c.label)}</span>` +
             `</h4>` +
             `<p class="sct-fp-meta">${escapeHtml(`${p.pos ?? "-"} · ${p.team}`)}</p>` +
@@ -747,7 +749,7 @@ function fantasyNotes(
               const side = i.team === game.home.abbr ? "home" : "away";
               return (
                 `<li><span class="sct-ss-chip" style="--ss-fill:${colors[side].fill}">${escapeHtml(i.team)}</span> ` +
-                `${nameLink(i.player)}, ${escapeHtml(i.pos)}, ${escapeHtml(i.text)}.</li>`
+                `${nameLink(i.player, { team: i.team, pos: i.pos })}, ${escapeHtml(i.pos)}, ${escapeHtml(i.text)}.</li>`
               );
             })
             .join("") +
@@ -848,7 +850,7 @@ function decisionPairs(input: FantasySectionInput, usage: Usage[]): string {
       const b = pool[j]!;
       if (a.u.row.p.pos !== b.u.row.p.pos) continue;
       if (Math.abs(a.rate.started - b.rate.started) > DECISION_MAX_GAP) continue;
-      const href = input.startSitCompareUrl(a.u.row.p.name, b.u.row.p.name);
+      const href = input.startSitCompareUrl(a.u.row.p.name, b.u.row.p.name, { gameKey: a.u.row.id }, { gameKey: b.u.row.id });
       if (href) pairs.push({ a: a.u, b: b.u, weight: a.rate.started + b.rate.started, href });
     }
   }
@@ -936,6 +938,8 @@ export function topScorers(input: Pick<FantasySectionInput, "players">): Array<{
 
 /** One QB/RB/WR/TE line, scored and judged against expectation, for the Fantasy tab (fantasy-tab.ts). */
 export interface FantasyLine {
+  /** The GamePlayers key ("espn:4374302"), for the name's link. */
+  id?: string;
   name: string;
   team: string;
   pos: string | null;
@@ -970,6 +974,7 @@ export function fantasyLines(input: FantasySectionInput): FantasyLine[] {
       const snaps = row.ctx?.snaps ?? null;
       const teamSnaps = row.ctx?.teamSnaps ?? null;
       return {
+        id: row.id,
         name: row.p.name,
         team: row.p.team,
         pos: row.p.pos,

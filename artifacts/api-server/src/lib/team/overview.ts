@@ -33,7 +33,7 @@ import type { StatRow } from "./stats";
 import type { UsagePlayer, UsageView } from "./usage";
 import { usageTrends } from "./usage-copy";
 import { premiumTabHead } from "./premium-head";
-import { getPlayerProfileUrl } from "./links";
+import { playerProfileUrl, type PlayerLinkRef } from "./links";
 import {
   gameDateLine,
   gameMatchupHref,
@@ -383,6 +383,8 @@ export function contributors(data: TeamPageData, view: UsageView | null): Contri
 }
 
 export interface Leader {
+  /** Sleeper id: the game logs' key, so the link names the right player. */
+  id: string;
   name: string;
   yards: number;
   td: number;
@@ -407,14 +409,22 @@ export function teamLeaders(data: TeamPageData): { rushing: Leader | null; recei
     if (games === 0) continue;
     const name = names.get(id);
     if (!name) continue;
-    const r = { name, yards: t.rush_yd ?? 0, td: t.rush_td ?? 0, count: t.rush_att ?? 0 };
-    const c = { name, yards: t.rec_yd ?? 0, td: t.rec_td ?? 0, count: t.rec ?? 0 };
-    const pz = { name, yards: t.pass_yd ?? 0, td: t.pass_td ?? 0, count: t.pass_att ?? 0 };
+    const r = { id, name, yards: t.rush_yd ?? 0, td: t.rush_td ?? 0, count: t.rush_att ?? 0 };
+    const c = { id, name, yards: t.rec_yd ?? 0, td: t.rec_td ?? 0, count: t.rec ?? 0 };
+    const pz = { id, name, yards: t.pass_yd ?? 0, td: t.pass_td ?? 0, count: t.pass_att ?? 0 };
     if (pz.yards > (passing?.yards ?? 0)) passing = pz;
     if (r.yards > (rushing?.yards ?? 0)) rushing = r;
     if (c.yards > (receiving?.yards ?? 0)) receiving = c;
   }
   return { rushing, receiving, passing };
+}
+
+/**
+ * A usage row's ids for its link: the Sleeper id the report resolved and the
+ * nflverse GSIS id it is keyed by.
+ */
+export function usageRef(u: Pick<UsagePlayer, "id" | "sleeperId">): PlayerLinkRef {
+  return { sleeperId: u.sleeperId ?? null, gsisId: /^00-\d{7}$/.test(u.id ?? "") ? u.id : null };
 }
 
 function contributorRow(c: Contributor, view: UsageView | null): string {
@@ -427,7 +437,7 @@ function contributorRow(c: Contributor, view: UsageView | null): string {
     `<li class="sct-ovw-p">` +
     `<span class="sct-ovw-face" aria-hidden="true">${photo}</span>` +
     `<span class="sct-ovw-who">` +
-    `<span class="sct-ovw-name-row">${playerName(p.name, "sct-ovw-name")}${slotChip(p.position, true)}${injuryBadge(p, "sct-ovw-inj")}</span>` +
+    `<span class="sct-ovw-name-row">${playerName(p.name, "sct-ovw-name", { sleeperId: p.id })}${slotChip(p.position, true)}${injuryBadge(p, "sct-ovw-inj")}</span>` +
     `<span class="sct-ovw-line">${e(statLine(c))}${share ? `<span class="sct-ovw-share">${e(` · ${share}`)}</span>` : ""}</span>` +
     `</span>` +
     `<span class="sct-ovw-ppg"><b>${ppg.toFixed(1)}</b><span>PPR/G</span><span class="sct-ovw-gp">${c.games} G</span></span>` +
@@ -445,8 +455,10 @@ export interface Backfield {
   nextDepth: number | null;
   /** The back the depth chart lists directly behind rb1, when that is someone else. */
   depthNext: string | null;
+  /** depthNext's Sleeper id, for his link. */
+  depthNextId?: string | null;
   /** Backs above next by share who are ruled out right now. */
-  skipped: Array<{ name: string; status: string }>;
+  skipped: Array<{ name: string; status: string; player?: UsagePlayer }>;
 }
 
 /**
@@ -475,7 +487,7 @@ export function backfield(data: TeamPageData, view: UsageView | null): Backfield
   let next: UsagePlayer | null = null;
   for (const u of rest) {
     if ((u.woppShare ?? 0) < 5) break;
-    if (out(u)) skipped.push({ name: u.name, status: status(u) });
+    if (out(u)) skipped.push({ name: u.name, status: status(u), player: u });
     else {
       next = u;
       break;
@@ -493,6 +505,7 @@ export function backfield(data: TeamPageData, view: UsageView | null): Backfield
     next,
     nextDepth,
     depthNext: depthNextRow && (!next || depthNextRow.id !== next.sleeperId) ? depthNextRow.name : null,
+    depthNextId: depthNextRow && (!next || depthNextRow.id !== next.sleeperId) ? depthNextRow.id : null,
     skipped,
   };
 }
@@ -500,20 +513,20 @@ export function backfield(data: TeamPageData, view: UsageView | null): Backfield
 function backfieldLine(data: TeamPageData, view: UsageView | null): string {
   const b = backfield(data, view);
   if (!b) return "";
-  const name = (n: string) => {
-    const href = getPlayerProfileUrl(n);
+  const name = (n: string, ref: PlayerLinkRef) => {
+    const href = playerProfileUrl(n, ref);
     return href ? `<a class="sct-player-link" href="${e(href)}" target="_top">${e(n)}</a>` : e(n);
   };
   const share = (u: UsagePlayer) => (u.woppShare != null ? `${Math.round(u.woppShare)}%` : "-");
   const parts = [
-    `${name(b.rb1.name)} has ${e(share(b.rb1))} of the running backs' opportunities this season${b.rb1Status ? ` (now ${e(b.rb1Status)})` : ""}.`,
+    `${name(b.rb1.name, usageRef(b.rb1))} has ${e(share(b.rb1))} of the running backs' opportunities this season${b.rb1Status ? ` (now ${e(b.rb1Status)})` : ""}.`,
   ];
-  for (const s of b.skipped) parts.push(`${name(s.name)} is next by share but is ${e(s.status)}.`);
+  for (const s of b.skipped) parts.push(`${name(s.name, s.player ? usageRef(s.player) : { team: data.team.abbreviation, pos: "RB" })} is next by share but is ${e(s.status)}.`);
   if (b.next) {
     parts.push(
-      `Next among available backs: ${name(b.next.name)}, ${e(share(b.next))}` +
+      `Next among available backs: ${name(b.next.name, usageRef(b.next))}, ${e(share(b.next))}` +
         (b.nextDepth ? `, RB${b.nextDepth} on the depth chart.` : ", not listed on the depth chart.") +
-        (b.depthNext ? ` The depth chart lists ${name(b.depthNext)} second.` : ""),
+        (b.depthNext ? ` The depth chart lists ${name(b.depthNext, { sleeperId: b.depthNextId ?? null })} second.` : ""),
     );
   } else {
     parts.push(`No other available back has 5% of the work.`);
@@ -550,7 +563,7 @@ function injuriesCard(data: TeamPageData, depthHref: string | null): string {
           const detail = [p.injuryBodyPart, p.practice].filter(Boolean).join(" · ");
           return (
             `<li class="sct-ovw-inj-row">` +
-            `<span class="sct-ovw-inj-who">${playerName(p.name, "sct-ovw-inj-name")}${slotChip(p.position, true)}` +
+            `<span class="sct-ovw-inj-who">${playerName(p.name, "sct-ovw-inj-name", { sleeperId: p.id })}${slotChip(p.position, true)}` +
             (detail ? `<span class="sct-ovw-inj-detail">${e(detail)}</span>` : "") +
             `</span>` +
             `<span class="sct-nwp-status sct-ovw-status" data-severity="${injurySeverity(p.injuryStatus)}">${e(injuryStatusLabel(p.injuryStatus))}</span>` +
@@ -577,7 +590,7 @@ function changesCard(view: UsageView | null, usageHref: string | null): string {
         (t) =>
           `<li class="sct-ovw-trend" data-dir="${t.direction}">` +
           `<span class="sct-ovw-arrow" aria-hidden="true">${t.direction === "up" ? "▲" : "▼"}</span>` +
-          `<span>${playerName(t.player.name, "sct-ovw-trend-name")}: ${e(t.short)}</span>` +
+          `<span>${playerName(t.player.name, "sct-ovw-trend-name", usageRef(t.player))}: ${e(t.short)}</span>` +
           `</li>`,
       )
       .join("") +

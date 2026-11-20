@@ -25,7 +25,7 @@
 
 import { escapeHtml, searchKey } from "../render";
 import { headshotImg } from "../headshot-html";
-import { getPlayerProfileUrl } from "./links";
+import { playerProfileUrl } from "./links";
 import type { OutlookFact, OutlookGroup, OutlookPlayer, TeamOutlook } from "./outlook";
 import type { RosterPlayer } from "./roster";
 import type { NflTeam } from "./teams";
@@ -134,7 +134,11 @@ function card(player: OutlookPlayer, live: RosterPlayer | null, team: NflTeam): 
       height: 64,
       loading: "lazy",
     }) ?? "";
-  const href = getPlayerProfileUrl(player.name);
+  // The roster row's Sleeper id when the card found him on the club; the
+  // hand-written name otherwise, only inside this club and position.
+  const href = live
+    ? playerProfileUrl(player.name, { sleeperId: live.id })
+    : playerProfileUrl(player.name, { team: team.abbreviation, pos: position });
   const name = href ? `<a class="sct-tfo-link" href="${e(href)}" target="_top">${e(player.name)}</a>` : e(player.name);
   const watermark = team.logo ? `<img class="sct-tfo-wm" src="${e(team.logo)}" alt="" aria-hidden="true" width="120" height="120" loading="lazy" decoding="async">` : "";
   return (

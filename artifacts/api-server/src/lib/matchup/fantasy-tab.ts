@@ -180,7 +180,7 @@ interface Ctx {
 }
 
 function nameLink(ctx: Ctx, line: FantasyLine, className = "sct-player-link"): string {
-  const href = ctx.input.section.playerUrl(line.name);
+  const href = ctx.input.section.playerUrl(line.name, line.id ? { gameKey: line.id } : { team: line.team, pos: line.pos });
   return href
     ? `<a class="${className}" href="${e(href)}" target="_top">${e(line.name)}</a>`
     : e(line.name);

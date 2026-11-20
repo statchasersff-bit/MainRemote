@@ -12,7 +12,7 @@
 
 import { escapeHtml } from "../render";
 import { rosterPlayer, shortName } from "./contracts-render";
-import { getPlayerProfileUrl } from "./links";
+import { playerProfileUrl } from "./links";
 import type { NflTeam } from "./teams";
 import { getTeamByAbbreviation } from "./teams";
 import type { DraftCapitalView, DraftHistoryView, DraftPick, DraftStatusDoc, DraftView } from "./draft";
@@ -102,8 +102,11 @@ export function historyKicker(h: DraftHistoryView): string {
  * phones team.ts's fitDraftNames() swaps it in for a name that would wrap
  * onto a second line, and only for that name.
  */
-export function playerCell(pick: DraftPick): string {
-  const href = getPlayerProfileUrl(pick.name);
+export function playerCell(pick: DraftPick, club: string | null = null): string {
+  // By id (the register's GSIS id and its Sleeper pairing): the Browns' 2026
+  // linebacker Justin Jefferson is not the Vikings receiver. A pick with
+  // neither is matched by name only inside the club and position.
+  const href = playerProfileUrl(pick.name, { gsisId: pick.gsisId, sleeperId: pick.sleeperId ?? null, team: club, pos: pick.position });
   const short = shortName(pick.name);
   const attr = short !== pick.name ? ` data-short="${e(short)}"` : "";
   return href

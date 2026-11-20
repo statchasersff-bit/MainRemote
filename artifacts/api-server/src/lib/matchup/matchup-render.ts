@@ -41,7 +41,7 @@ import {
   type MatchupGameRef,
   type MeetingFacts,
 } from "./pair";
-import { getPlayerSlugByName, loadRosterPct } from "../player/data";
+import { loadRosterPct } from "../player/data";
 import { type DefenseLine } from "./fantasy-points";
 import { playerContexts, ratesFor } from "./fantasy-data";
 import {
@@ -87,7 +87,7 @@ import {
 import { premiumTabHead, type PremiumHeadIcon, type PremiumTabHeadOptions } from "../team/premium-head";
 import { type NflTeam } from "../team/teams";
 import { titleCase } from "../player/title-case";
-import { getFPAUrl, getPlayerProfileUrl, getSOSUrl, getTeamHubUrl } from "../team/links";
+import { getFPAUrl, playerProfileUrl, resolvePlayerSlug, sameClub, getSOSUrl, getTeamHubUrl, type PlayerLinkRef, type PlayerUrlFn } from "../team/links";
 import { logger } from "../logger";
 import { loadPlayers } from "../player/data";
 import { playerForSearchKey } from "../team/roster";
@@ -636,7 +636,7 @@ function renderGameRecap(data: MatchupData, options: MatchupRenderOptions, after
   return recap
     ? renderRecap(recap, {
         playerNames: Object.values(gamePlayers(data)).map((p) => p.name),
-        playerUrl: getPlayerProfileUrl,
+        playerUrl: gameLinks(data),
       }, after)
     : "";
 }
@@ -724,6 +724,43 @@ function gamePlayers(data: MatchupData): GamePlayers {
   return players;
 }
 
+const linksCache = new WeakMap<MatchupData, PlayerUrlFn>();
+
+/**
+ * The page's player links, for every section that prints a name.
+ *
+ * A row that carries an id is linked by it (playerProfileUrl) and never by
+ * its name. A bare name - a scoring play's text, the recap's prose, a game
+ * note - is first found among this game's own players, on the side the row
+ * gives when it gives one, and then linked by THAT player's id: the Browns'
+ * linebacker Justin Jefferson in a box score is an ESPN id, and that id is
+ * not the Vikings receiver's. A name the game's players do not hold is
+ * matched only within the two clubs (as of the game's week, for a player
+ * traded since). Two of the game's players with the name: plain text.
+ */
+function gameLinks(data: MatchupData): PlayerUrlFn {
+  const hit = linksCache.get(data);
+  if (hit) return hit;
+  const meeting = data.featured;
+  const clubs = meeting ? [meeting.away.abbreviation, meeting.home.abbreviation] : [data.pair.a.abbreviation, data.pair.b.abbreviation];
+  const game = meeting ? { season: meeting.season, week: meeting.seasonType === "post" ? null : meeting.week } : null;
+  const fn: PlayerUrlFn = (name, ref = {}) => {
+    const carried = [ref.sleeperId, ref.espnId, ref.gsisId, ref.pfrId, ref.gameKey].some((v) => v !== null && v !== undefined && v !== "");
+    if (carried) return playerProfileUrl(name, { game, ...ref });
+    const key = nameKey(name);
+    if (!key) return null;
+    const side = typeof ref.team === "string" ? ref.team : null;
+    const own = Object.entries(gamePlayers(data)).filter(
+      ([, p]) => nameKey(p.name) === key && (!side || sameClub(p.team, side)),
+    );
+    if (own.length > 1) return null;
+    if (own.length === 1) return playerProfileUrl(name, { gameKey: own[0]![0], game });
+    return playerProfileUrl(name, { team: ref.team ?? clubs, pos: ref.pos ?? null, game });
+  };
+  linksCache.set(data, fn);
+  return fn;
+}
+
 /** The leaders strip, full width under the hero on a recap page. */
 function renderGameLeadersStrip(data: MatchupData): string {
   const game = matchupScoreboardGame(data);
@@ -732,7 +769,7 @@ function renderGameLeadersStrip(data: MatchupData): string {
   return renderLeadersStrip({
     game,
     players: gamePlayers(data),
-    playerUrl: getPlayerProfileUrl,
+    playerUrl: gameLinks(data),
     playerId: (id) => {
       const name = gamePlayers(data)[id]?.name ?? "";
       return fantasy?.contexts[id]?.sleeperId ?? dictionaryId(name) ?? rosterId(name);
@@ -775,7 +812,7 @@ function renderOverview(data: MatchupData, input: RecapBodyInput, added: AddedSe
     players,
     leaders: pickLeaders({ game, players }),
     city: { away: meeting.away.city, home: meeting.home.city },
-    playerUrl: getPlayerProfileUrl,
+    playerUrl: gameLinks(data),
     photo: (id) => {
       const sid = sleeperOf(id);
       return sid ? playerPhoto(sid, "sct-ov-face", 48) : `<span class="sct-ov-face" aria-hidden="true"></span>`;
@@ -834,7 +871,7 @@ function renderGameScoring(data: MatchupData): string {
   if (problems.length) {
     logger.warn({ matchup: data.pair.slug, problems }, "Scoring plays do not match the final score");
   }
-  return renderScoringSummary({ game, plays, playerUrl: getPlayerProfileUrl });
+  return renderScoringSummary({ game, plays, playerUrl: gameLinks(data) });
 }
 
 /* ------------------------------------------- stored seasons: extras */
@@ -946,8 +983,8 @@ function faqFacts(
 ): FaqFacts {
   const facts: FaqFacts = {};
   const season = meeting.season;
-  const logUrl = (name: string): string | null => {
-    const profile = getPlayerProfileUrl(name);
+  const logUrl = (name: string, sleeperId: string): string | null => {
+    const profile = playerProfileUrl(name, { sleeperId });
     if (!profile) return null;
     return `${profile.endsWith("/") ? profile : `${profile}/`}game-log/?log=${season}`;
   };
@@ -974,12 +1011,12 @@ function faqFacts(
     const pass = [...stats.passing].sort((a, b) => b.yards - a.yards)[0];
     const rush = [...stats.rushing].sort((a, b) => b.yards - a.yards)[0];
     const rec = [...stats.receiving].sort((a, b) => b.yards - a.yards)[0];
-    const player = (row: { player: { name: string }; team: NflTeam | null; position: string | null }, line: string): FaqPlayer => ({
+    const player = (row: { player: { id: string; name: string }; team: NflTeam | null; position: string | null }, line: string): FaqPlayer => ({
       name: row.player.name,
       team: code(row.team),
       pos: row.position,
       line,
-      logUrl: logUrl(row.player.name),
+      logUrl: logUrl(row.player.name, row.player.id),
     });
     facts.leaders = {
       ...(pass
@@ -1031,7 +1068,7 @@ function faqFacts(
           team: code(r.team),
           pos: r.position,
           line: faqLine(data, r.player.name) || lineOf(r.player.name),
-          logUrl: logUrl(r.player.name),
+          logUrl: logUrl(r.player.name, r.player.id),
           ppr: r.ppr,
           half: r.half,
           std: r.standard,
@@ -1255,16 +1292,16 @@ function defenseLines(data: MatchupData, game: ScoreboardGame): Record<string, D
   return out;
 }
 
-/** Redraft Command's start/sit page for one player, from his slug. */
-function startSitFor(name: string): string | null {
-  const slug = getPlayerSlugByName(name);
+/** Redraft Command's start/sit page for one player, from his slug (by id; see playerProfileUrl). */
+function startSitFor(name: string, ref: PlayerLinkRef = {}): string | null {
+  const slug = resolvePlayerSlug(name, ref);
   return slug ? `${START_SIT_URL}/${encodeURIComponent(slug)}` : null;
 }
 
 /** Redraft Command's start/sit comparison of two players, or null when either has no slug. */
-function startSitCompareFor(a: string, b: string): string | null {
-  const slugA = getPlayerSlugByName(a);
-  const slugB = getPlayerSlugByName(b);
+function startSitCompareFor(a: string, b: string, refA: PlayerLinkRef = {}, refB: PlayerLinkRef = {}): string | null {
+  const slugA = resolvePlayerSlug(a, refA);
+  const slugB = resolvePlayerSlug(b, refB);
   return slugA && slugB && slugA !== slugB ? startSitCompareUrl(slugA, slugB) : null;
 }
 
@@ -1320,7 +1357,7 @@ function fantasyInput(data: MatchupData): FantasySectionInput | null {
       fieldGoals: fieldGoalsByKicker(data.boxscore?.scoringPlays ?? []),
       defense: defenseLines(data, game),
       rates: ratesFor(meeting.season),
-      playerUrl: getPlayerProfileUrl,
+      playerUrl: gameLinks(data),
       startSitUrl: startSitFor,
       startSitCompareUrl: startSitCompareFor,
       rosterRate: (id) => {
@@ -1342,7 +1379,7 @@ function renderGameWinProbability(data: MatchupData): string {
   const game = matchupScoreboardGame(data);
   const plays = data.boxscore?.scoringPlays ?? [];
   if (!game || game.status !== "final" || plays.length === 0) return "";
-  return renderWinProbability({ game, plays, odds: data.boxscore?.odds ?? null, playerUrl: getPlayerProfileUrl });
+  return renderWinProbability({ game, plays, odds: data.boxscore?.odds ?? null, playerUrl: gameLinks(data) });
 }
 
 /** The Box Score tab: team stats, the player box score by category, advanced efficiency. */
@@ -1370,7 +1407,7 @@ function renderGameBoxScore(data: MatchupData): string {
     playerSheet: { away: box.playerSheets?.[game.away.abbr] ?? null, home: box.playerSheets?.[game.home.abbr] ?? null },
     advanced: adv ? { away: adv[game.away.abbr] ?? null, home: adv[game.home.abbr] ?? null } : null,
     forcedFumbles: story?.ff ?? null,
-    playerUrl: getPlayerProfileUrl,
+    playerUrl: gameLinks(data),
     inks: { away: "var(--mu-ink-away)", home: "var(--mu-ink-home)" },
   });
 }
@@ -1409,7 +1446,7 @@ function renderGamePlayByPlay(data: MatchupData): { lead: string; rest: string }
     game,
     pbp: loadGamePbp(meeting.season, entry.id),
     scoringPlays: data.boxscore?.scoringPlays ?? [],
-    playerUrl: getPlayerProfileUrl,
+    playerUrl: gameLinks(data),
     inks: { away: "var(--mu-ink-away)", home: "var(--mu-ink-home)" },
   });
 }
@@ -2005,7 +2042,7 @@ function renderLeaders(data: MatchupData): string {
       `<div class="sct-mu-leader-body">` +
       playerPhoto(leader.player.id, "sct-mu-leader-photo", 56) +
       `<div class="sct-mu-leader-who">` +
-      playerName(leader.player.name, "sct-mu-leader-name") +
+      playerName(leader.player.name, "sct-mu-leader-name", { sleeperId: leader.player.id }) +
       positionTag(leader.player.position, code, "sct-mu-leader-tag") +
       `</div>` +
       `</div>` +
@@ -2325,7 +2362,7 @@ function statName(
     `<span class="sct-mu-ps-cell">` +
     playerPhoto(row.player.id, "sct-mu-ps-photo", 32) +
     `<span class="sct-mu-ps-who">` +
-    playerName(row.player.name, "sct-mu-ps-link") +
+    playerName(row.player.name, "sct-mu-ps-link", { sleeperId: row.player.id }) +
     teamPosition(row.team?.code, row.position, "sct-mu-ps-meta", "position-first") +
     `</span>` +
     `</span>` +
@@ -2797,7 +2834,7 @@ function usageSliceBars(team: TeamUsage, spec: (typeof USAGE_RINGS)[number]): st
       ? playerPhoto(slice.player.id, "sct-mu-usage-face", 30)
       : `<span class="sct-mu-usage-face is-other" aria-hidden="true"></span>`;
     const name = slice.player
-      ? playerName(slice.label, "sct-mu-usage-bar-name")
+      ? playerName(slice.label, "sct-mu-usage-bar-name", { sleeperId: slice.player.id })
       : `<span class="sct-mu-usage-bar-name is-other">${escapeHtml(slice.label)}</span>`;
     return (
       `<li class="sct-mu-usage-bar${slice.player ? "" : " is-other"}" title="${escapeHtml(usageTip(slice, spec.unit, spec.metric))}">` +
@@ -2841,7 +2878,7 @@ function usageBars(team: TeamUsage): string {
       playerPhoto(row.player.id, "sct-mu-usage-face", 30) +
       `<span class="sct-mu-usage-bar-body">` +
       `<span class="sct-mu-usage-bar-head">` +
-      playerName(row.player.name, "sct-mu-usage-bar-name") +
+      playerName(row.player.name, "sct-mu-usage-bar-name", { sleeperId: row.player.id }) +
       // No team code: the player is already inside his own team's panel.
       positionTag(row.position, null, "sct-mu-usage-bar-meta") +
       // The count on the name's line and the bar straight under it: two lines
@@ -3490,7 +3527,7 @@ function injuryList(side: TeamPageData, postgame: boolean): string {
               `<li class="sct-injury sct-mu-injury">` +
               `<span class="sct-mu-injury-main">` +
               slotChip(player.slot, true) +
-              playerName(player.name, "sct-injury-name") +
+              playerName(player.name, "sct-injury-name", { sleeperId: player.id }) +
               `</span>` +
               ((player.injuryBodyPart ? 1 : 0) + (player.practice ? 1 : 0)
                 ? `<span class="sct-injury-detail">` +

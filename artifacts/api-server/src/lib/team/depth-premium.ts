@@ -28,7 +28,8 @@ export interface DepthPremiumHelpers {
   formation: (side: FootballSide) => string | null;
   grades: (view: DepthView["key"]) => DepthGradeUnit[];
   experience: (name: string) => number | null;
-  name: (row: DepthRow) => string;
+  /** `pos` is the column or slot the row is printed under, when known. */
+  name: (row: DepthRow, pos?: string) => string;
   movement: (row: DepthRow) => string;
   badge: (row: DepthRow) => string;
   sidelined: (row: DepthRow) => boolean;
@@ -120,7 +121,7 @@ function strip(h: DepthPremiumHelpers, side: FootballSide): string {
  * or a ROOKIE tag for a first-year player - with the slot ahead of it in the
  * "Also listed" strip and the PPR rank chip on the Fantasy view.
  */
-function card(h: DepthPremiumHelpers, row: DepthRow, options: { starter?: boolean; slot?: string | null; rank?: string | null; ppr?: number | null; pos?: string }): string {
+function card(h: DepthPremiumHelpers, row: DepthRow, options: { starter?: boolean; slot?: string | null; rank?: string | null; ppr?: number | null; pos?: string; linkPos?: string }): string {
   const sidelined = h.sidelined(row);
   const exp = h.experience(row.name);
   const service =
@@ -146,7 +147,7 @@ function card(h: DepthPremiumHelpers, row: DepthRow, options: { starter?: boolea
     `<li class="sct-dpp-card${options.starter ? " is-starter" : ""}${sidelined ? " is-sidelined" : ""}" data-rank="${row.rank}">` +
     `<span class="sct-dpp-avatar"><span class="sct-dpp-well">${photo}</span>${h.badge(row)}</span>` +
     `<span class="sct-dpp-body">` +
-    `<span class="sct-dpp-name">${h.name(row)}${row.movement === "new" ? `<span class="sct-dpp-new">New</span>` : ""}${h.movement(row)}</span>` +
+    `<span class="sct-dpp-name">${h.name(row, options.linkPos ?? options.pos)}${row.movement === "new" ? `<span class="sct-dpp-new">New</span>` : ""}${h.movement(row)}</span>` +
     (sub ? `<span class="sct-dpp-sub">${sub}</span>` : "") +
     `</span>` +
     `</li>`
@@ -174,7 +175,7 @@ function slotLabels(slots: FootballSlot[]): string[] {
 
 function slotRow(h: DepthPremiumHelpers, slot: FootballSlot, label: string = slot.pos): string {
   const shown = slot.rows.slice(0, COLUMNS.length);
-  const cells = shown.map((row, i) => card(h, row, { starter: i === 0 })).join("");
+  const cells = shown.map((row, i) => card(h, row, { starter: i === 0, linkPos: slot.pos })).join("");
   const blanks = COLUMNS.length - shown.length;
   return (
     `<div class="sct-dpp-row" data-pos="${e(slot.pos)}" data-slot="${e(slot.key)}">` +
@@ -188,7 +189,7 @@ function footballPanel(data: TeamPageData, h: DepthPremiumHelpers, side: Footbal
   const { team } = data;
   const labels = slotLabels(side.slots);
   const overflow = side.slots.flatMap((slot) =>
-    slot.rows.slice(COLUMNS.length).map((row) => card(h, row, { slot: `${slot.pos}${row.rank}` })),
+    slot.rows.slice(COLUMNS.length).map((row) => card(h, row, { slot: `${slot.pos}${row.rank}`, linkPos: slot.pos })),
   );
   return (
     `<section class="sct-dpp-panel" data-sct-dc-panel="${side.key}" aria-label="${e(`${team.fullName} ${side.label} Depth Chart`)}">` +

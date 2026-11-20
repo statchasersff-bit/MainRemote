@@ -1,0 +1,412 @@
+{
+  "generatedAt": "2026-11-20T21:44:59.952Z",
+  "note": "Built by scripts/player/buildIdCrosswalk.mjs; see the script for the rules.",
+  "players": {
+    "matt-hibner": {
+      "sleeper": "13324",
+      "name": "Matt Hibner",
+      "team": "BAL",
+      "pos": "TE",
+      "ids": {
+        "espn": "4432260"
+      },
+      "evidence": {
+        "espn": [
+          "depthCharts"
+        ]
+      }
+    },
+    "trey-smack": {
+      "sleeper": "13545",
+      "name": "Trey Smack",
+      "team": "GB",
+      "pos": "K",
+      "ids": {
+        "espn": "4869461",
+        "gsis": "00-0040899"
+      },
+      "evidence": {
+        "espn": [
+          "depthCharts",
+          "boxscores"
+        ],
+        "gsis": [
+          "contracts",
+          "injuryIndex"
+        ]
+      }
+    },
+    "cj-daniels": {
+      "sleeper": "13270",
+      "name": "CJ Daniels",
+      "team": "LAR",
+      "pos": "WR",
+      "ids": {
+        "espn": "4605951",
+        "gsis": "00-0041399"
+      },
+      "evidence": {
+        "espn": [
+          "depthCharts",
+          "boxscores"
+        ],
+        "gsis": [
+          "usage",
+          "injuryIndex"
+        ]
+      }
+    },
+    "max-bredeson": {
+      "sleeper": "13516",
+      "name": "Max Bredeson",
+      "team": "MIN",
+      "pos": "RB",
+      "ids": {
+        "espn": "4878695",
+        "gsis": "00-0041081"
+      },
+      "evidence": {
+        "espn": [
+          "depthCharts",
+          "boxscores"
+        ],
+        "gsis": [
+          "contracts",
+          "usage",
+          "injuryIndex"
+        ]
+      }
+    },
+    "michael-briscoe": {
+      "sleeper": "13890",
+      "name": "Michael Briscoe",
+      "team": "MIN",
+      "pos": "WR",
+      "ids": {
+        "gsis": "00-0040970"
+      },
+      "evidence": {
+        "gsis": [
+          "contracts",
+          "injuryIndex"
+        ]
+      }
+    },
+    "charlie-smyth": {
+      "sleeper": "11653",
+      "name": "Charlie Smyth",
+      "team": "NO",
+      "pos": "K",
+      "ids": {
+        "espn": "5208518",
+        "gsis": "00-0039229"
+      },
+      "evidence": {
+        "espn": [
+          "depthCharts",
+          "boxscores"
+        ],
+        "gsis": [
+          "contracts",
+          "injuryIndex"
+        ]
+      }
+    },
+    "gregory-desrosiers": {
+      "sleeper": "13603",
+      "name": "Gregory Desrosiers",
+      "team": "NYG",
+      "pos": "RB",
+      "ids": {
+        "gsis": "00-0041376"
+      },
+      "evidence": {
+        "gsis": [
+          "usage"
+        ]
+      }
+    },
+    "dominic-zvada": {
+      "sleeper": "13833",
+      "name": "Dominic Zvada",
+      "team": "NYG",
+      "pos": "K",
+      "ids": {
+        "espn": "5082424",
+        "gsis": "00-0041145"
+      },
+      "evidence": {
+        "espn": [
+          "depthCharts",
+          "boxscores"
+        ],
+        "gsis": [
+          "contracts",
+          "injuryIndex"
+        ]
+      }
+    },
+    "drew-stevens": {
+      "sleeper": "13968",
+      "name": "Drew Stevens",
+      "team": "WAS",
+      "pos": "K",
+      "ids": {
+        "espn": "5081335",
+        "gsis": "00-0041182"
+      },
+      "evidence": {
+        "espn": [
+          "depthCharts",
+          "boxscores"
+        ],
+        "gsis": [
+          "contracts",
+          "injuryIndex"
+        ]
+      }
+    },
+    "hayden-large": {
+      "sleeper": "13712",
+      "name": "Hayden Large",
+      "team": "CHI",
+      "pos": "TE",
+      "ids": {
+        "espn": "5150662",
+        "gsis": "00-0041170"
+      },
+      "evidence": {
+        "espn": [
+          "depthCharts"
+        ],
+        "gsis": [
+          "contracts",
+          "injuryIndex"
+        ]
+      }
+    },
+    "kentrel-bullock": {
+      "sleeper": "13436",
+      "name": "Kentrel Bullock",
+      "team": "CIN",
+      "pos": "RB",
+      "ids": {
+        "gsis": "00-0041241"
+      },
+      "evidence": {
+        "gsis": [
+          "contracts",
+          "injuryIndex"
+        ]
+      }
+    },
+    "carson-towt": {
+      "sleeper": "13407",
+      "name": "Carson Towt",
+      "team": "IND",
+      "pos": "TE",
+      "ids": {
+        "espn": "4702120",
+        "gsis": "00-0040853"
+      },
+      "evidence": {
+        "espn": [
+          "depthCharts"
+        ],
+        "gsis": [
+          "contracts",
+          "injuryIndex"
+        ]
+      }
+    },
+    "jordan-waters": {
+      "sleeper": "13010",
+      "name": "Jordan Waters",
+      "team": "LAR",
+      "pos": "RB",
+      "ids": {
+        "gsis": "00-0040601"
+      },
+      "evidence": {
+        "gsis": [
+          "contracts",
+          "injuryIndex"
+        ]
+      }
+    },
+    "patrick-gurd": {
+      "sleeper": "13913",
+      "name": "Patrick Gurd",
+      "team": "LV",
+      "pos": "TE",
+      "ids": {
+        "gsis": "00-0041016"
+      },
+      "evidence": {
+        "gsis": [
+          "contracts",
+          "injuryIndex"
+        ]
+      }
+    },
+    "joel-wilson": {
+      "sleeper": "11113",
+      "name": "Joel Wilson",
+      "team": "TEN",
+      "pos": "TE",
+      "ids": {
+        "gsis": "00-0039023"
+      },
+      "evidence": {
+        "gsis": [
+          "contracts",
+          "injuryIndex"
+        ]
+      }
+    }
+  },
+  "unresolved": {
+    "arizona-cardinals": {
+      "sleeper": "ARI",
+      "reason": "team defense; no person ids"
+    },
+    "atlanta-falcons": {
+      "sleeper": "ATL",
+      "reason": "team defense; no person ids"
+    },
+    "baltimore-ravens": {
+      "sleeper": "BAL",
+      "reason": "team defense; no person ids"
+    },
+    "buffalo-bills": {
+      "sleeper": "BUF",
+      "reason": "team defense; no person ids"
+    },
+    "carolina-panthers": {
+      "sleeper": "CAR",
+      "reason": "team defense; no person ids"
+    },
+    "chicago-bears": {
+      "sleeper": "CHI",
+      "reason": "team defense; no person ids"
+    },
+    "cincinnati-bengals": {
+      "sleeper": "CIN",
+      "reason": "team defense; no person ids"
+    },
+    "cleveland-browns": {
+      "sleeper": "CLE",
+      "reason": "team defense; no person ids"
+    },
+    "dallas-cowboys": {
+      "sleeper": "DAL",
+      "reason": "team defense; no person ids"
+    },
+    "denver-broncos": {
+      "sleeper": "DEN",
+      "reason": "team defense; no person ids"
+    },
+    "detroit-lions": {
+      "sleeper": "DET",
+      "reason": "team defense; no person ids"
+    },
+    "green-bay-packers": {
+      "sleeper": "GB",
+      "reason": "team defense; no person ids"
+    },
+    "houston-texans": {
+      "sleeper": "HOU",
+      "reason": "team defense; no person ids"
+    },
+    "indianapolis-colts": {
+      "sleeper": "IND",
+      "reason": "team defense; no person ids"
+    },
+    "jacksonville-jaguars": {
+      "sleeper": "JAX",
+      "reason": "team defense; no person ids"
+    },
+    "kansas-city-chiefs": {
+      "sleeper": "KC",
+      "reason": "team defense; no person ids"
+    },
+    "los-angeles-chargers": {
+      "sleeper": "LAC",
+      "reason": "team defense; no person ids"
+    },
+    "los-angeles-rams": {
+      "sleeper": "LAR",
+      "reason": "team defense; no person ids"
+    },
+    "las-vegas-raiders": {
+      "sleeper": "LV",
+      "reason": "team defense; no person ids"
+    },
+    "miami-dolphins": {
+      "sleeper": "MIA",
+      "reason": "team defense; no person ids"
+    },
+    "minnesota-vikings": {
+      "sleeper": "MIN",
+      "reason": "team defense; no person ids"
+    },
+    "new-england-patriots": {
+      "sleeper": "NE",
+      "reason": "team defense; no person ids"
+    },
+    "new-orleans-saints": {
+      "sleeper": "NO",
+      "reason": "team defense; no person ids"
+    },
+    "new-york-giants": {
+      "sleeper": "NYG",
+      "reason": "team defense; no person ids"
+    },
+    "new-york-jets": {
+      "sleeper": "NYJ",
+      "reason": "team defense; no person ids"
+    },
+    "philadelphia-eagles": {
+      "sleeper": "PHI",
+      "reason": "team defense; no person ids"
+    },
+    "pittsburgh-steelers": {
+      "sleeper": "PIT",
+      "reason": "team defense; no person ids"
+    },
+    "seattle-seahawks": {
+      "sleeper": "SEA",
+      "reason": "team defense; no person ids"
+    },
+    "san-francisco-49ers": {
+      "sleeper": "SF",
+      "reason": "team defense; no person ids"
+    },
+    "tampa-bay-buccaneers": {
+      "sleeper": "TB",
+      "reason": "team defense; no person ids"
+    },
+    "tennessee-titans": {
+      "sleeper": "TEN",
+      "reason": "team defense; no person ids"
+    },
+    "washington-commanders": {
+      "sleeper": "WAS",
+      "reason": "team defense; no person ids"
+    },
+    "joe-forson": {
+      "sleeper": "6677",
+      "name": "Joe Forson",
+      "team": "KC",
+      "pos": "WR",
+      "reason": "no source row with this name, club and position"
+    },
+    "myles-white": {
+      "sleeper": "3050",
+      "name": "Myles White",
+      "team": "NYJ",
+      "pos": "WR",
+      "reason": "no source row with this name, club and position"
+    }
+  }
+}

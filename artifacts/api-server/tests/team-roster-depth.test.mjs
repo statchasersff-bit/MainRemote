@@ -30,6 +30,7 @@ const indexed = new Set(JSON.parse(fs.readFileSync(path.join(APP_DIR, "data", "p
 const players = (() => { const j = JSON.parse(fs.readFileSync(path.join(APP_DIR, "data", "player", "players.json"), "utf8")); return Array.isArray(j) ? j : Object.values(j); })();
 const slugify = (n) => n.replace(/\s*\([^)]*\)\s*$/, "").toLowerCase().replace(/['.]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 const TEAMS = ["green-bay-packers", "los-angeles-chargers", "cleveland-browns", "minnesota-vikings", "denver-broncos", "baltimore-ravens"];
+const CLUB = { "green-bay-packers": "GB", "los-angeles-chargers": "LAC", "cleveland-browns": "CLE", "minnesota-vikings": "MIN", "denver-broncos": "DEN", "baltimore-ravens": "BAL" };
 
 describe("Depth Chart links and statuses", () => {
   test("every player link goes to a published page for the player named; every indexed player is linked", async () => {
@@ -41,9 +42,16 @@ describe("Depth Chart links and statuses", () => {
         if (a) {
           const target = a.getAttribute("href").match(/\/nfl\/players\/([^/]+)\//)[1];
           assert.ok(indexed.has(target), `${slug}: ${name} -> ${target} is not a published page`);
-          assert.ok(slugify(name).startsWith(target) || target === slugify(name), `${slug}: ${name} links to ${target}`);
+          // Either side may carry the suffix: the chart's "Patrick Mahomes II"
+          // is patrick-mahomes, and its "KC Concepcion" (linked by ESPN id
+          // since 2026-11-20) is kc-concepcion-jr.
+          assert.ok(slugify(name).startsWith(target) || target.startsWith(`${slugify(name)}-`) || target === slugify(name), `${slug}: ${name} links to ${target}`);
         } else {
-          assert.ok(!indexed.has(slugify(name)), `${slug}: ${name} has a page but no link`);
+          // Plain text is right for a namesake on another club: the Browns'
+          // linebacker Justin Jefferson is not the Vikings receiver
+          // (links resolve by id since 2026-11-20).
+          const page = players.find((p) => p.slug === slugify(name));
+          assert.ok(!indexed.has(slugify(name)) || (page && page.team !== CLUB[slug]), `${slug}: ${name} has a page but no link`);
         }
       }
     }

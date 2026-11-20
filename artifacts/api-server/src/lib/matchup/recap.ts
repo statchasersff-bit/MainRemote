@@ -19,6 +19,7 @@
 import { escapeHtml } from "../render";
 import type { BoxTeamStats } from "./boxscore";
 import { scoreboardResult, type ScoreboardGame, type ScoreboardTeam } from "./scoreboard-hero";
+import type { PlayerUrlFn } from "../team/links";
 
 /**
  * Redraft Command's start/sit page, at its final address: no trailing slash,
@@ -464,7 +465,7 @@ export interface RecapLinks {
   /** Everyone with a line in the game; the first mention of each is linked. */
   playerNames: string[];
   /** A player's page, or null when the site has none. */
-  playerUrl: (name: string) => string | null;
+  playerUrl: PlayerUrlFn;
 }
 
 interface Span {

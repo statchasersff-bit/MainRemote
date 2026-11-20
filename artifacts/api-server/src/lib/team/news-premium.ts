@@ -292,7 +292,7 @@ function card(item: NewsItem, team: NflTeam, featured: boolean, also: NewsItem[]
   const byline =
     `<p class="sct-nwp-byline">` +
     (name
-      ? `<span class="sct-nwp-subject"><span class="sct-visually-hidden">Player: </span>${playerName(name, "sct-nwp-player")}</span>`
+      ? `<span class="sct-nwp-subject"><span class="sct-visually-hidden">Player: </span>${playerName(name, "sct-nwp-player", { team: item.team || team.abbreviation })}</span>`
       : "") +
     `<span class="sct-nwp-source">${e(who.label)}</span>` +
     `</p>`;
@@ -348,7 +348,7 @@ function injuryCard(data: TeamPageData): string {
             (headshotImg({ src: player.headshot, className: "sct-nwp-face-img", alt: "", variants: ["160"], width: 30, height: 30, loading: "lazy" }) ?? "") +
             `</span>` +
             `<span class="sct-nwp-injury-who">` +
-            playerName(player.name, "sct-nwp-injury-name") +
+            playerName(player.name, "sct-nwp-injury-name", { sleeperId: player.id }) +
             (detail ? `<span class="sct-nwp-injury-detail">${detail}</span>` : "") +
             `</span>` +
             `<span class="sct-nwp-status" data-severity="${injurySeverity(player.injuryStatus)}">${e(injuryStatusLabel(player.injuryStatus))}</span>` +

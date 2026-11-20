@@ -66,6 +66,8 @@ export interface BoardRow {
   name: string;
   pos: Pos | "DST";
   slug: string | null;
+  /** Sleeper id (the usage row's, else the roster's), for the name's link. */
+  sleeperId?: string | null;
   verdict: Verdict;
   /** The full sentence: the FAQ and the no-usage / D/ST cards still read it. */
   reason: string;
@@ -558,6 +560,7 @@ export function buildPreview(data: MatchupData, inputs: PreviewInputs): Preview 
       name: f.p.name,
       pos: f.p.pos,
       slug: f.p.slug,
+      sleeperId: f.p.sleeperId,
       verdict: verdictFor(f),
       reason: reasonFor(f, side, opp),
       rostered: f.rostered,
@@ -584,6 +587,7 @@ export function buildPreview(data: MatchupData, inputs: PreviewInputs): Preview 
         name: r.name,
         pos: r.position,
         slug: null,
+        sleeperId: r.id,
         verdict: "SIT",
         team: code(side.team),
         out: isOut(status),

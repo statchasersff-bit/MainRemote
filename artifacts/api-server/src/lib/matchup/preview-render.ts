@@ -14,7 +14,7 @@
 import { escapeHtml, escapeJsonLd } from "../render";
 import type { NflTeam } from "../team/teams";
 import type { StatRow, TeamStats } from "../team/stats";
-import { getPlayerProfileUrl } from "../team/links";
+import { playerProfileUrl, type PlayerLinkRef } from "../team/links";
 import {
   rankWord,
   signedLine,
@@ -54,8 +54,8 @@ function h2(id: string, text: string): string {
   return `<h2 class="sct-h2 sct-pv-h2" id="${e(id)}">${e(text)}</h2>`;
 }
 
-function playerLink(name: string): string {
-  const url = getPlayerProfileUrl(name);
+function playerLink(name: string, ref: PlayerLinkRef): string {
+  const url = playerProfileUrl(name, ref);
   return url ? `<a href="${e(url)}">${e(name)}</a>` : e(name);
 }
 
@@ -150,7 +150,7 @@ function boardCard(r: BoardRow): string {
     ? `<span class="sct-pv-verdict is-out">${e(outLabel(r.injury?.status ?? "Out"))}</span>`
     : verdictChip(r.verdict);
   const pos = r.pos === "DST" ? "D/ST" : r.pos;
-  const name = r.pos === "DST" ? e(r.name) : playerLink(r.name);
+  const name = r.pos === "DST" ? e(r.name) : playerLink(r.name, r.sleeperId ? { sleeperId: r.sleeperId } : { team: r.team, pos: r.pos });
   const head =
     `<div class="sct-pv-card-top">${pill}` +
     `<p class="sct-pv-row-name">${name} <span class="sct-pv-pos">${e(r.team)} · ${e(pos)}</span></p>` +

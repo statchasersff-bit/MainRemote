@@ -21,8 +21,13 @@
  * tool's entity links already follow (see lib/links.ts).
  */
 
-import { getPlayerSlugByName } from "../player/data";
-import type { NflTeam } from "./teams";
+import {
+  indexedSlugForSleeperId,
+  loadGameLogs,
+  playersNamed,
+  sleeperIdFor,
+} from "../player/data";
+import { getTeamByAbbreviation, type NflTeam } from "./teams";
 
 /** Origin of the public StatChasers site. */
 const SITE_ORIGIN = (
@@ -52,7 +57,7 @@ const TEMPLATES = {
   playerStats: template("SC_PLAYER_STATS_URL", "/nfl/nfl-player-stats/"),
   /**
    * A player's profile. `{player}` is the site's own slug, not one derived
-   * from the name - see getPlayerProfileUrl().
+   * from the name - see playerProfileUrl().
    *
    * It defaulted to `/nfl/players/outlook/{player}/`, a retired layout whose
    * old pages still resolved, so every team hub linked readers and crawlers to
@@ -127,22 +132,174 @@ export function getPlayerStatsUrl(): string | null {
 }
 
 /**
+ * What a row knows about the player it names, for playerProfileUrl().
+ *
+ * Every id is optional; pass each one the row carries. `team` is the club
+ * the row puts him on (the team page's club, the matchup side he played for)
+ * and `pos` the position it lists; both only matter when no id is given.
+ */
+export interface PlayerLinkRef {
+  /** Sleeper's id: players.json `id`, the key the site's slugs hang off. */
+  sleeperId?: string | number | null;
+  /** ESPN athlete id (box scores, depth-chart headshots). */
+  espnId?: string | number | null;
+  /** NFL GSIS id, "00-0036322" (nflverse, OverTheCap). */
+  gsisId?: string | null;
+  /** Pro Football Reference id, "JeffJu00". */
+  pfrId?: string | null;
+  /** A matchup row's game key, "espn:4262921" or "sleeper:6794". */
+  gameKey?: string | null;
+  /** The club or clubs the row places him with, any spelling teams.ts knows. */
+  team?: string | readonly string[] | null;
+  /** The row's position, "WR", "LB", "PK"; unknown is null. */
+  pos?: string | null;
+  /**
+   * A past game the row describes: a player traded since then is still
+   * matched on the club he played for that week (from his game logs).
+   */
+  game?: { season: number; week?: number | null } | null;
+}
+
+/** A renderer's link callback: the printed name and whatever ids the row has. */
+export type PlayerUrlFn = (name: string, ref?: PlayerLinkRef) => string | null;
+
+const OFFENSE_POS = new Set(["QB", "RB", "HB", "FB", "WR", "TE", "LWR", "RWR", "SWR", "SLOT"]);
+const KICK_POS = new Set(["K", "PK", "P"]);
+const TEAM_DEF_POS = new Set(["DEF", "DST", "D/ST"]);
+/** Slots anyone can fill: returners, the holder, a generic athlete. */
+const ANY_POS = new Set(["PR", "KR", "KOR", "H", "ATH"]);
+
+type PosGroup = "offense" | "kick" | "team-defense" | "other";
+
+/** The broad group a position belongs to, or null when it says nothing. */
+function posGroup(pos: string | null | undefined): PosGroup | null {
+  const p = String(pos ?? "").trim().toUpperCase().replace(/^FAN_/, "").replace(/\d+$/, "");
+  if (!p || ANY_POS.has(p)) return null;
+  if (OFFENSE_POS.has(p)) return "offense";
+  if (KICK_POS.has(p)) return "kick";
+  if (TEAM_DEF_POS.has(p)) return "team-defense";
+  // The line, the defense, long snappers: none of them has a fantasy page.
+  return "other";
+}
+
+/** Lowercase canonical club code ("was" for WSH), or null. */
+function clubCode(value: string | null | undefined): string | null {
+  if (!value) return null;
+  const team = getTeamByAbbreviation(value);
+  return team ? team.abbreviation : value.trim().toLowerCase() || null;
+}
+
+/** Whether two spellings name the same club ("WSH" and "was", "JAC" and "JAX"). */
+export function sameClub(a: string | null | undefined, b: string | null | undefined): boolean {
+  const x = clubCode(a);
+  return x !== null && x === clubCode(b);
+}
+
+function gameKeyRef(key: string | null | undefined): { espnId?: string; sleeperId?: string } {
+  const m = /^(espn|sleeper):(.+)$/.exec(key ?? "");
+  if (!m) return {};
+  return m[1] === "espn" ? { espnId: m[2]! } : { sleeperId: m[2]! };
+}
+
+/**
+ * The slug the row's ids lead to; null when they lead to no published
+ * profile (or disagree); undefined when the row carries no id at all.
+ */
+function slugFromIds(ref: PlayerLinkRef): string | null | undefined {
+  const fromKey = gameKeyRef(ref.gameKey);
+  const sleeperIds = new Set<string>();
+  let carried = false;
+  for (const direct of [ref.sleeperId, fromKey.sleeperId]) {
+    if (direct === null || direct === undefined || direct === "") continue;
+    carried = true;
+    sleeperIds.add(String(direct));
+  }
+  const others: Array<["espn" | "gsis" | "pfr", string | number | null | undefined]> = [
+    ["espn", ref.espnId],
+    ["espn", fromKey.espnId],
+    ["gsis", ref.gsisId],
+    ["pfr", ref.pfrId],
+  ];
+  for (const [kind, id] of others) {
+    if (id === null || id === undefined || id === "") continue;
+    carried = true;
+    const sleeper = sleeperIdFor(kind, id);
+    if (sleeper) sleeperIds.add(sleeper);
+  }
+  if (!carried) return undefined;
+  // An id that resolves to nobody we know is still an id: the row is about
+  // someone, and it is not a player the site publishes. Never the name then.
+  if (sleeperIds.size !== 1) return null;
+  return indexedSlugForSleeperId([...sleeperIds][0]!);
+}
+
+/** The clubs a dictionary player can be matched on for this row. */
+function clubsOf(player: { id: string; team: string | null }, game: PlayerLinkRef["game"]): Set<string> {
+  const clubs = new Set<string>();
+  const now = clubCode(player.team);
+  if (now) clubs.add(now);
+  if (game) {
+    const rows = loadGameLogs(game.season)[player.id] ?? [];
+    const wanted = game.week === null || game.week === undefined ? rows : rows.filter((r) => r.week === game.week);
+    for (const r of wanted) {
+      const c = clubCode(r.team ?? null);
+      if (c) clubs.add(c);
+    }
+  }
+  return clubs;
+}
+
+/**
+ * The slug for a name the row gives with no id: only when exactly one player
+ * in the whole dictionary has that name, plays for one of the row's clubs and
+ * fits its position, and that player has a profile. No club, no link.
+ */
+function slugFromName(name: string, ref: PlayerLinkRef): string | null {
+  const teams = (Array.isArray(ref.team) ? ref.team : [ref.team])
+    .map((t) => clubCode(t as string | null | undefined))
+    .filter((t): t is string => !!t);
+  if (teams.length === 0) return null;
+  const rowGroup = posGroup(ref.pos);
+  const fits = playersNamed(name).filter((p) => {
+    const clubs = clubsOf(p, ref.game ?? null);
+    if (!teams.some((t) => clubs.has(t))) return false;
+    const group = posGroup(p.position);
+    return rowGroup === null || group === null || group === rowGroup;
+  });
+  if (fits.length !== 1) return null;
+  return indexedSlugForSleeperId(fits[0]!.id);
+}
+
+/**
+ * The published slug for the player a row names, or null.
+ *
+ * mak's rules (2026-11-20): an id decides. Any id the row carries is
+ * translated to a Sleeper id and the link exists only when that player has a
+ * published profile; an id that matches nobody published is plain text, and
+ * the name is NEVER tried in its place - that fallback is how the Browns'
+ * linebacker Justin Jefferson linked to the Vikings' receiver. A row with no
+ * id at all is matched by name only inside its own club and position group
+ * (see slugFromName); anything less certain is plain text.
+ */
+export function resolvePlayerSlug(name: string | null | undefined, ref: PlayerLinkRef = {}): string | null {
+  const byId = slugFromIds(ref);
+  if (byId !== undefined) return byId;
+  if (!name) return null;
+  return slugFromName(name, ref);
+}
+
+/**
  * A single player's profile, or null when the site does not publish one.
  *
- * The rule this used to enforce by staying switched off - never link a name to
- * a page that may not exist - is enforced per name instead. The player
- * dictionary carries the site's own slug for every player it indexes, so a name
- * that resolves to one has a profile and a name that does not is left as plain
- * text. That is also the only way to get the slug right: the site spells A.J.
- * Brown "aj-brown", and deriving a slug from the name gives "a-j-brown".
+ * The slug is the site's own, from the player dictionary - never derived from
+ * the name: the site spells A.J. Brown "aj-brown", and deriving one gives
+ * "a-j-brown". Which player a row means is resolvePlayerSlug()'s call.
  *
  * Still overridable, and still switched off wholesale by setting
  * SC_PLAYER_PROFILE_URL_TEMPLATE to an empty string.
  */
-export function getPlayerProfileUrl(
-  playerName: string | null | undefined,
-): string | null {
-  const slug = getPlayerSlugByName(playerName);
+export function playerProfileUrl(name: string | null | undefined, ref: PlayerLinkRef = {}): string | null {
+  const slug = resolvePlayerSlug(name, ref);
   if (!slug) return null;
   return fill(TEMPLATES.playerProfile, { player: slug, slug });
 }

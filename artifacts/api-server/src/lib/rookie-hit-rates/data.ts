@@ -7,7 +7,7 @@
 
 import fs from "node:fs";
 import { dataPath } from "../data-dir";
-import { getPlayerProfileUrl } from "../team/links";
+import { playerProfileUrl } from "../team/links";
 import type { PackedDataset } from "./model";
 
 export * from "./model";
@@ -70,8 +70,9 @@ export function rhrDataVersion(): string {
 
 /**
  * Each player's statchasers.com profile, for the drawer's link - only for a
- * name the site's player dictionary resolves, so a link never 404s
- * (getPlayerProfileUrl). Computed, not stored: the dictionary moves daily
+ * player the site publishes, by the row's Sleeper id (playerProfileUrl), so a
+ * link never 404s or lands on a namesake; a row without one by name inside
+ * its club and position. Computed, not stored: the dictionary moves daily
  * and the dataset does not.
  */
 export function rhrProfiles(): Record<string, string> {
@@ -82,7 +83,7 @@ export function rhrProfiles(): Record<string, string> {
   }
   const profiles: Record<string, string> = {};
   for (const p of data.players) {
-    const url = getPlayerProfileUrl(p[1]);
+    const url = playerProfileUrl(p[1], p[8] ? { sleeperId: p[8] } : { team: p[4], pos: p[2] });
     if (url) profiles[p[0]] = url;
   }
   profilesMemo = { version, at: Date.now(), profiles };

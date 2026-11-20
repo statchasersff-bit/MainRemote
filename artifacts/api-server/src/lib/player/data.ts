@@ -29,7 +29,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { dataPath } from "../data-dir";
 import { logger } from "../logger";
-import { searchKey } from "../render";
+import { nameMatchKey } from "../render";
 import type {
   BioFacts,
   DraftRecord,
@@ -64,6 +64,8 @@ const SLUG_LEDGER_FILE = path.join(DATA_DIR, "player_slugs.json");
 const STATS_COPY_FILE = path.join(DATA_DIR, "stats_copy.json");
 const COLLEGE_FILE = path.join(DATA_DIR, "college_stats.json");
 const ADVANCED_DIR = path.join(DATA_DIR, "advanced_stats");
+const ID_CROSSWALK_FILE = path.join(DATA_DIR, "id_crosswalk_recovered.json");
+const GSIS_SLEEPER_FILE = dataPath("injury-impact", "sleeper-ids.json");
 
 /** How often `players.json` is re-stat'd for an out-of-band rebuild. */
 const PLAYERS_RECHECK_MS = 10 * 60 * 1000;
@@ -152,7 +154,7 @@ export function loadPlayers(): Player[] {
   // Rebuilt with the dictionary, not alongside it: it is derived from these
   // rows, so a stale index outliving a reload would hand out slugs for players
   // the file no longer has.
-  slugsByName = null;
+  idIndexes = null;
   // Derived from the dictionary too: they refuse any alias a live player
   // holds, so a reload that changes who holds what has to rebuild them.
   slugIndexes = null;
@@ -246,60 +248,130 @@ export function previousSlugsFor(id: string): string[] {
   return slugIndex().previous.get(id) ?? [];
 }
 
-/* ------------------------------------------------------- name lookup */
+/* ---------------------------------------------------------- id lookup */
+
+/** The id families a team or matchup row can carry besides Sleeper's own. */
+export type PlayerIdKind = "espn" | "gsis" | "pfr";
+
+interface IdIndexes {
+  /** Sleeper id -> the player, for every dictionary row. */
+  byId: Map<string, Player>;
+  /** The slugs the site publishes a profile for. */
+  indexed: Set<string>;
+  /** Another source's id -> Sleeper id. An id two players claim is absent. */
+  toSleeper: Record<PlayerIdKind, Map<string, string>>;
+  /** nameMatchKey -> every dictionary player with that name. */
+  byName: Map<string, Player[]>;
+}
+
+let idIndexes: IdIndexes | null = null;
 
 /**
- * `searchKey(name)` -> slug, for the players that have a profile page.
+ * The crosswalk from ESPN, GSIS and PFR ids to Sleeper's, built once.
  *
- * Null for "not built yet"; a name that resolves to nothing is absent from the
- * map rather than mapped to null.
+ * Three sources, all committed: bio_sources.json's `ids` (the Bio build's
+ * reconciled ids, every player it ran over), the injury-impact store's GSIS ->
+ * Sleeper table, and id_crosswalk_recovered.json for the indexed players the
+ * Bio build has not reached yet (scripts/player/buildIdCrosswalk.mjs). An id
+ * the sources give to two different players is dropped rather than resolved:
+ * a link then has to pick one, and picking wrong is the failure this exists
+ * to prevent.
+ *
+ * bio_sources.json is read directly and not through loadBioSources(), so the
+ * 8MB document is not held for the life of the process just for its ids.
  */
-let slugsByName: Map<string, string> | null = null;
-
-function buildSlugsByName(): Map<string, string> {
-  // Only the INDEXED players. The dictionary carries ~4,000 names and the site
-  // publishes a profile for ~600 of them, so matching against the whole
-  // dictionary would hand out links to pages that do not exist - which is the
-  // failure the caller in team/links.ts exists to avoid.
+function buildIdIndexes(): IdIndexes {
+  const players = loadPlayers();
+  const byId = new Map(players.map((p) => [p.id, p]));
   const indexed = new Set(loadIndexedSlugs());
-  const byName = new Map<string, string>();
-  // Names that are not unique once normalized. "Michael Thomas" has been two
-  // players; a link then has to pick one, and picking wrong is worse than
-  // leaving the name as text, so an ambiguous key is dropped entirely.
-  const ambiguous = new Set<string>();
-
-  for (const player of loadPlayers()) {
-    if (!indexed.has(player.slug)) continue;
-    const key = searchKey(player.name);
-    if (!key) continue;
-    const seen = byName.get(key);
-    if (seen && seen !== player.slug) {
-      ambiguous.add(key);
-      continue;
+  const toSleeper: IdIndexes["toSleeper"] = { espn: new Map(), gsis: new Map(), pfr: new Map() };
+  const clashed: Record<PlayerIdKind, Set<string>> = { espn: new Set(), gsis: new Set(), pfr: new Set() };
+  const put = (kind: PlayerIdKind, id: unknown, sleeper: unknown): void => {
+    if (id === null || id === undefined || id === "" || !sleeper) return;
+    const k = String(id);
+    const s = String(sleeper);
+    if (clashed[kind].has(k)) return;
+    const seen = toSleeper[kind].get(k);
+    if (seen && seen !== s) {
+      toSleeper[kind].delete(k);
+      clashed[kind].add(k);
+      return;
     }
-    byName.set(key, player.slug);
+    toSleeper[kind].set(k, s);
+  };
+
+  const bio = readJson<{ players?: Record<string, { ids?: Record<string, string> }> }>(BIO_SOURCES_FILE, {});
+  for (const entry of Object.values(bio.players ?? {})) {
+    const ids = entry?.ids;
+    if (!ids?.sleeper) continue;
+    put("espn", ids.espn, ids.sleeper);
+    put("gsis", ids.gsis, ids.sleeper);
+    put("pfr", ids.pfr, ids.sleeper);
   }
-  for (const key of ambiguous) byName.delete(key);
-  return byName;
+  for (const [gsis, sleeper] of Object.entries(readJson<Record<string, string>>(GSIS_SLEEPER_FILE, {}))) {
+    put("gsis", gsis, sleeper);
+  }
+  const recovered = readJson<{ players?: Record<string, { sleeper?: string; ids?: Partial<Record<PlayerIdKind, string>> }> }>(
+    ID_CROSSWALK_FILE,
+    {},
+  );
+  for (const entry of Object.values(recovered.players ?? {})) {
+    if (!entry?.sleeper) continue;
+    for (const kind of ["espn", "gsis", "pfr"] as const) put(kind, entry.ids?.[kind], entry.sleeper);
+  }
+
+  const byName = new Map<string, Player[]>();
+  for (const player of players) {
+    const key = nameMatchKey(player.name);
+    if (!key) continue;
+    const list = byName.get(key);
+    if (list) list.push(player);
+    else byName.set(key, [player]);
+  }
+  return { byId, indexed, toSleeper, byName };
+}
+
+function ids(): IdIndexes {
+  // loadPlayers() first: a reload clears idIndexes, and it has to happen
+  // before the check below rather than after the build reads stale rows.
+  loadPlayers();
+  if (!idIndexes) idIndexes = buildIdIndexes();
+  return idIndexes;
+}
+
+/** The Sleeper id another source's id belongs to, or null when unknown or contested. */
+export function sleeperIdFor(kind: PlayerIdKind, id: string | number | null | undefined): string | null {
+  if (id === null || id === undefined || id === "") return null;
+  return ids().toSleeper[kind].get(String(id)) ?? null;
+}
+
+/** The published slug for a Sleeper id, or null when that player has no profile. */
+export function indexedSlugForSleeperId(id: string | null | undefined): string | null {
+  if (!id) return null;
+  const index = ids();
+  const player = index.byId.get(String(id));
+  return player && index.indexed.has(player.slug) ? player.slug : null;
+}
+
+/** The dictionary player behind a Sleeper id, or null. */
+export function getPlayerBySleeperId(id: string | null | undefined): Player | null {
+  if (!id) return null;
+  return ids().byId.get(String(id)) ?? null;
 }
 
 /**
- * The slug of the player with this name, or null.
- *
- * Matched on `searchKey`, the same normalization the rest of the app compares
- * names with, so the punctuation the sources disagree about ("A.J." vs "AJ",
- * "Ja'Marr" vs "JaMarr") does not decide whether a name resolves.
- *
- * Null is the answer for anyone without a published profile, and callers are
- * expected to render a plain name rather than guess a URL: the slugs here are
- * the site's own, and deriving one from a name gets "A.J. Brown" wrong
- * ("a-j-brown", where the site says "aj-brown").
+ * Every dictionary player whose name folds to this one (nameMatchKey: case,
+ * punctuation, accents and a generational suffix ignored), indexed or not.
  */
-export function getPlayerSlugByName(name: string | null | undefined): string | null {
-  const key = searchKey(name ?? "");
-  if (!key) return null;
-  if (!slugsByName) slugsByName = buildSlugsByName();
-  return slugsByName.get(key) ?? null;
+export function playersNamed(name: string | null | undefined): Player[] {
+  const key = nameMatchKey(name);
+  if (!key) return [];
+  return ids().byName.get(key) ?? [];
+}
+
+/** Whether this slug has a published profile. */
+export function isIndexedSlug(slug: string | null | undefined): boolean {
+  return !!slug && ids().indexed.has(slug);
 }
 
 /* ---------------------------------------------------------------- game logs */
@@ -527,6 +599,9 @@ export function dataStamp(): string {
     BIOS_FILE,
     BIO_FACTS_FILE,
     BIO_SOURCES_FILE,
+    // The id crosswalk decides which team and matchup rows link to a profile.
+    ID_CROSSWALK_FILE,
+    GSIS_SLEEPER_FILE,
     DRAFT_FILE,
     OUTLOOK_FILE,
     PRODUCTION_FILE,
@@ -584,6 +659,7 @@ export function resetPlayerData(): void {
   gameLogsCache.clear();
   advancedCache.clear();
   indexedCache = null;
+  idIndexes = null;
   seasonsCache = null;
   stamp = null;
   warned.clear();
