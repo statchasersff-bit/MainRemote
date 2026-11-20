@@ -307,7 +307,7 @@ export function statsPool(data: PlayerPageData, options: PlayerRenderOptions): F
       out.push({
         key: "passyd",
         q: `How many passing yards does ${c.name} have this season?`,
-        a: `${c.name} has ${whole(t.passYd)} passing yards in ${c.season}${thru}, ${per(t.passYd, 0)} a game over ${count(gp, "game")}, on ${t.passCmp} of ${t.passAtt} completions.` + high("pass_yd", "yards"),
+        a: `${c.name} has ${whole(t.passYd)} passing yards in ${c.season}${thru}, ${per(t.passYd, 0)} a game over ${count(gp, "game")}, completing ${t.passCmp} of ${t.passAtt} passes.` + high("pass_yd", "yards"),
       });
       out.push({
         key: "passtd",
