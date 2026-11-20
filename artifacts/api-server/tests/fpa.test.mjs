@@ -692,8 +692,8 @@ describe("the schedule rail (mak, 2026-11-04)", () => {
       assert.equal(a.querySelector(".scf-card-body"), null, "title, note and a call to action");
       assert.ok(a.querySelector(".scf-card-cta"), "the call to action");
     }
-    const through = doc.querySelector(".scf-scope").textContent.match(/Weeks 1\u2013(\d+)/);
-    if (through) assert.match(tools[0].querySelector(".scf-card-note").textContent, new RegExp(`^Week ${Number(through[1]) + 1}:`), "the week being set is the one after the table's last");
+    // The card's week is the start/sit tool's (Sleeper state), not the FPA
+    // table's week + 1 (2026-11-20); tests/reference-pages.test.mjs covers it.
 
     // The rail comes before the table in the markup: it is the grid above it
     // when collapsed, and reached first in a tab order either way.

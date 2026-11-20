@@ -24,7 +24,7 @@ import {
 } from "./nflverse";
 import { computeFpaTable } from "./math";
 import { describeDataMode, type FpaView } from "./blend";
-import { fpaWeekCoverage, partialGameWords } from "./week-coverage";
+import { fpaWeekCoverage, heldClubWeeks, partialGameWords } from "./week-coverage";
 import { slateGames } from "../data-coverage";
 
 // Re-exported so callers have one import for "the FPA read layer" - the split
@@ -308,8 +308,7 @@ async function readWeekCoverage(season: number, format: ScoringFormat) {
     .selectDistinct({ week: fpaGames.week, defense: fpaGames.defenseTeamAbbr })
     .from(fpaGames)
     .where(and(eq(fpaGames.season, season), eq(fpaGames.scoringFormat, format)));
-  const present = new Set(held.map((r) => `${r.week}:${getTeamByAbbreviation(r.defense)?.code ?? r.defense.toUpperCase()}`));
-  return fpaWeekCoverage(present, slateGames(season));
+  return fpaWeekCoverage(heldClubWeeks(held), slateGames(season));
 }
 
 interface UnrankedRow {

@@ -20,7 +20,7 @@ import { importModule, cleanupBundles } from "./helpers/bundle.mjs";
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const SLATE_CSV = fs.readFileSync(path.join(HERE, "fixtures", "audit-2026-11-18", "slate-2026.csv"), "utf8");
 
-let wc, coverageTs, seo, sosRender, statsRender, statsData, ranks;
+let wc, coverageTs, seo, sosRender, statsRender, statsData, ranks, fpaRender;
 before(async () => {
   wc = await importModule("lib/fpa/week-coverage");
   coverageTs = await importModule("lib/data-coverage");
@@ -29,6 +29,7 @@ before(async () => {
   statsRender = await importModule("lib/player-stats-render");
   statsData = await importModule("lib/player-stats/stats-data");
   ranks = await importModule("lib/player/ranks");
+  fpaRender = await importModule("lib/fpa-render");
 });
 after(cleanupBundles);
 
@@ -156,5 +157,121 @@ describe("NFL Player Stats: the Updated date is the Eastern date", () => {
     const base = statsData.getStatsTable("QB", 2026);
     const html = statsRender.renderStatsPage({ ...base, updatedAt: "2026-11-16T13:45:44Z" }, {});
     assert.match(html, />November 16, 2026<\/time>/);
+  });
+});
+
+/* ------------------------------------------- the Week 11 -> 12 transition */
+
+describe("through the week: data coverage and the start/sit week move independently", () => {
+  const week11 = () => games().filter((g) => g.week === 11);
+  const lastOf11 = () => [...week11()].sort((a, b) => (a.gameday + a.gametime).localeCompare(b.gameday + b.gametime)).at(-1);
+  const liveTable = (cover, startSit) => {
+    const data = {
+      rows: [], kind: "live", season: 2026, baselineSeason: 2025, currentSeason: 2026, isPreseason: false, archiveSeasons: [],
+      format: "half", view: "raw", updatedAtMs: Date.parse("2026-11-24T12:00:00Z"), dataMode: "Week 10", methodology: "x", version: "t",
+      weekNumber: cover.completeThroughWeek, partialWeek: cover.partialWeek, partialGames: cover.partialGames,
+    };
+    const html = fpaRender.renderFpaPage(data, { embed: true }, { teaser: null, startSitWeek: startSit });
+    const note = html.match(/data-scf-startsit>[\s\S]*?class="scf-card-note">([^<]*)</)[1];
+    const href = html.match(/data-scf-startsit>[\s\S]*?href="([^"]*)"/)[1];
+    return { scope: seo.fpaScopeRange(data), updated: seo.fpaPageCopy(data).updatedLine, note, href };
+  };
+
+  test("Monday night has ended but its rows have not arrived: Week 11 stays partial", () => {
+    const last = lastOf11();
+    assert.equal(`${last.away} at ${last.home}`, "CIN at WAS", "Week 11 closes on Monday night");
+    const present = heldThrough(11);
+    present.delete(`11:${last.away}`);
+    present.delete(`11:${last.home}`);
+    const c = wc.fpaWeekCoverage(present, games());
+    assert.equal(c.completeThroughWeek, 10);
+    assert.equal(c.partialWeek, 11);
+    assert.equal(c.partialGames.length, week11().length - 1);
+    const page = liveTable(c, 11);
+    assert.equal(page.scope, `Weeks 1\u201310 and ${week11().length - 1} Week 11 games`);
+    assert.equal(page.note, "Week 11: compare two players head to head.");
+  });
+
+  test("every Week 11 game in: Weeks 1-11, no partial note; the card stays on Week 11 until the tool rolls", () => {
+    const c = wc.fpaWeekCoverage(heldThrough(11), games());
+    assert.deepEqual({ ...c }, { completeThroughWeek: 11, partialWeek: null, partialGames: [] });
+    const beforeRoll = liveTable(c, 11);
+    assert.equal(beforeRoll.scope, "Weeks 1\u201311");
+    assert.equal(beforeRoll.updated, "Updated Nov 24, through Week 11");
+    assert.equal(beforeRoll.note, "Week 11: compare two players head to head.", "FPA completing Week 11 does not move the card");
+    const afterRoll = liveTable(c, 12);
+    assert.equal(afterRoll.note, "Week 12: compare two players head to head.", "the card moves when the tool does");
+    assert.equal(afterRoll.href, beforeRoll.href, "one destination: the tool's hub, which names its own week");
+    assert.equal(afterRoll.href, "https://statchasers.com/redraft-command/who-should-i-start");
+  });
+
+  test("Thursday of Week 11 with the tool on Week 11: the card says Week 11, not the old table-week + 1", () => {
+    const c = wc.fpaWeekCoverage(heldThrough(10).add("11:IND").add("11:HOU"), games());
+    assert.equal(liveTable(c, 11).note, "Week 11: compare two players head to head.");
+  });
+
+  test("the start/sit week is the tool's rule: Sleeper's week in the regular season and playoffs, none otherwise", () => {
+    assert.equal(fpaRender.startSitWeek({ seasonType: "regular", week: 11 }), 11);
+    assert.equal(fpaRender.startSitWeek({ seasonType: "post", week: 19 }), 19);
+    assert.equal(fpaRender.startSitWeek({ seasonType: "pre", week: 3 }), null, "preseason games are not a fantasy week");
+    assert.equal(fpaRender.startSitWeek({ seasonType: "off", week: 0 }), null, "the fallback state when Sleeper is unreachable");
+    assert.equal(fpaRender.startSitWeek(null), null);
+    const c = wc.fpaWeekCoverage(heldThrough(10), games());
+    assert.equal(liveTable(c, null).note, "This week: compare two players head to head.");
+  });
+});
+
+describe("stored rows: a game counts once, and duplicates never hide a missing side", () => {
+  const rowsFor = (present, copies = 1) => [...present].flatMap((k) => {
+    const [week, team] = k.split(":");
+    return Array.from({ length: copies }, (_, i) => ({ week: Number(week), defense: team, pos: ["QB", "RB", "WR", "TE"][i % 4] }));
+  });
+
+  test("many rows per club-week (one per player and position) are one club-week", () => {
+    const held = wc.heldClubWeeks(rowsFor(heldThrough(10).add("11:IND").add("11:HOU"), 9));
+    assert.equal(held.size, heldThrough(10).size + 2);
+    assert.deepEqual({ ...wc.fpaWeekCoverage(held, games()) }, { completeThroughWeek: 10, partialWeek: 11, partialGames: ["IND at HOU"] });
+  });
+
+  test("Indianapolis's rows repeated cannot stand in for Houston's missing side", () => {
+    const rows = [...rowsFor(heldThrough(10), 3), ...Array.from({ length: 50 }, () => ({ week: 11, defense: "IND" }))];
+    const c = wc.fpaWeekCoverage(wc.heldClubWeeks(rows), games());
+    assert.equal(c.partialWeek, null);
+    assert.equal(c.completeThroughWeek, 10);
+  });
+
+  test("a Week 10 side missing is not covered by rows from other weeks", () => {
+    const present = heldThrough(11);
+    present.delete("10:BAL");
+    const rows = [...rowsFor(present, 4), { week: 11, defense: "BAL" }, { week: 11, defense: "BAL" }];
+    const c = wc.fpaWeekCoverage(wc.heldClubWeeks(rows), games());
+    assert.equal(c.completeThroughWeek, 9);
+    assert.equal(c.partialWeek, 10);
+  });
+
+  test("the Rams' two spellings are one club", () => {
+    const held = wc.heldClubWeeks([{ week: 1, defense: "LA" }, { week: 1, defense: "LAR" }, { week: 1, defense: "la" }]);
+    assert.equal(held.size, 1);
+  });
+});
+
+describe("NFL Player Stats: Eastern date around midnight and the clock change", () => {
+  const dateFor = (iso) => {
+    const base = statsData.getStatsTable("QB", 2026);
+    return statsRender.renderStatsPage({ ...base, updatedAt: iso }, {}).match(/class="sca-meta-updated">Updated <time[^>]*>([^<]*)</)[1];
+  };
+  test("one minute either side of Eastern midnight (EST, UTC-5)", () => {
+    assert.equal(dateFor("2026-11-20T04:59:00Z"), "November 19, 2026");
+    assert.equal(dateFor("2026-11-20T05:00:00Z"), "November 20, 2026");
+  });
+  test("summer time (EDT, UTC-4)", () => {
+    assert.equal(dateFor("2026-09-15T03:30:00Z"), "September 14, 2026");
+    assert.equal(dateFor("2026-09-15T04:00:00Z"), "September 15, 2026");
+  });
+  test("New Year's Eve evening in Eastern is still the old year", () => {
+    assert.equal(dateFor("2027-01-01T02:00:00Z"), "December 31, 2026");
+  });
+  test("a bare date is printed as written", () => {
+    assert.equal(dateFor("2026-11-19"), "November 19, 2026");
   });
 });

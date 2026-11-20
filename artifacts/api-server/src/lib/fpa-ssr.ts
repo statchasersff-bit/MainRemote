@@ -37,6 +37,7 @@ import { logger } from "./logger";
 import {
   renderFpaEmpty,
   renderFpaPage,
+  startSitWeek,
   TEASER_COUNT,
   type FpaRail,
   type FpaRenderOptions,
@@ -51,6 +52,7 @@ import { fpaPageMeta, renderFpaHeadTags } from "./fpa-seo";
 import { LruCache } from "./lru";
 import { currentAssetOrigin } from "./asset-origin";
 import { DEFAULT_STATE, getSosBoard, rosEasiest } from "./sos/sos-data";
+import { nflState } from "./team/nfl-state";
 
 export interface FpaSsrResult {
   html: string;
@@ -198,8 +200,14 @@ export async function renderFpaFragment(
     return { html: renderFpaEmpty(options), version: "empty", data: null };
   }
 
-  const { rail, version: railVersion } = await railFor(data);
-  const version = `${data.version}-${hash(key + railVersion)}`;
+  const { rail: teaserRail, version: railVersion } = await railFor(data);
+  // The Start/Sit card's week is the start/sit tool's (Sleeper state, cached
+  // 30 min, never throws); only the live page names one.
+  const rail: FpaRail = {
+    ...teaserRail,
+    startSitWeek: data.kind === "live" ? startSitWeek(await nflState()) : null,
+  };
+  const version = `${data.version}-${hash(`${key}${railVersion}|ss${rail.startSitWeek ?? "-"}`)}`;
   const hit = fragmentCache.get(key);
   if (hit && hit.version === version) return hit;
 

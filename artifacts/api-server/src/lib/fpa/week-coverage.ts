@@ -16,6 +16,24 @@
  * scores, so a stale score column cannot move the answer.
  */
 
+import { getTeamByAbbreviation } from "../team/teams";
+
+/**
+ * The club-weeks a set of stored game rows holds, "11:IND". One entry per
+ * (week, defense) however many rows carry it - a game has a row per player
+ * and position, and a duplicated row adds nothing - so rows can only ever
+ * show a game present, never stand in for the other team's missing side.
+ * Abbreviations go through the team table so "LA" and "LAR" are one club.
+ */
+export function heldClubWeeks(rows: Iterable<{ week: number; defense: string }>): Set<string> {
+  const out = new Set<string>();
+  for (const r of rows) {
+    if (!Number.isInteger(r.week) || !r.defense) continue;
+    out.add(`${r.week}:${getTeamByAbbreviation(r.defense)?.code ?? r.defense.toUpperCase()}`);
+  }
+  return out;
+}
+
 export interface FpaScheduleGame {
   week: number;
   away: string;

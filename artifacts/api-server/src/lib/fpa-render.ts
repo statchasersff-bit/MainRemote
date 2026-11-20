@@ -119,6 +119,26 @@ export interface FpaRailTeam {
  */
 export interface FpaRail {
   teaser: Record<FantasyPosition, { top: FpaRailTeam; easiest: { code: string; fullName: string }[] }> | null;
+  /**
+   * The week the Start/Sit card names: the start/sit tool's own week
+   * (startSitWeek()), never the FPA table's. Null or absent: "This week".
+   */
+  startSitWeek?: number | null;
+}
+
+/**
+ * The week the start/sit tool is on (2026-11-20). The card links to
+ * /redraft-command/who-should-i-start, whose "Who Should I Start in Week N?"
+ * is Sleeper's /v1/state/nfl week during the regular season and playoffs
+ * (redraft-command server/nflState.ts fantasyWeek; it rolls on Tuesday
+ * morning ET). The card reads the same state, so its week moves when the
+ * tool's does - not when FPA data lands. Until 11-20 it said "Week N+1" off
+ * the FPA table, which read "Week 12" after Week 11's Thursday game.
+ */
+export function startSitWeek(state: { seasonType: string; week: number } | null | undefined): number | null {
+  if (!state) return null;
+  if (state.seasonType !== "regular" && state.seasonType !== "post") return null;
+  return Number.isInteger(state.week) && state.week >= 1 ? state.week : null;
 }
 
 /** How many easiest defenses a card's label names. */
@@ -957,7 +977,7 @@ function renderRail(data: FpaTableData, options: FpaRenderOptions, rail: FpaRail
     // position cards (mak, 2026-11-04).
     `<ul class="scf-rail-list">${current}${search}${cards}</ul>` +
     `</nav>` +
-    renderStartSit(data) +
+    renderStartSit(rail.startSitWeek ?? null) +
     `</div>`
   );
 }
@@ -966,14 +986,11 @@ function renderRail(data: FpaTableData, options: FpaRenderOptions, rail: FpaRail
  * The start/sit group under the schedules (mak, 2026-11-04): for a reader
  * who is here to set this week's lineup. One card, in a new tab: the
  * head-to-head start/sit tool (the Projections card was dropped the same
- * day). The week named is the one coming up - the table runs through Week
- * N, so the lineup being set is Week N+1.
+ * day). The week named is the tool's own (startSitWeek()), so the card and
+ * the page it opens always agree; with none known it says "This week".
  */
-function renderStartSit(data: FpaTableData): string {
-  const next =
-    data.kind === "live" && data.weekNumber !== null && data.weekNumber >= 1 && data.weekNumber < 17
-      ? `Week ${data.weekNumber + 1}`
-      : "This week";
+function renderStartSit(week: number | null): string {
+  const next = week !== null ? `Week ${week}` : "This week";
   return (
     `<nav class="scf-rail scf-rail-startsit" aria-label="Start or sit" data-scf-startsit>` +
     `<ul class="scf-rail-list">` +
