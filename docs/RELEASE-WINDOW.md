@@ -67,3 +67,4 @@ Adopted 2026-11-20 from the SEO investigation's defect list, approved by mak.
 | Date (UTC) | Release | SEO-surface change? |
 |---|---|---|
 | 2026-11-20 | seo-defect-fixes-2026-11-20 (FAQ week, team hub preseason outlook, warm passes, coverage alert) | Content removal on the team hub (approved) |
+| 2026-11-20 22:12 (outside the window, mak's call) | release/player-audit-fixes-2026-11-20 @db185d5, publish fdfdd0a: traded-player Game Log, dead Stats links, sitemap drops 92 redirecting section URLs, dateModified removed where taken from another season, Outlook "through Week N", FAQ wording | Yes (approved): FAQ/FAQPage text, ProfilePage/WebPage dateModified, sitemap entries |
