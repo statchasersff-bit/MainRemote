@@ -279,8 +279,13 @@ export function statsPool(data: PlayerPageData, options: PlayerRenderOptions): F
   const gp = cur?.gamesPlayed ?? 0;
   const per = (v: number, digits = 1) => (gp ? (v / gp).toFixed(digits) : "0");
   // The league's week, not his last game: an injured player's season is
-  // still "through Week 3".
-  const thru = (data.leagueWeek ?? 0) > 0 ? ` through Week ${data.leagueWeek}` : "";
+  // still "through Week 3". But a week his own team has not finished yet
+  // (Thursday's game is in, his is Sunday) is not counted, so this matches
+  // the page's "Through Week N" (2026-11-20).
+  const lw = data.leagueWeek ?? 0;
+  const unplayed = c.games.some((g) => g.week === lw && g.seasonType === "regular" && !g.result);
+  const thruWeek = unplayed ? lw - 1 : lw;
+  const thru = thruWeek > 0 ? ` through Week ${thruWeek}` : "";
   const gameLog = { href: tabHref(data, options, "game-log"), text: `See how those numbers break down week by week.` };
   /** " His high was 280 yards, in Week 3 at the 49ers." (two games or more) */
   const high = (key: string, unit: string): string => {
