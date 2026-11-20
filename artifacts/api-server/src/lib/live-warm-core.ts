@@ -21,6 +21,15 @@ export const VERSION_RETRY_MS = 60 * 1000;
  */
 export const SITE_ATTEMPTS = 20;
 
+/**
+ * The crawl passes, in order: as a phone first, then as a desktop
+ * (2026-11-20). WP Rocket and the Rocket.net edge keep a separate mobile
+ * copy of every page - a desktop warm left the phone copy a MISS (1.35 s
+ * against 0.07 s, measured live) - and Googlebot crawls as a smartphone, so
+ * the phone pass is the one search sees.
+ */
+export const DEFAULT_PASSES: readonly (readonly string[])[] = [["--mobile"], []];
+
 export interface LiveWarmDeps {
   /** This build's asset version; "0" means no built version.json, so no crawl. */
   version: string;
@@ -29,6 +38,8 @@ export interface LiveWarmDeps {
   siteVersion?: () => Promise<string | null>;
   siteAttempts?: number;
   run: (args: string[]) => Promise<string>;
+  /** Script arguments per crawl pass; DEFAULT_PASSES when omitted. */
+  passes?: readonly (readonly string[])[];
   sleep: (ms: number) => Promise<void>;
   note: (line: string) => void;
   startDelayMs?: number;
@@ -38,7 +49,8 @@ export interface LiveWarmDeps {
 
 /**
  * Wait out the boot chain, wait for the origin to report this build, crawl.
- * Resolves with the script's summary line, or null when it did not run.
+ * Resolves with the passes' summary lines joined by " | ", or null when no
+ * pass ran. A pass that fails is noted and the next one still runs.
  * Stateless so tests reach it with fakes.
  */
 export async function runLiveWarm(deps: LiveWarmDeps): Promise<string | null> {
@@ -72,13 +84,16 @@ export async function runLiveWarm(deps: LiveWarmDeps): Promise<string | null> {
     }
   }
   deps.note(`start: origin serves ${deps.version}`);
-  try {
-    const stdout = await deps.run([]);
-    const summary = /^warm-live complete:.*$/m.exec(stdout)?.[0] ?? stdout.trim().split("\n").pop() ?? "done";
-    deps.note(summary);
-    return summary;
-  } catch (err) {
-    deps.note(`failed: ${err instanceof Error ? err.message : String(err)}`);
-    return null;
+  const summaries: string[] = [];
+  for (const args of deps.passes ?? DEFAULT_PASSES) {
+    try {
+      const stdout = await deps.run([...args]);
+      const summary = /^warm-live complete:.*$/m.exec(stdout)?.[0] ?? stdout.trim().split("\n").pop() ?? "done";
+      deps.note(summary);
+      summaries.push(summary);
+    } catch (err) {
+      deps.note(`failed${args.length ? ` (${args.join(" ")})` : ""}: ${err instanceof Error ? err.message : String(err)}`);
+    }
   }
+  return summaries.length ? summaries.join(" | ") : null;
 }

@@ -226,6 +226,103 @@ function kickoffMs(g: SlateGame): number {
   return Number.isFinite(ms) ? ms : 0;
 }
 
+/* ---------------------------------------- derived (hand-run) team datasets */
+
+/**
+ * The hand-run files the team pages and the player Outlook read
+ * (2026-11-20, the SEO investigation's defect list): none of them is covered
+ * by the game-log / stats-table checks above, the daily chain that used to
+ * rebuild them has been off since 2026-10-04, and a lagging one prints last
+ * week's numbers under this week's dates ("Through 9 games" on a Week 10
+ * page). Each states the week it covers; the depth-chart snapshot states only
+ * when it ran.
+ */
+export interface DerivedFile {
+  name: string;
+  /** The week the file says it covers; null when it records none. */
+  throughWeek: number | null;
+  /** When it was last built or refreshed (ISO); null when unknown. */
+  refreshedAt: string | null;
+  /** The file is absent or unreadable. */
+  missing?: boolean;
+}
+
+function readJson(...parts: string[]): Record<string, unknown> | null {
+  try {
+    return JSON.parse(fs.readFileSync(dataPath(...parts), "utf8")) as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+}
+
+const num = (v: unknown): number | null => (typeof v === "number" && Number.isFinite(v) ? v : null);
+const str = (v: unknown): string | null => (typeof v === "string" && v ? v : null);
+
+/** What each derived file on disk says it covers. */
+export function derivedFiles(season: number): DerivedFile[] {
+  const out: DerivedFile[] = [];
+  const team = (file: string, name: string) => {
+    const d = readJson("team", `${file}_${season}.json`);
+    const snap = (d?.["snapshot"] ?? null) as Record<string, unknown> | null;
+    out.push({
+      name,
+      throughWeek: num(d?.["throughWeek"]) ?? num(snap?.["throughWeek"]),
+      refreshedAt: str(d?.["builtAt"]),
+      missing: d === null,
+    });
+  };
+  team("usage", "team usage");
+  team("efficiency", "team stats (efficiency)");
+  team("coaching", "coaching tendencies");
+  for (const pos of ["qb", "rb", "wr", "te"]) {
+    const d = readJson("player", "advanced_stats", `${pos}_${season}.json`);
+    out.push({ name: `${pos.toUpperCase()} advanced stats`, throughWeek: num(d?.["week"]), refreshedAt: str(d?.["updated_at"]), missing: d === null });
+  }
+  const depth = readJson("depth-charts", "statchasers", "meta.json");
+  out.push({ name: "depth-chart snapshot", throughWeek: null, refreshedAt: str(depth?.["last_refreshed"]), missing: depth === null });
+  return out;
+}
+
+/**
+ * The last week the schedule says is over: every game of it and of every
+ * week before it final, and its last kickoff at least MISSING_GAME_GRACE_H
+ * ago (the same grace as a missing game, so Monday night does not page
+ * before Tuesday's refresh). 0 before the first such week.
+ */
+export function completedWeek(games: SlateGame[], nowMs: number): number {
+  const weeks = [...new Set(games.map((g) => g.week))].sort((a, b) => a - b);
+  let done = 0;
+  for (const w of weeks) {
+    const of = games.filter((g) => g.week === w);
+    const last = Math.max(...of.map(kickoffMs));
+    if (!of.every((g) => g.final) || nowMs - last < MISSING_GAME_GRACE_H * 3600_000) break;
+    done = w;
+  }
+  return done;
+}
+
+/** Reasons a derived file is behind the schedule, or stale in season. */
+export function derivedReasons(files: DerivedFile[], games: SlateGame[], nowMs: number): string[] {
+  const reasons: string[] = [];
+  const complete = completedWeek(games, nowMs);
+  const inSeason = games.some((g) => g.final) && games.some((g) => !g.final);
+  for (const f of files) {
+    if (f.missing) {
+      if (complete > 0) reasons.push(`${f.name} file missing`);
+      continue;
+    }
+    if (f.throughWeek !== null && complete > 0 && f.throughWeek < complete) {
+      reasons.push(`${f.name} covers through Week ${f.throughWeek}; the schedule is complete through Week ${complete}`);
+    }
+    if (f.throughWeek === null && inSeason) {
+      const at = f.refreshedAt ? Date.parse(f.refreshedAt) : NaN;
+      if (!Number.isFinite(at)) reasons.push(`${f.name} records no refresh time`);
+      else if (nowMs - at > STALE_INGEST_H * 3600_000) reasons.push(`${f.name} last refreshed ${Math.floor((nowMs - at) / 86_400_000)} days ago`);
+    }
+  }
+  return reasons;
+}
+
 /**
  * The alerting verdict for the player checks in GET /api/data/health (routes/health.ts, Phase 1.1): unhealthy only
  * for a condition a person should act on, so an uptime monitor can page on a
@@ -240,10 +337,17 @@ export function dataHealth(
     report?: ReturnType<typeof datasetReport>;
     games?: SlateGame[];
     unattributedScoring?: number;
+    /**
+     * The hand-run team / advanced files (derivedFiles). Read from disk only
+     * when the report is too: a test that injects a report is testing the
+     * player checks, and passes these explicitly to test the derived ones.
+     */
+    derived?: DerivedFile[];
   } = {},
 ): { ok: boolean; reasons: string[] } {
   const report = inputs.report ?? datasetReport(season, nowMs);
   const games = inputs.games ?? slateGames(season);
+  const derived = inputs.derived ?? (inputs.report ? [] : derivedFiles(season));
   const due = new Set(games.filter((g) => g.final && nowMs - kickoffMs(g) > MISSING_GAME_GRACE_H * 3600_000).map((g) => g.gameId));
   const reasons: string[] = [];
   const overdue = (missing: string[] | undefined | null) => (missing ?? []).filter((id) => due.has(id));
@@ -263,5 +367,6 @@ export function dataHealth(
   if (newer(report.gameLogs.lastFailureAt, report.gameLogs.lastIngestedAt)) reasons.push(`game-log ingestion failed: ${report.gameLogs.lastFailure}`);
   if (newer(report.statsTables.lastFailureAt, report.statsTables.lastIngestedAt)) reasons.push(`stats-table build failed: ${report.statsTables.lastFailure}`);
   if ((inputs.unattributedScoring ?? 0) > 0) reasons.push(`${inputs.unattributedScoring} ${season} game totals differ from the scoring rules with no known cause`);
+  reasons.push(...derivedReasons(derived, games, nowMs));
   return { ok: reasons.length === 0, reasons };
 }

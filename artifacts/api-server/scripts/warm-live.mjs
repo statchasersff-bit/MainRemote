@@ -27,6 +27,9 @@
  *   --teams-only      the 225 team URLs, no player pages
  *   --all-tabs        every player tab too (4,000+ pages, over an hour)
  *   --list <file>     crawl these URLs (one per line) instead of the sitemaps
+ *   --mobile          ask as a phone (iPhone UA): WP Rocket keeps a separate
+ *                     mobile cache, and Googlebot crawls as a smartphone, so a
+ *                     desktop-only warm leaves the pages Google indexes cold
  *   --verbose         one line per page on stdout
  *
  * Prints `warm-live complete: ...` on stdout at the end; the slowest pages
@@ -43,6 +46,9 @@ const REQUEST_TIMEOUT_MS = 90 * 1000;
 const RATE_LIMIT_PAUSE_MS = 20 * 1000;
 const SLOW_MS = 5000;
 const USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64) Chrome/120 StatChasers-WarmLive/1 (+https://statchasers.com)";
+/** A phone, the way WP Rocket's mobile detection and Rocket.net's edge tell one. */
+export const MOBILE_USER_AGENT =
+  "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1 StatChasers-WarmLive/1";
 
 export function parseArgs(argv) {
   const opts = {
@@ -52,6 +58,7 @@ export function parseArgs(argv) {
     teamsOnly: false,
     allTabs: false,
     list: null,
+    mobile: false,
     verbose: false,
   };
   for (let i = 0; i < argv.length; i += 1) {
@@ -63,6 +70,7 @@ export function parseArgs(argv) {
     else if (a === "--teams-only") opts.teamsOnly = true;
     else if (a === "--all-tabs") opts.allTabs = true;
     else if (a === "--list") opts.list = next() ?? null;
+    else if (a === "--mobile") opts.mobile = true;
     else if (a === "--verbose") opts.verbose = true;
     else throw new Error(`unknown argument ${a}`);
   }
@@ -103,14 +111,14 @@ export function selectUrls(locs, { teamsOnly = false, allTabs = false } = {}) {
 }
 
 export function summaryLine(s) {
-  return `warm-live complete: ${s.pages} pages, ${s.ok} ok, ${s.slow} slow (>${SLOW_MS / 1000}s), ${s.failed} failed, ${s.seconds}s`;
+  return `warm-live complete: ${s.pages} pages${s.mobile ? " (mobile)" : ""}, ${s.ok} ok, ${s.slow} slow (>${SLOW_MS / 1000}s), ${s.failed} failed, ${s.seconds}s`;
 }
 
-async function fetchPage(url) {
+async function fetchPage(url, userAgent = USER_AGENT) {
   const started = Date.now();
   try {
     const res = await fetch(url, {
-      headers: { "user-agent": USER_AGENT, accept: "text/html,*/*;q=0.1" },
+      headers: { "user-agent": userAgent, accept: "text/html,*/*;q=0.1" },
       redirect: "follow",
       signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     });
@@ -181,8 +189,9 @@ async function main() {
     ? fs.readFileSync(opts.list, "utf8").split(/\r?\n/)
     : await loadSitemapUrls(opts.site);
   const urls = selectUrls(locs, opts).slice(0, opts.limit === Infinity ? undefined : opts.limit);
-  process.stderr.write(`warm-live: ${urls.length} pages at one per ${opts.rateMs} ms\n`);
-  const summary = await crawl(urls, opts);
+  process.stderr.write(`warm-live: ${urls.length} pages at one per ${opts.rateMs} ms${opts.mobile ? " (mobile)" : ""}\n`);
+  const ua = opts.mobile ? MOBILE_USER_AGENT : USER_AGENT;
+  const summary = { ...(await crawl(urls, { ...opts, fetchPage: (url) => fetchPage(url, ua) })), mobile: opts.mobile };
   for (const s of summary.slowest) process.stderr.write(`warm-live slowest: ${(s.ms / 1000).toFixed(1)}s ${s.url}\n`);
   for (const f of summary.failures.slice(0, 20)) process.stderr.write(`warm-live failed: ${f}\n`);
   process.stdout.write(`${summaryLine(summary)}\n`);

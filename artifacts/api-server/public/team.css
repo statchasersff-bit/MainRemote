@@ -25599,59 +25599,6 @@ ul.sct-faq-list li {
 :is(.sct, #sct-table-armour) .sct-ovw-trend[data-dir="down"] .sct-ovw-arrow { color: var(--ovw-red); }
 :is(.sct, #sct-table-armour) .sct-ovw-trend-name { color: var(--up-ink); font-weight: 700; text-decoration: none; }
 
-/* The archived preseason outlook */
-:is(.sct, #sct-table-armour) .sct-ovw-archive {
-  margin: 0 0 24px;
-  border: 1px solid var(--tp-c-dbe3ee, #dbe3ee);
-  border-radius: 12px;
-  background: #fff;
-}
-
-:is(.sct, #sct-table-armour) .sct-ovw-archive-sum {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 2px 12px;
-  padding: 14px 44px 14px 16px;
-  position: relative;
-  cursor: pointer;
-  list-style: none;
-}
-
-:is(.sct, #sct-table-armour) .sct-ovw-archive-sum::-webkit-details-marker { display: none; }
-
-:is(.sct, #sct-table-armour) .sct-ovw-archive-sum::after {
-  content: "+";
-  position: absolute;
-  top: 50%;
-  right: 16px;
-  transform: translateY(-50%);
-  color: var(--tp-c-0b3a7a, #0b3a7a);
-  font-size: 1.3rem;
-  font-weight: 700;
-}
-
-:is(.sct, #sct-table-armour) .sct-ovw-archive[open] > .sct-ovw-archive-sum::after { content: "\2212"; }
-
-:is(.sct, #sct-table-armour) .sct-ovw-archive-title {
-  color: var(--tp-c-0b1220, #0b1220);
-  font-size: 1rem;
-  font-weight: 800;
-}
-
-:is(.sct, #sct-table-armour) .sct-ovw-archive-dek { color: #64748b; font-size: 0.78rem; }
-
-:is(.sct, #sct-table-armour) .sct-ovw-archive-note {
-  margin: 0 16px 14px;
-  padding: 8px 12px;
-  border-left: 3px solid var(--tp-c-d4af37, #d4af37);
-  background: var(--tp-c-f3f6fb, #f3f6fb);
-  color: #334155;
-  font-size: 0.82rem;
-}
-
-:is(.sct, #sct-table-armour) .sct-ovw-archive > :not(summary):not(.sct-ovw-archive-note) { margin-left: 12px; margin-right: 12px; }
-
 @container premium-usage (max-width: 900px) {
   :is(.sct, #sct-table-armour) .sct-ovw-top { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   :is(.sct, #sct-table-armour) .sct-ovw-top > .sct-ovw-division { grid-column: 1 / -1; }
@@ -25669,7 +25616,6 @@ ul.sct-faq-list li {
   :is(.sct, #sct-table-armour) .sct-ovw-body { padding: 8px 12px 10px; }
   :is(.sct, #sct-table-armour) .sct-ovw-p { grid-template-columns: 32px minmax(0, 1fr) auto; gap: 8px; padding: 6px 0; }
   :is(.sct, #sct-table-armour) .sct-ovw-face { width: 32px; height: 32px; }
-  :is(.sct, #sct-table-armour) .sct-ovw-archive > :not(summary):not(.sct-ovw-archive-note) { margin-left: 0; margin-right: 0; }
 }
 
 /* Season Overview touch targets and small text (2026-11-19 sim pass):

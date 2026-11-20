@@ -29,7 +29,7 @@ import { runLiveWarm } from "./live-warm-core";
 
 const SCRIPT = "warm-live.mjs";
 const VERSION_TIMEOUT_MS = 20 * 1000;
-/** 864 pages at 1.6 s is 23 min; the cap only matters if the site stalls. */
+/** Per pass (phone, then desktop: DEFAULT_PASSES): 864 pages at 1.6 s is 23 min; the cap only matters if the site stalls. */
 const CRAWL_TIMEOUT_MS = 60 * 60 * 1000;
 const CHILD_HEAP_MB = 128;
 

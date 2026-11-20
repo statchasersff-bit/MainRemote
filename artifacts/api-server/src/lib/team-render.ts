@@ -55,7 +55,7 @@ import { buildUsageView, getUsageDoc, pprPositionRanks, type PprRanks } from "./
 import { efficiencyRows, getEfficiencyDoc, passRushRows, type EfficiencyMetric } from "./team/efficiency";
 import { renderUsageSection } from "./team/usage-render";
 import { renderOutlookPremium } from "./team/outlook-premium";
-import { overviewPhase, renderPreseasonArchive, renderTeamOverview, teamLeaders } from "./team/overview";
+import { overviewPhase, renderTeamOverview, teamLeaders } from "./team/overview";
 import { seasonFaq } from "./team/season-faq";
 import { teamPaletteAttr, teamPaletteVars } from "./team/palette";
 import { renderPlayerSearch } from "./player-render";
@@ -2509,10 +2509,13 @@ export function renderTeamPage(
   // The default tab, season-aware (mak's Team Pages Phase 1 brief,
   // 2026-11-19). Before the first regular-season final it is the preseason
   // outlook, as written. Once the season has a final it opens on the
-  // current-season overview (team/overview.ts) and the outlook moves under
-  // it into a closed, labeled archive: still on the page, never presented as
-  // current analysis. The panel keeps the id "outlook", so the hub's address,
-  // tab hrefs, FAQ tail and title metadata are unchanged.
+  // current-season overview (team/overview.ts) and the preseason outlook is
+  // not printed at all (2026-11-20, mak approved the SEO investigation's
+  // defect list): the closed archive it sat in from 11-19 still put ~2,000
+  // words of September draft advice, under a "{season} Preseason Fantasy
+  // Outlook" heading, into the document Google indexes for the hub's
+  // in-season queries. The panel keeps the id "outlook", so the hub's
+  // address, tab hrefs, FAQ tail and title metadata are unchanged.
   let hubHtml = outlook === "" ? "" : caveat + outlook;
   let hubLabel = "Outlook";
   // The next season's preseason with no outlook written yet: the overview
@@ -2527,18 +2530,11 @@ export function renderTeamPage(
       depth: depth ? sectionPath(prefix, team.slug, "depth-chart") : null,
     });
     if (overview) {
-      const written = getTeamOutlook(team.abbreviation);
-      // The preseason questions go with the take they re-cut: inside the
-      // archive, as markup only. The hub's FAQ - its tail and its FAQPage -
-      // is the season's questions (team/season-faq.ts, 2026-11-19), so the
-      // structured data matches the questions a reader sees under the panel.
-      const archivedFaq = outlookFaq.length
-        ? `<div class="sct-block sct-ovw-archive-faq">` +
-          faqHeading("Preseason Questions") +
-          faqList(outlookFaq, [], "h3") +
-          `</div>`
-        : "";
-      hubHtml = overview + (written && hubHtml ? renderPreseasonArchive(written.season, written.updated, hubHtml + archivedFaq) : "");
+      // The preseason questions leave with the take they re-cut. The hub's
+      // FAQ - its tail and its FAQPage - is the season's questions
+      // (team/season-faq.ts, 2026-11-19), so the structured data matches the
+      // questions a reader sees under the panel.
+      hubHtml = overview;
       hubLabel = "Overview";
       const current = seasonFaq(data, usageView, now);
       outlookFaq.length = 0;

@@ -38,6 +38,13 @@ describe("selectUrls", () => {
     assert.equal(all.at(-1), "https://statchasers.com/nfl/players/josh-allen/stats/");
   });
 
+  test("--mobile asks as a phone; the default stays the desktop crawler", () => {
+    assert.equal(script.parseArgs([]).mobile, false);
+    assert.equal(script.parseArgs(["--mobile"]).mobile, true);
+    assert.match(script.MOBILE_USER_AGENT, /iPhone/);
+    assert.match(script.MOBILE_USER_AGENT, /Mobile/);
+  });
+
   test("sitemapLocs reads an index and a page sitemap alike", () => {
     const locs = script.sitemapLocs("<sitemapindex><sitemap><loc>https://x/page-sitemap1.xml</loc></sitemap><sitemap><loc> https://x/post-sitemap.xml </loc></sitemap></sitemapindex>");
     assert.deepEqual(locs, ["https://x/page-sitemap1.xml", "https://x/post-sitemap.xml"]);
@@ -70,6 +77,7 @@ describe("crawl", () => {
     assert.equal(summary.slow, 2);
     assert.equal(summary.failed, 1);
     assert.match(script.summaryLine(summary), /^warm-live complete: 3 pages, 2 ok, 2 slow \(>5s\), 1 failed, \d+s$/);
+    assert.match(script.summaryLine({ ...summary, mobile: true }), /^warm-live complete: 3 pages \(mobile\), 2 ok, /, "a phone pass says so, behind the prefix live-warm-core reads");
     assert.equal(summary.slowest[0].url, "https://x/c/");
   });
 });
@@ -95,9 +103,25 @@ describe("runLiveWarm", () => {
       originVersion: async () => versions.shift() ?? "abc",
       run: async () => { ran += 1; return "noise\nwarm-live complete: 864 pages, 864 ok, 0 slow (>5s), 0 failed, 1400s\n"; },
     }));
-    assert.equal(ran, 1);
-    assert.equal(out, "warm-live complete: 864 pages, 864 ok, 0 slow (>5s), 0 failed, 1400s");
+    assert.equal(ran, 2, "a phone pass, then a desktop pass");
+    assert.equal(out, "warm-live complete: 864 pages, 864 ok, 0 slow (>5s), 0 failed, 1400s | warm-live complete: 864 pages, 864 ok, 0 slow (>5s), 0 failed, 1400s");
     assert.ok(notes.some((l) => l.startsWith("start: origin serves abc")));
+  });
+
+  test("the phone pass runs first (Googlebot crawls as a smartphone), and a failed pass does not stop the next", async () => {
+    const calls = [];
+    const notes = [];
+    const out = await lib.runLiveWarm(base({
+      note: (l) => notes.push(l),
+      run: async (args) => {
+        calls.push(args);
+        if (args.includes("--mobile")) throw new Error("boom");
+        return "warm-live complete: 2 pages, 2 ok, 0 slow (>5s), 0 failed, 3s\n";
+      },
+    }));
+    assert.deepEqual(calls, [["--mobile"], []]);
+    assert.ok(notes.some((l) => /^failed \(--mobile\): boom/.test(l)));
+    assert.equal(out, "warm-live complete: 2 pages, 2 ok, 0 slow (>5s), 0 failed, 3s");
   });
 
   test("never crawls while the origin serves another build", async () => {
@@ -137,7 +161,7 @@ describe("runLiveWarm waits for WordPress to print this build (2026-11-05)", () 
     const seen = ["old999", "old999", "new123"];
     let ran = 0;
     const out = await lib.runLiveWarm(fake({ siteVersion: async () => seen.shift(), run: async () => { ran += 1; return "warm-live complete: 1 pages"; } }));
-    assert.equal(ran, 1);
+    assert.equal(ran, 2, "both passes, once the new version showed");
     assert.match(out, /warm-live complete/);
     assert.equal(seen.length, 0, "it kept checking until the new version showed");
   });
