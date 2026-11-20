@@ -18170,8 +18170,12 @@ button.scp-search-opt {
     padding-top: 16px;
   }
 
-  .scp.scp.is-embed > :first-child,
-  .scp.scp.is-embed > .scp-search[hidden] + .scp-phead {
+  /* The first child only. The hidden search box keeps its place now
+     (player-render.ts HOST_HEADER_STYLE), so the hero under it keeps its
+     8px top margin whether or not the script has revealed the box; zeroing
+     it while the box was hidden made the whole page drop 8px when it
+     appeared (layout shift on phones, 2026-11-20). */
+  .scp.scp.is-embed > :first-child {
     margin-top: 0 !important;
   }
 }

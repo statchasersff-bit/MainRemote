@@ -221,20 +221,23 @@ function renderTable(data: PlayerPageData, deps: PremiumLogDeps): string {
     )}</p></div>`;
   }
 
+  // The sort buttons ship in the HTML, exactly as client/player.ts used to
+  // build them after paint: building them then widened the header cells and
+  // nudged every column on phones (layout shift, 2026-11-20). The script now
+  // finds them and only wires the clicks. Week first, ascending, as served.
+  let headIndex = 0;
+  const th = (cls: string, label: string): string =>
+    `<th scope="col" class="${cls}" aria-sort="${headIndex++ === 0 ? "ascending" : "none"}">` +
+    `<button type="button" class="scp-sort">${escapeHtml(label)}</button></th>`;
   const head =
     `<tr>` +
-    `<th scope="col" class="scp-glp-th-wk">Wk</th>` +
-    `<th scope="col" class="scp-glp-th-opp">Opp</th>` +
-    `<th scope="col" class="scp-glp-th-diff">Difficulty</th>` +
-    (scored ? `<th scope="col" class="scp-glp-th-res">Result</th>` : "") +
-    columns
-      .map(
-        (column) =>
-          `<th scope="col" class="scp-glp-th-box${column.secondary ? " is-2" : ""}">${escapeHtml(column.label)}</th>`,
-      )
-      .join("") +
-    `<th scope="col" class="scp-glp-th-pts">FPTS</th>` +
-    `<th scope="col" class="scp-glp-th-fin">Finish</th>` +
+    th("scp-glp-th-wk", "Wk") +
+    th("scp-glp-th-opp", "Opp") +
+    th("scp-glp-th-diff", "Difficulty") +
+    (scored ? th("scp-glp-th-res", "Result") : "") +
+    columns.map((column) => th(`scp-glp-th-box${column.secondary ? " is-2" : ""}`, column.label)).join("") +
+    th("scp-glp-th-pts", "FPTS") +
+    th("scp-glp-th-fin", "Finish") +
     `</tr>`;
 
   const rows = seasonLog
@@ -262,7 +265,13 @@ function renderTable(data: PlayerPageData, deps: PremiumLogDeps): string {
         `<tr class="scp-glp-row" data-status="active" data-week="${entry.week}"` +
         (detail ? ` data-detail="${escapeHtml(detailId)}"` : "") +
         `>` +
-        `<th scope="row">${entry.week}</th>` +
+        (detail
+          ? // The week's expand toggle, built here rather than after paint for
+            // the same reason as the sort buttons above.
+            `<th scope="row"><button type="button" class="scp-expand" aria-expanded="false"` +
+            ` aria-controls="${escapeHtml(detailId)}" aria-label="Week ${entry.week} detail">` +
+            `${entry.week}<span class="scp-expand-icon" aria-hidden="true"></span></button></th>`
+          : `<th scope="row">${entry.week}</th>`) +
         `<td class="scp-glp-opp">` +
         (logo
           ? `<img class="scp-glp-opp-logo" src="${escapeHtml(logo)}" alt="" aria-hidden="true" width="26" height="26" loading="lazy" decoding="async" />`
@@ -322,7 +331,16 @@ function renderTable(data: PlayerPageData, deps: PremiumLogDeps): string {
   return (
     `<div class="scp-glp-panel">` +
     `<div class="scp-glp-scroll">` +
-    `<table class="scp-glp-table" data-scp-sortable data-scp-expandable>` +
+    // The week details ship FOLDED (data-scp-expand="js"), as the reader sees
+    // them once the page is ready. They used to ship open and be folded by the
+    // script after paint, which pulled the whole table up under the reader on
+    // phones (CLS about 0.31 on Game Log at 360-430px, 2026-11-20). They are
+    // still all in the HTML. Without script, the noscript rule below shows
+    // every detail, so nothing sits behind a button that cannot work, and the
+    // toggle's arrow is dropped there.
+    `<noscript><style>.scp.scp .scp-glp-table[data-scp-expand] .scp-detail{display:table-row}` +
+    `.scp.scp .scp-glp-table .scp-expand-icon{display:none}</style></noscript>` +
+    `<table class="scp-glp-table" data-scp-sortable data-scp-expandable data-scp-sort="js" data-scp-expand="js">` +
     `<thead>${head}</thead><tbody>${rows}</tbody>${foot}</table>` +
     `</div>${note}</div>`
   );

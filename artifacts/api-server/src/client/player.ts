@@ -200,12 +200,17 @@ function wireSortableLog(root: HTMLElement): void {
     };
 
     headers.forEach((header, index) => {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = "scp-sort";
-      button.textContent = header.textContent ?? "";
-      header.textContent = "";
-      header.appendChild(button);
+      // The game log ships its sort buttons (gamelog-premium.ts), so wiring
+      // them changes nothing on screen; other tables still get them built.
+      let button = header.querySelector<HTMLButtonElement>(":scope > button.scp-sort");
+      if (!button) {
+        button = document.createElement("button");
+        button.type = "button";
+        button.className = "scp-sort";
+        button.textContent = header.textContent ?? "";
+        header.textContent = "";
+        header.appendChild(button);
+      }
       header.setAttribute("aria-sort", index === 0 ? "ascending" : "none");
 
       let descending = true;
@@ -281,30 +286,36 @@ function wireExpandableLog(root: HTMLElement): void {
       const head = row.querySelector("th");
       if (!detail || !head) continue;
 
-      const week = (head.textContent ?? "").trim();
+      // The game log ships this toggle (and its table folded), so nothing
+      // moves when it is wired (gamelog-premium.ts, 2026-11-20). A table that
+      // arrives without it still gets it built, the old way.
+      let button = head.querySelector<HTMLButtonElement>(":scope > button.scp-expand");
+      if (!button) {
+        const week = (head.textContent ?? "").trim();
+        button = document.createElement("button");
+        button.type = "button";
+        button.className = "scp-expand";
+        button.setAttribute("aria-expanded", "false");
+        button.setAttribute("aria-controls", id);
+        // The visible label is the week number; the accessible name says what
+        // pressing it does, which "7" on its own does not.
+        button.setAttribute("aria-label", `Week ${week} detail`);
+        button.textContent = week;
 
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = "scp-expand";
-      button.setAttribute("aria-expanded", "false");
-      button.setAttribute("aria-controls", id);
-      // The visible label is the week number; the accessible name says what
-      // pressing it does, which "7" on its own does not.
-      button.setAttribute("aria-label", `Week ${week} detail`);
-      button.textContent = week;
+        const icon = document.createElement("span");
+        icon.className = "scp-expand-icon";
+        icon.setAttribute("aria-hidden", "true");
+        button.appendChild(icon);
 
-      const icon = document.createElement("span");
-      icon.className = "scp-expand-icon";
-      icon.setAttribute("aria-hidden", "true");
-      button.appendChild(icon);
+        head.textContent = "";
+        head.appendChild(button);
+      }
+      const toggle = button;
 
-      head.textContent = "";
-      head.appendChild(button);
-
-      button.addEventListener("click", () => {
+      toggle.addEventListener("click", () => {
         const open = detail.classList.toggle("is-open");
         row.classList.toggle("is-open", open);
-        button.setAttribute("aria-expanded", open ? "true" : "false");
+        toggle.setAttribute("aria-expanded", open ? "true" : "false");
       });
     }
 

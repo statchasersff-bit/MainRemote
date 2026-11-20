@@ -766,9 +766,10 @@ describe("the game log tab", () => {
   });
 
   test("every week played carries its own detail, in the HTML", async () => {
-    // The detail is collapsed by client/player.ts, never by the server: a page
-    // whose script does not run has to arrive complete rather than with its
-    // content behind a button that cannot work.
+    // Every detail row is in the HTML. Since 2026-11-20 the table arrives
+    // FOLDED (data-scp-expand="js") so nothing moves when the script runs;
+    // without script a noscript rule shows every detail, so the page still
+    // arrives complete. See the two tests below.
     const { doc } = await dom(`/player/${fixture.slug}`);
     const table = doc.querySelector("#game-log table.scp-glp-table");
     assert.ok(table, "the game log table is in the HTML");
@@ -790,6 +791,67 @@ describe("the game log tab", () => {
         "the detail names the week it belongs to",
       );
     }
+  });
+
+  test("the log ships in its final shape: folded, with its sort and week buttons (layout shift, 2026-11-20)", async () => {
+    // The script used to build these buttons and fold the details after the
+    // page had painted, which moved the table under the reader (CLS about 0.3
+    // on phones). The server now sends exactly what the script used to make.
+    const { doc } = await dom(`/player/${fixture.slug}`);
+    const table = doc.querySelector("#game-log table.scp-glp-table");
+    assert.equal(table.getAttribute("data-scp-expand"), "js", "the details arrive folded");
+    assert.equal(table.getAttribute("data-scp-sort"), "js");
+
+    const heads = [...table.querySelectorAll("thead tr:last-child th")];
+    assert.ok(heads.length > 0);
+    heads.forEach((th, i) => {
+      const buttons = th.querySelectorAll("button.scp-sort");
+      assert.equal(buttons.length, 1, `${th.textContent.trim()}: one sort button`);
+      assert.equal(buttons[0].textContent, th.textContent, "the button is the whole label");
+      assert.equal(th.getAttribute("aria-sort"), i === 0 ? "ascending" : "none");
+    });
+
+    for (const row of table.querySelectorAll("tr.scp-glp-row[data-status='active'][data-detail]")) {
+      const id = row.getAttribute("data-detail");
+      const button = row.querySelector("th > button.scp-expand");
+      assert.ok(button, `week ${row.getAttribute("data-week")} has its toggle`);
+      assert.equal(button.getAttribute("aria-controls"), id);
+      assert.equal(button.getAttribute("aria-expanded"), "false");
+      assert.equal(button.getAttribute("aria-label"), `Week ${row.getAttribute("data-week")} detail`);
+      assert.equal(row.querySelector("th").textContent.trim(), row.getAttribute("data-week"), "the cell still reads as the week number");
+      assert.ok(table.querySelector(`tr.scp-detail[id="${id}"]`), "and its detail row is in the HTML");
+    }
+
+    // Without script, every detail shows and the dead toggle's arrow goes.
+    const noscript = doc.querySelector("#game-log .scp-glp-scroll noscript");
+    assert.ok(noscript, "a noscript fallback");
+    assert.match(noscript.innerHTML, /\.scp-glp-table\[data-scp-expand\] \.scp-detail\{display:table-row\}/);
+    assert.match(noscript.innerHTML, /\.scp-expand-icon\{display:none\}/);
+  });
+
+  test("the script changes nothing in the log's markup; it only wires what is there", async () => {
+    const served = (await dom(`/player/${fixture.slug}`)).doc.querySelector("#game-log table.scp-glp-table").outerHTML;
+    const { doc, errors } = await hydrated(`/player/${fixture.slug}`);
+    const table = doc.querySelector("#game-log table.scp-glp-table");
+    assert.deepEqual(errors, []);
+    assert.equal(table.outerHTML, served, "identical before and after the bundle runs, so nothing on screen moves");
+
+    // ...and the controls work: a week opens and closes, a header sorts.
+    const row = table.querySelector("tr.scp-glp-row[data-detail]");
+    if (row) {
+      const button = row.querySelector("button.scp-expand");
+      const detail = table.querySelector(`tr[id="${row.getAttribute("data-detail")}"]`);
+      button.click();
+      assert.equal(button.getAttribute("aria-expanded"), "true");
+      assert.ok(detail.classList.contains("is-open"));
+      button.click();
+      assert.equal(button.getAttribute("aria-expanded"), "false");
+      assert.ok(!detail.classList.contains("is-open"));
+    }
+    const pts = table.querySelector("thead th.scp-glp-th-pts");
+    pts.querySelector("button.scp-sort").click();
+    assert.equal(pts.getAttribute("aria-sort"), "descending");
+    assert.equal(table.querySelectorAll("thead button.scp-sort").length, table.querySelectorAll("thead tr:last-child th").length, "no button built twice");
   });
 
   test("the scoring breakdown accounts for the points beside it", async () => {
