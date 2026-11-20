@@ -59,6 +59,7 @@ import {
   teamInk,
 } from "./header";
 import { headArt, headIcon } from "./tab-head";
+import { SOFT_MAX_RANK, TOUGH_MIN_RANK } from "../fpa/matchup-bands";
 import { redraftPlayerUrl } from "./redraft-link";
 
 const DASH = "-";
@@ -484,7 +485,9 @@ function renderNext(data: PlayerPageData, s: Season): string {
   const note =
     `Rank = ${word} points allowed to ${pos}s` +
     (/^Week/.test(through) ? ` through ${through}` : through ? ` (${through.toLowerCase()})` : "") +
-    `. 1st allows the most. 1st-10th favorable, 23rd-32nd tough.`;
+    // The chips' own scale (matchupBand), not the pre-Phase 1 10/23 cut the
+    // note kept saying beside them (2026-11-20).
+    `. 1st allows the most. 1st-${ordinal(SOFT_MAX_RANK)} favorable, ${ordinal(TOUGH_MIN_RANK)}-32nd tough.`;
   return (
     `<div class="scp-ow-next">` +
     `<h3 class="scp-ow-h3">Upcoming</h3>` +

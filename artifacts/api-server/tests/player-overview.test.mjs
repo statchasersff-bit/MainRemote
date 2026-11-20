@@ -220,6 +220,16 @@ describe("overview sections (mak's Overview redesign, 2026-11-05)", () => {
     assert.match(text(doc.querySelector(".scp-ow-next .scp-ow-note")), /1st allows the most/);
   });
 
+  test("upcoming: the note's cut is the chips' cut - 11th favorable, 22nd tough (2026-11-20)", () => {
+    const doc = render(state({ byeWeek: 6, upcoming: [upcoming(4, 11), upcoming(5, 22)] }));
+    const g = games(doc);
+    assert.equal(text(g[0].querySelector(".scp-ox-chip")), "Favorable");
+    assert.equal(text(g[1].querySelector(".scp-ox-chip")), "Tough");
+    const note = text(doc.querySelector(".scp-ow-next .scp-ow-note"));
+    assert.match(note, /1st-12th favorable, 21st-32nd tough\.$/);
+    assert.doesNotMatch(note, /10th|23rd/);
+  });
+
   test("fantasy outlook: one recommendation from the PPG rank, one paragraph, the efficiency rows", () => {
     const doc = render(state());
     const sec = doc.querySelector("#scp-ox-read-h").closest("section");
