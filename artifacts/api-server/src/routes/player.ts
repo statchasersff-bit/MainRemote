@@ -44,7 +44,9 @@ import {
 } from "../lib/player/data";
 import { indexedPlayers, playerDirectory } from "../lib/player/player-data";
 import { bioIndexable } from "../lib/player/bio-tab-data";
-import { getPlayerBySlug, loadBioSources, loadFantasyOutlook2026 } from "../lib/player/data";
+import { getPlayerBySlug, loadBioSources, loadCollegeStats, loadFantasyOutlook2026, loadGameLogs } from "../lib/player/data";
+import { hasParticipation } from "../lib/player/ranks";
+import { collegeCard } from "../lib/player/stats-tab-data";
 import { getInjuryHistory } from "../lib/player/injury";
 import { outlookDrivers } from "../lib/player/outlook-drivers";
 import { parseScoringFormat, type ScoringFormat } from "../lib/player/scoring";
@@ -362,16 +364,32 @@ router.get("/embed/players", (req, res) => {
 /**
  * The indexed sections this player renders nothing for.
  *
- * Only the two that can be absent for a player on the indexed roster: Injury
- * (no logged injury history) and Outlook (no written take and no drivers -
- * kickers, mostly). Both tested the way renderPlayerPage() tests them, without
+ * Injury (no logged injury history), Outlook (no written take and no drivers -
+ * kickers, mostly), Game Log (no game he took part in, in any season the site
+ * carries) and Stats (a kicker, or a skill player with no NFL game and no
+ * college card). Each tested the way renderPlayerPage() tests it, without
  * building the page, so the whole roster costs a few lookups per player.
+ *
+ * Stats and Game Log joined on 2026-11-20 (player-page audit): their URLs 302
+ * to the profile for these players, and the sitemap still listed 92 of them
+ * (every kicker's /stats/, and both for players with no NFL game yet).
  */
 function emptySections(id: string, slug: string): string[] {
   const player = getPlayerBySlug(slug);
   if (!player) return [];
   const outlook = loadFantasyOutlook2026()[id] ?? null;
   const empty: string[] = [];
+  // player-data.ts: the Game Log is the newest season he took part in.
+  const played = getAvailableSeasons().some((season) =>
+    (loadGameLogs(season)[id] ?? []).some((e) => hasParticipation(e.stats, player.position)),
+  );
+  // stats-tab.ts hasStatsTab(): skill positions only; a career row with a
+  // game, or a rookie's college card.
+  const skill = ["QB", "RB", "WR", "TE"].includes(player.position ?? "");
+  if (!skill || (!played && !collegeCard(loadCollegeStats().players?.[id] ?? null, player.position))) {
+    empty.push("stats");
+  }
+  if (!played) empty.push("game-log");
   if (!hasOutlookTab({ player, fantasyOutlook2026: outlook, outlookDrivers: outlookDrivers(player, outlook) })) {
     empty.push("outlook");
   }
