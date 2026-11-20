@@ -1,8 +1,9 @@
 /**
  * The hub's current-season overview (mak's "Team Pages - Phase 1" brief,
  * 2026-11-19): what the default tab opens on once the regular season has a
- * final, in place of the preseason fantasy outlook, which moves into a
- * labeled archive under it (renderOutlook in team-render.ts).
+ * final, in place of the preseason fantasy outlook. From 11-19 the outlook
+ * sat under it in a closed archive; since 11-20 it is not printed in season
+ * at all (renderTeamPage in team-render.ts).
  *
  * Every figure is read, never written: the schedule slate (last/next game,
  * the division race), the Stats tab's league table (offense and defense with
@@ -638,24 +639,5 @@ export function renderTeamOverview(
         `</div>`
       : "") +
     `</div>`
-  );
-}
-
-/**
- * The preseason outlook, kept and labeled for what it is: a take written
- * before Week 1. Closed by default; the summary line says so before anyone
- * opens it.
- */
-export function renderPreseasonArchive(season: number, updated: string, inner: string): string {
-  if (!inner) return "";
-  return (
-    `<details class="sct-ovw-archive" id="preseason-outlook">` +
-    `<summary class="sct-ovw-archive-sum">` +
-    `<span class="sct-ovw-archive-title">${e(`${season} Preseason Fantasy Outlook`)}</span>` +
-    `<span class="sct-ovw-archive-dek">${e(`Archived · written before Week 1${updated ? `, last edited ${updated}` : ""}`)}</span>` +
-    `</summary>` +
-    `<p class="sct-ovw-archive-note">This outlook was written before the season and is kept as a record. Its tiers, roles and draft advice are not updated during the season; current roles are on the Usage and Depth Chart tabs.</p>` +
-    inner +
-    `</details>`
   );
 }

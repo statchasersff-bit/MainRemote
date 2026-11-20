@@ -4,7 +4,7 @@
  * phase can be checked on any calendar day:
  *
  *   - preseason: the preseason outlook is the default, labeled "Outlook";
- *   - first final: the Season Overview takes over, outlook archived, season FAQ;
+ *   - first final: the Season Overview takes over, the preseason outlook leaves the page (2026-11-20), season FAQ;
  *   - bye week: the next-game card says so;
  *   - season over: no next game, a "complete" line, no next-game question;
  *   - next year's preseason with only last year's outlook: the overview with
@@ -108,9 +108,9 @@ function schedule(games, byeWeek = 6) {
   return { season: 2026, games, byeWeek, fetchedAt: NOW, updatedAtMs: NOW, version: "t" };
 }
 
-function data({ season = 2026, seasonType = "regular", week = 11, underway = true, sched = null, roster = null, division = null } = {}) {
+function data({ season = 2026, seasonType = "regular", week = 11, underway = true, sched = null, roster = null, division = null, club = "det" } = {}) {
   return {
-    team: team("det"),
+    team: team(club),
     state: { season, seasonType, week, displayWeek: week, regularSeasonUnderway: underway, statsSeason: underway ? season : season - 1, statsSeasonIsPrior: !underway },
     news: [],
     newsUpdatedAtMs: null,
@@ -155,14 +155,15 @@ describe("season phases", () => {
     assert.match(doc.querySelector('[data-sct-faq-for="outlook"]').textContent, /draft|fantasy/i);
   });
 
-  test("first final: the overview opens the tab, the outlook is archived, the FAQ is the season's", () => {
+  test("first final: the overview opens the tab, the preseason outlook leaves the page, the FAQ is the season's", () => {
     const { doc, panel, tab } = page(data({ sched: schedule(season(1)), week: 2 }));
     assert.equal(tab.textContent, "Overview");
     assert.equal(panel.firstElementChild.id, "team-overview");
-    const archive = panel.querySelector("details#preseason-outlook");
-    assert.ok(archive && !archive.open, "archived and closed");
-    assert.ok(archive.querySelector("#outlook-premium"));
-    assert.match(archive.querySelector(".sct-tfo-title").textContent, /2026 Preseason Fantasy Outlook$/);
+    // Not printed once the season has a final (2026-11-20): no archive, no
+    // block, no preseason heading anywhere in the document.
+    assert.equal(doc.querySelector("details#preseason-outlook"), null, "no archive");
+    assert.equal(doc.querySelector("#outlook-premium, .sct-tfo"), null, "no preseason outlook block");
+    assert.doesNotMatch(doc.body.textContent, /Preseason Fantasy Outlook|Preseason Questions|Written before Week 1/);
     const qs = [...doc.querySelectorAll('[data-sct-faq-for="outlook"] .sct-faq-q')].map((q) => q.textContent);
     assert.ok(qs.some((q) => /play next/.test(q)), "a next-game question");
     assert.ok(!qs.some((q) => /draft|worth drafting|sleeper/i.test(q)), "no draft-season question in the active FAQ");
@@ -344,5 +345,99 @@ describe("injury list labels", () => {
     assert.equal(render.injuryStatusLabel("DNR"), "Did not report");
     for (const s of ["IR", "PUP", "Questionable", "Out", "Pending", "Doubtful"]) assert.equal(render.injuryStatusLabel(s), s);
     assert.equal(render.injuryStatusLabel(null), "");
+  });
+});
+
+/*
+ * The preseason outlook block's design (mak's brief, 2026-11-05; phone pass
+ * 2026-11-14). Moved here from team.test.mjs on 2026-11-20: the block prints
+ * only before the first regular-season final now, and that suite reads the
+ * live, in-season hub, so it is checked on a preseason render of the
+ * Patriots' outlook instead.
+ */
+describe("the preseason outlook block", () => {
+  const pre = () => page(data({ club: "ne", seasonType: "pre", week: 1, underway: false, sched: schedule(season(0)) }));
+
+  test("the block is the tab: its header carries the panel's H2, the outlook's words, groups and cards", () => {
+    const { doc, panel } = pre();
+    const neu = panel.querySelector("#outlook-premium.sct-tfo");
+    assert.ok(neu, "the block renders");
+    assert.equal(panel.querySelector(".sct-outlook-stamp, .sct-outlook-player, .sct-outlook-facts"), null, "the old block is gone");
+    assert.equal(neu.querySelector(".sct-cp-flag"), null, "no comparison flag");
+    const h2s = [...neu.querySelectorAll("h2")];
+    assert.equal(h2s.length, 1, "one block heading");
+    assert.ok(h2s[0].classList.contains("sct-h2") && h2s[0].classList.contains("sct-tfo-title"));
+    assert.match(h2s[0].textContent, /^New England Patriots Fantasy Football Outlook & Stats \d{4}$/);
+    const head = neu.querySelector("header.sct-up-head.sct-tfo-head");
+    assert.ok(head, "the shared premium header");
+    assert.ok(head.querySelector(".sct-up-head-icon svg"), "the gold-ringed glyph");
+    assert.ok(head.contains(h2s[0]) && h2s[0].classList.contains("sct-up-h2"), "the title is the header's");
+    assert.ok(head.querySelector("p.sct-up-dek.sct-tfo-stamp"), "the stamp is the dek");
+    assert.equal(neu.querySelector(".sct-tfo-crest, .sct-tfo-logo"), null, "the light logo header is gone");
+    assert.match(neu.querySelector(".sct-tfo-stamp").textContent, /NFL Season/);
+    assert.match(neu.querySelector(".sct-tfo-stamp").textContent, /Written before Week 1|Preseason outlook/);
+    assert.ok(neu.querySelector(".sct-tfo-lede").textContent.length > 40, "the summary");
+    const frame = neu.querySelector(".sct-tfo-overview");
+    assert.ok(frame && frame.querySelector(".sct-tfo-lede") && frame.querySelector(".sct-tfo-strip"), "summary and strip share one frame under the header");
+    assert.ok(neu.querySelector(".sct-tfo-bl-text").textContent.length > 20, "the bottom line");
+    const cells = [...neu.querySelectorAll(".sct-tfo-fact")];
+    assert.ok(cells.length >= 3, "the context strip");
+    for (const c of cells) {
+      assert.ok(c.querySelector(".sct-tfo-fact-label").textContent.length > 0);
+      assert.ok(c.querySelector(".sct-tfo-fact-value").textContent.length > 0);
+      assert.ok(c.querySelector(".sct-tfo-fact-icon svg"));
+    }
+    for (const b of neu.querySelectorAll(".sct-tfo-card .sct-injury-badge")) {
+      assert.ok(b.classList.contains("is-pinned") && b.parentElement.classList.contains("sct-tfo-face"), "the tag is pinned on the face");
+    }
+    assert.equal(neu.querySelector(".sct-tfo-badges .sct-injury-badge"), null, "not in the badge row");
+    const groups = [...neu.querySelectorAll(".sct-tfo-group")];
+    assert.ok(groups.length >= 1);
+    for (const g of groups) {
+      assert.ok(g.querySelector("h3.sct-tfo-h3").textContent.length > 0);
+      const cards = [...g.querySelectorAll(".sct-tfo-card")];
+      assert.ok(cards.length >= 1);
+      for (const n of cards) {
+        assert.match(n.dataset.pos, /^(QB|RB|WR|TE|K|DST)$/);
+        assert.ok(n.querySelector("h4.sct-tfo-name").textContent.length > 0);
+        assert.ok(n.querySelector(".sct-slot"));
+        assert.ok(n.querySelector(".sct-tfo-note").textContent.length > 0);
+        assert.ok(n.querySelector("img.sct-tfo-wm[aria-hidden='true']"), "a crest watermark, hidden from readers");
+        const photo = n.querySelector(".sct-tfo-photo");
+        if (photo) assert.match(photo.getAttribute("src"), /\/news-image\//);
+      }
+    }
+    assert.equal(neu.querySelectorAll("h3").length, groups.length, "H3s are the groups");
+    assert.ok(doc.querySelectorAll('[data-sct-faq-for="outlook"] .sct-faq-q').length > 0, "the Outlook FAQ renders");
+    assert.doesNotMatch(neu.innerHTML, /—/);
+    const ids = [...doc.querySelectorAll("[id]")].map((el) => el.id);
+    assert.equal(new Set(ids).size, ids.length, "ids are unique");
+  });
+
+  test("the heading keeps its words and adds the short phone title; the stamp marks its season part", () => {
+    const { doc } = pre();
+    const head = doc.querySelector("#outlook-premium .sct-up-head");
+    assert.match(head.querySelector("h2.sct-tfo-title").textContent, /^New England Patriots Fantasy Football Outlook & Stats \d{4}$/);
+    assert.ok(head.querySelector(".sct-up-head-text.has-phone-title"), "the phone title is wired");
+    assert.match(head.querySelector("p.sct-up-m-title[aria-hidden=true]").textContent, /^\d{4} Fantasy Outlook$/);
+    const stamp = head.querySelector(".sct-tfo-stamp");
+    assert.match(stamp.querySelector(".sct-tfo-stamp-season").textContent, /NFL Season/);
+    assert.equal(stamp.querySelectorAll(".sct-tfo-stamp-season").length, 2, "the season and its separator");
+    assert.match(stamp.querySelector(".sct-tfo-stamp-when").textContent, /Written before Week 1|Preseason outlook/);
+  });
+
+  test("long prose is cut between sentences, never reworded", () => {
+    const { doc } = pre();
+    const outlook = JSON.parse(fs.readFileSync(path.join(APP_DIR, "data", "team", "outlooks_2026.json"), "utf8")).teams.ne;
+    const ledes = [...doc.querySelectorAll("#outlook-premium .sct-tfo-lede")].map((p) => p.textContent);
+    assert.ok(ledes.length >= 1);
+    assert.equal(ledes.join(" "), outlook.summary.replace(/\s+/g, " "), "the summary's words, in order");
+    for (const p of ledes.slice(0, -1)) assert.match(p, /[.!?]["”’)]?$/, "each cut ends a sentence");
+    const card = doc.querySelector("#outlook-premium .sct-tfo-card");
+    const notes = [...card.querySelectorAll(".sct-tfo-note")].map((p) => p.textContent);
+    const name = card.querySelector(".sct-tfo-name").textContent;
+    const src = outlook.groups.flatMap((g) => g.players).find((pl) => pl.name === name);
+    assert.equal(notes.join(" "), src.note.replace(/\s+/g, " "));
+    assert.doesNotMatch(notes.join("|"), /\b(?:A\.J|St|Jr|No)\.\|/, "no cut after an abbreviation");
   });
 });
