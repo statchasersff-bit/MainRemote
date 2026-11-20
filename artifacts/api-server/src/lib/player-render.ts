@@ -1869,6 +1869,27 @@ function heroExtras(data: PlayerPageData, options: PlayerRenderOptions): { match
   return { matchupHref: next ? upcomingMatchupHref(data, options)(next) : null };
 }
 
+/**
+ * The WordPress host's header held still on desktop (2026-11-20). Divi hides
+ * the header's phone sections (the bar and the menu overlay) at 981px and up
+ * only in its deferred et-core-unified-*-deferred.css, swapped in on load;
+ * until then they sit in the desktop page flow, 364px tall, and the whole
+ * player page jumps up when that file lands (CLS 0.32 at 1280 on Stats and
+ * News). The same rule, inline ahead of the player root, applies before any
+ * player content paints. Stable selectors (the Code modules' own hooks, as
+ * the plugin's statchasers_header_css uses for phones), not Divi's numbered
+ * section classes. Matches nothing on the app's own standalone pages.
+ *
+ * Second rule: the player search box ships `hidden` and its script reveals
+ * it, which pushed the whole player header down 46px when the page had
+ * already painted (CLS 0.22 on Game Log at 1280). Its place is now kept from
+ * the start, invisible until the script shows it; once shown, nothing differs.
+ */
+const HOST_HEADER_STYLE =
+  `<style id="scp-host-header">@media (min-width:981px){` +
+  `.et_pb_section:has(>.et_pb_row.sc-mobile-header-row-single),.et_pb_section:has(#sc-mobile-overlay){display:none!important}` +
+  `}.scp .scp-search[hidden]{display:block!important;visibility:hidden}</style>`;
+
 export function renderPlayerPage(
   data: PlayerPageData,
   options: PlayerRenderOptions = {},
@@ -1895,7 +1916,8 @@ export function renderPlayerPage(
    */
   function renderScoped(sections: Section[], id: string, parts: TabParts | undefined | null, panelHtml: string): string {
     return (
-      `<div class="scp${options.embed ? " is-embed" : ""}" data-scp-root="1"` +
+      HOST_HEADER_STYLE +
+          `<div class="scp${options.embed ? " is-embed" : ""}" data-scp-root="1"` +
       ` data-player="${escapeHtml(data.player.slug)}"` +
       ` data-position="${escapeHtml(data.player.position ?? "")}"` +
       ` data-season="${escapeHtml(String(data.season))}"` +
@@ -2107,7 +2129,8 @@ export function renderPlayerPage(
     // exists in the dictionary and has no recorded football. The hero alone is
     // the honest page: who they are, and nothing claimed beyond it.
     return (
-      `<div class="scp${options.embed ? " is-embed" : ""}" data-scp-root="1"${paletteAttrs(data.team)}>` +
+      HOST_HEADER_STYLE +
+          `<div class="scp${options.embed ? " is-embed" : ""}" data-scp-root="1"${paletteAttrs(data.team)}>` +
       renderPlayerSearch(options) +
       renderHero(data, options) +
       `<div class="scp-section is-default is-active"><p class="scp-empty">${escapeHtml(
@@ -2164,7 +2187,8 @@ export function renderPlayerPage(
     .join("");
 
   return (
-    `<div class="scp${options.embed ? " is-embed" : ""}" data-scp-root="1"` +
+    HOST_HEADER_STYLE +
+      `<div class="scp${options.embed ? " is-embed" : ""}" data-scp-root="1"` +
     ` data-player="${escapeHtml(data.player.slug)}"` +
     ` data-position="${escapeHtml(data.player.position ?? "")}"` +
     ` data-season="${escapeHtml(String(data.season))}"` +
