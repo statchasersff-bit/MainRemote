@@ -20,6 +20,7 @@
 
 import { escapeHtml } from "./render";
 import type { FpaRow, FpaTableData } from "./fpa/fpa-data";
+import { partialGameWords } from "./fpa/week-coverage";
 import { FANTASY_POSITIONS, type FantasyPosition } from "./fpa/nflverse";
 
 export interface FpaPageMeta {
@@ -147,18 +148,34 @@ export function fpaAnswerSentence(data: Pick<FpaTableData, "rows" | "kind" | "se
  * numbers are, not only in the heading above them.
  */
 export function fpaScopeLabel(
-  data: Pick<FpaTableData, "kind" | "season" | "weekNumber" | "isPreseason" | "baselineSeason">,
+  data: Pick<FpaTableData, "kind" | "season" | "weekNumber" | "isPreseason" | "baselineSeason" | "partialWeek" | "partialGames">,
 ): string {
   return `Fantasy points allowed per game, ${fpaScopeRange(data)}`;
 }
 
-/** The range alone: "Weeks 1–8", "2025 season (Weeks 1–17)", "2025 season baseline". */
+/**
+ * The range alone: "Weeks 1–8", "2025 season (Weeks 1–17)", "2025 season
+ * baseline"; while a week is partly played, "Weeks 1–10 and 1 Week 11 game".
+ */
 export function fpaScopeRange(
-  data: Pick<FpaTableData, "kind" | "season" | "weekNumber" | "isPreseason" | "baselineSeason">,
+  data: Pick<FpaTableData, "kind" | "season" | "weekNumber" | "isPreseason" | "baselineSeason" | "partialWeek" | "partialGames">,
 ): string {
   if (data.kind === "archive") return `${data.season} season (Weeks 1${RANGE}${data.weekNumber ?? 17})`;
   if (data.isPreseason || data.weekNumber === null) return `${data.baselineSeason} season baseline`;
-  return `Weeks 1${RANGE}${data.weekNumber}`;
+  return `Weeks 1${RANGE}${data.weekNumber}${partialSuffix(data)}`;
+}
+
+/**
+ * " and 1 Week 11 game (IND at HOU)": the games past the complete weeks the
+ * table already holds (2026-11-20). The title, H1 and description keep the
+ * spec's last completed week; this goes only where the reader meets the
+ * figures - the Updated line and the table's own scope label.
+ */
+export function partialSuffix(data: Pick<FpaTableData, "partialWeek" | "partialGames">): string {
+  const games = data.partialGames ?? [];
+  if (data.partialWeek == null || games.length === 0) return "";
+  const named = games.length <= 3 ? ` (${games.join(", ")})` : "";
+  return ` and ${partialGameWords(data.partialWeek, games)}${named}`;
 }
 
 export function fpaPageCopy(data: FpaTableData): FpaPageCopy {
@@ -209,7 +226,8 @@ export function fpaPageCopy(data: FpaTableData): FpaPageCopy {
     description:
       `Fantasy points allowed to QB, RB, WR and TE by all 32 NFL defenses through ` +
       `Week ${week} of ${season}, raw and schedule-adjusted.${label ? ` Updated ${label}.` : ""}`,
-    updatedLine: label ? `Updated ${label}, through Week ${week}` : `Through Week ${week}, ${season}`,
+    updatedLine:
+      (label ? `Updated ${label}, through Week ${week}` : `Through Week ${week}, ${season}`) + partialSuffix(data),
   };
 }
 

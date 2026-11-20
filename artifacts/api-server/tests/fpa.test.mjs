@@ -229,7 +229,7 @@ describe("fpa routes", () => {
     const description = doc.querySelector('meta[name="description"]').getAttribute("content");
     assert.ok(description.length <= 155, `description within 155 characters: ${description}`);
     assert.match(description, /by all 32 NFL defenses/);
-    assert.match(doc.querySelector(".scf-updated").textContent, /^(Updated [A-Z][a-z]{2} \d{1,2}, (through Week \d{1,2}|before Week 1)|Through Week \d{1,2}, \d{4}|Before Week 1 of \d{4})$/);
+    assert.match(doc.querySelector(".scf-updated").textContent, /^(Updated [A-Z][a-z]{2} \d{1,2}, (through Week \d{1,2}( and \d+ Week \d{1,2} games?( \([^)]+\))?)?|before Week 1)|Through Week \d{1,2}, \d{4}|Before Week 1 of \d{4})$/);
 
     // Every team links to its schedule page, not its hub (mak, 2026-10-10).
     const teamLinks = Array.from(doc.querySelectorAll(".scf-team-link[href]")).map((a) => a.getAttribute("href"));
@@ -652,7 +652,7 @@ describe("the schedule rail (mak, 2026-11-04)", () => {
     assert.equal(current.length, 1, "exactly one current view");
     assert.equal(current[0], cards[0], "docked at the top");
     assert.equal(current[0].getAttribute("aria-current"), "page");
-    assert.match(current[0].querySelector(".scf-card-note").textContent, /^Fantasy points allowed per game, (Weeks 1\u2013\d{1,2}|\d{4} season (baseline|\(Weeks 1\u2013\d{1,2}\)))\. Softest defense overall\.$/);
+    assert.match(current[0].querySelector(".scf-card-note").textContent, /^Fantasy points allowed per game, (Weeks 1\u2013\d{1,2}( and \d+ Week \d{1,2} games?( \([^)]+\))?)?|\d{4} season (baseline|\(Weeks 1\u2013\d{1,2}\)))\. Softest defense overall\.$/);
     // It leads with the softest defense overall: OFF rank 1, and its figure.
     const softest = [...doc.querySelectorAll(".scf-row")].find((r) => r.querySelectorAll(".scf-cell")[4].querySelector(".scf-rank").textContent === "1");
     assert.equal(current[0].querySelector(".scf-card-name").textContent, softest.getAttribute("data-team"));
@@ -769,7 +769,7 @@ describe("the schedule rail (mak, 2026-11-04)", () => {
     const page = new JSDOM((await get("/fpa")).body).window.document;
     assert.match(
       page.querySelector(".scf-caption .scf-scope").textContent,
-      /^Fantasy points allowed per game, (Weeks 1\u2013\d{1,2}|\d{4} season baseline)\.$/,
+      /^Fantasy points allowed per game, (Weeks 1\u2013\d{1,2}( and \d+ Week \d{1,2} games?( \([^)]+\))?)?|\d{4} season baseline)\.$/,
     );
 
     const res = await get("/embed/fpa");

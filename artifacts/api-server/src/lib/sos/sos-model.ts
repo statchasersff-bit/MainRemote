@@ -259,8 +259,10 @@ export interface SosBoard {
   scoring: SosScoring;
   /** First week of "rest of season"; LAST_FANTASY_WEEK + 1 once it is over. */
   rosFrom: number;
-  /** From the FPA table: weeks of this season in the figures, null in preseason. */
+  /** From the FPA table: the last week held in full, null in preseason. */
   weekNumber: number | null;
+  /** The FPA ingest's week, which set the blend (the baseline badge's phase). */
+  ingestedWeek?: number | null;
   isPreseason: boolean;
   /** The FPA table's own sentence saying what the figures are a mix of. */
   methodology: string;
@@ -609,6 +611,7 @@ export function buildSosBoard(
     scoring,
     rosFrom,
     weekNumber: fpa.weekNumber,
+    ingestedWeek: fpa.ingestedWeek ?? fpa.weekNumber,
     isPreseason: fpa.isPreseason,
     methodology: fpa.methodology,
     teams,

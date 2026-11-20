@@ -582,8 +582,11 @@ export interface BaselineInfo {
 /** The badge's facts: which phase of the FPA blend is on, and the words for it. */
 export function baselineInfo(board: SosBoard): BaselineInfo {
   const prior = board.season - 1;
+  // The phase is the blend's, set by the ingest's week; the "Through Week"
+  // words below name the last complete week (they differ mid-week).
+  const blendWeek = board.ingestedWeek ?? board.weekNumber ?? 0;
   const week = board.weekNumber ?? 0;
-  const phase = board.isPreseason || week < 1 ? 0 : week <= 4 ? 1 : week < 12 ? 2 : 3;
+  const phase = board.isPreseason || blendWeek < 1 ? 0 : blendWeek <= 4 ? 1 : blendWeek < 12 ? 2 : 3;
   const phases: [string, string][] = [
     ["Preseason", `100% ${prior} full season`],
     ["Weeks 1\u20134", `Blended baseline and ${board.season} data`],

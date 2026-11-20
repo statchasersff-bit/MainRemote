@@ -24,6 +24,8 @@ import {
 } from "./nflverse";
 import { computeFpaTable } from "./math";
 import { describeDataMode, type FpaView } from "./blend";
+import { fpaWeekCoverage, partialGameWords } from "./week-coverage";
+import { slateGames } from "../data-coverage";
 
 // Re-exported so callers have one import for "the FPA read layer" - the split
 // between this file and blend.ts exists to keep the pure half free of a
@@ -70,8 +72,22 @@ export interface FpaTableData {
   kind: FpaTableKind;
   format: ScoringFormat;
   view: FpaView;
-  /** Weeks of the current season played. Null in preseason. */
+  /**
+   * The last week the table holds IN FULL - every scheduled game of it and
+   * of every week before (fpa/week-coverage.ts). What every "Weeks 1-N" and
+   * "through Week N" label prints. Null in preseason.
+   */
   weekNumber: number | null;
+  /**
+   * The highest week the ingest read: what the blend weights were set by
+   * (methodology, the SOS baseline badge). Equal to weekNumber except while
+   * a week is partly played. Absent on tables built before 2026-11-20.
+   */
+  ingestedWeek?: number | null;
+  /** The first incomplete week, when the table already holds some of its games. */
+  partialWeek?: number | null;
+  /** Those games, "IND at HOU", in kickoff order. */
+  partialGames?: string[];
   isPreseason: boolean;
   /** When the served rows were written - the "Updated" date. Null when unknown. */
   updatedAtMs: number | null;
@@ -231,12 +247,27 @@ async function readFpaTable(
     })),
   );
 
-  const weekNumber = snapshots[0]!.weekNumber;
-  const { dataMode, methodology, isPreseason } = describeDataMode(
-    weekNumber,
+  // The blend was weighted by the ingest's week; the labels name the last
+  // week held in full (2026-11-20: one Thursday game had made the page say
+  // "Weeks 1-11"). Byes and stale schedule scores cannot move this; a
+  // schedule that does not cover the season leaves the ingest's week.
+  const ingestedWeek = snapshots[0]!.weekNumber;
+  const { dataMode: blendMode, methodology, isPreseason } = describeDataMode(
+    ingestedWeek,
     baselineSeason,
     season,
   );
+  const cover = isPreseason ? null : await readWeekCoverage(season, format);
+  const weekNumber =
+    ingestedWeek !== null && cover && cover.completeThroughWeek >= 1
+      ? Math.min(ingestedWeek, cover.completeThroughWeek)
+      : ingestedWeek;
+  const partialWeek = cover && weekNumber !== null && cover.partialWeek !== null && cover.partialWeek > weekNumber ? cover.partialWeek : null;
+  const partialGames = partialWeek !== null ? cover!.partialGames : [];
+  const dataMode =
+    weekNumber !== ingestedWeek || partialWeek !== null
+      ? `Week ${weekNumber}` + (partialWeek !== null ? ` and ${partialGameWords(partialWeek, partialGames)}` : "")
+      : blendMode;
 
   // The newest row's insert time, so a fresh ingest invalidates the render
   // and nothing else does. It is also the page's "Updated" date.
@@ -254,13 +285,31 @@ async function readFpaTable(
     format,
     view,
     weekNumber,
+    ingestedWeek,
+    partialWeek,
+    partialGames,
     isPreseason,
     updatedAtMs: updatedAtMs || null,
     archiveSeasons: await listFpaArchiveSeasons(season),
     dataMode,
     methodology,
-    version: [season, format, view, weekNumber ?? 0, rows.length, updatedAtMs].join("-"),
+    version: [season, format, view, ingestedWeek ?? 0, weekNumber ?? 0, partialGames.length, rows.length, updatedAtMs].join("-"),
   };
+}
+
+/**
+ * Which games the stored rows hold, as complete and partial weeks. One small
+ * read per table build (the table is memoized for a day and dropped by every
+ * ingest). Null when it cannot be told: no rows or no schedule.
+ */
+async function readWeekCoverage(season: number, format: ScoringFormat) {
+  dbAccess("fpa_read", { what: "week_coverage", season, format });
+  const held = await db
+    .selectDistinct({ week: fpaGames.week, defense: fpaGames.defenseTeamAbbr })
+    .from(fpaGames)
+    .where(and(eq(fpaGames.season, season), eq(fpaGames.scoringFormat, format)));
+  const present = new Set(held.map((r) => `${r.week}:${getTeamByAbbreviation(r.defense)?.code ?? r.defense.toUpperCase()}`));
+  return fpaWeekCoverage(present, slateGames(season));
 }
 
 interface UnrankedRow {

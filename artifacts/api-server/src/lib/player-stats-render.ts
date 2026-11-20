@@ -103,7 +103,17 @@ function formatDate(iso: string | null): string | null {
   if (!iso) return null;
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return null;
-  return `${MONTHS[date.getUTCMonth()]} ${date.getUTCDate()}, ${date.getUTCFullYear()}`;
+  // A bare date is the day it names. A timestamp is read on the site's clock,
+  // US Eastern, like every other "Updated" date (FPA, schedules): a build at
+  // 02:00 UTC on Nov 19 is the evening of Nov 18 to a reader (2026-11-20).
+  if (/^\d{4}-\d{2}-\d{2}$/.test(iso)) {
+    return `${MONTHS[date.getUTCMonth()]} ${date.getUTCDate()}, ${date.getUTCFullYear()}`;
+  }
+  const part = (type: string) =>
+    new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", year: "numeric", month: "numeric", day: "numeric" })
+      .formatToParts(date)
+      .find((p) => p.type === type)?.value;
+  return `${MONTHS[Number(part("month")) - 1]} ${Number(part("day"))}, ${part("year")}`;
 }
 
 /** Thousands separators, fixed to en-US rather than whatever the host runs. */

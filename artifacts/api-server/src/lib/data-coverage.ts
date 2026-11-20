@@ -120,9 +120,13 @@ export interface TotalsMismatch {
 }
 
 /**
- * Hub (game logs) vs stats table, per player, for the weeks the table covers:
- * games played and the position's main yardage. A mismatch is a dataset that
- * missed a game, not a rounding difference.
+ * Hub (Sleeper game logs) vs stats table (nflverse build), per player, for the
+ * weeks the table covers: the position's main yardage (pass yards for QBs,
+ * rush yards for RBs, receiving yards for WRs/TEs), the one figure the two
+ * sources produce independently. A mismatch is a dataset that missed a game,
+ * not a rounding difference. Fantasy points are NOT compared here: the
+ * table's FPTS is re-scored from these same game logs (house-points.ts), so
+ * they agree by construction, and tests/data-accuracy.test.mjs holds that.
  */
 export function crossCheck(season: number): { checked: number; mismatches: TotalsMismatch[] } {
   const logs = loadGameLogs(season);
