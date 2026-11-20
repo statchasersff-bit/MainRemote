@@ -1,0 +1,55 @@
+# Data-coverage alert (2026-11-20).
+#
+# GET /api/data/health answers 503 with `reasons` when the data behind the
+# pages has fallen behind the schedule: a final game missing from the player
+# game logs or stats tables, a hand-run team / advanced file (usage, team
+# stats, coaching, advanced stats) covering an earlier week than the schedule
+# has completed, a stale depth-chart snapshot, a failed ingest
+# (docs/DATA-ALERTING.md). Nothing polled it, so a 503 reached nobody.
+#
+# This runs twice a day and FAILS when the endpoint is unhealthy; GitHub
+# emails the person who last edited this workflow about a failed scheduled
+# run (Settings > Notifications > Actions: "Notify me for failed workflows
+# only" is the default). One email per failed run, so at most two a day
+# while a condition lasts.
+#
+# Scheduled workflows run only from the default branch, and GitHub disables
+# them after 60 days without repository activity (re-enable from the Actions
+# tab). Run it by hand from the Actions tab ("Run workflow").
+name: data-health
+
+on:
+  schedule:
+    # 03:17 and 15:17 UTC: after the overnight refresh and mid-morning ET,
+    # outside every game window (docs/RELEASE-WINDOW.md).
+    - cron: "17 3,15 * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  data-health:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: GET /api/data/health
+        env:
+          URL: https://news.statchasers.com/api/data/health
+          # The origin's edge rejects a bare curl agent.
+          UA: "Mozilla/5.0 (X11; Linux x86_64) Chrome/120 StatChasers-DataHealth/1 (+https://statchasers.com)"
+        run: |
+          set -u
+          code=$(curl -sS -A "$UA" -o body.json -w '%{http_code}' --retry 2 --retry-delay 30 --max-time 60 "$URL" || echo 000)
+          echo "HTTP $code"
+          cat body.json 2>/dev/null || true
+          echo
+          if [ "$code" = "200" ]; then
+            echo "Data coverage is healthy."
+            exit 0
+          fi
+          if [ "$code" = "503" ]; then
+            echo "::error title=Data coverage alert::$(python3 -c 'import json;print("; ".join(json.load(open("body.json")).get("reasons",[])))' 2>/dev/null || echo 'see the response above')"
+          else
+            echo "::error title=Data health unreachable::HTTP $code from $URL"
+          fi
+          exit 1

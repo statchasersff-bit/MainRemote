@@ -646,6 +646,62 @@ describe("data health: alert only on actionable conditions (Phase 1.1)", () => {
   });
 });
 
+describe("data health: the hand-run team and advanced files keep up with the schedule (2026-11-20)", () => {
+  const games = () => coverageTs.slateGames(2026, SLATE_CSV);
+  const mnfKickoff = Date.parse("2026-11-16T20:15:00-05:00");
+  const report = () => ({
+    gameLogs: { coverage: { missing: [] }, lastIngestedAt: "2026-11-18T14:25:32Z", lastFailureAt: null },
+    statsTables: { tables: [{ position: "QB", state: "complete", coverage: { missing: [] } }], lastIngestedAt: "2026-11-19T02:00:46Z", lastFailureAt: null },
+    crossCheck: { mismatches: 0 },
+  });
+  const files = (week, depthAt = "2026-11-18T05:34:46+00:00") => [
+    { name: "team usage", throughWeek: week, refreshedAt: "2026-11-19T21:47:46Z" },
+    { name: "WR advanced stats", throughWeek: week, refreshedAt: "2026-11-18T05:32:59Z" },
+    { name: "depth-chart snapshot", throughWeek: null, refreshedAt: depthAt },
+  ];
+
+  test("a week counts as complete only once its last game is final and past the grace window", () => {
+    assert.equal(coverageTs.completedWeek(games(), mnfKickoff + 12 * 3600_000), 9, "Monday night still in its grace window");
+    assert.equal(coverageTs.completedWeek(games(), mnfKickoff + 40 * 3600_000), 10);
+  });
+
+  test("files through the completed week: healthy", () => {
+    const v = coverageTs.dataHealth(2026, mnfKickoff + 40 * 3600_000, { report: report(), games: games(), derived: files(10) });
+    assert.equal(v.ok, true, v.reasons.join("; "));
+  });
+
+  test("a file a week behind the schedule: alert names the file and both weeks", () => {
+    const v = coverageTs.dataHealth(2026, mnfKickoff + 40 * 3600_000, { report: report(), games: games(), derived: files(9) });
+    assert.equal(v.ok, false);
+    assert.ok(v.reasons.includes("team usage covers through Week 9; the schedule is complete through Week 10"), v.reasons.join("; "));
+    assert.ok(v.reasons.some((r) => /^WR advanced stats covers through Week 9/.test(r)));
+  });
+
+  test("a week behind inside the grace window: no alert yet", () => {
+    const v = coverageTs.dataHealth(2026, mnfKickoff + 12 * 3600_000, { report: report(), games: games(), derived: files(9) });
+    assert.equal(v.ok, true, v.reasons.join("; "));
+  });
+
+  test("the depth-chart snapshot alerts on age, since it records no week", () => {
+    const now = mnfKickoff + 40 * 3600_000;
+    const old = coverageTs.dataHealth(2026, now, { report: report(), games: games(), derived: files(10, "2026-11-05T00:00:00Z") });
+    assert.match(old.reasons.join(";"), /depth-chart snapshot last refreshed 1\d days ago/);
+    const none = coverageTs.derivedReasons([{ name: "depth-chart snapshot", throughWeek: null, refreshedAt: null }], games(), now);
+    assert.deepEqual(none, ["depth-chart snapshot records no refresh time"]);
+  });
+
+  test("a missing file alerts once the season has a completed week", () => {
+    const r = coverageTs.derivedReasons([{ name: "team usage", throughWeek: null, refreshedAt: null, missing: true }], games(), mnfKickoff + 40 * 3600_000);
+    assert.deepEqual(r, ["team usage file missing"]);
+  });
+
+  test("the files on disk are read and named", () => {
+    const names = coverageTs.derivedFiles(2026).map((f) => f.name);
+    for (const n of ["team usage", "team stats (efficiency)", "coaching tendencies", "QB advanced stats", "TE advanced stats", "depth-chart snapshot"]) assert.ok(names.includes(n), n);
+    for (const f of coverageTs.derivedFiles(2026)) if (f.name !== "depth-chart snapshot") assert.ok(f.missing || Number.isInteger(f.throughWeek), `${f.name} states its week`);
+  });
+});
+
 describe("grades keep their defined input (Phase 1.1)", () => {
   test("grades read the source FPTS while the column shows PPR", () => {
     const t = statsData.getStatsTable("WR", 2026);
