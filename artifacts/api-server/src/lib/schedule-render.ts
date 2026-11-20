@@ -51,9 +51,8 @@ import { escapeHtml, escapeJsonLd } from "./render";
 import {
   canonicalizeMatchupPair,
   gameSegment,
-  meetingHasOwnAddress,
-  type MeetingFacts,
 } from "./matchup/pair";
+import { gameLink, type GameLinkMeeting } from "./matchup/game-link";
 import { scheduleSeason } from "./schedule/schedule-data";
 import { markFrame, networkMarkFor } from "./team/network-marks";
 import {
@@ -450,8 +449,10 @@ function teamScheduleHref(
  * Week 3 row in December is asking for; the game the pair's page still owns
  * (this season's latest, until the rematch is within six days), or one still
  * to be played, does not, and the dated URL would only declare itself a copy
- * of the pair's page. So the board asks meetingHasOwnAddress() rather than
- * keeping a second copy of the six days. `meetings` carries the one fact a
+ * of the pair's page. An unplayed game the pair's page is not previewing yet
+ * - a rematch more than six days out - opens its own dated preview (Phase 7).
+ * So the board asks gameLink() (matchup/game-link.ts), the one rule every
+ * game link uses, rather than keeping a second copy of the six days. `meetings` carries the one fact a
  * row cannot see on its own: every meeting between the two this season, so
  * the rule can tell the latest one played and the rematch ahead.
  *
@@ -476,20 +477,15 @@ function matchupHref(
 
   const prefix = (options.matchupPathPrefix ?? DEFAULT_MATCHUP_PREFIX).trim();
   const query = options.linkQuery ?? "";
-  const base = `${prefix}${pair.slug}/`;
-
-  const dated =
-    meetingHasOwnAddress(
-      { ...meetingFacts(game), season },
-      meetings.get(pair.slug) ?? [],
-      scheduleSeason(),
-      now,
-    ) &&
-    // Every game this tool carries is a regular-season game - schedule-data.ts
-    // drops every other game_type - so the segment is never a postseason round.
-    `${gameSegment({ season, week: game.week, seasonType: "regular" })}/`;
-
-  return `${base}${dated || ""}${query}`;
+  const me = meetings.byGame.get(game);
+  if (!me) return `${prefix}${pair.slug}/${query}`;
+  // The shared rule every game link on the site uses (matchup/game-link.ts).
+  return gameLink(game.away, game.home, me, meetings.byPair.get(pair.slug) ?? [me], {
+    prefix,
+    query,
+    currentSeason: scheduleSeason(),
+    now,
+  });
 }
 
 /* ------------------------------------------------------------ week board */
@@ -1084,25 +1080,34 @@ function renderDivisionCard(games: ScheduleGame[]): string {
 
 /** The pairs with a meeting still to come this season, by pair slug. */
 /** Every meeting of each pair in the season, keyed by pair slug. */
-type PairMeetings = ReadonlyMap<string, MeetingFacts[]>;
-
-function meetingFacts(game: ScheduleGame): MeetingFacts {
-  return {
-    kickoffMs: game.kickoffMs,
-    isFinal: game.status === "final" && game.awayScore !== null && game.homeScore !== null,
-  };
+/** Every pair's meetings this season, and each game's own entry among them. */
+interface PairMeetings {
+  byPair: ReadonlyMap<string, GameLinkMeeting[]>;
+  byGame: ReadonlyMap<ScheduleGame, GameLinkMeeting>;
 }
 
-function pairMeetings(games: ScheduleGame[]): PairMeetings {
-  const byPair = new Map<string, MeetingFacts[]>();
+function pairMeetings(games: ScheduleGame[], season: number): PairMeetings {
+  const byPair = new Map<string, GameLinkMeeting[]>();
+  const byGame = new Map<ScheduleGame, GameLinkMeeting>();
   for (const game of games) {
     const pair = canonicalizeMatchupPair(game.away, game.home);
     if (!pair) continue;
+    const meeting: GameLinkMeeting = {
+      season,
+      week: game.week,
+      // Every game this tool carries is a regular-season game - schedule-data.ts
+      // drops every other game_type - so the segment is never a postseason round.
+      seasonType: "regular",
+      kickoffMs: game.kickoffMs,
+      isFinal: game.status === "final" && game.awayScore !== null && game.homeScore !== null,
+      canceled: game.status === "canceled",
+    };
     const list = byPair.get(pair.slug) ?? [];
-    list.push(meetingFacts(game));
+    list.push(meeting);
     byPair.set(pair.slug, list);
+    byGame.set(game, meeting);
   }
-  return byPair;
+  return { byPair, byGame };
 }
 
 function renderWeekView(
@@ -1115,7 +1120,7 @@ function renderWeekView(
   const games = weekGames(schedule, state.week, state.filter);
   const all = weekGames(schedule, state.week, "all");
   const now = options.now ?? Date.now();
-  const meetings = pairMeetings(schedule.games);
+  const meetings = pairMeetings(schedule.games, schedule.season);
 
   const board =
     games.length > 0

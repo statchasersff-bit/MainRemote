@@ -2,7 +2,7 @@
 Contributors: statchasers
 Requires at least: 6.3
 Requires PHP: 7.4
-Stable tag: 1.10.58
+Stable tag: 1.10.59
 License: GPL-2.0-or-later
 
 Mounts the StatChasers NFL news tool, the 32 team hubs, the player pages, the Fantasy Points Allowed table, the rest-of-season rankings, the NFL schedule, the advanced player stats, the RB handcuff rankings, the fantasy football strength of schedule, the dynasty rookie hit rates and the redraft draft strategy analysis into WordPress pages.
@@ -19,6 +19,9 @@ answers that question directly, with a Last-Modified header that says when the
 upload landed. Keep "Stable tag" in step with the Version header.
 
 == Changelog ==
+
+= 1.10.59 =
+* Matchup rematches (Team Pages Phase 7, 2026-11-20): an upcoming meeting the pair's page is not previewing yet - a divisional rematch more than six days out - now opens its own dated preview (/nfl/<a>-vs-<b>/2026-week-18/) instead of a 404, and the team, schedule and player pages link it there instead of to the pair's page, which still shows the earlier game. The plugin asks for these pages with the X-SC-Matchup-Preview header and prints them noindex, follow with no canonical and no SportsEvent (X-Matchup-Game: preview). Once the pair's page takes the game over (six days before kickoff) the origin answers "current" and the existing canonical-up rule applies. A game address that is a 404 is now noindex with no canonical too (it printed index and a self-canonical). Pair URLs, titles, canonicals and the game sitemap are unchanged. Safe in either deploy order: without this plugin the origin keeps answering 404 for an unplayed game; without the API deploy this plugin sees the same 404s as before. Clear WP Rocket's cache (mobile included) and purge Rocket.net after uploading.
 
 = 1.10.58 =
 * Team hubs: the hub H1 is "{Team} 2026 Stats, Schedule & Fantasy Outlook" (mirrors the API's teamHubHeading), now that the hub opens on the current-season overview. Upload together with the API deploy that changes teamHubHeading, the overview and the season FAQ (the tool-mode H1 comes from the API, this one is the theme-mode mirror). Clear WP Rocket's cache (mobile included) and purge Rocket.net after uploading.

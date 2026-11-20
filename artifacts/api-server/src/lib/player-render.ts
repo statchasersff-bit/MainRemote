@@ -83,6 +83,7 @@ import type {
 } from "./player/types";
 import { passerRating, type CareerStatRow } from "./player/stats-profile";
 import { canonicalizeMatchupPair } from "./matchup/pair";
+import { gameLink, meetingForWeek, teamMeetings } from "./matchup/game-link";
 import {
   headerKind,
   SECTION_KINDS,
@@ -1283,11 +1284,27 @@ function renderGameLogFaq(
 function upcomingMatchupHref(
   data: PlayerPageData,
   options: PlayerRenderOptions,
-): (opponent: NflTeam | null) => string | null {
+): (game: { opponent: NflTeam | null; week: number }) => string | null {
   const matchupPrefix = (options.matchupPathPrefix ?? DEFAULT_MATCHUP_PREFIX).trim();
-  return (opponent) => {
+  const query = options.linkQuery ?? "";
+  return ({ opponent, week }) => {
     const pair = canonicalizeMatchupPair(data.team, opponent);
-    return pair ? `${matchupPrefix}${pair.slug}/${options.linkQuery ?? ""}` : null;
+    if (!pair || !opponent) return null;
+    const base = `${matchupPrefix}${pair.slug}/${query}`;
+    // The game itself, through the rule every game link uses (Phase 7): a
+    // rematch more than six days out opens its own preview, not the earlier
+    // meeting's box score. The club's schedule is this league season's.
+    const meetings = teamMeetings({ season: data.leagueSeason, games: data.schedule }, opponent);
+    const me = meetingForWeek(meetings, week, "regular");
+    if (!me) return base;
+    return (
+      gameLink(data.team, opponent, me, meetings, {
+        prefix: matchupPrefix,
+        query,
+        currentSeason: data.leagueSeason,
+        now: options.now ?? Date.now(),
+      }) ?? base
+    );
   };
 }
 
@@ -1299,7 +1316,7 @@ function breakdownPremiumDeps(data: PlayerPageData, options: PlayerRenderOptions
   const href = upcomingMatchupHref(data, options);
   const fpaHref = `${options.fpaPath ?? DEFAULT_FPA_PATH}${options.linkQuery ?? ""}`;
   return {
-    matchupHref: (game) => href(game.opponent),
+    matchupHref: (game) => href(game),
     kickoff: kickoffLine,
     ordinal,
     bandRead: BAND_READ,
@@ -1848,7 +1865,7 @@ function renderPositionPeers(
 /** What the header needs from this composition: the next fixture's matchup page. */
 function heroExtras(data: PlayerPageData, options: PlayerRenderOptions): { matchupHref: string | null } {
   const next = data.upcoming[0];
-  return { matchupHref: next ? upcomingMatchupHref(data, options)(next.opponent) : null };
+  return { matchupHref: next ? upcomingMatchupHref(data, options)(next) : null };
 }
 
 export function renderPlayerPage(

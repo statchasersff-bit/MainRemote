@@ -142,6 +142,62 @@ export function meetingHasOwnAddress(
 }
 
 /**
+ * Is the pair's own address previewing this unplayed meeting right now?
+ *
+ * True when the pair's page is in preview mode and this is the meeting it
+ * leads with (the earliest one ahead). `game` must be one of `meetings`; it is
+ * matched by identity, so two undated fixtures can never be confused.
+ */
+export function pairPreviewsMeeting(
+  game: MeetingFacts,
+  meetings: readonly MeetingFacts[],
+  now: number,
+): boolean {
+  if (game.isFinal) return false;
+  return pairInPreviewMode(meetings, now) && nextMeeting(meetings, now) === game;
+}
+
+/** A meeting as a link sees it: the facts above plus which season it is in. */
+export interface LinkedMeeting extends MeetingFacts {
+  season: number;
+  /** Called off for good: there is no game to open. */
+  canceled?: boolean;
+}
+
+/**
+ * Where a link to one meeting goes: "own" is its dated address
+ * (`/nfl/<a>-vs-<b>/2026-week-12/`), "pair" is the pair's page.
+ *
+ * THE one rule for every link to a game (Team Pages Phase 7, 2026-11-20):
+ * the Schedule and Matchups tabs, the Overview, the Usage tab, the league
+ * schedule and the player pages all ask it, so they cannot disagree.
+ *
+ * - A finished game: its own address exactly when meetingHasOwnAddress()
+ *   says so, which is unchanged - the pair's page still owns this season's
+ *   latest result until the rematch is within six days.
+ * - An unplayed game this season: the pair's page while that page is
+ *   previewing it (pairPreviewsMeeting), otherwise its own dated preview.
+ *   Before this rule an upcoming rematch more than six days out linked the
+ *   pair's page, which was still the earlier meeting's box score. The dated
+ *   preview is noindex and declares no canonical until the pair's page takes
+ *   the game over, so no indexed URL changes (docs/MATCHUP-REMATCH-OPTIONS-A-VS-D.md).
+ * - A canceled game, or an unplayed one outside the current season: the
+ *   pair's page, as before.
+ *
+ * `game` must be one of `meetings` (compared by identity).
+ */
+export function meetingLinkTarget(
+  game: LinkedMeeting,
+  meetings: readonly MeetingFacts[],
+  currentSeason: number,
+  now: number,
+): "own" | "pair" {
+  if (game.isFinal) return meetingHasOwnAddress(game, meetings, currentSeason, now) ? "own" : "pair";
+  if (game.canceled || game.season !== currentSeason) return "pair";
+  return pairPreviewsMeeting(game, meetings, now) ? "pair" : "own";
+}
+
+/**
  * Resolve any two team names to their one pair, or null.
  *
  * Accepts whatever normalizeTeamName() accepts - slugs, abbreviations,

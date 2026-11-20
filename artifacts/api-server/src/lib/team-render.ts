@@ -99,9 +99,8 @@ import { easternDate } from "./schedule/schedule-data";
 import { scheduleItemList } from "./team/schedule-schema";
 import {
   canonicalizeMatchupPair,
-  gameSegment,
-  meetingHasOwnAddress,
 } from "./matchup/pair";
+import { gameLink, meetingForWeek, teamMeetings } from "./matchup/game-link";
 import {
   RB_HANDCUFF_RANKINGS_URL,
   ROS_RANKINGS_URL,
@@ -1633,8 +1632,10 @@ export function matchupHref(
  * pair's page has stopped owning - an earlier meeting this season, or the
  * latest once the rematch is within six days - has a dated address of its
  * own, and a row for that week has to point there or it opens the other
- * meeting's preview. The rule is meetingHasOwnAddress(), asked the same way
- * schedule-render.ts asks it, so neither side keeps its own copy of it. The
+ * meeting's preview. An unplayed meeting the pair's page is not previewing
+ * yet - a rematch more than six days out - has its own dated preview (Phase
+ * 7). The rule is gameLink() in matchup/game-link.ts, which every game link
+ * on the site goes through, so no page keeps its own copy of it. The
  * hub's schedule is the season in progress, so its season is the current one.
  */
 export function gameMatchupHref(
@@ -1646,24 +1647,18 @@ export function gameMatchupHref(
 ): string | null {
   const base = matchupHref(team, game.opponent, options);
   if (!base || !game.opponent) return base;
-  const meetings = schedule.games
-    .filter((other) => other.opponent?.abbreviation === game.opponent?.abbreviation)
-    .map((other) => ({ kickoffMs: other.kickoffMs, isFinal: other.status === "final" && !!other.result }));
-  const own = meetingHasOwnAddress(
-    { kickoffMs: game.kickoffMs, isFinal: game.status === "final" && !!game.result, season: schedule.season },
-    meetings,
-    schedule.season,
-    now,
+  const meetings = teamMeetings(schedule, game.opponent);
+  const me = meetingForWeek(meetings, game.week, game.seasonType);
+  if (!me) return base;
+  return (
+    gameLink(team, game.opponent, me, meetings, {
+      prefix: (options.matchupPathPrefix ?? "/nfl/").trim(),
+      query: options.linkQuery ?? "",
+      // The hub's schedule is the season in progress.
+      currentSeason: schedule.season,
+      now,
+    }) ?? base
   );
-  if (!own) {
-    return base;
-  }
-  const prefix = (options.matchupPathPrefix ?? "/nfl/").trim();
-  const query = options.linkQuery ?? "";
-  const pair = canonicalizeMatchupPair(team, game.opponent);
-  return pair
-    ? `${prefix}${pair.slug}/${gameSegment({ season: schedule.season, week: game.week, seasonType: game.seasonType })}/${query}`
-    : base;
 }
 
 /**
@@ -1737,7 +1732,9 @@ function renderMatchups(
     matchupHref(team, opponent, options);
 
   const next = nextGame(schedule, now);
-  const nextHref = next ? hrefFor(next.opponent) : null;
+  // The game itself, not the pair: a rematch more than six days out opens
+  // its own preview, not the earlier meeting's box score (Phase 7).
+  const nextHref = next ? gameMatchupHref(team, next, schedule, options, now) : null;
   const when = next ? gameDateLine(next) : null;
   // Away side first, as the Next Game card does; a neutral site keeps this
   // team on the left and reads "vs".
@@ -2466,7 +2463,7 @@ export function renderTeamPage(
   );
   // The report's matchup handoffs point at the next game's page.
   const upNext = nextGame(data.schedule, now);
-  const nextHref = upNext ? matchupHref(team, upNext.opponent, options) : null;
+  const nextHref = upNext && data.schedule ? gameMatchupHref(team, upNext, data.schedule, options, now) : null;
   const usage = renderUsageSection(usageView, team, {
     matchup: nextHref && upNext?.opponent ? { href: nextHref, opponent: upNext.opponent.nickname } : null,
   });

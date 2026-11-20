@@ -374,8 +374,13 @@ function statchasers_matchup_fetch( string $slug, string $game = '' ): ?array {
 			// Says this plugin enqueues matchup.css itself, so the origin
 			// leaves out the <link> it prints for plugins before 1.10.53.
 			'headers' => array(
-				'Accept'           => 'text/html',
-				'X-SC-Matchup-Css' => '1',
+				'Accept'               => 'text/html',
+				'X-SC-Matchup-Css'     => '1',
+				// 1.10.59: this plugin prints a dated PREVIEW page as noindex
+				// with no canonical (statchasers_matchup_unindexed), so the
+				// origin may serve one for an upcoming meeting. Without it the
+				// origin answers 404 for an unplayed game, as it always has.
+				'X-SC-Matchup-Preview' => '1',
 			),
 		)
 	);
@@ -423,7 +428,9 @@ function statchasers_matchup_fetch( string $slug, string $game = '' ): ?array {
 		// games, which retitles it (statchasers_matchup_meta); empty otherwise.
 		'week'    => trim( (string) wp_remote_retrieve_header( $response, 'x-matchup-week' ) ),
 		// "current" means the pair's own page is still leading with this game,
-		// so this address does not exist yet. "archived" means it does.
+		// so this address canonicalizes up to it. "archived" means the address
+		// is the game's own page. "preview" (1.10.59) is an unplayed meeting
+		// the pair's page is not previewing yet: noindex, no canonical.
 		'game'    => trim( (string) wp_remote_retrieve_header( $response, 'x-matchup-game' ) ),
 		// The H1 and <title> as the API wrote them, percent-encoded because the
 		// title's score carries an en dash. Empty from an API that predates
@@ -1015,7 +1022,7 @@ function statchasers_matchup_event_node() {
 	// A dated page the pair's page owns canonicalizes up to it, and the
 	// pair's page carries the event. The API leaves the island out of such a
 	// fragment; this is the same rule for an API that did not.
-	if ( is_array( $data ) && 'current' === ( $data['game'] ?? '' ) ) {
+	if ( is_array( $data ) && in_array( $data['game'] ?? '', array( 'current', 'preview' ), true ) ) {
 		return null;
 	}
 
@@ -1190,6 +1197,36 @@ function statchasers_matchup_game_is_owned( string $slug, string $game ): bool {
 	return is_array( $data ) && 'current' === ( $data['game'] ?? '' );
 }
 
+/**
+ * Is this request a game address that must not be indexed (1.10.59)?
+ *
+ * Two cases. A dated PREVIEW (X-Matchup-Game: preview): an upcoming meeting
+ * the pair's page is not previewing yet - a rematch more than six days out -
+ * which renders its own preview but must not compete with any indexed URL,
+ * so it is noindex and declares no canonical, not even to itself. Once the
+ * pair's page takes the game over the origin answers "current" and the
+ * existing canonical-up rule applies. And a game address that is a 404, which
+ * printed index and a self-canonical on its 404 page before 1.10.59.
+ *
+ * Read from the same cached fetch as the page. An unreachable origin answers
+ * false, so the page keeps what it had rather than switching on an outage.
+ */
+function statchasers_matchup_unindexed(): bool {
+	$pair = statchasers_matchup_current();
+	if ( null === $pair || ! $pair['canonical'] ) {
+		return false;
+	}
+	$game = statchasers_matchup_game();
+	if ( '' === $game ) {
+		return false;
+	}
+	$data = statchasers_matchup_fetch( $pair['slug'], $game );
+	if ( ! is_array( $data ) ) {
+		return false;
+	}
+	return ! empty( $data['missing'] ) || 'preview' === ( $data['game'] ?? '' );
+}
+
 add_filter( 'rank_math/frontend/title', function ( $title ) {
 	$meta = statchasers_matchup_request_meta();
 	// The brand is already in the title when it fit; see statchasers_matchup_fit_title().
@@ -1200,6 +1237,10 @@ add_filter( 'rank_math/frontend/description', function ( $description ) {
 	return $meta ? $meta['description'] : $description;
 } );
 add_filter( 'rank_math/frontend/canonical', function ( $canonical ) {
+	// No canonical at all on a dated preview or a game 404 (1.10.59).
+	if ( statchasers_matchup_unindexed() ) {
+		return false;
+	}
 	$url = statchasers_matchup_canonical();
 	return '' === $url ? $canonical : $url;
 } );
@@ -1264,6 +1305,13 @@ add_filter( 'rank_math/frontend/robots', function ( $robots ) {
 	if ( null === statchasers_matchup_request_meta() ) {
 		return $robots;
 	}
+	// A dated preview the pair's page has not taken over, or a game 404, is
+	// noindex; its links still count (1.10.59).
+	if ( statchasers_matchup_unindexed() ) {
+		$robots['index']  = 'noindex';
+		$robots['follow'] = 'follow';
+		return $robots;
+	}
 	// The holder is noindex so that its bare address stays out; a pair URL is
 	// the page and says so explicitly, overriding what it inherits.
 	$robots['index']  = 'index';
@@ -1280,6 +1328,9 @@ add_filter( 'document_title_parts', function ( array $parts ): array {
 	return $parts;
 } );
 add_filter( 'get_canonical_url', function ( $canonical ) {
+	if ( statchasers_matchup_unindexed() ) {
+		return false;
+	}
 	$url = statchasers_matchup_canonical();
 	return '' === $url ? $canonical : $url;
 } );

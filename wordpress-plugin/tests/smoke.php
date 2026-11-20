@@ -227,9 +227,9 @@ function wp_schedule_event( $ts, $recurrence, $hook, $args = array() ) { $GLOBAL
 function wp_schedule_single_event( $ts, $hook, $args = array() ) { $GLOBALS['scheduled'][] = array( $hook, (int) $ts, 'single' ); return true; }
 function wp_clear_scheduled_hook( $hook, $args = array() ) { return 0; }
 // The URL is kept so a test can see what the plugin asked the API for.
-function wp_remote_get( $u, $a = array() ) { $GLOBALS['remote_urls'][] = $u; return array(); }
+function wp_remote_get( $u, $a = array() ) { $GLOBALS['remote_urls'][] = $u; $GLOBALS['remote_args'][] = $a; return array(); }
 function wp_remote_retrieve_body( $r ) { return $GLOBALS['http_body'] ?? ''; }
-function wp_remote_retrieve_response_code( $r ) { return 200; }
+function wp_remote_retrieve_response_code( $r ) { return $GLOBALS['http_code'] ?? 200; }
 function get_post_meta( $id, $k, $single = false ) { return ''; }
 function update_post_meta( $id, $k, $v ) {}
 function get_edit_post_link( $id ) { return ''; }
@@ -631,6 +631,39 @@ is( statchasers_matchup_share_image(), null, 'only an /og/ path is taken' );
 unset( $GLOBALS['query']['sc_matchup_game'] );
 $GLOBALS['http_headers'] = array();
 $GLOBALS['http_body']    = '';
+
+echo "\nmatchup dated preview (1.10.59): noindex, no canonical, no event; owned and archived unchanged\n";
+// statchasers_matchup_current() keeps the first pair a request resolves, so
+// this block uses the pair the headings test above already set.
+$GLOBALS['query']['sc_matchup']      = 'new-england-patriots-vs-philadelphia-eagles';
+$GLOBALS['query']['sc_matchup_game'] = '2026-week-12';
+$GLOBALS['http_body']    = '<div>preview</div>';
+$GLOBALS['http_headers'] = array( 'x-matchup-game' => 'preview', 'x-matchup-state' => 'upcoming', 'x-matchup-title' => rawurlencode( 'Eagles vs. Patriots Preview: Matchups, Odds, Injuries & Analysis | Week 12, 2026' ) );
+$GLOBALS['remote_args'] = array();
+is( statchasers_matchup_unindexed(), true, 'preview: unindexed' );
+is( apply_filters( 'rank_math/frontend/robots', array( 'index' => 'noindex', 'follow' => 'nofollow' ) ), array( 'index' => 'noindex', 'follow' => 'follow' ), 'preview: robots noindex, follow' );
+is( apply_filters( 'rank_math/frontend/canonical', 'https://example.com/holder/' ), false, 'preview: no canonical at all' );
+is( apply_filters( 'get_canonical_url', 'https://example.com/holder/' ), false, 'preview: no core canonical either' );
+is( statchasers_matchup_event_node(), null, 'preview: no SportsEvent' );
+$sent = end( $GLOBALS['remote_args'] );
+is( $sent['headers']['X-SC-Matchup-Preview'] ?? '', '1', 'the fetch says this plugin can carry a preview' );
+$GLOBALS['http_headers']['x-matchup-game'] = 'current';
+is( statchasers_matchup_unindexed(), false, 'owned (current): indexed as before' );
+is( apply_filters( 'rank_math/frontend/canonical', 'x' ), statchasers_matchup_url( 'new-england-patriots-vs-philadelphia-eagles' ), 'owned: canonical up to the pair, as before' );
+is( apply_filters( 'rank_math/frontend/robots', array() ), array( 'index' => 'index', 'follow' => 'follow' ), 'owned: index, follow as before' );
+$GLOBALS['query']['sc_matchup_game'] = '2026-week-5';
+$GLOBALS['http_headers'] = array( 'x-matchup-game' => 'archived' );
+is( apply_filters( 'rank_math/frontend/canonical', 'x' ), statchasers_matchup_url( 'new-england-patriots-vs-philadelphia-eagles', '2026-week-5' ), 'archived: self-canonical, as before' );
+is( statchasers_matchup_unindexed(), false, 'archived: indexed' );
+$GLOBALS['http_code'] = 404;
+$GLOBALS['query']['sc_matchup_game'] = '2026-week-3';
+is( statchasers_matchup_unindexed(), true, 'a game 404: unindexed' );
+is( apply_filters( 'rank_math/frontend/canonical', 'x' ), false, 'a game 404: no canonical' );
+unset( $GLOBALS['http_code'], $GLOBALS['query']['sc_matchup_game'] );
+$GLOBALS['http_headers'] = array();
+is( statchasers_matchup_unindexed(), false, 'the pair page itself: indexed' );
+is( apply_filters( 'rank_math/frontend/canonical', 'x' ), statchasers_matchup_url( 'new-england-patriots-vs-philadelphia-eagles' ), 'the pair page: self-canonical, unchanged' );
+$GLOBALS['http_body'] = '';
 
 echo "\nplayer meta mirrors the shell script\n";
 $meta = statchasers_player_page_meta( array(

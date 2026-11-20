@@ -48,6 +48,7 @@ import {
   type TeamDepthCharts,
 } from "./depth-charts";
 import { currentDepthCharts, currentRoster, injuryFreshness, type InjuryFreshness } from "./current-injuries";
+import { recentTeamNews } from "./news-window";
 
 /** Stories shown before "View more" reveals the rest. */
 export const TEAM_NEWS_VISIBLE = 10;
@@ -62,6 +63,7 @@ export const TEAM_NEWS_VISIBLE = 10;
  * TEAM_WINDOW_DAYS, and this is only the cap on what comes back.
  */
 export const TEAM_NEWS_LIMIT = 60;
+
 
 export interface TeamPageData {
   team: NflTeam;
@@ -239,7 +241,7 @@ export async function getTeamPageData(team: NflTeam): Promise<TeamPageData> {
       getTeamStats(team, state.statsSeason),
     ]);
 
-  const news = settled(newsResult) ?? [];
+  const news = recentTeamNews(settled(newsResult) ?? [], Date.now());
   const profile = settled(profileResult);
   const schedule = settled(scheduleResult);
   // Current-week statuses, once, for every hub surface (current-injuries.ts):

@@ -144,7 +144,10 @@ function nextGameCard(data: TeamPageData, options: TeamRenderOptions, now: numbe
   // The bye is news only while it is the week being played: the next game
   // is then a week later than the league's next slate.
   const byeNow = bye != null && data.state.seasonType === "regular" && data.state.week === bye;
-  const href = matchupHref(data.team, game.opponent, options);
+  // The game itself (Phase 7): a rematch opens its own preview.
+  const href = data.schedule
+    ? gameMatchupHref(data.team, game, data.schedule, options, now)
+    : matchupHref(data.team, game.opponent, options);
   const defense = data.nextOpponentDefense;
   const defenseLine =
     defense && game.opponent && defense.abbreviation === game.opponent.abbreviation && defense.rankLabel

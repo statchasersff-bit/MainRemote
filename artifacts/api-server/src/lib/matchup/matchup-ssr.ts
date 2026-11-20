@@ -56,6 +56,11 @@ export interface MatchupSsrResult {
    */
   pinnedIsCurrent: boolean;
   /**
+   * A dated preview the pair's page has not taken over yet (Phase 7): noindex
+   * and no canonical. The plugin is told with X-Matchup-Game: preview.
+   */
+  pinnedPreview: boolean;
+  /**
    * The page's H1, as the hero prints it: the game's own heading on a game
    * address ("{away} vs {home}, {round} {season}"), the pair's names on the
    * pair's. The plugin rewrites the holder page's title with it, so a theme
@@ -91,6 +96,7 @@ function optionKey(options: MatchupRenderOptions): string {
     options.matchupPathPrefix ?? "",
     options.linkQuery ?? "",
     options.game ? `${options.game.season}w${options.game.week}` : "",
+    options.gamePreview ? "pv" : "",
   ]);
 }
 
@@ -119,7 +125,7 @@ async function renderWithData(
   // Best effort: a database that cannot answer costs this page its news, not
   // the page. The version then keys on the last value loaded, or the empty one.
   await ensureFreshness().catch(() => undefined);
-  const data = await getMatchupData(pair, options.now, options.game ?? null);
+  const data = await getMatchupData(pair, options.now, options.game ?? null, options.gamePreview === true);
   const version = `${hash(matchupVersion(data, contentVersion()))}-${hash(optionKey(options))}`;
   const key = `${pair.slug}:${optionKey(options)}`;
 
@@ -134,8 +140,9 @@ async function renderWithData(
     season: data.state.season,
     state: data.matchupState,
     scoreLine: matchupScoreLine(data),
-    pinnedMissing: data.pinnedRequested && data.pinned === null,
+    pinnedMissing: data.pinnedRequested && data.pinned === null && data.pinnedFixture === null,
     pinnedIsCurrent: data.pinnedIsCurrent,
+    pinnedPreview: data.pinnedPreview,
     heading: matchupPageHeading(data),
     title: meta.title,
     week: seasonGameLead(data)?.weekLabel ?? "",
@@ -191,7 +198,7 @@ export async function renderMatchupAppPage(
     .replace(
       HEAD_MARKER,
       () =>
-        renderTeamHeadTags(meta) +
+        previewHeadTags(renderTeamHeadTags(meta), data.pinnedPreview) +
           "\n  " +
           matchupEventSchema(data, false) +
           "\n  " +
@@ -204,4 +211,17 @@ export async function renderMatchupAppPage(
     .replace(CLASS_MARKER, options.embed ? " is-embed" : "")
     .replace(BODY_MARKER, () => fragment.html);
   return { ...fragment, html };
+}
+
+/**
+ * A dated preview the pair's page has not taken over (Phase 7): no canonical
+ * of any kind - the pair's page is about a different game, and the page must
+ * not claim to be the canonical copy of itself either. This origin's page is
+ * already noindex (matchup.html's robots tag); the WordPress page that is
+ * indexed gets its noindex from the plugin (statchasers_matchup_unindexed).
+ * Every other page's head is returned unchanged.
+ */
+export function previewHeadTags(head: string, pinnedPreview: boolean): string {
+  if (!pinnedPreview) return head;
+  return head.replace(/<link rel="canonical" href="[^"]*" \/>\n?\s*/, "");
 }

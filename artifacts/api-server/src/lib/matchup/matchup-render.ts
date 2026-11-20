@@ -201,6 +201,13 @@ export interface MatchupRenderOptions {
    * cache key beside everything else that does.
    */
   game?: MatchupGameRef | null;
+  /**
+   * The caller can carry a dated PREVIEW page's indexing rules (Phase 7): the
+   * plugin says so with X-SC-Matchup-Preview, this origin's own page always
+   * can. Without it an unplayed meeting's address stays the 404 it was, so
+   * an older plugin never prints a preview as an indexable page.
+   */
+  gamePreview?: boolean;
 }
 
 /** The public address of a pair: `<prefix><a>-vs-<b>/`. */
@@ -1872,7 +1879,9 @@ export function matchupEventSchema(data: MatchupData, embed: boolean): string {
   // A dated page the pair's page still owns canonicalizes up to it, and the
   // pair's page carries the event; a second copy here would be a second
   // SportsEvent for one game.
-  if (data.pinnedIsCurrent) return "";
+  // A dated preview the pair's page has not taken over is noindex; the game's
+  // event first appears where it will be indexed (Phase 7).
+  if (data.pinnedIsCurrent || data.pinnedPreview) return "";
   const game = matchupScoreboardGame(data);
   const node = game ? scoreboardSportsEvent(game) : null;
   if (!node) return "";

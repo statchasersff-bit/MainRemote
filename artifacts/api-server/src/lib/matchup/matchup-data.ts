@@ -161,6 +161,25 @@ export interface MatchupData {
    */
   pinnedIsCurrent: boolean;
   /**
+   * An unplayed meeting a game address asked for (Team Pages Phase 7,
+   * 2026-11-20): this season's, not canceled. When set, `pinned` stays null
+   * and the page renders exactly what the pair's own address renders in
+   * preview mode - the same preview, featured on this meeting - so a
+   * rematch has its own preview before the pair's page gets to it.
+   *
+   * Only built when the caller can carry the indexing rules for it (the
+   * plugin's X-SC-Matchup-Preview header, or this origin's own page); for
+   * anyone else the address stays the 404 it always was.
+   */
+  pinnedFixture: Meeting | null;
+  /**
+   * The pinned fixture is NOT the one the pair's page is previewing: the
+   * page is noindex and declares no canonical, so it never competes with an
+   * indexed URL. Once the pair's page takes the game over, pinnedIsCurrent
+   * is true instead and the existing canonical-up rule applies.
+   */
+  pinnedPreview: boolean;
+  /**
    * The meeting the pair's page summarizes above its preview: the latest
    * played meeting this season, else the latest from the seasons before,
    * with its box score when one is stored. Null on every page but the
@@ -307,6 +326,7 @@ export async function getMatchupData(
   pair: MatchupPair,
   now: number = Date.now(),
   game: MatchupGameRef | null = null,
+  allowFixture = false,
 ): Promise<MatchupData> {
   const [a, b] = await Promise.all([getTeamPageData(pair.a), getTeamPageData(pair.b)]);
   const state = a.state;
@@ -375,21 +395,41 @@ export async function getMatchupData(
       ) ?? null)
     : null;
 
-  const featured = pinned ?? natural.featured;
-  const matchupState = natural.matchupState;
+  // An unplayed meeting at its own address (Phase 7). This season's only:
+  // a fixture from another season is not a game anyone can preview, and a
+  // canceled one is not a game at all. A finished game at the address wins.
+  const pinnedFixture =
+    game && !pinned && allowFixture && game.season === state.season
+      ? (thisSeason.find(
+          (meeting) =>
+            meeting.week === game.week &&
+            meeting.seasonType === game.seasonType &&
+            meeting.status !== "final" &&
+            meeting.status !== "canceled",
+        ) ?? null)
+      : null;
+
+  const featured = pinned ?? pinnedFixture ?? natural.featured;
+  // The dated preview is a preview whatever the pair's page is doing.
+  const matchupState: MatchupState = pinnedFixture ? "upcoming" : natural.matchupState;
   // Owned by the pair's page: the same game the pair's own address is the
   // recap of. Matched on the meeting itself rather than the event id, which
   // a schedule row can lack.
   const pinnedIsCurrent =
-    pinned !== null &&
-    natural.matchupState === "recently_completed" &&
-    natural.featured === pinned;
+    (pinned !== null &&
+      natural.matchupState === "recently_completed" &&
+      natural.featured === pinned) ||
+    // The pair's page is previewing this very fixture (pairPreviewsMeeting).
+    (pinnedFixture !== null &&
+      natural.matchupState === "upcoming" &&
+      natural.featured === pinnedFixture);
+  const pinnedPreview = pinnedFixture !== null && !pinnedIsCurrent;
 
   // What the preview summarizes: the latest meeting played, this season
   // first. Its box score is one stored read; a refusal costs the scorers,
   // not the line.
   let lastMeeting: MatchupData["lastMeeting"] = null;
-  if (matchupState === "upcoming" && !game) {
+  if (matchupState === "upcoming" && (!game || pinnedFixture)) {
     const played = thisSeason.filter((m) => m.status === "final" && m.score !== null);
     const meeting = played[played.length - 1] ?? history.find((m) => m.score !== null) ?? null;
     if (meeting) {
@@ -480,6 +520,8 @@ export async function getMatchupData(
     pinned,
     pinnedRequested: game !== null,
     pinnedIsCurrent,
+    pinnedFixture,
+    pinnedPreview,
     lastMeeting,
     // Across both documents of every prior season, so a postseason that
     // refreshes on its own still moves the fragment's cache key.
@@ -491,7 +533,7 @@ export async function getMatchupData(
 
   // The decision layer, upcoming pair pages only. Lines and the forecast are
   // each allowed to fail; buildPreview leaves out what they would have fed.
-  if (matchupState === "upcoming" && !game && featured) {
+  if (matchupState === "upcoming" && (!game || pinnedFixture) && featured) {
     const lines = await getWeekLines(state.season, featured.week, featured.seasonType === "post" ? "post" : "regular").catch(() => null);
     const line = lines?.games.find((g) => g.eventId === featured.espnEventId) ?? null;
     const forecast =
@@ -521,6 +563,12 @@ export function matchupVersion(data: MatchupData, contentVersion: string): strin
     // two URLs for one pair draw different pages from the same upstream data.
     data.pinned
       ? `${data.pinned.season}${data.pinned.seasonType === "post" ? "p" : "w"}${data.pinned.week}`
+      : "",
+    // A dated preview, and whether the pair's page has taken it over: the
+    // switch changes the page's canonical and robots, so it must change the
+    // ETag too, or a cache holding the noindex copy would get a 304.
+    data.pinnedFixture
+      ? `fx${data.pinnedFixture.season}${data.pinnedFixture.seasonType === "post" ? "p" : "w"}${data.pinnedFixture.week}${data.pinnedIsCurrent ? "own" : "pv"}`
       : "",
     // The postgame layer is keyed by the game it describes and by whether each
     // piece resolved: an ESPN refusal that later succeeds has to redraw the

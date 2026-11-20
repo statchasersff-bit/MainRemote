@@ -153,6 +153,9 @@ async function sendMatchupPage(
       embed,
       linkQuery: embed ? "?embed=1" : "",
       game,
+      // This origin's own page prints its own robots and canonical rules for a
+      // dated preview, so it can always serve one (Phase 7).
+      gamePreview: true,
     });
 
     // Whether the week exists is a fact about the schedule that only the data
@@ -288,6 +291,10 @@ router.get("/embed/matchup/:pair", (req, res) => {
         matchupPathPrefix: prefixes.matchup,
         linkQuery: prefixes.linkQuery,
         game,
+        // A plugin that knows a dated preview is noindex says so (1.10.59+).
+        // Without it an unplayed meeting stays a 404, exactly as before, so
+        // an app deployed ahead of the plugin changes nothing on the site.
+        gamePreview: Boolean(req.get("x-sc-matchup-preview")),
       });
       if (result.pinnedMissing) {
         res.status(404).type("text/plain").send("Unknown game");
@@ -325,11 +332,13 @@ router.get("/embed/matchup/:pair", (req, res) => {
         // "current" tells the plugin the pair page owns this game, so the
         // dated WordPress URL canonicalizes up to the pair's and prints no
         // SportsEvent - the mirror of what this origin's own page does.
-        // "archived" is a page canonical at its own address. Empty when the
-        // request was not a game address at all.
+        // "archived" is a page canonical at its own address. "preview" (Phase
+        // 7) is an unplayed meeting the pair's page is not previewing yet:
+        // noindex, no canonical, no SportsEvent. Empty when the request was
+        // not a game address at all.
         .set(
           "X-Matchup-Game",
-          game ? (result.pinnedIsCurrent ? "current" : "archived") : "",
+          game ? (result.pinnedIsCurrent ? "current" : result.pinnedPreview ? "preview" : "archived") : "",
         )
         .type("html")
         .send(styleLink + result.html);
