@@ -224,6 +224,12 @@ interface Model {
   /** Weeks sat out for any reason; seasonMissed counts injuries only. */
   seasonOut: number | null;
   lastPlayedWeek: number | null;
+  /**
+   * Missed his club's last game with no game status yet for the next one
+   * (current-status kind "pending", Phase 5). The headline must not read "No
+   * injury designation", which says healthy.
+   */
+  pending: { missedWeek: number | null } | null;
   playedThisSeason: number;
   report: ReportRow[];
   practice: PracticeRow[];
@@ -278,6 +284,10 @@ function model(data: PlayerPageData, options: PlayerRenderOptions): Model | null
     seasonMissed: injury.seasonMissed,
     seasonOut: injury.seasonOut,
     lastPlayedWeek: injury.lastPlayedWeek,
+    pending:
+      data.currentStatus?.kind === "pending"
+        ? { missedWeek: data.currentStatus.prior?.week ?? null }
+        : null,
     playedThisSeason,
     report,
     practice: [],
@@ -433,6 +443,9 @@ function statusAnswer(m: Model): string {
     case "OFFSEASON":
       return `No current injury designation; the season is over.`;
     default: {
+      if (m.pending) {
+        return `${m.last} has no ${wk} game designation yet${m.pending.missedWeek ? ` after missing Week ${m.pending.missedWeek}` : ""}.`;
+      }
       let first = "No injury designation.";
       if (m.next) {
         const at = m.next.homeAway === "home" ? "against the" : "at the";

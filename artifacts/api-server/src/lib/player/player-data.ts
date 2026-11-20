@@ -641,7 +641,34 @@ function rosterRowFor(
   if (!team) return null;
   const roster = getTeamRoster(team.abbreviation);
   if (!roster) return null;
-  return roster.players.find((row) => row.id === player.id) ?? null;
+  const row = roster.players.find((r) => r.id === player.id);
+  if (row) return row;
+  // Team Pages Phase 5 (2026-11-20): the live roster index carries only
+  // QB/RB/WR/TE within Sleeper's top ranks, so a fullback, kicker or deep
+  // reserve (Michael Burton and Alec Ingold on IR, Ty Simpson out) had no row
+  // and his page read "No injury designation" while the Depth Chart said IR.
+  // Fall back to the player file's Sleeper status for a player on this club;
+  // currentStatus() then applies the same week-aware rule (reserve lists
+  // stand, an expired game designation still expires). Never a status for a
+  // player the file puts on another club.
+  if (!player.injury_status) return null;
+  if ((player.team ?? "").toUpperCase() !== team.abbreviation.toUpperCase()) return null;
+  return {
+    id: player.id,
+    name: player.name,
+    position: (player.position ?? "RB") as RosterPlayer["position"],
+    team: team.abbreviation.toLowerCase(),
+    depthOrder: null,
+    depthPosition: null,
+    jersey: null,
+    yearsExp: null,
+    searchRank: null,
+    status: player.status ?? null,
+    injuryStatus: player.injury_status,
+    injuryBodyPart: null,
+    practice: null,
+    headshot: "",
+  } as RosterPlayer;
 }
 
 /** Sleeper-backed season production, for the finish timeline. */
