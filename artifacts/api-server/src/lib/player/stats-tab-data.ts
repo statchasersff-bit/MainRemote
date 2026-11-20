@@ -18,6 +18,7 @@
  * by the nearest metric the tables do have, and labeled as what they are.
  */
 
+import { targetShareById } from "../team/usage-share";
 import fs from "node:fs";
 import path from "node:path";
 import { dataPath } from "../data-dir";
@@ -81,6 +82,34 @@ export interface AdvCard {
   row: Record<string, unknown>;
   /** Percentile per metric key, for the lede and the fantasy note. */
   pct: Record<string, number | null>;
+}
+
+/**
+ * Target share and snap share under the one definition (team/usage-share.ts):
+ * his count over his clubs' count in the games he played, every club. This
+ * season's rows carry it as their own fields (withSharedShares below), so the
+ * rows rank in the card's qualified pool like every other metric; the
+ * eligibility rule still reads the table's snapPct. A row the usage report
+ * has no player for is left unranked rather than measured another way. Past
+ * seasons have no such fields and keep the table's own figures.
+ */
+function shared(r: Row, sharedKey: string, tableKey: string): number | null {
+  return sharedKey in r ? num(r, sharedKey) : num(r, tableKey);
+}
+
+function withSharedShares(table: Table | null, season: number, pos: string): Table | null {
+  if (!table?.rows || (pos !== "WR" && pos !== "TE" && pos !== "RB")) return table;
+  const shares = targetShareById(season, pos);
+  return {
+    ...table,
+    rows: table.rows.map((r) => {
+      const s = shares.get(String(r["playerId"] ?? r["player_id"] ?? ""));
+      // Snap share from the counts at one decimal, as the card prints it (the
+      // summary's snapShare is rounded to a whole percent).
+      const snap = s && s.teamSnaps > 0 ? Math.round((s.snaps / s.teamSnaps) * 1000) / 10 : null;
+      return { ...r, sharedTargetSharePct: s?.targetShare ?? null, sharedSnapPct: snap };
+    }),
+  };
 }
 
 interface Table {
@@ -192,8 +221,8 @@ function currentDefs(pos: string, rows: Row[]): MetricDef[] {
       { key: "yaco", label: "Yards after contact per carry", of: (r) => num(r, "yardsAfterContactPerAttempt"), fmt: f2, kind: "pct" },
       // No rush success rate in the feed: the share of carries that went 10+.
       { key: "expl", label: "Explosive run rate", of: (r) => num(r, "explosiveRunPct"), fmt: pc, kind: "pct" },
-      { key: "snap", label: "Snap share", of: (r) => num(r, "snapPct"), fmt: pc, kind: "pct" },
-      { key: "tgts", label: "Target share", of: (r) => num(r, "targetSharePct"), fmt: pc, kind: "pct" },
+      { key: "snap", label: "Snap share", of: (r) => shared(r, "sharedSnapPct", "snapPct"), fmt: pc, kind: "pct" },
+      { key: "tgts", label: "Target share", of: (r) => shared(r, "sharedTargetSharePct", "targetSharePct"), fmt: pc, kind: "pct" },
       { key: "rzo", label: "Red-zone opportunities", of: (r) => num(r, "redZoneOpportunities"), fmt: int, kind: "pct" },
       {
         key: "ppo", label: "Fantasy points per opportunity",
@@ -203,7 +232,7 @@ function currentDefs(pos: string, rows: Row[]): MetricDef[] {
     ];
   }
   return [
-    { key: "tgts", label: "Target share", of: (r) => num(r, "targetSharePct"), fmt: pc, kind: "pct" },
+    { key: "tgts", label: "Target share", of: (r) => shared(r, "sharedTargetSharePct", "targetSharePct"), fmt: pc, kind: "pct" },
     // YPRR and route share need nflverse's participation file, which lands
     // after the season; until then, yards per target and snap share stand in.
     firstOf([
@@ -212,7 +241,7 @@ function currentDefs(pos: string, rows: Row[]): MetricDef[] {
     ], rows),
     firstOf([
       { key: "route", label: "Route participation", of: (r) => num(r, "routePct"), fmt: pc, kind: "pct" },
-      { key: "snap", label: "Snap share", of: (r) => num(r, "snapPct"), fmt: pc, kind: "pct" },
+      { key: "snap", label: "Snap share", of: (r) => shared(r, "sharedSnapPct", "snapPct"), fmt: pc, kind: "pct" },
     ], rows),
     { key: "ays", label: "Air-yards share", of: (r) => num(r, "airYardsSharePct"), fmt: pc, kind: "pct" },
     { key: "rzt", label: "Red-zone targets", of: (r) => num(r, "redZoneTargets"), fmt: int, kind: "pct" },
@@ -241,7 +270,7 @@ function lastDefs(pos: string): MetricDef[] {
       { key: "yaco", label: "Yards after contact per carry", of: (r) => num(r, "yardsAfterContactPerAttempt"), fmt: f2, kind: "pct" },
       { key: "bt", label: "Broken tackles", of: (r) => num(r, "brokenTackles"), fmt: int, kind: "pct" },
       { key: "expl", label: "Explosive run rate", of: (r) => num(r, "explosiveRunPct"), fmt: pc, kind: "pct" },
-      { key: "snap", label: "Snap share", of: (r) => num(r, "snapPct"), fmt: pc, kind: "pct" },
+      { key: "snap", label: "Snap share", of: (r) => shared(r, "sharedSnapPct", "snapPct"), fmt: pc, kind: "pct" },
       { key: "tpg", label: "Targets per game", of: perGame("targets"), fmt: f1, kind: "pct" },
     ];
   }
@@ -250,7 +279,7 @@ function lastDefs(pos: string): MetricDef[] {
     { key: "yprr", label: "Yards per route run", of: (r) => num(r, "yardsPerRouteRun"), fmt: f2, kind: "pct" },
     { key: "route", label: "Route participation", of: (r) => num(r, "routePct"), fmt: pc, kind: "pct" },
     { key: "yac", label: "YAC per reception", of: (r) => num(r, "yardsAfterCatchPerReception"), fmt: f1, kind: "pct" },
-    { key: "tgts", label: "Target share", of: (r) => num(r, "targetSharePct"), fmt: pc, kind: "pct" },
+    { key: "tgts", label: "Target share", of: (r) => shared(r, "sharedTargetSharePct", "targetSharePct"), fmt: pc, kind: "pct" },
     { key: "catch", label: "Catch rate", of: (r) => num(r, "catchPct"), fmt: pc, kind: "pct" },
   ];
 }
@@ -476,7 +505,8 @@ export function statsTabAdvanced(
   for (const def of [...currentDefs(pos, curTable?.rows ?? lastTable?.rows ?? []), ...lastDefs(pos)]) {
     if (!all.some((d) => d.key === def.key)) all.push(def);
   }
-  const current = curTable ? buildCard(curTable, playerId, pos, (rows) => currentDefs(pos, rows), all) : null;
+  const sharedTable = withSharedShares(curTable, leagueSeason, pos);
+  const current = sharedTable ? buildCard(sharedTable, playerId, pos, (rows) => currentDefs(pos, rows), all) : null;
   const last = buildCard(lastTable, playerId, pos, () => lastDefs(pos), all);
   return { current: relabel(current, format), last: relabel(last, format) };
 }
