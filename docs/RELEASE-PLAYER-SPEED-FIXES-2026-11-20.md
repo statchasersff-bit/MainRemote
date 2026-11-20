@@ -12,13 +12,15 @@ commit). The player-page design is unchanged: the Phase 2 redesign
 | c2f480d | A tab's own URL builds only that tab (the profile still builds every panel). |
 | 0505ba8 | Stats tab: target and snap share use the shared definition and rank in the card's own qualified pool. |
 | f71b0e9 | Kicker recaps: kicks counted for the sentence, never as a "Volume boost". |
+| ed0ce4b | Overview on phones (560px and below): Season Stats and Weekly Performance cards lose their extra air. Added at mak's decision; written uncommitted in the shared workspace at 14:02 by another session, moved here byte-identical. |
 
-Files (11, all TypeScript under artifacts/api-server/src): player-render.ts,
+Files: public/player.css (+66 lines, one 560px media block, from ed0ce4b) and
+11 TypeScript files under artifacts/api-server/src: player-render.ts,
 player-ssr.ts, routes/player.ts, schedule/schedule-data.ts,
 player/{player-data, overview-data, stats-tab, stats-tab-data,
-news-tab-data, outlook-tab, bio-tab-data}.ts. No CSS, no public assets, no
-data files, no tests, no WordPress plugin, no configuration or secrets, no
-new startup task or data migration.
+news-tab-data, outlook-tab, bio-tab-data}.ts. No other CSS or public
+assets, no data files, no tests, no WordPress plugin, no configuration or
+secrets, no new startup task or data migration.
 
 ## Target share: the definition and the rank
 
@@ -62,6 +64,10 @@ new startup task or data migration.
   table-armour 2, team-coaching 1, team-depth-chart 2, team 1).
 - Server time (warm, median): profile 76 -> 39 ms, tab URLs 79 -> 24 ms.
   First request after a server start 3.8 s -> 1.1 s.
+
+- ed0ce4b (phone Overview): only the 390px profile changes height (42-124 px
+  shorter on 5 players); 768 and 1280 heights identical. Full suite on
+  ed0ce4b: see the release report.
 
 ## Deploy (after mak's approval)
 
