@@ -26,6 +26,7 @@
  * model stages (prose from a language model, review queue).
  */
 
+import { hasStatsTab } from "./stats-tab";
 import { escapeHtml } from "../render";
 import type { PlayerRenderOptions } from "../player-render";
 import type { PlayerPageData } from "./player-data";
@@ -61,11 +62,14 @@ export function moreOnRows(data: PlayerPageData, page: BioPageFacts, options: Pl
   const q = options.linkQuery ?? "";
   const rows: MoreOnRow[] = [];
   if (page.seasonsPlayed > 0) {
-    rows.push({
-      label: "Career stats",
-      href: `${prefix}/stats/${q}`,
-      text: page.seasonsPlayed === 1 ? "1 season" : page.coversCareer ? `All ${page.seasonsPlayed} seasons` : `${page.seasonsPlayed} seasons since ${page.axis[0]}`,
-    });
+    // Kickers have no Stats tab: its URL 302s back to the profile.
+    if (hasStatsTab(data)) {
+      rows.push({
+        label: "Career stats",
+        href: `${prefix}/stats/${q}`,
+        text: page.seasonsPlayed === 1 ? "1 season" : page.coversCareer ? `All ${page.seasonsPlayed} seasons` : `${page.seasonsPlayed} seasons since ${page.axis[0]}`,
+      });
+    }
     rows.push({ label: "Game log", href: `${prefix}/game-log/${q}`, text: "Every game" });
   }
   const injuryHref = sectionHref(data, options, "injury");

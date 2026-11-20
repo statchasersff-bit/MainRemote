@@ -9,6 +9,7 @@
  * snaps, a bye week), is left out rather than guessed at.
  */
 
+import { hasStatsTab } from "./stats-tab";
 import type { PlayerRenderOptions } from "../player-render";
 import { possessive } from "./title-case";
 import type { PlayerPageData } from "./player-data";
@@ -177,7 +178,7 @@ export function overviewPool(data: PlayerPageData, options: PlayerRenderOptions)
         a: `${c.name} ranks ${c.pos}${rank} in ${c.fmt} ${rankBy} in ${c.season}` +
           (rankPpg && rankTotal ? ` and ${c.pos}${rankTotal} in total points` : "") +
           `, through ${count(c.played.length, "game")}. That makes him ${leagueRead(c.pos, rank)}.`,
-        link: { href: tabHref(data, options, "stats"), text: `View his complete season statistics.` },
+        link: hasStatsTab(data) ? { href: tabHref(data, options, "stats"), text: `View his complete season statistics.` } : null,
       });
     }
   }
@@ -488,7 +489,8 @@ export function gameLogPool(data: PlayerPageData, options: PlayerRenderOptions):
   const last = p[p.length - 1]!;
   const s = last.stats;
   const opp = vs(c, last.week, last.opp);
-  const statsLink = { href: tabHref(data, options, "stats"), text: `View his ${c.season} season totals.` };
+  // Null where the player has no Stats tab (kickers): /stats/ 302s back to the profile.
+  const statsLink = hasStatsTab(data) ? { href: tabHref(data, options, "stats"), text: `View his ${c.season} season totals.` } : null;
   const avg = p.reduce((t, e) => t + c.pts(e), 0) / p.length;
 
   out.push({

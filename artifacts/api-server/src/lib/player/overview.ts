@@ -35,6 +35,7 @@
  * hand-written text it can print is the outlook's quick take, preseason.
  */
 
+import { hasStatsTab } from "./stats-tab";
 import { escapeHtml } from "../render";
 import { possessive, titleCase } from "./title-case";
 import { phoneHeading } from "./phone-heading";
@@ -365,7 +366,7 @@ function renderSeasonStats(data: PlayerPageData, s: Season, options: PlayerRende
       )
       .join("") +
     `</dl>` +
-    more(href, `Complete ${data.player.name} stats and career statistics`) +
+    (hasStatsTab(data) ? more(href, `Complete ${data.player.name} stats and career statistics`) : "") +
     SECTION_END
   );
 }
@@ -747,7 +748,8 @@ function renderBackground(data: PlayerPageData, s: Season, options: PlayerRender
   else if (page?.raw.undrafted) facts.push(["Entered the NFL", `Undrafted, ${page.raw.undrafted.year}`]);
 
   if (!honors.length && !career && facts.length < 2) return "";
-  const statsHref = tabHref(data, options, "stats");
+  // No Stats tab (kickers): the link would 302 back to this page.
+  const statsHref = hasStatsTab(data) ? tabHref(data, options, "stats") : null;
   const bioHref = tabHref(data, options, "bio");
   // Two cards side by side (mak's brief, 2026-11-06): navy heads with a gold
   // icon, rule and diagonals; the honors as gold pills over the career

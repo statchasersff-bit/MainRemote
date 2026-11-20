@@ -853,12 +853,13 @@ function renderBio(
   const narrative = spec ? "" : renderBioNarrative(data);
   const timeline = spec ? "" : renderCareerTimeline(data);
   // The Bio tab's FAQ owns the evergreen entity searches (faq-engine.ts).
-  const statsHref = tabHref(data, options, "stats");
+  // No link where the player has no Stats tab (kickers): /stats/ 302s back here.
+  const statsHref = hasStatsTab(data) ? tabHref(data, options, "stats") : null;
   const pool = data.bioProfile.faq.map((f) => ({
     key: f.key,
     q: f.question,
     a: f.answer,
-    link: f.key === "experience" || f.key === "teams" ? { href: statsHref, text: "View his career statistics." } : null,
+    link: statsHref && (f.key === "experience" || f.key === "teams") ? { href: statsHref, text: "View his career statistics." } : null,
   }));
   // Spec 2.8 question 7 (approved by mak 2026-09-30), asked only when true.
   // "Member of" the roster, never "played in" the game: the source is the
