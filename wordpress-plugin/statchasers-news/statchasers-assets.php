@@ -335,8 +335,12 @@ function statchasers_flush_transients_run( string $prefix, bool $all, int $max_i
 	}
 }
 
-/** Rows per DELETE in statchasers_flush_transients(): about 5-20 MB of cached HTML. */
-const STATCHASERS_FLUSH_BATCH = 50;
+/**
+ * Rows per DELETE in statchasers_flush_transients(). Production values run
+ * 65-540 KB (2026-11-20), so 20 rows is about 4 MB a statement, and its row
+ * locks last only as long as that statement.
+ */
+const STATCHASERS_FLUSH_BATCH = 20;
 
 /**
  * Read one of this plugin's cached renders (an `sc_` transient), or false.

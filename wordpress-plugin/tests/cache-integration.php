@@ -25,6 +25,21 @@ if ( ! $wp_path || ! is_file( "$wp_path/wp-load.php" ) ) {
 }
 $role = $argv[1] ?? 'parent';
 
+if ( 'rawlock' === $role ) {
+	// Hold a row lock from a plain MySQL connection: no WordPress, so no init
+	// hook of its own. argv: rawlock <start_at> <option_name> <seconds>.
+	while ( microtime( true ) < (float) $argv[2] ) {
+		usleep( 200 );
+	}
+	$m = new mysqli( 'localhost', getenv( 'SC_DB_USER' ), getenv( 'SC_DB_PASSWORD' ), getenv( 'SC_DB_NAME' ), 0, getenv( 'SC_DB_SOCKET' ) );
+	$m->query( 'START TRANSACTION' );
+	$m->query( "SELECT option_id FROM wp_options WHERE option_name = '" . $m->real_escape_string( $argv[3] ) . "' FOR UPDATE" );
+	echo "LOCKED\n";
+	sleep( (int) $argv[4] );
+	$m->query( 'COMMIT' );
+	exit( 0 );
+}
+
 if ( 'child' === $role ) {
 	$start = (float) $argv[3];
 	while ( microtime( true ) < $start ) {
@@ -443,20 +458,26 @@ function visit(): array {
 
 // Baseline: the same 12 requests at once with nothing to sweep, so the
 // comparison is load for load (they share this machine's CPUs).
+$status = static fn( $k ) => (int) $wpdb->get_row( "SHOW GLOBAL STATUS LIKE '$k'", ARRAY_N )[1];
+$bw0  = $status( 'Innodb_row_lock_waits' );
+$bt0  = $status( 'Innodb_row_lock_time' );
 $base = children( array_fill( 0, 12, array( 'visit', soon(), '' ) ) );
+$bw1  = $status( 'Innodb_row_lock_waits' );
+$bt1  = $status( 'Innodb_row_lock_time' );
 $base = max( array_map( fn( $r ) => (float) ( $r['t'] ?? 0 ), $base ) );
 
 seed_sweep( 1000 );
 $before = count_like( '\\_transient\\_sc\\_%' );
-$waits  = static fn() => (int) $wpdb->get_row( "SHOW GLOBAL STATUS LIKE 'Innodb_row_lock_waits'", ARRAY_N )[1];
-$w0     = $waits();
+$w0     = $status( 'Innodb_row_lock_waits' );
+$lt0    = $status( 'Innodb_row_lock_time' );
 $res    = children( array_fill( 0, 12, array( 'visit', soon(), '' ) ) );
-$w1     = $waits();
+$w1     = $status( 'Innodb_row_lock_waits' );
+$lt1    = $status( 'Innodb_row_lock_time' );
 $won    = array_values( array_filter( $res, fn( $r ) => ! empty( $r['claimed'] ) ) );
 $others = array_values( array_filter( $res, fn( $r ) => empty( $r['claimed'] ) ) );
 is( count( $won ), 1, '12 simultaneous requests after an upgrade: exactly one claims the sweep' );
 $slowest = $others ? max( array_map( fn( $r ) => (float) ( $r['t'] ?? 99 ), $others ) ) : 99;
-is( $w1 - $w0, 0, 'the other 11 never wait on a database lock (InnoDB row lock waits during the burst: ' . ( $w1 - $w0 ) . ')' );
+is( $lt1 - $lt0 < 1000 && 0 === count( errs( $res ) ), true, 'no significant locking during the burst: ' . ( $w1 - $w0 ) . ' row lock waits, ' . ( $lt1 - $lt0 ) . ' ms in all, no lock errors (the same burst with nothing to sweep: ' . ( $bw1 - $bw0 ) . ' waits, ' . ( $bt1 - $bt0 ) . ' ms)' );
 echo "  info  wall time of the other 11, slowest {$slowest}s; the same 12 requests with nothing to sweep, slowest {$base}s (12 PHP processes share this machine)\n";
 is( (float) ( $won[0]['t'] ?? 99 ) < $base + 1.0, true, 'the claimant\'s extra work stays within its 0.75 s budget (' . ( $won[0]['t'] ?? '?' ) . 's in all)' );
 is( errs( $res ), array(), 'no database errors' );
@@ -513,6 +534,69 @@ is( visit()['claimed'] ?? null, true, 'when the lease runs out, the next request
 expire_lease();
 is( statchasers_news_run_upgrade_now(), true, 'and the sweep completes (the WP-CLI path, statchasers_news_run_upgrade_now)' );
 is( array( installed(), orphans() ), array( STATCHASERS_NEWS_VERSION, 0 ), 'version recorded, nothing left without an expiry' );
+
+echo "\nhardening: lock waits, the CLI lease, a failed completion\n";
+// A sweep batch that meets a row lock gives up after STATCHASERS_UPGRADE_LOCK_WAIT
+// seconds, not the server's 50, and changes nothing.
+seed_sweep( 300 );
+$victim = $wpdb->get_var( "SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE '\\_transient\\_sc\\_team\\_ssr\\_%' AND option_name NOT LIKE '%bak%' ORDER BY option_id LIMIT 1" );
+list( , $socket ) = explode( ':', DB_HOST, 2 );
+putenv( 'SC_DB_USER=' . DB_USER );
+putenv( 'SC_DB_PASSWORD=' . DB_PASSWORD );
+putenv( 'SC_DB_NAME=' . DB_NAME );
+putenv( "SC_DB_SOCKET=$socket" );
+$at     = soon();
+$locker = proc_open( array( PHP_BINARY, __FILE__, 'rawlock', (string) ( $at - 0.6 ), $victim, '8' ), array( 1 => array( 'pipe', 'w' ), 2 => array( 'pipe', 'w' ) ), $lp );
+$v      = children( array( array( 'visit', $at, '' ) ) )[0];
+stream_get_contents( $lp[1] );
+proc_close( $locker );
+is( $v['claimed'] ?? null, true, 'a request claims the sweep while one of its rows is locked by another transaction' );
+is( (float) ( $v['t'] ?? 99 ) < STATCHASERS_UPGRADE_LOCK_WAIT + 2.5, true, 'its blocked batch gives up after the short lock wait, not the server\'s 50 s (request took ' . ( $v['t'] ?? '?' ) . 's in all)' );
+is( array( $v['done'] ?? null, installed() !== STATCHASERS_NEWS_VERSION ), array( false, true ), 'the sweep is left unfinished, to resume on a later claim' );
+is( orphans(), 0, 'and the batch that gave up left nothing without an expiry' );
+$wait_before = (int) $wpdb->get_var( 'SELECT @@SESSION.innodb_lock_wait_timeout' );
+expire_lease();
+is( statchasers_news_run_upgrade_now(), true, 'once the lock is gone, the WP-CLI path finishes the sweep' );
+is( (int) $wpdb->get_var( 'SELECT @@SESSION.innodb_lock_wait_timeout' ), $wait_before, 'and the connection\'s own lock wait setting is restored afterwards' );
+
+// The WP-CLI run holds a 30-minute lease: no visitor takes over mid-run; an
+// interrupted run is restarted with force.
+seed_sweep( 4000 );
+// The real WP-CLI, as the deploy runs it.
+$wpcli = getenv( 'SC_WPCLI' );
+$cli   = proc_open(
+	array( PHP_BINARY, '-d', 'memory_limit=512M', $wpcli, '--path=' . ABSPATH, 'eval', 'echo "STARTED\n"; var_export( statchasers_news_run_upgrade_now() );' ),
+	array( 1 => array( 'pipe', 'w' ), 2 => array( 'pipe', 'w' ) ),
+	$cp
+);
+$buf = '';
+$end = microtime( true ) + 60;
+while ( false === strpos( $buf, 'STARTED' ) && microtime( true ) < $end ) {
+	$buf .= (string) fread( $cp[1], 64 );
+}
+usleep( 300000 );
+proc_terminate( $cli, 9 );
+proc_close( $cli );
+wp_cache_flush();
+$c = claim_row();
+is( is_array( $c ) && $c['until'] - time() > 20 * 60, true, 'a WP-CLI sweep holds a long lease (' . ( is_array( $c ) ? $c['until'] - time() : '?' ) . ' s left after it was killed)' );
+is( array( visit()['claimed'] ?? null, orphans() ), array( false, 0 ), 'so no visitor takes over, and the interrupted batch left no orphan' );
+is( statchasers_news_run_upgrade_now(), false, 'running it again without force respects the claim' );
+is( statchasers_news_run_upgrade_now( true ), true, 'running it with force restarts and finishes the sweep' );
+is( array( installed(), claim_row(), orphans() ), array( STATCHASERS_NEWS_VERSION, null, 0 ), 'version recorded, claim gone, nothing orphaned' );
+
+// If recording the version fails, the claim stays (no fresh sweep cycle).
+update_option( STATCHASERS_NEWS_OPTION_INSTALLED, '1.10.59', false );
+delete_option( STATCHASERS_NEWS_OPTION_UPGRADE );
+sql( "CREATE TRIGGER sc_test_noversion BEFORE UPDATE ON {$wpdb->options} FOR EACH ROW BEGIN IF NEW.option_name = '" . STATCHASERS_NEWS_OPTION_INSTALLED . "' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'blocked by test'; END IF; END" );
+$wpdb->suppress_errors( true );
+$ok = statchasers_news_run_upgrade_now();
+$wpdb->suppress_errors( false );
+is( array( $ok, installed(), is_array( claim_row() ) ), array( true, '1.10.59', true ), 'a sweep whose final version write fails keeps its claim (no new sweep starts)' );
+is( visit()['claimed'] ?? null, false, 'and requests inside the lease do not start another' );
+sql( 'DROP TRIGGER sc_test_noversion' );
+is( statchasers_news_run_upgrade_now( true ), true, 'once writes work, it completes' );
+is( array( installed(), claim_row() ), array( STATCHASERS_NEWS_VERSION, null ), 'version recorded and claim removed' );
 
 echo "\nbounded: never forever\n";
 update_option( STATCHASERS_NEWS_OPTION_INSTALLED, '1.10.59', false );

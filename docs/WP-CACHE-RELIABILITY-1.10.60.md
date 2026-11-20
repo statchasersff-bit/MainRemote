@@ -122,6 +122,33 @@ consecutive full runs and 10 storm-only runs.
   clear keeps the backups and a full clear removes everything of ours and
   nothing similar.
 
+## Hardening before release (2026-11-20, after mak's release-prep review)
+
+- **Sweep lock waits capped:** sweep statements run with
+  `innodb_lock_wait_timeout = 3` on their own connection (restored afterwards),
+  so a batch that meets a lock gives up in 3 s instead of the server's 50 s.
+  It changes nothing (one statement) and the sweep resumes on a later claim.
+  Tested: the request took 5.3 s in all while a row was held for 8 s by another
+  connection; nothing was orphaned.
+- **Batches of 20:** about 4 MB of production HTML per DELETE, down from 50.
+- **WP-CLI:** the visitor init hook no longer claims inside WP-CLI.
+  Before, `wp eval 'statchasers_news_run_upgrade_now();'` lost the claim to its
+  own process's init hook and did nothing; the new tests drive the real
+  wp-cli.phar. The CLI run holds a 30-minute lease (no visitor takes over
+  mid-run) and `statchasers_news_run_upgrade_now( true )` restarts an
+  interrupted run.
+- **Finish:** the claim is removed only once the version is confirmed in the
+  database. If that write fails, the claim stays, so no fresh sweep starts.
+- **Rollback verified:** with the documented first step (store 1.10.59), 12
+  simultaneous requests on 1.10.59 ran 0 DELETEs and left all 300 cached
+  pages. Skipping that step (the control) ran the old flush: 13 DELETEs,
+  0 of 300 left.
+- **Deploy rehearsal under traffic:** 600 entries of 200 KB, with 6 visitor
+  loops (656 requests) running alongside. The WP-CLI step took 0.66 s for 400
+  live entries in 21 DELETEs, with 0 new row lock waits and 0 lock errors.
+- **Tests:** cache-integration.php is now 64 checks; 3 consecutive full runs
+  all passed. smoke.php all passed.
+
 ## Part 4: cache-version keys instead of an upgrade sweep (assessment and plan)
 
 Yes, a cache-schema version in the keys can replace broad invalidation for
@@ -208,9 +235,10 @@ load change.
 2. Upload `statchasers-news-1.10.60.zip` (sha256 `b86e5260...`) and run
    `wp plugin install ~/tmp/statchasers-news.zip --force`.
 3. Immediately: `wp eval 'var_export( statchasers_news_run_upgrade_now() );'`.
-   If it returns false, a visitor request claimed first; wait 2 minutes and
-   run it again. Production sweeps about 1,800 live entries (about 370 MB) in
-   batches of 50; backups are kept.
+   It returns true when done. False means a visitor request claimed first, or
+   a batch gave up on a lock; wait 2 minutes and run it again. Production
+   sweeps about 1,550 live player and team entries (about 300 MB) in batches
+   of 20; backups and matchup live copies are kept, as in 1.10.59.
 4. Verify:
    - `statchasers_news_installed_version` = 1.10.60 and no claim row;
    - no new lock timeouts in php.error.log; normal load;
