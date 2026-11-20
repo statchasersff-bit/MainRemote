@@ -21770,3 +21770,113 @@ button.scp-search-opt {
     margin-top: 8px;
   }
 }
+
+/*
+ * Hero height (mak's brief, 2026-11-20): the desktop hero ~285px -> ~250px
+ * by proportion, not by removing anything. Desktop only: the block's
+ * container is 901px and wider (a 1280px window gives it 1024px). The tablet
+ * (561-900) and the phone header keep their own rules untouched.
+ *
+ * Name 46-48px with a tighter line, less air between the tag row, name,
+ * number line and bio line; compact stat cards (68px); 40px buttons that
+ * keep a 44px hit area; a leaner fantasy panel aligned with the identity;
+ * the portrait sized to the shorter panel (face kept, lower body cropped).
+ */
+@container pp (min-width: 901px) {
+  .scp.scp.scp .scp-phead-hero {
+    --pp-pad-b: 16px;
+    min-height: 240px;
+    row-gap: 12px;
+  }
+
+  .scp.scp.scp .scp-pid {
+    gap: 4px;
+    padding-top: 14px;
+  }
+
+  .scp.scp.scp .scp-phead .scp-phead-h1 {
+    font-size: clamp(40px, 4.5cqw, 48px) !important;
+    line-height: 0.96;
+  }
+
+  /* A long name ("Marquez Valdes-Scantling") steps down so it holds one
+     line where the column allows; where it cannot, it wraps as before. */
+  .scp.scp.scp .scp-phead .scp-phead-h1:has(.scp-phead-name.is-long) {
+    font-size: clamp(36px, calc(2.75cqw + 9px), 44px) !important;
+  }
+
+  .scp.scp.scp .scp-pp-under {
+    margin-top: 0;
+    font-size: 16px;
+    line-height: 1.25;
+  }
+
+  .scp.scp.scp .scp-pspec {
+    font-size: 13.5px;
+    line-height: 1.25;
+  }
+
+  /* The fantasy panel: less padding, its caption level with the tag row. */
+  .scp.scp.scp .scp-pboard-wrap {
+    padding-top: 14px;
+  }
+
+  .scp.scp.scp .scp-pboard-cap {
+    margin-bottom: 5px;
+    line-height: 1.2;
+  }
+
+  .scp.scp.scp .scp-pboard {
+    padding: 8px 6px 7px;
+  }
+
+  .scp.scp.scp .scp-pstat b {
+    font-size: 28px;
+  }
+
+  /* Cards 68px, tops level with the primary button. Divi gives every list
+     in the content area `padding: 0 0 23px 1em` by id: on statchasers.com
+     the cards sat 14px in from the bio line over 23px of dead space, which
+     made the bottom row 8px taller than the buttons. */
+  .scp.scp.scp .scp-pp-cards {
+    align-self: start;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .scp.scp.scp .scp-pp-card {
+    min-height: 68px;
+    padding-top: 7px;
+    padding-bottom: 7px;
+  }
+
+  /* Buttons 40px to the eye, 44px to the hand: the hit area reaches 2px
+     past each edge, inside the 5px between them. */
+  .scp.scp.scp .scp-pp-actions {
+    gap: 5px;
+  }
+
+  .scp.scp.scp .scp-phead a.scp-pbtn,
+  .scp.scp.scp .scp-phead a.scp-pbtn--white {
+    position: relative;
+    min-height: 40px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+  }
+
+  .scp.scp.scp .scp-phead a.scp-pbtn::before {
+    content: "";
+    position: absolute;
+    inset: -2px 0;
+  }
+
+  /* The portrait: the cutout's height follows the panel, so the face keeps
+     its headroom on a shorter hero and the shoulders crop at the floor. */
+  .scp.scp.scp .scp-pwell-img {
+    left: 48%;
+    bottom: -22px;
+    width: auto;
+    height: min(calc(100% + 22px), 284px);
+    transform: translateX(-50%);
+  }
+}
