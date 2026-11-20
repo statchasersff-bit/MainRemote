@@ -1143,6 +1143,22 @@ export function injurySeverity(
   return "questionable";
 }
 
+/**
+ * Sleeper's reserve codes spelled out for the injury lists (Team Pages
+ * Phase 6, 2026-11-20): "NA" read as "no data" and "DNR" as nothing at all.
+ * Display only: the codes themselves still drive the availability rule and
+ * the severity tint. Everything else passes through.
+ */
+const INJURY_STATUS_LABEL: Record<string, string> = {
+  na: "Not active",
+  dnr: "Did not report",
+};
+
+export function injuryStatusLabel(status: string | null | undefined): string {
+  const raw = (status ?? "").trim();
+  return INJURY_STATUS_LABEL[raw.toLowerCase()] ?? raw;
+}
+
 const SHORT_INJURY_STATUS: Record<string, string> = {
   questionable: "Q",
   doubtful: "D",

@@ -43,6 +43,7 @@ import {
   playerName,
   slotChip,
   type TeamRenderOptions,
+  injuryStatusLabel,
 } from "../team-render";
 
 const e = escapeHtml;
@@ -548,7 +549,7 @@ function injuriesCard(data: TeamPageData, depthHref: string | null): string {
             `<span class="sct-ovw-inj-who">${playerName(p.name, "sct-ovw-inj-name")}${slotChip(p.position, true)}` +
             (detail ? `<span class="sct-ovw-inj-detail">${e(detail)}</span>` : "") +
             `</span>` +
-            `<span class="sct-nwp-status sct-ovw-status" data-severity="${injurySeverity(p.injuryStatus)}">${e(p.injuryStatus ?? "")}</span>` +
+            `<span class="sct-nwp-status sct-ovw-status" data-severity="${injurySeverity(p.injuryStatus)}">${e(injuryStatusLabel(p.injuryStatus))}</span>` +
             `</li>`
           );
         })

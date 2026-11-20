@@ -332,3 +332,17 @@ describe("a designation filed after the last game stands until the official repo
     assert.equal(s.unlisted.injuryStatus, null);
   });
 });
+
+/*
+ * Team Pages Phase 6 (2026-11-20): Sleeper's reserve codes are spelled out in
+ * the injury lists ("NA" read as no data, "DNR" as nothing); everything else
+ * passes through. Display only - the codes still drive availability.
+ */
+describe("injury list labels", () => {
+  test("NA and DNR are spelled out; designations pass through", () => {
+    assert.equal(render.injuryStatusLabel("NA"), "Not active");
+    assert.equal(render.injuryStatusLabel("DNR"), "Did not report");
+    for (const s of ["IR", "PUP", "Questionable", "Out", "Pending", "Doubtful"]) assert.equal(render.injuryStatusLabel(s), s);
+    assert.equal(render.injuryStatusLabel(null), "");
+  });
+});

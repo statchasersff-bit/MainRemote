@@ -39,6 +39,7 @@ import {
   playerName,
   resourceCards,
   siteLink,
+  injuryStatusLabel,
 } from "../team-render";
 import { nextGame } from "./schedule";
 import type { TeamPageData } from "./team-data";
@@ -350,7 +351,7 @@ function injuryCard(data: TeamPageData): string {
             playerName(player.name, "sct-nwp-injury-name") +
             (detail ? `<span class="sct-nwp-injury-detail">${detail}</span>` : "") +
             `</span>` +
-            `<span class="sct-nwp-status" data-severity="${injurySeverity(player.injuryStatus)}">${e(player.injuryStatus ?? "")}</span>` +
+            `<span class="sct-nwp-status" data-severity="${injurySeverity(player.injuryStatus)}">${e(injuryStatusLabel(player.injuryStatus))}</span>` +
             `</li>`
           );
         })
