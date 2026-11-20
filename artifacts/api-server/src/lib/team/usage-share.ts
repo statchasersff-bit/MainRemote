@@ -382,3 +382,44 @@ export function playedSeasonRow(
     null
   );
 }
+
+/**
+ * Item 1 of fix B (mak, 2026-11-20): the /usage/ fantasy table prints each
+ * receiver's target share over the games he played for this club
+ * (playedShareAt), so its percentile has to rank that same figure. The pool
+ * is every WR (or TE) row in the league, one per player and club, each over
+ * the games he played for that club; it qualifies with the report's own rule
+ * (targets at least 1.5 a game) counted over those games rather than the
+ * club's whole season. The percentile is the report's: share below, half of
+ * the ties, of the pool (buildUsage.mjs percentile()).
+ */
+const playedPoolCache = new Map<string, number[]>();
+
+function playedTargetSharePool(season: number, pos: string): number[] {
+  const doc = getUsageDoc(season) as Doc | null;
+  if (!doc?.teams) return [];
+  const key = `${season}|${pos}|${(doc as { builtAt?: string }).builtAt ?? ""}`;
+  const hit = playedPoolCache.get(key);
+  if (hit) return hit;
+  const values: number[] = [];
+  for (const one of rowsFor(doc, (r) => r.pos === pos)) {
+    const s = sumRows(doc, [one]);
+    if (!s || s.games < 1 || s.targetShare === null) continue;
+    if (s.targets >= 1.5 * s.games) values.push(s.targetShare);
+  }
+  playedPoolCache.set(key, values);
+  return values;
+}
+
+export function playedTargetSharePercentile(season: number, pos: string, value: number | null | undefined): number | null {
+  if (value == null || (pos !== "WR" && pos !== "TE")) return null;
+  const pool = playedTargetSharePool(season, pos);
+  if (pool.length === 0) return null;
+  let below = 0;
+  let equal = 0;
+  for (const v of pool) {
+    if (v < value) below += 1;
+    else if (v === value) equal += 1;
+  }
+  return Math.round((100 * (below + equal / 2)) / pool.length);
+}

@@ -19,7 +19,7 @@ import { readDataJson } from "./read-json";
 import { searchKey } from "../render";
 import type { RosterPlayer } from "./roster";
 // Function-only cycle (usage-share reads getUsageDoc at call time).
-import { playedShareAt } from "./usage-share";
+import { playedShareAt, playedTargetSharePercentile } from "./usage-share";
 
 /* ------------------------------------------------------------------ types */
 
@@ -375,6 +375,12 @@ export function buildUsageView(
       seasonSnapShare: p.snapShare,
       targetShare: ps.targetShare ?? p.targetShare,
       snapShare: ps.snapShare ?? p.snapShare,
+      // The receivers' Opportunity percentile ranks the figure printed under
+      // it: games-played share against a games-played pool (item 1).
+      pct:
+        ps.targetShare != null && (p.pos === "WR" || p.pos === "TE")
+          ? { ...p.pct, targetShare: playedTargetSharePercentile(season, p.pos, ps.targetShare) ?? p.pct.targetShare ?? null }
+          : p.pct,
       playedCarryShare: ps.carryShare,
       playedGames: ps.games,
       playedTeamTargets: ps.teamTargets,

@@ -487,7 +487,7 @@ function shareCell(value: number | null, t: Trend, places: number): string {
  */
 const COL_TIP = {
   opp: "A percentile against every NFL player at the same position, not a rank inside the team. Backs: weighted opportunities per active game. Receivers: target share. Quarterbacks: expected fantasy points per game.",
-  snap: "Share of the offense's snaps, season to date. The change under it is in percentage points: the last 3 games' average against the 3 games before them.",
+  snap: "Share of the offense's snaps in the games he played for this club. The change under it is in percentage points: the last 3 games' average against the 3 games before them.",
   rz: "Red-zone opportunities: carries + targets inside the opponent's 20, season to date. The change under it is per game: the last 3 games against the 3 before them.",
 };
 
@@ -816,7 +816,7 @@ function legend(): string {
     ["volatile", "Volatile", "under 15% - deep leagues only"],
     ["stash", "Stash", "the role behind the role"],
     ["", "Opportunity", "the player's percentile among every NFL player at his position, not a rank inside the team: weighted opportunities per active game (carries + 2 × targets) for backs, target share for receivers, expected fantasy points per game for the passer. The stat itself sits under it"],
-    ["", "Snap %", "share of the offense's snaps, season to date"],
+    ["", "Snap %", "share of the offense's snaps in the games he played for this club"],
     ["", "RZ Opps", "red-zone opportunities: carries + targets inside the opponent's 20, season to date"],
     ["", "Changes", "the last three games' average against the three games before them - in percentage points (pp) for snap % and target share, per game (/g) for RZ opps; \"Steady\" is a move too small to count. The weeks it covers for a player are in his expanded profile"],
     ["", "+ button", "opens the full advanced profile with percentile bars vs. the league: league rank, xFP (expected fantasy points) and FPOE (points over expected) per game, WOPR (1.5 × target share + 0.7 × air-yards share), first-read share, air-yards share, touch share, inside-10 carries"],

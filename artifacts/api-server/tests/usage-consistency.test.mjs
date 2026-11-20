@@ -255,3 +255,36 @@ describe("/usage/: club season share, labeled; FAQ arithmetic", () => {
     }
   });
 });
+
+describe("/usage/: the fantasy table's percentile ranks the share printed under it (items 1 and 3)", () => {
+  test("league-wide, a higher games-played target share never carries a lower percentile", async () => {
+    const pairs = { WR: [], TE: [] };
+    for (const k of Object.keys(usage.teams)) {
+      const team = teamsMod.getTeamByAbbreviation(k);
+      if (!team) continue;
+      const d = await doc(`/team/${team.slug}/usage/`);
+      for (const cell of d.querySelectorAll("td.is-opp")) {
+        const pos = (cell.querySelector(".sct-us-unit")?.textContent ?? "").replace(/pctile/, "").trim();
+        const pct = Number.parseInt(cell.querySelector(".is-lead")?.textContent ?? "", 10);
+        const m = /([\d.]+)% target share/.exec(cell.querySelector(".sct-us-cap-stat")?.textContent ?? "");
+        if (!pairs[pos] || !m || !Number.isFinite(pct)) continue;
+        pairs[pos].push({ share: Number(m[1]), pct, club: k });
+      }
+    }
+    for (const [pos, list] of Object.entries(pairs)) {
+      assert.ok(list.length > 20, `${pos}: enough rows`);
+      list.sort((a, b) => a.share - b.share);
+      for (let i = 1; i < list.length; i++) {
+        const [a, b] = [list[i - 1], list[i]];
+        if (b.share > a.share) assert.ok(b.pct >= a.pct, `${pos}: ${b.share}% (${b.club}) at ${b.pct} below ${a.share}% (${a.club}) at ${a.pct}`);
+      }
+    }
+  });
+
+  test("the Snap % help says games played, not the season", async () => {
+    const d = await doc(`/team/las-vegas-raiders/usage/`);
+    const html = d.body.innerHTML;
+    assert.match(html, /share of the offense's snaps in the games he played for this club/);
+    assert.doesNotMatch(html, /share of the offense's snaps, season to date/i);
+  });
+});
