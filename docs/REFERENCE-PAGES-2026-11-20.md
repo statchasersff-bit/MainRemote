@@ -50,28 +50,67 @@ through Week 10 and 1 Week 11 game (IND at HOU)"; start/sit "Week 11"; Gibbs "Me
 Week 10 and 1 Week 11 game."; SOS "Through Week 10: 10% 2025 baseline and 90% 2026 data.";
 stats "Updated November 18, 2026". Gibbs's nine opponent ranks identical to production.
 
+## Release preparation (2026-11-20 PM)
+
+Live at prep time: app build `92e2567` (player speed fixes), Replit publish commit `1383a15`
+(15:25 UTC; adds only `data/schedule/espn-layer-2026.json`), plugin 1.10.59. Phase 7
+(`5630f66` code / `2ed48aa` publish) is an ancestor of `92e2567` and is no longer the base.
+
+Release branch `release/reference-pages-2026-11-20` = `1383a15` +
+- `4c43741` FPA last complete week, stats date in Eastern (cherry-pick of f69864a)
+- `8583399` these notes (cherry-pick of de3326a)
+- `9d53652` Start/Sit card week = the start/sit tool's week (Sleeper `/v1/state/nfl`, regular
+  season and playoffs; the rule redraft-command's `server/nflState.ts` uses for "Who Should I
+  Start in Week N?"), never the FPA table's; part of the fragment render version
+- `24c178f` player Overview "Upcoming" note prints the chips' band cut (1st-12th favorable,
+  21st-32nd tough); it said 1st-10th / 23rd-32nd beside chips on the Phase 1 scale
+
+`git diff 1383a15 HEAD` is exactly the feature patch; all 14 files the player-speed release
+changed are untouched. Trial merges with `player-desktop-cls-2026-11-20` and
+`wp-cache-reliability-2026-11-20` (plugin 1.10.60 WIP) are clean.
+
+Checks on 24c178f: tsc clean; `tests/reference-pages.test.mjs` 28/28; `tests/player-overview.test.mjs`
+18/18. Full suite, base `1383a15` vs release, same machine, same dev DB, run back to back,
+`env -u INGEST_SECRET`, concurrency 1, gitignored roster caches cleared first:
+base 1,740 = 1,725 / 14 fail / 1 skip; release 1,769 = 1,754 / 14 fail / 1 skip. The 14 failures
+are the same names; the skip is the same (no deebo-samuel profile in this data); +29 = new tests.
+
+Same-DB comparison, base vs release servers: all seven FPA CSVs (3 formats x raw/adjusted +
+2025 archive) byte-identical, so values and ranks are unchanged; default view still Half-PPR,
+player pages still PPR. Visible text differs only in: FPA scope/Updated/title/H1/description/
+answer week, Start/Sit "Week 11" (was "Week 12"), Gibbs "Measured through Week 10 and 1 Week 11
+game", SOS "Through Week 10", stats "November 18".
+
 ## Release
 
-1. No plugin upload (the FPA plugin takes title/H1/Updated from the app's `scf-page-data` island).
-2. No data refresh required first. Optional: re-run the stats build after Week 11 MNF as usual.
-3. Merge into the release that ships next (trial merges with 92e2567 and Phase 7 are clean),
-   restore `data/schedule/espn-layer-2026.json` before staging, Publish.
-4. Caches, in order: WP Rocket (`rocket_clean_domain(); rocket_clean_minify();`), then `wp cdn purge`.
-   WordPress fragment transients expire on their own (FPA 15 min, stats/SOS 1 h, player 5 min);
-   check for orphaned never-expiring `sc_player_ssr` transients (see the 11-20 orphan finding).
-5. Verify (desktop + iPhone UA): /nfl/fantasy-points-allowed-by-position/ (title, Updated line,
-   start/sit week); /nfl/players/jahmyr-gibbs/game-log/ ("Measured through"); /nfl/nfl-player-stats/
-   and /wr/ (Updated date); /nfl/fantasy-football-strength-of-schedule/rb/ (badge). After Monday's game is
-   ingested the partial suffix disappears and the range reads Weeks 1-11.
+1. App only: no plugin ZIP, no data refresh, no ordering constraint.
+2. Switch the workspace to `release/reference-pages-2026-11-20` (24c178f) and Publish.
+3. Caches, in order: WP Rocket (`rocket_clean_domain(); rocket_clean_minify();`, the FPA page is
+   WP Rocket-cached), then the edge `wp cdn purge`. Plugin transients expire on their own
+   (FPA 15 min, stats/SOS 1 h, player 5 min).
+4. Verify with `.local/refpages/verify-live.sh` (read-only; desktop + iPhone; plain URL vs
+   `?sc_probe=`). Baseline from before the publish: `.local/refpages/verify-live-before.txt`.
+   Expected while Week 11 is partial: FPA "Weeks 1-10, 2026", "through Week 10 and N Week 11
+   game(s)", card "Week 11"; Gibbs "Measured through Week 10 and N Week 11 game(s)." and
+   "1st-12th favorable, 21st-32nd tough."; stats "Updated November 18, 2026" (or the next
+   build's Eastern date); SOS "Through Week 10". After Monday's game is ingested: "Weeks 1-11",
+   no partial words; the card stays "Week 11" until Sleeper rolls to Week 12 (Tuesday).
+5. A stale page: plain old + probe new = edge (purge the URL); both old with the new build in
+   /api/status = a fragment transient, possibly an orphan without expiry (coordinate with the
+   wp-cache-reliability work; inspect with its inspect.php, delete nothing without mak).
 
-Rollback: workspace to `2ed48aa` (release/team-hubs-p7-2026-11-20) and Publish; no plugin or data step.
+Rollback: switch the workspace to `1383a15` (code `92e2567`, the live player-speed release) and
+Publish, then the same two purges. No plugin or data step.
 
 ## Open, needs mak or production
 
-- ROS board: paste a current board (CSV + meta `updatedAt`/`updatedAtIso`). Whether an injured
+- ROS board: a new board from mak, checked with `scripts/rankings/check-ros.mjs` (separate
+  branch `ros-board-check-2026-11-20`) and shipped as its own release. Whether an injured
   player stays on it, and where, is the board's editorial call; no code change made.
 - There is no ROS generation job, so "failed run keeps last good data" applies only to the
   WordPress side (30-day backup transient), which already holds.
 - The game log deliberately shows today's season-to-date rank (labelled); a pregame rank view
   would be a new feature.
 - The FPA page defaults to Half-PPR; player pages read PPR and say so.
+- Matchup preview pages keep their own 1-10 / 23-32 matchup cut (preview-fantasy.ts); it drives
+  their takeaways and their text says so, so it was left alone. One scale site-wide is mak's call.
