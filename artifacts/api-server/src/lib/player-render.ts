@@ -101,7 +101,8 @@ import { renderOutlookPremium } from "./player/outlook-premium";
 import { renderOutlookProjectionPremium } from "./player/outlook-projection-premium";
 import { renderPremiumCareer } from "./player/career-premium";
 import { outlookTabParts } from "./player/outlook-tab";
-import { renderOutlook2026 } from "./player/outlook-2026";
+import { renderOutlook2026, hasOutlookTab } from "./player/outlook-2026";
+import { hasStatsTab } from "./player/stats-tab";
 import { injuryTabParts } from "./player/injury-tab";
 import { renderInjuryPremium } from "./player/injury-premium";
 import { renderBioTab } from "./player/bio-tab";
@@ -1887,6 +1888,105 @@ export function renderPlayerPage(
   // Under everything the tab already had: the sections of mak's Outlook tab
   // spec of 2026-09-29 (lib/player/outlook-tab.ts). Only on a tab that exists
   // already, so no player gains an Outlook URL from this.
+  /*
+   * One tab at its own URL: the strip with the tab marked, its panel, then
+   * its footer, the rail and its FAQ. Shared by the fast path above and the
+   * full build below, so both print the same markup.
+   */
+  function renderScoped(sections: Section[], id: string, parts: TabParts | undefined | null, panelHtml: string): string {
+    return (
+      `<div class="scp${options.embed ? " is-embed" : ""}" data-scp-root="1"` +
+      ` data-player="${escapeHtml(data.player.slug)}"` +
+      ` data-position="${escapeHtml(data.player.position ?? "")}"` +
+      ` data-season="${escapeHtml(String(data.season))}"` +
+      // The season the Game Log tab is headed with, which the WordPress plugin
+      // reads off the fragment to put the right year in the document title.
+      // Always the active season now: ?log=2025 adds 2025 under the selector
+      // rather than re-scoping the tab, so a title naming 2025 would name the
+      // block at the bottom of the page. Kept as its own attribute because the
+      // plugin's regex is deployed separately from this render.
+      ` data-log-season="${escapeHtml(String(data.season))}"` +
+      // The pinned archive year, when there is one - state, not subject.
+      (data.logSeason === data.season
+        ? ""
+        : ` data-archive-season="${escapeHtml(String(data.logSeason))}"`) +
+      ` data-format="${escapeHtml(data.format)}"` +
+      ` data-section="${escapeHtml(id)}"${paletteAttrs(data.team)}>` +
+      renderPlayerSearch(options) +
+      renderHero(data, options, id, heroExtras(data, options)) +
+      `<div class="scp-controls">` +
+      renderNav(sections, data, options, id) +
+      `</div>` +
+      `<section class="scp-section is-default is-active" data-scp-panel` +
+      ` id="${escapeHtml(id)}">` +
+      // The hero's heading is this page's H1 ("{Name} Injury Status") wherever
+      // the hero is allowed one - standalone, or on a host that stood down -
+      // so the panel's own name under it would be the same phrase twice. A
+      // plain embed keeps it: there the host's title is the H1 and the panel
+      // heading is the first thing of ours a reader sees.
+      (!options.embed || options.ownHeading ? dropPanelHeading(panelHtml) : panelHtml) +
+      `</section>` +
+      // The tab's footer, the rail, then its FAQ (mak, 2026-09-30) - except
+      // Stats, whose footer closes the page under the FAQ (mak, 2026-10-02).
+      (parts
+        ? (id === "stats" ? "" : parts.foot) +
+          renderPositionPeers(data, options) +
+          parts.faq +
+          (id === "stats" ? parts.foot : "")
+        : renderPositionPeers(data, options)) +
+      renderPlayerFaqSchema(faqBySection.get(id) ?? [], options) +
+      `</div>`
+    );
+  }
+
+  /*
+   * A tab's own URL builds that tab only (2026-11-20). The page prints one
+   * panel there, so building every other tab's markup only to drop it cost
+   * most of the render. The other tabs are asked only whether they exist (the
+   * tab strip lists them), each by the condition its render function ends
+   * on; News answers by building its parts, as its feed decides. A tab the
+   * player does not have falls through to the full build below, as before.
+   */
+  const requested = options.section && options.section !== "overview" ? options.section : "";
+  if (requested) {
+    let newsMemo: TabParts | null | undefined;
+    const newsOnce = (): TabParts | null => (newsMemo === undefined ? (newsMemo = renderNews(data, withFaq("news"))) : newsMemo);
+    const outlookOnly = (): TabParts | null => {
+      const ex = renderOutlook2026(data);
+      if (!ex.exists) return null;
+      const spec = outlookTabParts(data, withFaq("outlook"));
+      return {
+        body: ex.html + (spec?.body ?? "") + (spec ? renderOutlookProjectionPremium(data, options) : "") + (spec ? renderOutlookPremium(data) : ""),
+        foot: spec?.foot ?? "",
+        faq: spec?.faq ?? "",
+      };
+    };
+    const TABS: Array<{ id: string; label: string; exists: () => boolean; parts: () => TabParts | null }> = [
+      { id: "stats", label: "Stats", exists: () => hasStatsTab(data), parts: () => renderStats(data, withFaq("stats")) },
+      { id: "game-log", label: "Game Log", exists: () => data.gameLog.length > 0, parts: () => renderGameLog(data, withFaq("game-log")) },
+      { id: "outlook", label: "Outlook", exists: () => hasOutlookTab(data), parts: outlookOnly },
+      { id: "injury", label: "Injury", exists: () => Boolean(data.injury), parts: () => renderInjury(data, withFaq("injury")) },
+      { id: "news", label: "News", exists: () => newsOnce() !== null, parts: newsOnce },
+      { id: "bio", label: "Bio", exists: () => !data.bioProfile.empty, parts: () => renderBio(data, withFaq("bio")) },
+    ];
+    const tab = TABS.find((x) => x.id === requested);
+    const parts = tab && tab.exists() ? tab.parts() : null;
+    if (tab && parts) {
+      // The Overview always exists when any tab does (it is never empty for a
+      // player with a tab), so the strip lists it without building it.
+      const sections: Section[] = [
+        { id: "overview", label: "Overview", html: "x" },
+        ...TABS.filter((x) => (x.id === requested ? true : x.exists())).map((x) => ({
+          id: x.id,
+          label: x.label,
+          html: x.id === requested ? parts.body : "x",
+        })),
+      ];
+      options.sectionsSink?.push(...sections.map((section) => section.id));
+      return renderScoped(sections, tab.id, parts, parts.body);
+    }
+  }
+
   const existingOutlook = renderOutlook2026(data);
   const outlookSpec = existingOutlook.exists ? outlookTabParts(data, withFaq("outlook")) : null;
   // The four closing sections (drivers, what could change, upcoming
@@ -2042,53 +2142,7 @@ export function renderPlayerPage(
     // The Injury panel without the rail and FAQ it carries on the all-tabs
     // page: here both follow the panel.
     const parts = split.get(scoped.id);
-    const panelHtml = parts ? parts.body : scoped.html;
-    // The "All <name> stats & analysis" link back to the profile is gone
-    // (mak, 2026-10-22); the tab strip above is the way back.
-
-    return (
-      `<div class="scp${options.embed ? " is-embed" : ""}" data-scp-root="1"` +
-      ` data-player="${escapeHtml(data.player.slug)}"` +
-      ` data-position="${escapeHtml(data.player.position ?? "")}"` +
-      ` data-season="${escapeHtml(String(data.season))}"` +
-      // The season the Game Log tab is headed with, which the WordPress plugin
-      // reads off the fragment to put the right year in the document title.
-      // Always the active season now: ?log=2025 adds 2025 under the selector
-      // rather than re-scoping the tab, so a title naming 2025 would name the
-      // block at the bottom of the page. Kept as its own attribute because the
-      // plugin's regex is deployed separately from this render.
-      ` data-log-season="${escapeHtml(String(data.season))}"` +
-      // The pinned archive year, when there is one - state, not subject.
-      (data.logSeason === data.season
-        ? ""
-        : ` data-archive-season="${escapeHtml(String(data.logSeason))}"`) +
-      ` data-format="${escapeHtml(data.format)}"` +
-      ` data-section="${escapeHtml(scoped.id)}"${paletteAttrs(data.team)}>` +
-      renderPlayerSearch(options) +
-      renderHero(data, options, scoped.id, heroExtras(data, options)) +
-      `<div class="scp-controls">` +
-      renderNav(sections, data, options, scoped.id) +
-      `</div>` +
-      `<section class="scp-section is-default is-active" data-scp-panel` +
-      ` id="${escapeHtml(scoped.id)}">` +
-      // The hero's heading is this page's H1 ("{Name} Injury Status") wherever
-      // the hero is allowed one - standalone, or on a host that stood down -
-      // so the panel's own name under it would be the same phrase twice. A
-      // plain embed keeps it: there the host's title is the H1 and the panel
-      // heading is the first thing of ours a reader sees.
-      (!options.embed || options.ownHeading ? dropPanelHeading(panelHtml) : panelHtml) +
-      `</section>` +
-      // The tab's footer, the rail, then its FAQ (mak, 2026-09-30) - except
-      // Stats, whose footer closes the page under the FAQ (mak, 2026-10-02).
-      (parts
-        ? (scoped.id === "stats" ? "" : parts.foot) +
-          renderPositionPeers(data, options) +
-          parts.faq +
-          (scoped.id === "stats" ? parts.foot : "")
-        : renderPositionPeers(data, options)) +
-      renderPlayerFaqSchema(faqBySection.get(scoped.id) ?? [], options) +
-      `</div>`
-    );
+    return renderScoped(sections, scoped.id, parts, parts ? parts.body : scoped.html);
   }
 
   // `is-default` marks the panel shown when the URL names no section - a class
