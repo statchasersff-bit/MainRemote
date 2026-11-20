@@ -19,6 +19,7 @@
  *    player card's photo well. A Patriots page has to read as StatChasers first.
  */
 
+import { sleeperIdFor } from "./player/data";
 import {
   escapeHtml,
   escapeJsonLd,
@@ -2146,9 +2147,14 @@ function renderDepthChart(
     movement: depthMovement,
     badge: (row) => injuryBadge(row, "sct-dpp-tag"),
     sidelined: (row) => isOutDesignation(row.injuryStatus),
+    // The rank chip finds the player by the row's ESPN id, translated to a
+    // Sleeper id (2026-11-20). `row.id` is the depth tool's own id - a
+    // FantasyPros-style number on the Fantasy columns - and was read as a
+    // Sleeper id, which could pick another player's rank. Without an ESPN id,
+    // the name inside this club, as before.
     pprRank: (pos, row) => {
       const ppr = pprFor(pos, ranks);
-      return ppr ? ppr.ranks.rankOf(/^\d+$/.test(row.id ?? "") ? row.id : null, team.abbreviation, row.name) : null;
+      return ppr ? ppr.ranks.rankOf(sleeperIdFor("espn", row.espnId), team.abbreviation, row.name) : null;
     },
   });
 

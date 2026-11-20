@@ -288,3 +288,45 @@ describe("/usage/: the fantasy table's percentile ranks the share printed under 
     assert.doesNotMatch(html, /share of the offense's snaps, season to date/i);
   });
 });
+
+describe("depth chart PPR rank chip: the player's own season rank (2026-11-20)", () => {
+  // Expected rank from the committed usage file: one entry per player, club
+  // rows merged and points per game weighted by games, ranked by position.
+  function expectedRank(slug) {
+    const minGames = Math.min(2, Math.max(1, usage.throughWeek - 1));
+    const merged = new Map();
+    let loose = 0;
+    for (const team of Object.values(usage.teams)) {
+      for (const p of team.players) {
+        if (p.fpPerGame === null || !p.games) continue;
+        if (!p.sleeperId) { merged.set(`loose${loose++}`, { pos: p.pos, slug: null, games: p.games, points: p.fpPerGame * p.games }); continue; }
+        const m = merged.get(p.sleeperId) ?? { pos: p.pos, slug: p.slug, games: 0, points: 0 };
+        m.games += p.games; m.points += p.fpPerGame * p.games; merged.set(p.sleeperId, m);
+      }
+    }
+    const me = [...merged.values()].find((m) => m.slug === slug);
+    const pool = [...merged.values()].filter((m) => m.pos === me.pos && m.games >= minGames).map((m) => m.points / m.games);
+    const mine = me.points / me.games;
+    // Players level on points a game share a band; any place inside it.
+    const near = (v) => Math.abs(v - mine) < 1e-9;
+    return { pos: me.pos, best: pool.filter((v) => v > mine && !near(v)).length + 1, worst: pool.filter((v) => v > mine || near(v)).length };
+  }
+  function assertRank(chip, exp, who) {
+    const m = /^([A-Z]+)(\d+)$/.exec(chip ?? "");
+    assert.ok(m, `${who}: a chip (${chip})`);
+    assert.equal(m[1], exp.pos);
+    assert.ok(+m[2] >= exp.best && +m[2] <= exp.worst, `${who}: ${chip} not within ${exp.pos}${exp.best}-${exp.worst}`);
+  }
+  async function chipFor(teamSlug, name) {
+    const d = await doc(`/team/${teamSlug}/depth-chart/`);
+    for (const chip of d.querySelectorAll(".sct-dpp-ppr")) {
+      const card = chip.closest("li, article, div");
+      if ((card?.textContent ?? "").includes(name)) return chip.textContent.replace("PPR", "").trim();
+    }
+    return null;
+  }
+  test("a traded player is ranked on his whole season, not one club's slice", async () => {
+    assertRank(await chipFor("san-francisco-49ers", "Keenan Allen"), expectedRank("keenan-allen"), "Keenan Allen");
+    assertRank(await chipFor("kansas-city-chiefs", "Josh Downs"), expectedRank("josh-downs"), "Josh Downs");
+  });
+});

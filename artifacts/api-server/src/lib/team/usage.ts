@@ -572,18 +572,40 @@ export interface PprRanks {
 }
 
 export function pprPositionRanks(doc: UsageDoc): PprRanks {
-  const pools: Record<UsagePos, Array<{ sleeperId: string | null; club: string; key: string; ppg: number }>> = {
+  const pools: Record<UsagePos, Array<{ sleeperId: string | null; clubs: string[]; key: string; ppg: number }>> = {
     QB: [],
     RB: [],
     WR: [],
     TE: [],
   };
   const minGames = Math.min(2, Math.max(1, doc.throughWeek - 1));
+  // One entry per player for the season (2026-11-20, with the target-share
+  // fix): a traded player's club rows are merged, points per game weighted by
+  // his games at each club, so his rank is his season's rather than one
+  // club's slice. Rows without a Sleeper id stay one per club.
+  const merged = new Map<string, { pos: UsagePos; clubs: string[]; key: string; games: number; points: number }>();
+  const loose: Array<{ pos: UsagePos; club: string; key: string; games: number; ppg: number }> = [];
   for (const [club, team] of Object.entries(doc.teams)) {
     for (const p of team.players) {
-      if (p.fpPerGame === null || !p.games || p.games < minGames) continue;
-      pools[p.pos].push({ sleeperId: p.sleeperId, club, key: foldName(p.name), ppg: p.fpPerGame });
+      if (p.fpPerGame === null || !p.games) continue;
+      if (!p.sleeperId) {
+        loose.push({ pos: p.pos, club, key: foldName(p.name), games: p.games, ppg: p.fpPerGame });
+        continue;
+      }
+      const m = merged.get(p.sleeperId) ?? { pos: p.pos, clubs: [], key: foldName(p.name), games: 0, points: 0 };
+      m.clubs.push(club);
+      m.games += p.games;
+      m.points += p.fpPerGame * p.games;
+      merged.set(p.sleeperId, m);
     }
+  }
+  for (const [sleeperId, m] of merged) {
+    if (m.games < minGames || !pools[m.pos]) continue;
+    pools[m.pos].push({ sleeperId, clubs: m.clubs, key: m.key, ppg: m.points / m.games });
+  }
+  for (const l of loose) {
+    if (l.games < minGames || !pools[l.pos]) continue;
+    pools[l.pos].push({ sleeperId: null, clubs: [l.club], key: l.key, ppg: l.ppg });
   }
   const bySleeper = new Map<string, number>();
   const byClubName = new Map<string, number>();
@@ -591,8 +613,10 @@ export function pprPositionRanks(doc: UsageDoc): PprRanks {
     pools[pos].sort((x, y) => y.ppg - x.ppg);
     pools[pos].forEach((entry, i) => {
       if (entry.sleeperId && !bySleeper.has(entry.sleeperId)) bySleeper.set(entry.sleeperId, i + 1);
-      const k = `${entry.club}:${entry.key}`;
-      if (!byClubName.has(k)) byClubName.set(k, i + 1);
+      for (const club of entry.clubs) {
+        const k = `${club}:${entry.key}`;
+        if (!byClubName.has(k)) byClubName.set(k, i + 1);
+      }
     });
   }
   return {
