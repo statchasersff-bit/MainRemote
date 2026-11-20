@@ -31,6 +31,16 @@ test("never past the league's logged week (a bye does not run ahead)", () => {
   assert.equal(phase.statsThroughWeek({ leagueWeek: 10, upcoming: [game(13)] }), 10);
 });
 
+test("club on its bye in the logged week: through that week (nothing left to play in it)", () => {
+  // Week 11 logged, his club idle in Week 11, next game Week 12 (audit 2026-11-20).
+  assert.equal(phase.statsThroughWeek({ leagueWeek: 11, upcoming: [game(12)] }), 11);
+});
+
+test("Monday night still to play: the club's week is not complete yet", () => {
+  // Sunday's games logged as Week 11; his club plays Monday, so its next game is still Week 11.
+  assert.equal(phase.statsThroughWeek({ leagueWeek: 11, upcoming: [game(11), game(12)] }), 10);
+});
+
 test("no next game (season over, or no schedule): the league week stands", () => {
   assert.equal(phase.statsThroughWeek({ leagueWeek: 18, upcoming: [] }), 18);
   assert.equal(phase.statsThroughWeek({ leagueWeek: 7 }), 7);

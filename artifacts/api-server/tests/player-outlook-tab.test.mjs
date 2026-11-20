@@ -631,3 +631,10 @@ test("Outlook FAQ: 'through Week N' is his club's completed week, not the Thursd
   assert.match(text, /through Week 3\b/);
   assert.doesNotMatch(text, /through Week 4\b/);
 });
+
+test("Outlook FAQ: a club that played Thursday reads through the week in progress", () => {
+  // Week 4 logged and his own Week 4 game already played (next game Week 5).
+  const s = state({ leagueWeek: 4, upcoming: state().upcoming.slice(1) });
+  const text = render(s).body.textContent;
+  assert.match(text, /through Week 4\b/);
+});
