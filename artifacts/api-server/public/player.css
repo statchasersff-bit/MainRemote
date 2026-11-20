@@ -21880,3 +21880,351 @@ button.scp-search-opt {
     transform: translateX(-50%);
   }
 }
+
+/*
+ * Section heads on desktop wear the phone design (mak, 2026-11-21: "for the
+ * section headers ... I want us to use the design we use on mobile views").
+ * Above 560px every section head below a tab's banner drops its colored bar
+ * for the phone card head: the accent icon bare at 24px, the title in Inter
+ * 800 ink, a solid 2px gold rule under them, a dek under the rule. Each
+ * tab's first banner (.scp-up-head) and the FAQ heading keep their design.
+ * Same markup and text; the phone rules (560px and under) are untouched.
+ */
+@media (min-width: 561px) {
+  .scp.scp.scp.scp.scp.scp :is(
+      .scp-ovp-bar:not(.scp-up-head),
+      .scp-stp-bar:not(.scp-up-head),
+      .scp-cp-bar,
+      .scp-glp-finishes > .scp-glp-bar,
+      .scp-bkp-sec > .scp-bkp-hero,
+      .scp-inp-bar,
+      .scp-olr-bar:not(.scp-up-head),
+      .scp-olp-bar,
+      .scp-bop-bar,
+      .scp-pr-hero,
+      .scp-ox-bgc-head
+    ) {
+    position: relative !important;
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 0 10px !important;
+    width: auto !important;
+    min-height: 0 !important;
+    height: auto !important;
+    margin: 18px 20px 14px !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: none !important;
+    box-shadow: none !important;
+    color: var(--tp-ink, #0b2345) !important;
+    text-align: left !important;
+  }
+
+  /* The bar's decoration goes: stripes, grids, art, rules, dividers. */
+  .scp.scp.scp.scp.scp.scp :is(
+      .scp-ovp-bar:not(.scp-up-head),
+      .scp-stp-bar:not(.scp-up-head),
+      .scp-cp-bar,
+      .scp-glp-finishes > .scp-glp-bar,
+      .scp-bkp-sec > .scp-bkp-hero,
+      .scp-inp-bar,
+      .scp-olr-bar:not(.scp-up-head),
+      .scp-olp-bar,
+      .scp-bop-bar,
+      .scp-pr-hero,
+      .scp-ox-bgc-head
+    ) :is(
+      .scp-ovp-bar-grid, .scp-ovp-bar-stripes,
+      .scp-stp-bar-rule, .scp-stp-bar-stripes,
+      .scp-cp-bar-rule, .scp-cp-bar-divider, .scp-cp-bar-art, .scp-cp-bar-stripes,
+      .scp-glp-rule, .scp-glp-stripes, .scp-bkp-rule,
+      .scp-inp-hero-rule, .scp-inp-stripes,
+      .scp-olr-bar-grid, .scp-olr-bar-stripes,
+      .scp-olp-bar-rule, .scp-olp-bar-divider, .scp-olp-bar-stripes,
+      .scp-bop-hero-rule, .scp-bop-stripes,
+      .scp-pr-rule, .scp-pr-stripes,
+      .scp-ox-bgc-rule, .scp-ox-bgc-slash,
+      .scp-olp-ball, .scp-pr-ball
+    ) {
+    display: none !important;
+  }
+
+  .scp.scp.scp.scp.scp.scp :is(
+      .scp-ovp-bar:not(.scp-up-head),
+      .scp-stp-bar:not(.scp-up-head),
+      .scp-cp-bar,
+      .scp-glp-finishes > .scp-glp-bar,
+      .scp-bkp-sec > .scp-bkp-hero,
+      .scp-inp-bar,
+      .scp-olr-bar:not(.scp-up-head),
+      .scp-olp-bar,
+      .scp-bop-bar,
+      .scp-pr-hero,
+      .scp-ox-bgc-head
+    )::before {
+    content: none !important;
+    display: none !important;
+  }
+
+  /* The rule: solid 2px gold under the icon and title. */
+  .scp.scp.scp.scp.scp.scp :is(
+      .scp-ovp-bar:not(.scp-up-head),
+      .scp-stp-bar:not(.scp-up-head),
+      .scp-cp-bar,
+      .scp-glp-finishes > .scp-glp-bar,
+      .scp-bkp-sec > .scp-bkp-hero,
+      .scp-inp-bar,
+      .scp-olr-bar:not(.scp-up-head),
+      .scp-olp-bar,
+      .scp-bop-bar,
+      .scp-pr-hero,
+      .scp-ox-bgc-head
+    )::after {
+    content: "" !important;
+    position: static !important;
+    display: block !important;
+    order: 1 !important;
+    flex: 1 1 100% !important;
+    width: auto !important;
+    height: 2px !important;
+    margin: 10px 0 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: var(--tp-c-d4af37, #d4af37) !important;
+    box-shadow: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .scp.scp.scp.scp.scp.scp :is(
+      .scp-ovp-bar:not(.scp-up-head),
+      .scp-stp-bar:not(.scp-up-head),
+      .scp-cp-bar,
+      .scp-glp-finishes > .scp-glp-bar,
+      .scp-bkp-sec > .scp-bkp-hero,
+      .scp-inp-bar,
+      .scp-olr-bar:not(.scp-up-head),
+      .scp-olp-bar,
+      .scp-bop-bar,
+      .scp-pr-hero,
+      .scp-ox-bgc-head
+    ) :is(.scp-stp-bar-text, .scp-cp-bar-text, .scp-olr-bar-text, .scp-olp-bar-text, .scp-pr-hero-t, .scp-bkp-hero-t, .scp-ox-bgc-head-t) {
+    display: contents !important;
+  }
+
+  /* The titles. */
+  .scp.scp.scp.scp.scp.scp :is(
+      .scp-ovp-bar:not(.scp-up-head),
+      .scp-stp-bar:not(.scp-up-head),
+      .scp-cp-bar,
+      .scp-glp-finishes > .scp-glp-bar,
+      .scp-bkp-sec > .scp-bkp-hero,
+      .scp-inp-bar,
+      .scp-olr-bar:not(.scp-up-head),
+      .scp-olp-bar,
+      .scp-bop-bar,
+      .scp-pr-hero,
+      .scp-ox-bgc-head
+    ) :is(
+      .scp-ovp-bar-title,
+      .scp-stp-bar-title,
+      .scp-cp-bar-title,
+      .scp-glp-bar-t,
+      .scp-bkp-title,
+      .scp-inp-bar-title,
+      .scp-olr-bar-title,
+      .scp-olp-bar-title,
+      .scp-bop-bar-title,
+      .scp-pr-title,
+      .scp-ox-bgc-h
+    ) {
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    width: auto !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: none !important;
+    color: var(--tp-ink, #0b2345) !important;
+    font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif !important;
+    font-size: 1.25rem !important;
+    font-style: normal !important;
+    font-weight: 800 !important;
+    font-stretch: normal !important;
+    line-height: 1.25 !important;
+    letter-spacing: 0 !important;
+    text-align: left !important;
+    text-shadow: none !important;
+    text-transform: none !important;
+  }
+
+  .scp.scp.scp.scp.scp.scp :is(
+      .scp-ovp-bar:not(.scp-up-head),
+      .scp-stp-bar:not(.scp-up-head),
+      .scp-cp-bar,
+      .scp-glp-finishes > .scp-glp-bar,
+      .scp-bkp-sec > .scp-bkp-hero,
+      .scp-inp-bar,
+      .scp-olr-bar:not(.scp-up-head),
+      .scp-olp-bar,
+      .scp-bop-bar,
+      .scp-pr-hero,
+      .scp-ox-bgc-head
+    ) :is(.scp-ovp-bar-title, .scp-stp-bar-title, .scp-cp-bar-title, .scp-glp-bar-t, .scp-bkp-title, .scp-inp-bar-title, .scp-olr-bar-title, .scp-olp-bar-title, .scp-bop-bar-title, .scp-pr-title, .scp-ox-bgc-h)::before,
+  .scp.scp.scp.scp.scp.scp :is(
+      .scp-ovp-bar:not(.scp-up-head),
+      .scp-stp-bar:not(.scp-up-head),
+      .scp-cp-bar,
+      .scp-glp-finishes > .scp-glp-bar,
+      .scp-bkp-sec > .scp-bkp-hero,
+      .scp-inp-bar,
+      .scp-olr-bar:not(.scp-up-head),
+      .scp-olp-bar,
+      .scp-bop-bar,
+      .scp-pr-hero,
+      .scp-ox-bgc-head
+    ) :is(.scp-ovp-bar-title, .scp-stp-bar-title, .scp-cp-bar-title, .scp-glp-bar-t, .scp-bkp-title, .scp-inp-bar-title, .scp-olr-bar-title, .scp-olp-bar-title, .scp-bop-bar-title, .scp-pr-title, .scp-ox-bgc-h)::after {
+    content: none !important;
+    display: none !important;
+  }
+
+  /* The icons: bare, 24px, in the bright accent. */
+  .scp.scp.scp.scp.scp.scp :is(
+      .scp-ovp-bar:not(.scp-up-head),
+      .scp-stp-bar:not(.scp-up-head),
+      .scp-cp-bar,
+      .scp-glp-finishes > .scp-glp-bar,
+      .scp-bkp-sec > .scp-bkp-hero,
+      .scp-inp-bar,
+      .scp-olr-bar:not(.scp-up-head),
+      .scp-olp-bar,
+      .scp-bop-bar,
+      .scp-pr-hero,
+      .scp-ox-bgc-head
+    ) :is(.scp-ovp-bar-icon, .scp-stp-bar-icon, .scp-cp-bar-icon, .scp-glp-ico, .scp-bkp-ico, .scp-inp-bar-icon, .scp-olr-bar-icon, .scp-olp-bar-icon, .scp-bop-bar-icon, .scp-pr-ico, .scp-ox-bgc-icon) {
+    position: static !important;
+    display: inline-flex !important;
+    flex: 0 0 auto !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 24px !important;
+    height: 24px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: none !important;
+    box-shadow: none !important;
+    color: var(--tp-c-f0c13b, #f0c13b) !important;
+  }
+
+  .scp.scp.scp.scp.scp.scp :is(
+      .scp-ovp-bar:not(.scp-up-head),
+      .scp-stp-bar:not(.scp-up-head),
+      .scp-cp-bar,
+      .scp-glp-finishes > .scp-glp-bar,
+      .scp-bkp-sec > .scp-bkp-hero,
+      .scp-inp-bar,
+      .scp-olr-bar:not(.scp-up-head),
+      .scp-olp-bar,
+      .scp-bop-bar,
+      .scp-pr-hero,
+      .scp-ox-bgc-head
+    ) :is(.scp-ovp-bar-icon, .scp-stp-bar-icon, .scp-cp-bar-icon, .scp-glp-ico, .scp-bkp-ico, .scp-inp-bar-icon, .scp-olr-bar-icon, .scp-olp-bar-icon, .scp-bop-bar-icon, .scp-pr-ico, .scp-ox-bgc-icon) svg {
+    display: block !important;
+    width: 22px !important;
+    height: 22px !important;
+    color: inherit !important;
+    stroke: currentColor;
+  }
+
+  /* What sat beside the title: a muted line under the rule. */
+  .scp.scp.scp.scp.scp.scp :is(
+      .scp-ovp-bar:not(.scp-up-head),
+      .scp-stp-bar:not(.scp-up-head),
+      .scp-cp-bar,
+      .scp-glp-finishes > .scp-glp-bar,
+      .scp-bkp-sec > .scp-bkp-hero,
+      .scp-inp-bar,
+      .scp-olr-bar:not(.scp-up-head),
+      .scp-olp-bar,
+      .scp-bop-bar,
+      .scp-pr-hero,
+      .scp-ox-bgc-head
+    ) :is(.scp-stp-bar-sub, .scp-cp-bar-sub, .scp-glp-bar-sum, .scp-bkp-sub, .scp-inp-bar-note, .scp-olr-bar-sub, .scp-olp-bar-sub, .scp-pr-sub, .scp-up-dek) {
+    order: 2 !important;
+    flex: 1 1 100% !important;
+    margin: 8px 0 0 !important;
+    padding: 0 !important;
+    color: var(--tp-c-5b6b82, #5b7290) !important;
+    font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif !important;
+    font-size: 13.5px !important;
+    font-weight: 400 !important;
+    line-height: 1.4 !important;
+    text-align: left !important;
+    text-transform: none !important;
+    letter-spacing: 0 !important;
+  }
+
+  /* The career table's NFL / Fantasy switch was drawn for the colored bar
+     (white words on it); on the white head it takes a light track. */
+  .scp.scp.scp.scp.scp.scp :is(
+      .scp-ovp-bar:not(.scp-up-head),
+      .scp-stp-bar:not(.scp-up-head),
+      .scp-cp-bar,
+      .scp-glp-finishes > .scp-glp-bar,
+      .scp-bkp-sec > .scp-bkp-hero,
+      .scp-inp-bar,
+      .scp-olr-bar:not(.scp-up-head),
+      .scp-olp-bar,
+      .scp-bop-bar,
+      .scp-pr-hero,
+      .scp-ox-bgc-head
+    ) .scp-stp-seg {
+    border: 1px solid var(--tp-c-d6e0ed, #d6e0ed) !important;
+    background: var(--tp-c-f2f5f9, #f2f5f9) !important;
+    box-shadow: none !important;
+  }
+
+  .scp.scp.scp.scp.scp.scp :is(
+      .scp-ovp-bar:not(.scp-up-head),
+      .scp-stp-bar:not(.scp-up-head),
+      .scp-cp-bar,
+      .scp-glp-finishes > .scp-glp-bar,
+      .scp-bkp-sec > .scp-bkp-hero,
+      .scp-inp-bar,
+      .scp-olr-bar:not(.scp-up-head),
+      .scp-olp-bar,
+      .scp-bop-bar,
+      .scp-pr-hero,
+      .scp-ox-bgc-head
+    ) .scp-stp-seg button[aria-pressed="false"] {
+    color: var(--tp-ink, #0b2345) !important;
+  }
+
+  /* Controls in a head (the career table's switch) stay on the title row,
+     at its right end. */
+  .scp.scp.scp.scp.scp.scp :is(
+      .scp-ovp-bar:not(.scp-up-head),
+      .scp-stp-bar:not(.scp-up-head),
+      .scp-cp-bar,
+      .scp-glp-finishes > .scp-glp-bar,
+      .scp-bkp-sec > .scp-bkp-hero,
+      .scp-inp-bar,
+      .scp-olr-bar:not(.scp-up-head),
+      .scp-olp-bar,
+      .scp-bop-bar,
+      .scp-pr-hero,
+      .scp-ox-bgc-head
+    ) .scp-stp-bar-ctl {
+    order: 0 !important;
+    flex: 0 0 auto !important;
+    margin: 0 0 0 auto !important;
+  }
+}
