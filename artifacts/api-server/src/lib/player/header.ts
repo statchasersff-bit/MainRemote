@@ -539,6 +539,11 @@ function injuryPill(status: string, href: string | null): string {
 function statusPill(data: PlayerPageData, options: PlayerRenderOptions): string {
   const status = data.designation?.injuryStatus ?? "";
   if (status.trim()) return injuryPill(status, sectionHref(data, options, "injury"));
+  // Missed the club's last game with no game status yet (the shared
+  // current-status rule, kind "pending"): the header says Pending, as the
+  // Injury tab, Depth Chart and Injury Watch do, not the roster's "Active"
+  // (Team Pages release 2026-11-20: Josh Jacobs, Ty Simpson).
+  if (data.currentStatus?.kind === "pending") return injuryPill("Pending", sectionHref(data, options, "injury"));
   const page = (data as { bioPage?: { status?: string } | null }).bioPage;
   if (page?.status === "active") return `<span class="scp-ptag-status is-good">Active</span>`;
   if (page?.status === "free-agent") return `<span class="scp-ptag-status is-none">Free Agent</span>`;

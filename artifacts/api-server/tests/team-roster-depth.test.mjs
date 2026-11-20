@@ -75,6 +75,9 @@ describe("Depth Chart links and statuses", () => {
         if (r.status !== 200) continue;
         const text = r.doc.body.textContent.replace(/\s+/g, " ");
         assert.match(text, /Status pending/, `${target}: pending on his page too`);
+        // The header pill says Pending too (shared current status), not the roster's "Active".
+        const hub = await page(`/player/${target}`);
+        assert.equal(hub.doc.querySelector(".scp-ptag-inj, .scp-ptag-status")?.textContent, "Pending", `${target}: header pill`);
         assert.doesNotMatch(text, /Status pending ?No injury designation/, `${target}: headline reads healthy`);
         checked++;
       }
