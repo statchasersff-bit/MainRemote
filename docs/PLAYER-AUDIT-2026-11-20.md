@@ -37,7 +37,7 @@ visible FAQ on every page; name, club and position match the data for all 649.
 | ID | Finding | Pri | Pages | Status |
 |---|---|---|---|---|
 | SEO-1 | Sitemap lists 92 section URLs that 302 to the profile (63 /stats/: all 34 kickers + players with no NFL game; 29 /game-log/). Googlebot fetched them 418 times in November. | P1 | 92 | **Fixed** fa457ee (app only; the plugin already skips what the API lists) |
-| SEO-2 | `dateModified` taken from the wrong season's schedule: 44 players wrong, 15 in the future (2025 Week 18 dated 2027-01-03). | P1 | 44 | **Fixed** b6ff460 (JSON-LD: needs your OK) |
+| SEO-2 | `dateModified` taken from the wrong season's schedule for players whose newest game is from an earlier season (44): 24 of them carried a date (94 fragments), 59 of those fragments in the future (2025 Week 18 dated 2027-01-03); the other 20 already emitted none. | P1 | 24 | **Fixed** b6ff460 (JSON-LD: needs your OK) |
 | SEO-8 | Outlook FAQ and starting-QB sentences say "through Week 11" from the Thursday game on, for clubs that have not played (Josh Allen live). The d4d63e2 fix covered the Stats FAQ only. | P1 | every Outlook, Thu-Sun | **Fixed** ea92984 (FAQ text: needs your OK) |
 | SEO-3 | 22% of Googlebot's player crawl (7,375 requests) goes to `?log=YYYY` archive variants. Canonicals are correct, so no duplicate indexing; the cost is crawl budget (hypothesis without GSC). | P1 | ~680 | Proposal (see G) |
 | SEO-4 | Hub FAQPage merges every tab's FAQ: 30-66 questions (mean 54), 87% from panels hidden by default, each also in its section's FAQPage. Hub vs section text containment 98-99% (confirms the prior investigation). | P2 | ~680 hubs | Decision (prior investigation item P2) |
@@ -232,8 +232,8 @@ Verification:
 - **Regression tests**: new tests fail on the original code and pass on the fix
   (traded game log 4 of 5 fail before; Outlook week 1 fails before).
 - **Full suite** (90 files, serially, against the production code d4d63e2 run
-  the same way): production 1,771 pass / 14 fail / 1 skipped; branch 1,781 pass
-  / 14 fail / 1 skipped. The 10 extra passes are the new tests. The 14 failures
+  the same way): production 1,771 pass / 14 fail / 1 skipped; branch (c9f84bc) 1,784
+  pass / 14 fail / 1 skipped. The 13 extra passes are the new tests. The 14 failures
   are the same named tests in every file (the known data-drift set: matchup 1,
   player-outlook-title 1, player 3, schedule 3, table-armour 2, team-coaching 1,
   team-depth-chart 2, team 1).
