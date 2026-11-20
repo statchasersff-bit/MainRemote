@@ -79,6 +79,16 @@ export interface UsagePlayer {
   seasonSnapShare?: number | null;
   /** His carries / the club's carries in the games he played (usage-share.ts). */
   playedCarryShare?: number | null;
+  /**
+   * The counts behind targetShare / snapShare once buildUsageView has swapped
+   * them for the games-played definition: his games for this club, the
+   * club's targets and offensive snaps in those games, and his snaps in them
+   * (target-share fix B, 2026-11-20: the FAQ prints counts beside the share).
+   */
+  playedGames?: number;
+  playedTeamTargets?: number;
+  playedSnaps?: number;
+  playedTeamSnaps?: number;
   airYardsShare: number | null;
   wopr: number | null;
   adot: number | null;
@@ -366,6 +376,10 @@ export function buildUsageView(
       targetShare: ps.targetShare ?? p.targetShare,
       snapShare: ps.snapShare ?? p.snapShare,
       playedCarryShare: ps.carryShare,
+      playedGames: ps.games,
+      playedTeamTargets: ps.teamTargets,
+      playedSnaps: ps.snaps,
+      playedTeamSnaps: ps.teamSnaps,
     };
   });
   const here = all.filter(current);

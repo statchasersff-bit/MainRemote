@@ -8,21 +8,25 @@
  *     passes he has thrown this season - so a receiver's page names the man
  *     under center NOW, and knows when he is not the one who threw most of the
  *     season (Minshew for Brissett, 2026-11-02);
- *   - the player's own row of the team usage report (data/team/usage_<season>.json:
- *     xFP, FPOE, target share, first-read share, snaps), his trends, and his
- *     rank on each among the qualified players at his position league-wide;
+ *   - the player's season in the team usage report (data/team/usage_<season>.json:
+ *     xFP, FPOE, target share, first-read share, snaps), every club summed
+ *     under the player pages' one share definition (usage-share.ts), his
+ *     trends, and his rank on each among the qualified players at his
+ *     position league-wide;
  *   - his rank on the rest-of-season board (data/rankings/ros-<season>.csv).
  *
  * Every function returns null when its file has nothing for him; the tab
  * leaves the section out rather than guessing.
  */
 
-import { loadDepthCharts, loadGameLogs } from "./data";
+import { loadDepthCharts, loadGameLogs, loadPlayers } from "./data";
+import { computeGameLogStats } from "./metrics";
 import type { Player } from "./types";
 import { getTeamByAbbreviation, type NflTeam } from "../team/teams";
 import { getUsageDoc, trend, type Trend, type UsagePlayer } from "../team/usage";
 import { getRankings, normalizeName } from "../rankings/rankings-data";
 import { minGames } from "./outlook-tab-data";
+import { playedSeasonRow, playedSeasonRows, type PlayedSeasonRow } from "../team/usage-share";
 
 /* ------------------------------------------------------------ the passer */
 
@@ -110,12 +114,24 @@ function finite(v: unknown): v is number {
 }
 
 /**
- * The player's row of the usage report, with his league ranks.
+ * The player's season in the usage report, with his league ranks.
  *
- * The field for a rank is every player at his position, on any club, who
- * qualifies for the report and has at least the Outlook's games threshold -
- * so a WR's "10th of 96" here and the drivers' "10th of 116" (a different
- * table, a different threshold) are both true and both labelled.
+ * One definition with the Overview meter and the Stats card (mak,
+ * 2026-11-20): `row` is his season at EVERY club, from usage-share.ts
+ * playedSeasonRow() - target share and snap share over the games he played,
+ * counts summed, per-game rates weighted by his games at each club - so a
+ * player traded last week is not read off his one-game row for the new club.
+ * Points per game are the player header's: his PPR points over his games
+ * played in the game logs (metrics.ts computeGameLogStats), and FPOE is
+ * those points less his expected points, so the tiles add up.
+ *
+ * The field for a rank is one entry per player at his position, every club
+ * summed the same way, who qualifies under the report's own rule and has at
+ * least the Outlook's games threshold - the same field the drivers' Target
+ * share row uses.
+ *
+ * Club-relative readings stay with his current club: the red-zone lead and
+ * the red-zone touches printed beside it, and the teammates ahead of him.
  */
 export function playerUsage(player: Player, team: NflTeam | null, season: number): PlayerUsage | null {
   if (!team || !player.position) return null;
@@ -124,31 +140,50 @@ export function playerUsage(player: Player, team: NflTeam | null, season: number
   const code = Object.keys(doc.teams).find((k) => getTeamByAbbreviation(k)?.slug === team.slug);
   const club = code ? doc.teams[code] : undefined;
   if (!club) return null;
-  const row = club.players.find((p) => p.sleeperId === player.id || (p.slug && p.slug === player.slug));
-  if (!row || row.games < 1) return null;
+  // His row for the club he is on now; none when he has not played for it
+  // yet (signed or traded since his last game), and his season is still his.
+  const clubRow = club.players.find((p) => p.sleeperId === player.id || (p.slug && p.slug === player.slug)) ?? null;
+  const season_ = playedSeasonRow(season, { id: clubRow?.sleeperId ?? player.id, slug: clubRow?.slug ?? player.slug });
+  if (!season_ || season_.row.games < 1) return null;
+  const min = minGames(doc.throughWeek);
+  const ppg = headerPpg(season);
+  const withPoints = (r: PlayedSeasonRow): UsagePlayer => {
+    const pts = r.row.sleeperId ? ppg.get(r.row.sleeperId) : undefined;
+    if (pts === undefined || !finite(r.row.xfpPerGame)) return r.row;
+    // FPOE off the printed figures, so the three tiles subtract cleanly.
+    const shown = Number(pts.toFixed(1));
+    return { ...r.row, fpPerGame: pts, fpoePerGame: Math.round((shown - r.row.xfpPerGame) * 10) / 10 };
+  };
+  // His club's red-zone touches, not the season sum: the sentence beside it names the club.
+  const row: UsagePlayer = { ...withPoints(season_), rzTouches: clubRow?.rzTouches ?? 0 };
 
   const through = club.games.length ? Math.max(...club.games) : doc.throughWeek;
-  const min = minGames(doc.throughWeek);
-  const field = Object.values(doc.teams)
-    .flatMap((t) => t.players)
-    .filter((p) => p.pos === row.pos && p.qualified && p.games >= min);
+  const inField = (r: PlayedSeasonRow) => r.qualified && r.row.games >= min;
+  const field = playedSeasonRows(season, row.pos).filter(inField).map(withPoints);
   const ranks: PlayerUsage["ranks"] = {};
-  for (const metric of USAGE_RANKED) {
-    const mine = row[metric];
-    if (!finite(mine)) continue;
-    const values = field.map((p) => p[metric]).filter(finite).sort((a, b) => b - a);
-    if (!values.length || !(row.qualified && row.games >= min)) continue;
-    ranks[metric] = { rank: values.findIndex((v) => v <= mine) + 1 || values.length, of: values.length };
+  if (inField(season_)) {
+    for (const metric of USAGE_RANKED) {
+      const mine = row[metric];
+      if (!finite(mine)) continue;
+      const values = field.map((p) => p[metric]).filter(finite).sort((a, b) => b - a);
+      if (!values.length) continue;
+      ranks[metric] = { rank: values.findIndex((v) => v <= mine) + 1 || values.length, of: values.length };
+    }
   }
 
   const rzMax = club.players.reduce((m, p) => Math.max(m, p.rzTouches), 0);
   const rzLeaders = club.players.filter((p) => p.rzTouches === rzMax).length;
+  // Teammates on his club now with a bigger target share under the same
+  // definition, among the players who would be ranked (one big game on a
+  // short sample does not put a man ahead of him).
   const aheadOfHim =
     row.pos === "WR" || row.pos === "TE"
       ? club.players
-          .filter((p) => p.pos === row.pos && p !== row && (p.targetShare ?? 0) > (row.targetShare ?? 0))
-          .sort((a, b) => (b.targetShare ?? 0) - (a.targetShare ?? 0))
-          .map((p) => p.name)
+          .filter((p) => p.pos === row.pos && p !== clubRow && p.sleeperId !== row.sleeperId)
+          .map((p) => playedSeasonRow(season, { id: p.sleeperId, slug: p.slug }))
+          .filter((p): p is PlayedSeasonRow => p !== null && inField(p) && (p.row.targetShare ?? 0) > (row.targetShare ?? 0))
+          .sort((a, b) => (b.row.targetShare ?? 0) - (a.row.targetShare ?? 0))
+          .map((p) => p.row.name)
       : [];
 
   return {
@@ -160,10 +195,32 @@ export function playerUsage(player: Player, team: NflTeam | null, season: number
     ts: trend(row.weekly, "ts"),
     snap: trend(row.weekly, "snap"),
     ranks,
-    leadsRz: rzMax > 0 && row.rzTouches === rzMax,
-    rzCoLead: rzMax > 0 && row.rzTouches === rzMax && rzLeaders > 1,
+    leadsRz: rzMax > 0 && clubRow?.rzTouches === rzMax,
+    rzCoLead: rzMax > 0 && clubRow?.rzTouches === rzMax && rzLeaders > 1,
     aheadOfHim,
   };
+}
+
+const ppgCache = new WeakMap<object, Map<string, number>>();
+
+/**
+ * Every player's PPR points per game this season, the header's figure
+ * (header.ts headerBoard: computeGameLogStats over his game log, PPR), by
+ * Sleeper id. Cached per game-log snapshot (loadGameLogs returns the same
+ * object until the logs are reloaded).
+ */
+function headerPpg(season: number): Map<string, number> {
+  const logs = loadGameLogs(season);
+  const hit = ppgCache.get(logs);
+  if (hit) return hit;
+  const positions = new Map(loadPlayers().map((p) => [p.id, p.position ?? null]));
+  const out = new Map<string, number>();
+  for (const [id, entries] of Object.entries(logs)) {
+    const s = computeGameLogStats(entries, positions.get(id) ?? null, "ppr");
+    if (s && s.gamesPlayed > 0) out.set(id, s.ppg);
+  }
+  ppgCache.set(logs, out);
+  return out;
 }
 
 /* ------------------------------------------------------------- ROS board */

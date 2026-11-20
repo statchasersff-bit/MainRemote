@@ -314,17 +314,23 @@ function oneTargetSharePool(
   measures: ReturnType<typeof outlookMeasures>,
   usage: PlayerPageData["usage"] | null,
 ): ReturnType<typeof outlookMeasures> {
-  const r = usage?.ranks.targetShare;
+  // Target-share fix B (mak, 2026-11-20): for the season the usage report
+  // covers, the row is the tiles' figure and rank - all clubs, games played -
+  // ranked or not; the RB Snap share cell is the same games-played share.
+  const r = usage?.ranks.targetShare ?? null;
   const v = usage?.row.targetShare;
-  if (!measures || !r || typeof v !== "number") return measures;
+  const snap = usage?.row.snapShare;
+  if (!measures || !usage || measures.season !== usage.season) return measures;
   return {
     ...measures,
     drivers: measures.drivers.map((d) => {
-      if (d.label !== "Target share") return d;
+      if (d.label !== "Target share" || typeof v !== "number") return d;
+      if (!r) return { ...d, value: pct(v), rank: null, of: 0, tier: null, word: null };
       const tier = tierOf(r.rank, r.of);
       const word = (["Heavy", "Moderate", "Low"] as const)[tier === "good" ? 0 : tier === "mid" ? 1 : 2];
       return { ...d, value: pct(v), rank: r.rank, of: r.of, tier, word };
     }),
+    advanced: measures.advanced.map((c) => (c.label === "Snap share" && typeof snap === "number" ? { ...c, value: pct(snap) } : c)),
   };
 }
 
@@ -732,7 +738,7 @@ function opportunityParagraph(m: Model): string | null {
     const fr = uRank(m, "firstReadShare");
     if (n(row.targetShare)) {
       parts.push(
-        `${possessive(m.last)} ${pct(row.targetShare)} target share${ts ? ` ranks ${ordinal(ts.rank)} among ${ts.of} qualifying ${noun(pos)}s` : " leads his role"}` +
+        `${possessive(m.last)} ${pct(row.targetShare)} target share${ts ? ` ranks ${ordinal(ts.rank)} among ${ts.of} qualifying ${noun(pos)}s` : ` comes over his ${row.games} game${row.games === 1 ? "" : "s"} played`}` +
           (n(row.airYardsShare) && ays ? `, and his ${pct(row.airYardsShare)} air-yards share ${ordinal(ays.rank)}` : "") +
           `.`,
       );

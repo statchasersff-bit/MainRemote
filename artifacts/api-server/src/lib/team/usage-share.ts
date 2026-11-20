@@ -240,3 +240,145 @@ export function playedShareAt(
   }
   return { ...base, teamCarries, carryShare: teamCarries > 0 ? round((carries / teamCarries) * 100, 1) : null };
 }
+
+/**
+ * Target-share fix B (mak, 2026-11-20: "Overview, Stats and Outlook use ONE
+ * definition"): a player's season as ONE usage row, every club summed, for
+ * the Outlook tab's tiles, read, drivers and ranks. Append-only, like the
+ * block above.
+ *
+ *   - targetShare and snapShare are playedShare()'s: his count over his
+ *     clubs' count in the games he played. snapShare keeps one decimal here
+ *     (the Stats card's precision) so ranks do not tie on a whole percent;
+ *     the Outlook tile still prints it whole.
+ *   - counts (targets, carries, dropbacks, wopp, ...) are summed over his
+ *     clubs, and games is his games played at every club;
+ *   - per-game and rate fields the report keeps only per club (xFP, FPOE,
+ *     first-read share, air-yards share, the backfield shares, the QB rates)
+ *     are averaged over his clubs weighted by his games at each, so a traded
+ *     player is never read off his one-game new-club row;
+ *   - weekly is his games at every club in week order, for the trends;
+ *   - qualified is the report's own rule (buildUsage.mjs qualifies) applied
+ *     to the summed counts against the season's club games to date.
+ */
+export interface PlayedSeasonRow {
+  key: string;
+  row: UsagePlayer;
+  share: PlayedShare;
+  qualified: boolean;
+}
+
+const WEIGHTED = [
+  "xfpPerGame",
+  "fpoePerGame",
+  "fpPerGame",
+  "firstReadShare",
+  "airYardsShare",
+  "wopr",
+  "touchShare",
+  "woppShare",
+  "rzOppShare",
+  "designedRunRate",
+  "scrambleRate",
+  "sackRate",
+  "passAdot",
+  "yacPerAtt",
+] as const;
+const SUMMED = [
+  "targets",
+  "receptions",
+  "recYards",
+  "carries",
+  "kneels",
+  "kneelYards",
+  "passAttempts",
+  "snaps",
+  "ezTargets",
+  "deepTargets",
+  "rzTouches",
+  "rushYards",
+  "gzCarries",
+  "wopp",
+  "hvt",
+  "dropbacks",
+] as const;
+
+function mergeRows(doc: Doc, key: string, rows: Array<{ club: string; row: Row }>, share: PlayedShare): PlayedSeasonRow {
+  // The row he is on now (his last club) carries the fields that are not
+  // season figures (ids, name, the report's percentiles).
+  const lastClub = share.clubs[share.clubs.length - 1]?.club;
+  const base = (rows.find((r) => r.club === lastClub) ?? rows[rows.length - 1]!).row;
+  const merged: Record<string, unknown> = { ...base };
+  for (const k of SUMMED) {
+    const vals = rows.map((r) => (r.row as unknown as Record<string, unknown>)[k]).filter((v): v is number => typeof v === "number");
+    if (vals.length) merged[k] = vals.reduce((s, v) => s + v, 0);
+  }
+  for (const k of WEIGHTED) {
+    let sum = 0;
+    let weight = 0;
+    for (const { row } of rows) {
+      const v = (row as unknown as Record<string, unknown>)[k];
+      if (typeof v !== "number" || !Number.isFinite(v) || !row.games) continue;
+      sum += v * row.games;
+      weight += row.games;
+    }
+    if (rows.length > 1) merged[k] = weight ? round(sum / weight, 1) : null;
+  }
+  merged.games = share.games;
+  merged.targetShare = share.targetShare;
+  merged.snapShare = share.teamSnaps > 0 ? round((share.snaps / share.teamSnaps) * 100, 1) : null;
+  merged.woppPerGame = share.games ? round(((merged.wopp as number) ?? 0) / share.games, 1) : null;
+  merged.adot = share.adot;
+  // His games at every club, one entry a week: the played one where a week
+  // appears on two clubs' rows (the club he was not with that week is null).
+  const byWeek = new Map<number, UsagePlayer["weekly"][number]>();
+  for (const { row } of rows) {
+    for (const w of row.weekly ?? []) {
+      const had = byWeek.get(w.week);
+      const plays = w.ts != null || w.snap != null || w.snapN != null;
+      if (!had || plays) byWeek.set(w.week, w);
+    }
+  }
+  merged.weekly = [...byWeek.values()].sort((a, b) => a.week - b.week);
+  const row = merged as unknown as UsagePlayer;
+  const g = Math.max(1, ...rows.map((r) => doc.teams[r.club]?.games?.length ?? 0));
+  const qualified =
+    row.pos === "QB" ? row.dropbacks >= 12 * g : row.pos === "RB" ? row.wopp >= 5 * g : row.targets >= 1.5 * g;
+  return { key, row: { ...row, qualified }, share, qualified };
+}
+
+const seasonRowCache = new Map<string, PlayedSeasonRow[]>();
+
+/** Every player's season row at a position (all positions with pos null), one per player. */
+export function playedSeasonRows(season: number, pos: string | null = null): PlayedSeasonRow[] {
+  const doc = getUsageDoc(season) as (Doc & { teams: Record<string, { games?: number[] }> }) | null;
+  if (!doc?.teams) return [];
+  const cacheKey = `${season}|${pos ?? "*"}|${doc.builtAt ?? ""}`;
+  const hit = seasonRowCache.get(cacheKey);
+  if (hit) return hit;
+  const byPlayer = new Map<string, Array<{ club: string; row: Row }>>();
+  for (const x of rowsFor(doc, (r) => pos === null || r.pos === pos)) {
+    const key = x.row.sleeperId ?? x.row.id;
+    byPlayer.set(key, [...(byPlayer.get(key) ?? []), x]);
+  }
+  const out: PlayedSeasonRow[] = [];
+  for (const [key, rows] of byPlayer) {
+    const share = sumRows(doc, rows);
+    if (share) out.push(mergeRows(doc, key, rows, share));
+  }
+  seasonRowCache.set(cacheKey, out);
+  return out;
+}
+
+/** One player's season row, by Sleeper id (or slug), or null. */
+export function playedSeasonRow(
+  season: number,
+  player: { id?: string | null; slug?: string | null; position?: string | null },
+): PlayedSeasonRow | null {
+  const rows = playedSeasonRows(season, null);
+  return (
+    rows.find((r) => player.id != null && r.row.sleeperId === player.id) ??
+    rows.find((r) => player.slug != null && r.row.slug === player.slug) ??
+    null
+  );
+}

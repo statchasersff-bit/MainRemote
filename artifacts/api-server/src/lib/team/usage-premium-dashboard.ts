@@ -144,7 +144,7 @@ function snapPanel(view: UsageView, team: NflTeam): string {
     `</div>` +
     `<div class="sct-up-scroll"><table class="sct-up-table sct-up-snap-table">` +
     `<thead><tr><th scope="col">Player</th><th scope="col" class="is-num">Snaps</th>` +
-    `<th scope="col" class="is-bar"><abbr title="Offensive snaps over the team's offensive snaps in the window">Snap %</abbr></th>` +
+    `<th scope="col" class="is-bar"><abbr title="Offensive snaps over the team's offensive snaps in the window. Season is the club season share: every club game, games he missed included. His snap share on his player page and in the fantasy table below is over the games he played">Snap %</abbr></th>` +
     `<th scope="col" class="is-chg"><abbr title="${e(caption)}">Change</abbr></th></tr></thead>` +
     `<tbody>${rows}</tbody></table></div>` +
     `<p class="sct-up-note" data-snap-caption><span class="sct-up-note-icon">${ICON["info"]}</span><span>${e(caption)}</span></p>` +
@@ -199,8 +199,8 @@ function boardPanel(kind: "targets" | "carries", view: UsageView): string {
   // Per-player shares elsewhere (and on player pages) are over the games he
   // played (usage-share.ts).
   const seasonTitle = isT
-    ? `Share of the club's season targets through Week ${view.throughWeek}, games he missed included, so the column adds up to 100%; his own share in the games he played is on his player page`
-    : `Share of the club's season carries (scrambles included, kneel-downs not) through Week ${view.throughWeek}, games he missed included, so the column adds up to 100%`;
+    ? `Club season share: his share of the club's season targets through Week ${view.throughWeek}, games he missed included, so the column adds up to 100%. His target share on his player page and in the fantasy table below is over the games he played`
+    : `Club season share: his share of the club's season carries (scrambles included, kneel-downs not) through Week ${view.throughWeek}, games he missed included, so the column adds up to 100%`;
   const recentTitle = `Share over the player's last three games; the badge is its gap to the season share, from ${BADGE_FROM}%`;
   return (
     `<section class="sct-up-panel sct-up-board" aria-label="${e(isT ? "Target Distribution" : "Rushing Distribution")}">` +
@@ -213,7 +213,7 @@ function boardPanel(kind: "targets" | "carries", view: UsageView): string {
         ? `<th scope="col" class="is-num">Rec</th><th scope="col" class="is-num"><abbr title="Receiving yards">Yds</abbr></th>`
         : `<th scope="col" class="is-num"><abbr title="Rushing yards on these carries">Yds</abbr></th><th scope="col" class="is-num"><abbr title="Yards per carry">YPC</abbr></th>`
       : "") +
-    `<th scope="col" class="is-bar"><abbr title="${e(seasonTitle)}"><span class="sct-up-th-season">Club </span>share</abbr></th><th scope="col" class="is-recent"><abbr title="${e(recentTitle)}">Last 3<span class="sct-up-th-wk"> wk</span></abbr></th>` +
+    `<th scope="col" class="is-bar"><abbr title="${e(seasonTitle)}"><span class="sct-up-th-season">Club season </span>share</abbr></th><th scope="col" class="is-recent"><abbr title="${e(recentTitle)}">Last 3<span class="sct-up-th-wk"> wk</span></abbr></th>` +
     (isT ? `<th scope="col" class="is-num is-air"><abbr title="Share of the team's air yards">Air yds</abbr></th>` : "") +
     `</tr></thead><tbody>${rows}${othersRow}</tbody></table></div>` +
     `</div></section>`

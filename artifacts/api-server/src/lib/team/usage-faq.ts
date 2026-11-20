@@ -95,12 +95,26 @@ export function usageFaq(view: UsageView, team: NflTeam): UsageFaq[] {
     const qb = withSnaps.filter((p) => p.pos === "QB").sort((a, b) => (b.snaps ?? 0) - (a.snaps ?? 0))[0];
     const others = withSnaps.filter((p) => p.pos !== "QB").sort((a, b) => (b.snaps ?? 0) - (a.snaps ?? 0)).slice(0, 3);
     const line = (p: UsagePlayer) => `${p.name} (${p.snaps} snaps, ${p.snapShare}%)`;
+    // One set of games per sentence (target-share fix B, mak 2026-11-20):
+    // his snaps over the club's snaps in the games he played, the share the
+    // page prints for him; the club's whole-season total only when he played
+    // every game, where the two are the same count.
+    const qbLine = (p: UsagePlayer): string => {
+      const den = p.playedTeamSnaps ?? 0;
+      if (den > 0 && p.playedSnaps != null) {
+        const share = Math.round((100 * p.playedSnaps) / den);
+        return den === teamSnaps
+          ? `${p.name} has played ${p.playedSnaps} of the ${poss} ${teamSnaps} offensive snaps (${share}%) ${wk}. `
+          : `${p.name} has played ${p.playedSnaps} of the ${poss} ${den} offensive snaps in the ${plural(p.playedGames ?? 0, "game")} he played (${share}%) ${wk}. `;
+      }
+      return `${p.name} has played ${p.snaps} of the ${poss} ${teamSnaps} offensive snaps (${Math.round((100 * (p.snaps ?? 0)) / teamSnaps)}%) ${wk}. `;
+    };
     ask(
       `Who plays the most offensive snaps for the ${nick}?`,
       teamSnaps && others.length
-        ? (qb ? `${qb.name} has played ${qb.snaps} of the ${poss} ${teamSnaps} offensive snaps (${qb.snapShare}%) ${wk}. ` : "") +
+        ? (qb ? qbLine(qb) : "") +
             `Among the backs, receivers and tight ends, ${list(others.map(line))} lead${others.length === 1 ? "s" : ""} the team. ` +
-            `Snap share is a player's offensive snaps over the team's in the games counted.`
+            `Snap share is a player's offensive snaps over the team's in the games he played.`
         : null,
     );
   }
@@ -111,7 +125,8 @@ export function usageFaq(view: UsageView, team: NflTeam): UsageFaq[] {
     rb1
       ? `${rb1.name} is the ${poss} lead back ${wk} with ${plural(rb1.carries, "carry", "carries")}` +
           (rb1.touchShare != null ? `, ${rb1.touchShare}% of the running backs' touches` : "") +
-          (rb1.snapShare != null ? `, on ${rb1.snapShare}% of the offensive snaps` : "") +
+          // The club's whole season, like the touch share beside it.
+          ((rb1.seasonSnapShare ?? rb1.snapShare) != null ? `, on ${rb1.seasonSnapShare ?? rb1.snapShare}% of the offensive snaps` : "") +
           `.` +
           (rb2 ? ` ${rb2.name} is next with ${plural(rb2.carries, "carry", "carries")}${rb3 && rb3.carries > 0 ? `, then ${rb3.name} with ${rb3.carries}` : ""}.` : "") +
           ` Carries count scrambles and exclude kneel-downs.`
@@ -234,8 +249,9 @@ export function usageFaq(view: UsageView, team: NflTeam): UsageFaq[] {
     const qb = view.qb;
     ask(
       `How are snap counts, targets and carries counted on this page?`,
-      `Snaps are offensive snaps from the official gamebooks, and snap share is a player's snaps over the ${poss} offensive snaps in the games counted. ` +
-        `A target is a pass attempt with an intended receiver, so throwaways and spikes carry none; target share is a player's targets over the team's ${tgt}. ` +
+      `Snaps are offensive snaps from the official gamebooks, and snap share is a player's snaps over the ${poss} offensive snaps in the games he played. ` +
+        `A target is a pass attempt with an intended receiver, so throwaways and spikes carry none; target share is a player's targets over the team's targets in the games he played. ` +
+        `The Target and Rushing Distribution boards show each player's club season share instead, his share of all ${tgt} team targets (or carries) ${wk} with the games he missed included, so the column adds up to 100%. ` +
         `Carries include quarterback scrambles and exclude kneel-downs${kneels != null ? ` (${kneels} ${wk})` : ""}, which the official box score counts as rushing attempts` +
         (qb && qb.kneels ? `; ${surname(qb.name)}'s official total is his ${qb.carries} carries here plus ${qb.kneels} kneels` : "") +
         `. Situational shares are of the running backs' carries + targets, not snaps, and each row prints the number of opportunities it is measured on.`,
@@ -264,8 +280,9 @@ export function usageFaq(view: UsageView, team: NflTeam): UsageFaq[] {
         ? p.woppShare != null
           ? ` It comes from ${p.woppShare}% of the backfield's weighted opportunities (carries + 2 × targets)${p.qualified && p.leagueRank.rank ? `, RB${p.leagueRank.rank} per active game in the NFL` : ""}.`
           : ""
-        : p.targetShare != null
-          ? ` It comes from ${art(f1(p.targetShare))} ${f1(p.targetShare)}% target share${p.wopr != null ? ` and a ${p.wopr.toFixed(2)} WOPR` : ""}.`
+        : (p.seasonTargetShare ?? p.targetShare) != null
+          ? // WOPR is built from the club season shares, so the target share beside it is the club season share too.
+            ` It comes from ${art(f1((p.seasonTargetShare ?? p.targetShare)!))} ${f1((p.seasonTargetShare ?? p.targetShare)!)}% share of the team's season targets${p.wopr != null ? ` and a ${p.wopr.toFixed(2)} WOPR` : ""}.`
           : "";
     ask(
       `Which ${nick} player has the best fantasy football usage profile?`,
