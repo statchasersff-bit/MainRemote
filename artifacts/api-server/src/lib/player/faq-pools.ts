@@ -19,6 +19,7 @@ import { designationSeverity, lastName, matchupBand, STARTSIT_BASE } from "./hea
 import { leagueFit } from "./outlook-tab";
 import { aPos, count, listWords, one, ordinal, tabHref, whole, word, type FaqCandidate } from "./faq-engine";
 import { rosteredPct } from "./rounding";
+import { statsThroughWeek } from "./season-phase";
 
 /* ---------------------------------------------------------------- context */
 
@@ -278,9 +279,11 @@ export function statsPool(data: PlayerPageData, options: PlayerRenderOptions): F
   const t = cur?.totals;
   const gp = cur?.gamesPlayed ?? 0;
   const per = (v: number, digits = 1) => (gp ? (v / gp).toFixed(digits) : "0");
-  // The league's week, not his last game: an injured player's season is
-  // still "through Week 3".
-  const thru = (data.leagueWeek ?? 0) > 0 ? ` through Week ${data.leagueWeek}` : "";
+  // His club's completed week, not his last game: an injured player's season
+  // is still "through Week 3". Not the league's logged week either, which
+  // names the week in progress from Thursday night (statsThroughWeek).
+  const thruWeek = statsThroughWeek(data);
+  const thru = thruWeek > 0 ? ` through Week ${thruWeek}` : "";
   const gameLog = { href: tabHref(data, options, "game-log"), text: `See how those numbers break down week by week.` };
   /** " His high was 280 yards, in Week 3 at the 49ers." (two games or more) */
   const high = (key: string, unit: string): string => {

@@ -47,6 +47,7 @@ import { collegeCard, type AdvCard, type AdvMetric, type CollegeCard, type LogSe
 import type { GameLogEntry } from "./types";
 import { lastName, teamInk } from "./header";
 import { redraftPlayerUrl } from "./redraft-link";
+import { statsThroughWeek } from "./season-phase";
 
 const DASH = "-";
 
@@ -1211,7 +1212,10 @@ function careerRateTiles(data: PlayerPageData, c: Career): RateTile[] {
   // a healthy backup who did not get into a game was still available for
   // it, so the share must not read as an injury or availability rate.
   if (games > 0) {
-    const through = c.leagueWeek > 0 && c.leagueWeek < 18 && lastSeason === c.leagueSeason ? `${lastSeason} Week ${c.leagueWeek}` : String(lastSeason);
+    // His club's completed week (statsThroughWeek), which is what the team-game
+    // count above counts: the league's logged week names the week in progress.
+    const thruWeek = statsThroughWeek(data);
+    const through = thruWeek > 0 && c.leagueWeek < 18 && lastSeason === c.leagueSeason ? `${lastSeason} Week ${thruWeek}` : String(lastSeason);
     tiles.push({
       value: `${Math.min(100, Math.round((total.gp / games) * 100))}%`,
       title: "Games appeared in",

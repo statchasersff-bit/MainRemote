@@ -18,6 +18,25 @@ import type { GameLogEntry } from "./types";
 import { getEntryPoints } from "./scoring";
 
 /**
+ * The week a player's current-season numbers are complete through, for copy
+ * that says "through Week N".
+ *
+ * `leagueWeek` is the highest week anyone has logged, so from Thursday night
+ * it already names the week in progress: after the Week 11 opener every
+ * player read "through Week 11" while his own club had not played it yet. His
+ * numbers are complete through the week before his club's next game, and
+ * never past the league's logged week. Without a next game (season over,
+ * no schedule) the league week stands, as before. An injured player still
+ * reads his club's week, not his last appearance.
+ */
+export function statsThroughWeek(data: PlayerPageData): number {
+  const league = data.leagueWeek ?? 0;
+  const next = (data.upcoming ?? [])[0];
+  if (!next || !Number.isFinite(next.week)) return league;
+  return Math.max(0, Math.min(league, next.week - 1));
+}
+
+/**
  * In season: the league has logged at least one week and the club still has
  * a game to play. Before Week 1 the draft-day wording still applies; after the
  * last game there is no rest of the season to be worth anything in.
