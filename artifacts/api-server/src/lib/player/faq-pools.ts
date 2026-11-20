@@ -85,18 +85,20 @@ function result(c: Ctx, e: GameLogEntry): string {
 function line(c: Ctx, e: GameLogEntry): string {
   const s = e.stats;
   const td = (k: number, what: string) => (k ? ` and ${count(k, what)}` : "");
+  // "1 yard": digits kept, the noun agreeing ("ran 1 time for 1 yards", audit 2026-11-20).
+  const yd = (v: number) => `${v} ${v === 1 ? "yard" : "yards"}`;
   if (c.pos === "QB") {
-    let out = `completed ${n(s.pass_cmp)} of ${n(s.pass_att)} passes for ${n(s.pass_yd)} yards` +
+    let out = `completed ${n(s.pass_cmp)} of ${n(s.pass_att)} passes for ${yd(n(s.pass_yd))}` +
       (n(s.pass_td) || n(s.pass_int) ? ` with ${[n(s.pass_td) ? count(n(s.pass_td), "touchdown") : "", n(s.pass_int) ? count(n(s.pass_int), "interception") : ""].filter(Boolean).join(" and ")}` : "");
-    if (n(s.rush_att)) out += `, and ran ${count(n(s.rush_att), "time")} for ${n(s.rush_yd)} yards${n(s.rush_td) ? ` and ${count(n(s.rush_td), "touchdown")}` : ""}`;
+    if (n(s.rush_att)) out += `, and ran ${count(n(s.rush_att), "time")} for ${yd(n(s.rush_yd))}${n(s.rush_td) ? ` and ${count(n(s.rush_td), "touchdown")}` : ""}`;
     return out;
   }
   if (c.pos === "RB") {
-    return `ran ${count(n(s.rush_att), "time")} for ${n(s.rush_yd)} yards${td(n(s.rush_td), "touchdown")}` +
-      (n(s.rec_tgt) ? `, and caught ${n(s.rec)} of ${count(n(s.rec_tgt), "target")} for ${n(s.rec_yd)} yards${td(n(s.rec_td), "touchdown")}` : "");
+    return `ran ${count(n(s.rush_att), "time")} for ${yd(n(s.rush_yd))}${td(n(s.rush_td), "touchdown")}` +
+      (n(s.rec_tgt) ? `, and caught ${n(s.rec)} of ${count(n(s.rec_tgt), "target")} for ${yd(n(s.rec_yd))}${td(n(s.rec_td), "touchdown")}` : "");
   }
-  return `caught ${n(s.rec)} of ${count(n(s.rec_tgt), "target")} for ${n(s.rec_yd)} yards${td(n(s.rec_td), "touchdown")}` +
-    (n(s.rush_att) ? `, and ran for ${n(s.rush_yd)} yards` : "");
+  return `caught ${n(s.rec)} of ${count(n(s.rec_tgt), "target")} for ${yd(n(s.rec_yd))}${td(n(s.rec_td), "touchdown")}` +
+    (n(s.rush_att) ? `, and ran for ${yd(n(s.rush_yd))}` : "");
 }
 
 const finishOf = (c: Ctx, e: GameLogEntry): string => (e.pos_rank ? `, ${aPos(c.pos)} ${c.pos}${e.pos_rank} finish` : "");
