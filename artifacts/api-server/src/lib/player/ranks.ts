@@ -294,10 +294,15 @@ function buildTeamAggregates(
 
   const agg = new Map<string, TeamWeekAgg>();
   for (const [id, entries] of Object.entries(logs)) {
-    const team = teamById.get(id);
-    if (!team) continue;
+    const current = teamById.get(id);
     const pos = posById.get(id);
     for (const e of entries) {
+      // The club he played FOR that week. A player traded in midseason is on
+      // his new club's roster now, and crediting his earlier targets to it
+      // emptied the old club's weeks: his old teammates read 66.7% of a pool
+      // that was really 28.6% theirs (Tyler Warren, IND Week 3, 2026).
+      const team = e.team ? teamCode(e.team) : current;
+      if (!team || team === "FA") continue;
       const key = `${team}_${e.week}`;
       let row = agg.get(key);
       if (!row) {
@@ -398,7 +403,9 @@ export function enrichWithTeamMetrics(
   const agg = buildTeamAggregates(season, logs, players);
 
   return entries.map((e) => {
-    const tw = agg.get(`${team}_${e.week}`);
+    // Each game against its own club's week: a traded player's earlier games
+    // belong to the club he left, not the one he plays for now.
+    const tw = agg.get(`${e.team ? teamCode(e.team) : team}_${e.week}`);
     if (!tw) return e;
     const tgt = e.stats.rec_tgt ?? 0;
     const totalAtt = tw.pass_att + tw.rush_att;
@@ -709,9 +716,13 @@ export function fillMissingWeeks(
     return {
       ...entry,
       game_status: status,
+      // The score of the club he played for that week: after a trade the
+      // season team's result is somebody else's game (Josh Downs, KC Week 10,
+      // 2026, read IND's "W 24-22" instead of KC's 35-13).
       score:
         status === "active"
-          ? (entry.score ?? getGameScore(season, team, entry.week))
+          ? (entry.score ??
+            getGameScore(season, entry.team ? teamCode(entry.team) : team, entry.week))
           : (entry.score ?? null),
     };
   });
