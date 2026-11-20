@@ -296,10 +296,15 @@ function list(items: string[]): string {
   return `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`;
 }
 
+// Particles stay with the surname ("St. Brown", "Van Ginkel"), as the
+// header's lastName() keeps them (the bio said "selected Brown").
+const PARTICLES = new Set(["st", "de", "del", "della", "di", "da", "van", "von", "la", "le", "du"]);
 function surname(full: string): string {
   const parts = full.trim().split(/\s+/);
   while (parts.length > 1 && /^(jr\.?|sr\.?|ii|iii|iv|v)$/i.test(parts[parts.length - 1] ?? "")) parts.pop();
-  return parts[parts.length - 1] ?? full;
+  let i = parts.length - 1;
+  while (i > 1 && PARTICLES.has((parts[i - 1] ?? "").toLowerCase().replace(/\.+$/, ""))) i -= 1;
+  return parts.slice(i).join(" ") || full;
 }
 
 /* ----------------------------------------------------------- team eras */

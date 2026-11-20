@@ -359,7 +359,16 @@ function model(data: PlayerPageData): Model | null {
   }
 
   const qb = data.startingQb ?? null;
-  const passer = pos !== "QB" ? (data.teammates ?? [])[0] ?? null : null;
+  // His passer is read from his own games (overviewTeammates), so it names
+  // his current club's passer only if he has played for that club this
+  // season: Pacheco (no 2026 game, 2025 with KC) read "Mahomes threw most of
+  // the passes" under Detroit.
+  const leagueSeason = data.leagueSeason ?? data.season;
+  const clubsNow = data.seasonClubs?.[leagueSeason];
+  const playedForClub =
+    data.season === leagueSeason &&
+    (!clubsNow || !data.team || clubsNow.some((c) => c.toUpperCase() === data.team!.code.toUpperCase()));
+  const passer = pos !== "QB" && playedForClub ? (data.teammates ?? [])[0] ?? null : null;
   const qbChange = qb && passer && !samePerson(passer.name, qb.name) ? { from: passer.name, to: qb } : null;
   const upcoming = (data.upcoming ?? []).slice(0, 4);
 

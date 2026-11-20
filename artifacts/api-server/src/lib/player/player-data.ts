@@ -20,6 +20,7 @@
  * the team hubs.
  */
 
+import { usageShareSummary, type UsageShareSummary } from "../team/usage-share";
 import { listNewsForPlayerName, listNewsForTeam } from "../news-query";
 import { outlookDrivers, type OutlookDriver } from "./outlook-drivers";
 import { playerUsage, rosRank, startingQb, type PlayerUsage, type RosRank, type StartingQb } from "./outlook-context";
@@ -432,6 +433,12 @@ export interface PlayerPageData {
   /** Every remaining fixture this season, for the Outlook's schedule and playoff read. */
   upcomingSeason: UpcomingGame[];
   seasonClubs: Record<number, string[]>;
+  /**
+   * His season shares under the one definition (team/usage-share.ts): every
+   * game he played at every club, with league ranks under the same
+   * definition. The Stats tab's target and snap share rows read this.
+   */
+  usageShare?: UsageShareSummary | null;
   /** "Week 3", "Preseason baseline" - what the matchup ranks are measured over. */
   upcomingMatchupMode: string | null;
   /** Fingerprint of the fixtures and their ranks, for the render cache. */
@@ -1575,6 +1582,7 @@ export async function getPlayerPageData(
       count: 18,
     }),
     seasonClubs: seasonClubs(player.id, logSeasons),
+    usageShare: usageShareSummary(leagueSeason, player),
     logCareer,
     // Last successful Sleeper ingestion (dataset-meta), not the file's mtime:
     // a backfill must not make old stats read as freshly updated.

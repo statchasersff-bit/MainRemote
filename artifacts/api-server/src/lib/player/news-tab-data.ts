@@ -335,6 +335,8 @@ function statLines(pos: string, e: GameLogEntry): string[] {
   const pass = `${num(s.pass_cmp)}/${num(s.pass_att)} · ${num(s.pass_yd)} YDS · ${num(s.pass_td)} TD · ${num(s.pass_int)} INT`;
   const rush = `${num(s.rush_att)} CAR · ${num(s.rush_yd)} YDS${num(s.rush_td) ? ` · ${num(s.rush_td)} TD` : ""}`;
   const rec = `${num(s.rec)} REC · ${num(s.rec_yd)} YDS${num(s.rec_td) ? ` · ${num(s.rec_td)} TD` : ""} · ${num(s.rec_tgt)} TGT`;
+  // A kicker's line is his kicks (it printed "0 REC · 0 YDS · 0 TGT").
+  if (pos === "K") return [`${num(s.fgm)}/${num(s.fga)} FG · ${num(s.xpm)}/${num(s.xpa)} XP`];
   if (pos === "QB") return num(s.rush_att) ? [pass, rush] : [pass];
   if (pos === "RB") return num(s.rec_tgt) ? [rush, rec] : [rush];
   return num(s.rush_att) ? [rec, rush] : [rec];
@@ -345,6 +347,11 @@ function volume(pos: string, e: GameLogEntry): { n: number; noun: string } {
   const s = e.stats;
   if (pos === "QB") return { n: num(s.pass_att), noun: "attempts" };
   if (pos === "RB") return { n: num(s.rush_att) + num(s.rec), noun: "touches" };
+  // A kicker's workload is his kicks, not targets ("0 targets, but 7.0 points").
+  if (pos === "K") {
+    const kicks = num(s.fga) + num(s.xpa);
+    return { n: kicks, noun: kicks === 1 ? "kick" : "kicks" };
+  }
   return { n: num(s.rec_tgt), noun: "targets" };
 }
 

@@ -500,8 +500,8 @@ export const DEFS: Record<string, string> = {
   ybc: "Yards before contact per carry: rushing yards gained before first contact, divided by carries.",
   bt: "Broken tackles: tackles he broke or evaded on his touches.",
   expl: "Explosive run rate: share of carries that gained 10 or more yards.",
-  snap: "Snap share: his offensive snaps as a share of his team's.",
-  tgts: "Target share: his targets as a share of his team's pass attempts.",
+  snap: "Snap share: his offensive snaps over his team's, in the games he played (every club).",
+  tgts: "Target share: his targets over his team's targets, in the games he played (every club).",
   tpg: "Targets per game: targets divided by games played.",
   rzo: "Red-zone opportunities: carries plus targets inside the opponent's 20.",
   rzt: "Red-zone targets: targets inside the opponent's 20.",
@@ -948,6 +948,22 @@ export interface CareerPremiumModel {
   paragraphs: string[];
   redraft: RedraftCard;
   highs: HighItem[];
+}
+
+/**
+ * Whether the Stats tab renders, without rendering it (selective construction
+ * on a tab's own URL, 2026-11-20): the same three conditions renderStats() in
+ * player-render.ts ends on. The premium season block needs a focus season
+ * (statsPremiumModel), the rookie's college card needs no NFL season but a
+ * college card (renderStatsTabParts), the career block needs a played career
+ * row (careerPremiumModel). Each is the first test of its own function.
+ */
+export function hasStatsTab(data: PlayerPageData): boolean {
+  const c = career(data);
+  if (!["QB", "RB", "WR", "TE"].includes(c.pos)) return false;
+  if (c.focus) return true;
+  if (collegeCard(data.college, c.pos)) return true;
+  return c.rows.length > 0 && c.total.gp > 0;
 }
 
 export function careerPremiumModel(data: PlayerPageData, options: PlayerRenderOptions = {}): CareerPremiumModel | null {

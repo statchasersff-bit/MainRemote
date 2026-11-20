@@ -116,6 +116,46 @@ const KPI_ORDER: Record<string, string[]> = {
   TE: ["Games", "Receptions", "Rec yards", "Rec TD", "Catch %"],
 };
 
+/**
+ * The current season's target share and snap share under the one definition
+ * (team/usage-share.ts): his count over his clubs' count in the games he
+ * played. The advanced-stats snapshot divided targets by team pass attempts,
+ * a third figure; its rows are replaced, value and rank, for the season the
+ * usage report covers. Past seasons keep theirs.
+ */
+function withSharedShares(data: PlayerPageData, m: StatsPremiumModel): StatsPremiumModel {
+  const summary = data.usageShare;
+  const adv = m.advanced;
+  if (!summary || !adv || m.season !== (data.leagueSeason ?? data.season)) return m;
+  const swap = (x: AdvMetric): AdvMetric => {
+    const key = keyOf(x);
+    const share = key === "tgts" ? summary.share.targetShare : key === "snap" ? summary.share.snapShare : undefined;
+    const rank = key === "tgts" ? summary.ranks.targetShare : key === "snap" ? summary.ranks.snapShare : null;
+    if (share === undefined) return x;
+    if (share === null) return { ...x, value: DASH, rank: null, of: null, pct: null, pctl: null, read: "Not enough games" };
+    const pct = rank && rank.of > 1 ? Math.round(((rank.of - rank.rank) / (rank.of - 1)) * 100) : null;
+    return {
+      ...x,
+      value: key === "snap" ? `${share}%` : `${share.toFixed(1)}%`,
+      rank: rank?.rank ?? null,
+      of: rank?.of ?? null,
+      pct,
+      pctl: pct,
+      read: rank ? `${ordinal(rank.rank)} of ${rank.of} ${m.pos}s with ${summary.minGames}+ games` : `${summary.share.games} games played`,
+    };
+  };
+  return {
+    ...m,
+    advanced: {
+      ...adv,
+      cols: adv.cols.map((col) => ({
+        ...col,
+        card: { ...col.card, metrics: col.card.metrics.map(swap), all: col.card.all ? col.card.all.map(swap) : col.card.all },
+      })),
+    },
+  };
+}
+
 function kpiCards(m: StatsPremiumModel): string {
   const byLabel = new Map(m.cells.map((c) => [c.label, c]));
   const picked = (KPI_ORDER[m.pos] ?? []).map((l) => byLabel.get(l)).filter((c): c is Cell => Boolean(c));
@@ -232,8 +272,9 @@ function metricCards(m: StatsPremiumModel): string {
 /* ------------------------------------------------------------- the block */
 
 export function renderPremiumStats(data: PlayerPageData, inserts: { careerTable?: string } = {}): string {
-  const m = statsPremiumModel(data, inserts);
-  if (!m) return "";
+  const base = statsPremiumModel(data, inserts);
+  if (!base) return "";
+  const m = withSharedShares(data, base);
   
   // The season container holds the advanced metric cards (mak, 2026-11-06:
   // the five KPI cards - Games, Pass yards, Pass TD, INT, Comp % - came out,

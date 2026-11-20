@@ -17,6 +17,7 @@
 
 import { getEntryPoints, type ScoringFormat } from "./scoring";
 import { hasParticipation, leagueWeeksLogged, teamCode } from "./ranks";
+import { targetShareById } from "../team/usage-share";
 import { loadDepthCharts, loadGameLogs, loadIndexedSlugs } from "./data";
 import { getTeamByAbbreviation, type NflTeam } from "../team/teams";
 import type { GameLogStats, Player } from "./types";
@@ -56,12 +57,15 @@ interface Totals {
   rec: number;
   recYd: number;
   teamTgt: number;
+  /** The shared target share's counts (team/usage-share.ts): his targets and his clubs' targets in his games. */
+  shareTgt: number;
+  shareTeamTgt: number;
   pts: number;
 }
 
 const ZERO: Totals = {
   att: 0, cmp: 0, passYd: 0, passTd: 0, rushAtt: 0, rushYd: 0,
-  tgt: 0, rec: 0, recYd: 0, teamTgt: 0, pts: 0,
+  tgt: 0, rec: 0, recYd: 0, teamTgt: 0, shareTgt: 0, shareTeamTgt: 0, pts: 0,
 };
 
 interface MetricDef {
@@ -106,7 +110,7 @@ const METERS: Record<string, { unit: string; perWeek: number; volume: (t: Totals
       // Yards after contact is not in the logs; yards per touch is the nearest
       // reading of what a back does with the ball once he has it.
       { key: "ypt", label: "Yards per touch", of: (t) => per(t.rushYd + t.recYd, t.rushAtt + t.rec), print: dec(1) },
-      { key: "tsh", label: "Target share", of: (t) => pctOf(t.tgt, t.teamTgt), print: pct1 },
+      { key: "tsh", label: "Target share", of: (t) => (t.shareTeamTgt > 0 ? pctOf(t.shareTgt, t.shareTeamTgt) : null), print: pct1 },
       { key: "ppo", label: "Fantasy points per opportunity", of: (t) => per(t.pts, t.rushAtt + t.tgt), print: dec(2) },
     ],
   },
@@ -115,7 +119,7 @@ const METERS: Record<string, { unit: string; perWeek: number; volume: (t: Totals
     perWeek: 3,
     volume: (t) => t.tgt,
     defs: [
-      { key: "tsh", label: "Target share", of: (t) => pctOf(t.tgt, t.teamTgt), print: pct1 },
+      { key: "tsh", label: "Target share", of: (t) => (t.shareTeamTgt > 0 ? pctOf(t.shareTgt, t.shareTeamTgt) : null), print: pct1 },
       // Routes are not in the logs, so yards per route run cannot be; yards per
       // target is the same question asked of the looks he actually got.
       { key: "ypt", label: "Yards per target", of: (t) => per(t.recYd, t.tgt), print: dec(1) },
@@ -156,6 +160,9 @@ function positionTotals(
     }
   }
 
+  // Target share is the shared definition (team/usage-share.ts), not the
+  // log-summed teamTgt: one figure on the meter, the usage report and the hub.
+  const shares = targetShareById(season, position);
   const out = new Map<string, Totals>();
   for (const [id, entries] of Object.entries(logs)) {
     if (positionById.get(id) !== position) continue;
@@ -173,6 +180,11 @@ function positionTotals(
       t.recYd += n(e.stats, "rec_yd");
       t.pts += getEntryPoints(e.stats, format);
       if (e.team) t.teamTgt += teamTargets.get(`${teamCode(e.team)}_${e.week}`) ?? 0;
+    }
+    const share = shares.get(id);
+    if (share) {
+      t.shareTgt = share.targets;
+      t.shareTeamTgt = share.teamTargets;
     }
     out.set(id, t);
   }
