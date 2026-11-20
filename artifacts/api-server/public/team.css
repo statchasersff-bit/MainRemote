@@ -14417,6 +14417,10 @@ ul.sct-faq-list li {
 }
 
 :is(.sct, #sct-table-armour) .sct-shp-scroll {
+  /* Phase 6 (2026-11-20): the containing block for the header's
+     visually-hidden labels. Without it they are placed against the page and
+     pushed it 9px wide at tablet widths (700-800px). No visual change. */
+  position: relative;
   width: 100%;
   overflow-x: auto;
   overscroll-behavior-inline: contain;

@@ -60,7 +60,13 @@ news database and the player pages. No design change.
    (purge_cron_interval 24 h) and the Rocket.net edge caches HTML on top, so a
    team page can show a game as Live / upcoming, or an expired status, hours
    after the data moved, until the next purge.
-5. Minor: 113 Dynasty Command items link a generic RotoWire player page with
+5. **Schedule tab scrolls sideways at tablet widths** (fixed). 700-800px:
+   the page is 9px wider than the screen (live, all teams). The table
+   header's visually-hidden labels are absolutely positioned and the scroll
+   wrapper was not their containing block. `.sct-shp-scroll` now has
+   `position: relative` (public/team.css); heights identical at 320 / 390 /
+   768 / 1280, overflow gone. Other tabs were already clean.
+6. Minor: 113 Dynasty Command items link a generic RotoWire player page with
    a doubled slash (rotowire.com//football/...); the links resolve (200).
 
 ## Recommendations needing approval (no automatic processes)
