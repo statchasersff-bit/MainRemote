@@ -919,12 +919,14 @@ add_action(
 		if ( null === $claim ) {
 			return;
 		}
+		// For tests and debugging: this request holds the sweep.
+		$GLOBALS['statchasers_news_upgrade_claim'] = $claim;
 		// After the page has been sent, so the visitor who drew the claim is not
 		// kept waiting for it; the work itself is capped at the budget.
 		add_action(
 			'shutdown',
 			static function () use ( $claim ): void {
-				statchasers_news_run_upgrade( $claim, microtime( true ) + STATCHASERS_UPGRADE_BUDGET );
+				$GLOBALS['statchasers_news_upgrade_done'] = statchasers_news_run_upgrade( $claim, microtime( true ) + STATCHASERS_UPGRADE_BUDGET );
 			},
 			// After wp_ob_end_flush_all (priority 1) has sent the page.
 			1000
