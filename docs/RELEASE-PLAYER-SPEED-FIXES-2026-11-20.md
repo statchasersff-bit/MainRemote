@@ -1,20 +1,21 @@
 # Release: Player page speed and correctness fixes (2026-11-20)
 
-Branch `player-speed-fixes-2026-11-20`, from production `bfb90ab` (the
-published Phase 6 team release: 8c949c7 code plus Replit's empty publish
-commit). The player-page design is unchanged: the Phase 2 redesign
+Branch `player-speed-fixes-2026-11-20`, from production `2ed48aa` (the
+published Phase 7 team release: 5630f66 code plus Replit's empty publish
+commit). Rebased onto Phase 7 without conflicts; Phase 7's change to
+player-render.ts (upcomingMatchupHref through matchup/game-link.ts) is kept. The player-page design is unchanged: the Phase 2 redesign
 (`phase2-player-redesign`) is shelved and none of it is in this release.
 
 | Commit | Content |
 |---|---|
-| 6a85254 | Data build caches: one Intl formatter per zone and memoized Eastern conversions in the schedule; sorted position tables cached per game-log snapshot. Server-Timing header on player fragments. |
-| d28afe9 | Correctness fixes: one target-share definition on the Overview gauge; kicker recap stat line FG/XP; "St. Brown" surname particle; Outlook passer guard. |
-| c2f480d | A tab's own URL builds only that tab (the profile still builds every panel). |
-| 0505ba8 | Stats tab: target and snap share use the shared definition and rank in the card's own qualified pool. |
-| f71b0e9 | Kicker recaps: kicks counted for the sentence, never as a "Volume boost". |
-| ed0ce4b | Overview on phones (560px and below): Season Stats and Weekly Performance cards lose their extra air. Added at mak's decision; written uncommitted in the shared workspace at 14:02 by another session, moved here byte-identical. |
+| 6cb7511 | Data build caches: one Intl formatter per zone and memoized Eastern conversions in the schedule; sorted position tables cached per game-log snapshot. Server-Timing header on player fragments. |
+| c64782f | Correctness fixes: one target-share definition on the Overview gauge; kicker recap stat line FG/XP; "St. Brown" surname particle; Outlook passer guard. |
+| 8464176 | A tab's own URL builds only that tab (the profile still builds every panel). |
+| 8c931f2 | Stats tab: target and snap share use the shared definition and rank in the card's own qualified pool. |
+| 2ae9d03 | Kicker recaps: kicks counted for the sentence, never as a "Volume boost". |
+| aa5bc60 | Overview on phones (560px and below): Season Stats and Weekly Performance cards lose their extra air. Added at mak's decision; written uncommitted in the shared workspace at 14:02 by another session, moved here byte-identical. |
 
-Files: public/player.css (+66 lines, one 560px media block, from ed0ce4b) and
+Files: public/player.css (+66 lines, one 560px media block, from aa5bc60) and
 11 TypeScript files under artifacts/api-server/src: player-render.ts,
 player-ssr.ts, routes/player.ts, schedule/schedule-data.ts,
 player/{player-data, overview-data, stats-tab, stats-tab-data,
@@ -43,31 +44,28 @@ secrets, no new startup task or data migration.
   module's own league rank) is not used on player pages: it ranked against a
   different pool from the rest of the card.
 
-## Verification (on f71b0e9, against 8c949c7 = production code)
+## Verification (on 6e358bd, same tree as this release, against 5630f66 = production code)
 
 - Every line of every route's HTML, 156 players x 7 routes (1,106 pages):
-  307 pages differ, every changed hunk is one of the fixes (target/snap share
+  308 pages differ, every changed hunk is one of the fixes (target/snap share
   1,532 hunks incl. derived sentences and gauge, kicker recap 460, passer
-  guard 8, surname 2); 0 unclassified. 0 changes to titles, page-data
+  guard 8, surname 2) apart from one Packers team-news item that arrived
+  between the two fetches. 0 changes to titles, page-data
   islands or JSON-LD. Class set identical on every page; element counts
   identical except 3 players' Outlook/profile, which lose the false "A new
   quarterback" risk (Casey Washington, now CAR, was told Penix threw most of
   the passes).
 - Scoring, finishes, injury statuses and game-log totals: no change anywhere
   in the 1,106 pages; the data-accuracy suite is identical.
-- Screenshots, 5 players x 7 routes x 390 / 1280: no layout change; the
-  differing pixels sit on the changed text (two Pacheco Outlook shots are
-  36 px shorter, the removed false risk).
-- Full suite (85 files, serially): candidate 1,717 tests, 1,702 pass,
-  14 fail, 1 skipped; production code the same counts, same failing tests by
-  name (matchup 1, player-outlook-title 1, player 3, schedule 3,
+- Screenshots, 5 players x 7 routes x 390 / 768 / 1280: page heights equal
+  on 94 of 105; the 11 that differ are the phone Overview spacing (390 only,
+  42-124 px shorter) and Pacheco's Outlook (the removed false risk).
+- Full suite (85 files, serially): candidate 1,740 tests, 1,725 pass,
+  14 fail, 1 skipped; production code (5630f66) the same counts per file,
+  same failing tests by name (matchup 1, player-outlook-title 1, player 3, schedule 3,
   table-armour 2, team-coaching 1, team-depth-chart 2, team 1).
-- Server time (warm, median): profile 76 -> 39 ms, tab URLs 79 -> 24 ms.
-  First request after a server start 3.8 s -> 1.1 s.
-
-- ed0ce4b (phone Overview): only the 390px profile changes height (42-124 px
-  shorter on 5 players); 768 and 1280 heights identical. Full suite on
-  ed0ce4b: see the release report.
+- Server time (warm, median): profile 94 -> 37 ms, tab URLs 71 -> 18 ms.
+  First request after a server start 3.3 s -> 1.2 s.
 
 ## Deploy (after mak's approval)
 
@@ -88,8 +86,8 @@ secrets, no new startup task or data migration.
 
 ## Rollback
 
-- API only: in /home/runner/workspace `git switch release/team-hubs-p6-2026-11-20`
-  (bfb90ab, the current production build), build, Publish, then purge as in
+- API only: in /home/runner/workspace `git switch release/team-hubs-p7-2026-11-20`
+  (2ed48aa, the current production build), build, Publish, then purge as in
   step 6. Replit's deployment history can also restore the previous
   deployment directly.
 - WordPress plugin: untouched by this release (stays on its current version);
