@@ -48,6 +48,12 @@ export interface PlayerSsrResult {
    * stand as a page wearing the section's title.
    */
   sectionMissing: boolean;
+  /**
+   * How long this request spent building the page data and rendering, in ms
+   * (render 0 on a fragment-cache hit). The embed route prints it as a
+   * Server-Timing header (Phase 2 measurement, 2026-11-20).
+   */
+  timing?: { dataMs: number; renderMs: number; cached: boolean };
 }
 
 const FRAGMENT_CACHE_MAX = 256;
@@ -116,14 +122,17 @@ async function renderWithData(
   // the page. The version then keys on the last value loaded, or the empty one.
   await ensureFreshness().catch(() => undefined);
 
+  const t0 = performance.now();
   const data = await getPlayerPageData(slug, dataOptions);
+  const dataMs = performance.now() - t0;
   if (!data) return null;
 
   const key = `${slug}:${optionKey(options, dataOptions)}`;
   const version = playerDataVersion(data, contentVersion());
 
   const hit = fragmentCache.get(key);
-  if (hit && hit.version === version) return { result: hit, data };
+  if (hit && hit.version === version) return { result: { ...hit, timing: { dataMs, renderMs: 0, cached: true } }, data };
+  const t1 = performance.now();
 
   const rendered: string[] = [];
   const html = renderPlayerPage(data, { ...options, sectionsSink: rendered });
@@ -137,7 +146,7 @@ async function renderWithData(
     sectionMissing,
   };
   fragmentCache.set(key, result);
-  return { result, data };
+  return { result: { ...result, timing: { dataMs, renderMs: performance.now() - t1, cached: false } }, data };
 }
 
 /** The section URLs that are pages of their own: every section but Overview. */

@@ -837,6 +837,59 @@ function neighborhood(
  * the rail is a slice of the points-scored table; from the fourth game on it
  * is the rate table, and the block says which underneath its heading.
  */
+/**
+ * One season's position tables: every player's played games, season points
+ * and points per game, sorted. The same for every player at the position, so
+ * built once per game-log snapshot, player list, format and scoring policy
+ * rather than on every request for every season of a career table (most of a
+ * page's data build after the schedule, profiled 2026-11-20). The cache keys
+ * on the loaded objects, so a reload of either file builds afresh.
+ */
+type PositionTables = {
+  playerById: Map<string, Player>;
+  ppgs: { id: string; value: number }[];
+  totals: { id: string; value: number }[];
+  playedById: Map<string, GameLogEntry[]>;
+};
+const positionTableCache = new WeakMap<object, WeakMap<object, Map<string, PositionTables>>>();
+
+function positionTables(
+  logs: Record<string, GameLogEntry[]>,
+  allPlayers: Player[],
+  position: string,
+  format: ScoringFormat,
+): PositionTables {
+  let byPlayers = positionTableCache.get(logs);
+  if (!byPlayers) positionTableCache.set(logs, (byPlayers = new WeakMap()));
+  let byKey = byPlayers.get(allPlayers);
+  if (!byKey) byPlayers.set(allPlayers, (byKey = new Map()));
+  const key = `${position}|${format}|${scoringTotalsSource()}`;
+  const hit = byKey.get(key);
+  if (hit) return hit;
+
+  const playerById = new Map(allPlayers.map((p) => [p.id, p]));
+  const ppgs: { id: string; value: number }[] = [];
+  const totals: { id: string; value: number }[] = [];
+  // The played games per player: the peers rail's cards print per-game rates
+  // from the same games the rank counts.
+  const playedById = new Map<string, GameLogEntry[]>();
+  for (const [id, entries] of Object.entries(logs)) {
+    if (playerById.get(id)?.position !== position) continue;
+    const played = entries.filter((e) => hasParticipation(e.stats, position));
+    if (played.length === 0) continue;
+    playedById.set(id, played);
+    const total = played.reduce((sum, e) => sum + fpts(e, format), 0);
+    totals.push({ id, value: total });
+    if (played.length < PPG_MIN_GAMES) continue;
+    ppgs.push({ id, value: total / played.length });
+  }
+  ppgs.sort((a, b) => b.value - a.value);
+  totals.sort((a, b) => b.value - a.value);
+  const tables = { playerById, ppgs, totals, playedById };
+  byKey.set(key, tables);
+  return tables;
+}
+
 function positionalFinish(
   player: Player,
   season: number,
@@ -851,29 +904,7 @@ function positionalFinish(
   const position = player.position;
   if (!position) return { ppg: null, total: null, peers: null };
   const logs = loadGameLogs(season);
-  const playerById = new Map(allPlayers.map((p) => [p.id, p]));
-
-  const ppgs: { id: string; value: number }[] = [];
-  const totals: { id: string; value: number }[] = [];
-  // The played games per player, kept only when the rail is wanted: its
-  // cards print per-game rates from the same games the rank counts.
-  const playedById = new Map<string, GameLogEntry[]>();
-  for (const [id, entries] of Object.entries(logs)) {
-    if (playerById.get(id)?.position !== position) continue;
-    const played = entries.filter((e) => hasParticipation(e.stats, position));
-    if (played.length === 0) continue;
-    if (wantPeers) playedById.set(id, played);
-    const total = played.reduce(
-      (sum, e) => sum + fpts(e, format),
-      0,
-    );
-    totals.push({ id, value: total });
-    if (played.length < PPG_MIN_GAMES) continue;
-    ppgs.push({ id, value: total / played.length });
-  }
-
-  ppgs.sort((a, b) => b.value - a.value);
-  totals.sort((a, b) => b.value - a.value);
+  const { playerById, ppgs, totals, playedById } = positionTables(logs, allPlayers, position, format);
 
   const ppgIndex = ppgs.findIndex((row) => row.id === player.id);
   const totalIndex = totals.findIndex((row) => row.id === player.id);

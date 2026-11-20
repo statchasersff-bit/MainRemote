@@ -194,17 +194,31 @@ export interface ScheduleSeason {
  * Formatting the instant in the zone and reading the wall clock back as if it
  * were UTC gives exactly the offset, without a tz database dependency.
  */
+// Building an Intl.DateTimeFormat is the expensive part (most of a player
+// page's data build, profiled 2026-11-20): one per zone, reused, and the
+// offsets themselves memoized by instant. Pure, so caching changes nothing.
+const offsetFormatters = new Map<string, Intl.DateTimeFormat>();
+const offsetMemo = new Map<string, number>();
+
 function zoneOffsetMs(utcMs: number, timeZone: string): number {
-  const parts = new Intl.DateTimeFormat("en-US", {
-    timeZone,
-    hour12: false,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-  }).formatToParts(new Date(utcMs));
+  const memoKey = `${timeZone}|${utcMs}`;
+  const memo = offsetMemo.get(memoKey);
+  if (memo !== undefined) return memo;
+  let formatter = offsetFormatters.get(timeZone);
+  if (!formatter) {
+    formatter = new Intl.DateTimeFormat("en-US", {
+      timeZone,
+      hour12: false,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    });
+    offsetFormatters.set(timeZone, formatter);
+  }
+  const parts = formatter.formatToParts(new Date(utcMs));
 
   const read = (type: string): number =>
     Number(parts.find((part) => part.type === type)?.value ?? "0");
@@ -219,6 +233,8 @@ function zoneOffsetMs(utcMs: number, timeZone: string): number {
     read("minute"),
     read("second"),
   );
+  if (offsetMemo.size > 50000) offsetMemo.clear();
+  offsetMemo.set(memoKey, asUtc - utcMs);
   return asUtc - utcMs;
 }
 
@@ -994,8 +1010,13 @@ interface ResolvedKickoff {
 }
 
 /** The Eastern calendar date and clock of an instant, as the feed spells them. */
+let clockFormatter: Intl.DateTimeFormat | null = null;
+const clockMemo = new Map<number, { date: string; weekday: string; time: string }>();
+
 function easternClock(ms: number): { date: string; weekday: string; time: string } {
-  const parts = new Intl.DateTimeFormat("en-US", {
+  const memo = clockMemo.get(ms);
+  if (memo) return memo;
+  clockFormatter ??= new Intl.DateTimeFormat("en-US", {
     timeZone: FEED_TIME_ZONE,
     hour12: false,
     weekday: "long",
@@ -1004,14 +1025,18 @@ function easternClock(ms: number): { date: string; weekday: string; time: string
     day: "2-digit",
     hour: "2-digit",
     minute: "2-digit",
-  }).formatToParts(new Date(ms));
+  });
+  const parts = clockFormatter.formatToParts(new Date(ms));
   const read = (type: string): string => parts.find((part) => part.type === type)?.value ?? "";
   const hour = read("hour") === "24" ? "00" : read("hour");
-  return {
+  const out = {
     date: `${read("year")}-${read("month")}-${read("day")}`,
     weekday: read("weekday"),
     time: `${hour}:${read("minute")}`,
   };
+  if (clockMemo.size > 50000) clockMemo.clear();
+  clockMemo.set(ms, out);
+  return { ...out };
 }
 
 /**

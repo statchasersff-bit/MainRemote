@@ -674,6 +674,13 @@ router.get("/embed/player/:slug", (req, res) => {
       }
 
       res.set("ETag", `W/"${result.version}"`);
+      if (result.timing) {
+        // Where the time went: building the page data, rendering the fragment.
+        res.set(
+          "Server-Timing",
+          `data;dur=${result.timing.dataMs.toFixed(1)}, render;dur=${result.timing.renderMs.toFixed(1)}${result.timing.cached ? ', cache;desc="hit"' : ""}`,
+        );
+      }
       if (req.fresh) {
         res.status(304).end();
         return;
