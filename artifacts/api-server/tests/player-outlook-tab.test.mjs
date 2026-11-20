@@ -620,3 +620,14 @@ describe("the projection and opportunity sections (mak's brief, 2026-11-05, no p
     assert.equal(olr.renderOutlookProjectionPremium(state({ leagueWeek: 0, season: 2026 })), "");
   });
 });
+
+// Player-page audit, 2026-11-20: from the Thursday game on, the league's
+// logged week is the week in progress for every club. The Outlook FAQ said
+// "through Week 11" for clubs yet to play it (Josh Allen, live); it names his
+// club's completed week now, as the Stats FAQ does since d4d63e2.
+test("Outlook FAQ: 'through Week N' is his club's completed week, not the Thursday game's", () => {
+  const s = state({ leagueWeek: 4 }); // Week 4 opener logged; his Week 4 game is still ahead
+  const text = render(s).body.textContent;
+  assert.match(text, /through Week 3\b/);
+  assert.doesNotMatch(text, /through Week 4\b/);
+});

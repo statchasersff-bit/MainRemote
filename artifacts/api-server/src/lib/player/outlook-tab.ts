@@ -41,6 +41,7 @@
 
 import { escapeHtml } from "../render";
 import { possessive, titleCase } from "./title-case";
+import { statsThroughWeek } from "./season-phase";
 import type { PlayerRenderOptions } from "../player-render";
 import type { PlayerPageData } from "./player-data";
 import { getEntryPoints, SCORING_SHORT } from "./scoring";
@@ -213,6 +214,14 @@ interface Model {
   rc: string;
   season: number;
   week: number;
+  /**
+   * The week his numbers run through, for "through Week N" text: his club's
+   * completed week (statsThroughWeek), not the league's logged week. From the
+   * Thursday game on, `week` is the week in progress for every club, and the
+   * Outlook FAQ said "through Week 11" for clubs yet to play it (Josh Allen,
+   * live 2026-11-20). `week` itself still drives the in-season logic.
+   */
+  thruWeek: number;
   preseason: boolean;
   /**
    * In season with no game this season (Isiah Pacheco, on IR since Week 1):
@@ -380,6 +389,7 @@ function model(data: PlayerPageData): Model | null {
     rc: redraftPlayerUrl(data.player),
     season,
     week,
+    thruWeek: statsThroughWeek(data),
     preseason,
     noSeasonGames: week >= 1 && !now,
     staleRos: rosAny && rosAny.stale ? rosAny : null,
@@ -764,7 +774,7 @@ function forwardParagraph(m: Model, depth: PlayerPageData["depth"]): string | nu
     const to = m.qbChange.to;
     const attempts = to.attempts > 0 ? `, and ${surname(to.name)} has ${to.attempts} attempts so far` : "";
     parts.push(
-      `${to.name} is now the ${m.nickname ? `${m.nickname}' ` : ""}listed starting quarterback; ${m.qbChange.from} threw most of the passes through Week ${m.week}${attempts}. That introduces uncertainty around how the targets are distributed.`,
+      `${to.name} is now the ${m.nickname ? `${m.nickname}' ` : ""}listed starting quarterback; ${m.qbChange.from} threw most of the passes through Week ${m.thruWeek}${attempts}. That introduces uncertainty around how the targets are distributed.`,
     );
     unsure.push({ text: "a new quarterback", plural: false });
   } else if (m.qb && m.pos !== "QB") {
@@ -1282,7 +1292,7 @@ function triggerItems(m: Model, data: PlayerPageData): { up: TriggerItem[]; risk
     risk.push(
       b(
         "A new quarterback.",
-        `${to.name} is now the listed starter; ${m.qbChange.from} threw most of the passes through Week ${m.week}. How targets are distributed under ${surname(to.name)} is unknown${to.attempts > 0 ? ` (${to.attempts} attempts so far)` : ""}.`,
+        `${to.name} is now the listed starter; ${m.qbChange.from} threw most of the passes through Week ${m.thruWeek}. How targets are distributed under ${surname(to.name)} is unknown${to.attempts > 0 ? ` (${to.attempts} attempts so far)` : ""}.`,
       ),
     );
   }
@@ -1451,7 +1461,7 @@ export function outlookPremiumModel(data: PlayerPageData): OutlookPremiumModel |
  */
 function outlookPool(m: Model, data: PlayerPageData, options: PlayerRenderOptions): Array<FaqCandidate | null> {
   const pool: Array<FaqCandidate | null> = [];
-  const through = m.week >= 1 && m.now ? ` through Week ${m.week}` : "";
+  const through = m.thruWeek >= 1 && m.now ? ` through Week ${m.thruWeek}` : "";
   const ros = m.week >= 1 ? `the rest of the ${m.season} season` : `the ${m.season} season`;
   const top = topDriver(m);
   const weak = weakDriver(m);
@@ -1531,8 +1541,8 @@ function outlookPool(m: Model, data: PlayerPageData, options: PlayerRenderOption
       key: "quarterback",
       q: `Who is ${possessive(m.name)} quarterback?`,
       a: m.qbChange
-        ? `${m.qbChange.to.name} is the ${m.nickname ? `${m.nickname}' ` : ""}listed starting quarterback now. ${m.qbChange.from} threw most of the passes through Week ${m.week}${m.qbChange.to.attempts > 0 ? `; ${surname(m.qbChange.to.name)} has ${m.qbChange.to.attempts} attempts so far` : ""}. How the targets are distributed under the new starter is the open question for ${possessive(m.last)} rest-of-season value.`
-        : `${m.qb.name} is the ${m.nickname ? `${m.nickname}' ` : ""}listed starting quarterback${m.qb.attempts > 0 ? `, with ${m.qb.attempts} pass attempts through Week ${m.week}` : ""}.`,
+        ? `${m.qbChange.to.name} is the ${m.nickname ? `${m.nickname}' ` : ""}listed starting quarterback now. ${m.qbChange.from} threw most of the passes through Week ${m.thruWeek}${m.qbChange.to.attempts > 0 ? `; ${surname(m.qbChange.to.name)} has ${m.qbChange.to.attempts} attempts so far` : ""}. How the targets are distributed under the new starter is the open question for ${possessive(m.last)} rest-of-season value.`
+        : `${m.qb.name} is the ${m.nickname ? `${m.nickname}' ` : ""}listed starting quarterback${m.qb.attempts > 0 ? `, with ${m.qb.attempts} pass attempts through Week ${m.thruWeek}` : ""}.`,
     });
   }
 
