@@ -21885,7 +21885,7 @@ button.scp-search-opt {
  * Section heads on desktop wear the phone design (mak, 2026-11-21: "for the
  * section headers ... I want us to use the design we use on mobile views").
  * Above 560px every section head below a tab's banner drops its colored bar
- * for the phone card head: the accent icon bare at 24px, the title in Inter
+ * for the phone card head: the accent icon bare at 20px, the title in Inter
  * 800 ink, a solid 2px gold rule under them, a dek under the rule. Each
  * tab's first banner (.scp-up-head) and the FAQ heading keep their design.
  * Same markup and text; the phone rules (560px and under) are untouched.
@@ -21910,11 +21910,11 @@ button.scp-search-opt {
     flex-wrap: wrap !important;
     align-items: center !important;
     justify-content: flex-start !important;
-    gap: 0 10px !important;
+    gap: 0 8px !important;
     width: auto !important;
     min-height: 0 !important;
     height: auto !important;
-    margin: 18px 20px 14px !important;
+    margin: 12px 16px 8px !important;
     padding: 0 !important;
     overflow: visible !important;
     border: 0 !important;
@@ -21992,7 +21992,7 @@ button.scp-search-opt {
     flex: 1 1 100% !important;
     width: auto !important;
     height: 2px !important;
-    margin: 10px 0 0 !important;
+    margin: 7px 0 0 !important;
     border: 0 !important;
     border-radius: 0 !important;
     background: var(--tp-c-d4af37, #d4af37) !important;
@@ -22053,7 +22053,7 @@ button.scp-search-opt {
     background: none !important;
     color: var(--tp-ink, #0b2345) !important;
     font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif !important;
-    font-size: 1.25rem !important;
+    font-size: 1.125rem !important;
     font-style: normal !important;
     font-weight: 800 !important;
     font-stretch: normal !important;
@@ -22113,8 +22113,8 @@ button.scp-search-opt {
     flex: 0 0 auto !important;
     align-items: center !important;
     justify-content: center !important;
-    width: 24px !important;
-    height: 24px !important;
+    width: 20px !important;
+    height: 20px !important;
     margin: 0 !important;
     padding: 0 !important;
     border: 0 !important;
@@ -22138,8 +22138,8 @@ button.scp-search-opt {
       .scp-ox-bgc-head
     ) :is(.scp-ovp-bar-icon, .scp-stp-bar-icon, .scp-cp-bar-icon, .scp-glp-ico, .scp-bkp-ico, .scp-inp-bar-icon, .scp-olr-bar-icon, .scp-olp-bar-icon, .scp-bop-bar-icon, .scp-pr-ico, .scp-ox-bgc-icon) svg {
     display: block !important;
-    width: 22px !important;
-    height: 22px !important;
+    width: 19px !important;
+    height: 19px !important;
     color: inherit !important;
     stroke: currentColor;
   }
@@ -22160,11 +22160,11 @@ button.scp-search-opt {
     ) :is(.scp-stp-bar-sub, .scp-cp-bar-sub, .scp-glp-bar-sum, .scp-bkp-sub, .scp-inp-bar-note, .scp-olr-bar-sub, .scp-olp-bar-sub, .scp-pr-sub, .scp-up-dek) {
     order: 2 !important;
     flex: 1 1 100% !important;
-    margin: 8px 0 0 !important;
+    margin: 5px 0 0 !important;
     padding: 0 !important;
     color: var(--tp-c-5b6b82, #5b7290) !important;
     font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif !important;
-    font-size: 13.5px !important;
+    font-size: 13px !important;
     font-weight: 400 !important;
     line-height: 1.4 !important;
     text-align: left !important;
@@ -22226,5 +22226,302 @@ button.scp-search-opt {
     order: 0 !important;
     flex: 0 0 auto !important;
     margin: 0 0 0 auto !important;
+  }
+}
+
+/*
+ * Desktop density (mak's brief, 2026-11-21): one spacing and type scale for
+ * every player tab above 560px, so the page reads like an analytics sheet
+ * without losing the team branding. Phones (560px and under) keep their own
+ * rules; nothing here reaches them.
+ *
+ *   small gaps 4-6px, inside a card 8-12px, card padding 12-16px,
+ *   between sections 20px, before the peers rail and the FAQ 28px;
+ *   tab banners 62px (was 86), 22px titles; section heads per the block
+ *   above; KPI and stat cards ~25% shorter; table rows ~34px (was 42).
+ *
+ * Spacing, size and padding only: same markup, data, links and controls.
+ */
+@media (min-width: 561px) {
+  /* ---- the tab bar and the gap under it */
+  .scp.scp.scp.scp .scp-controls {
+    margin-top: 10px;
+    padding: 3px;
+  }
+
+  .scp.scp.scp.scp .scp-nav-link {
+    min-height: 34px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+  }
+
+  .scp.scp.scp.scp .scp-pstrip {
+    min-height: 40px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+  }
+
+  .scp.scp.scp.scp > .scp-section {
+    padding-top: 20px;
+  }
+
+  /* ---- between sections: 20px on every tab (was 14-18, 28 in places) */
+  .scp.scp.scp.scp :is(.scp-inp, .scp-olr, .scp-olp, .scp-stp, .scp-bop, .scp-bop-lower) {
+    row-gap: 20px;
+  }
+
+  .scp.scp.scp.scp :is(.scp-olp, .scp-bop.scp-bo-txsec) {
+    margin-top: 20px;
+  }
+
+  /* ---- major breaks: the peers rail and the FAQ, 28px */
+  .scp.scp.scp.scp .scp-peers.scp-pr-wrap {
+    margin-top: 28px;
+    padding-top: 0;
+  }
+
+  .scp.scp.scp.scp .scp-ox:has(> .scp-tab-faq) {
+    margin-top: 28px;
+  }
+
+  .scp.scp.scp.scp .scp-ox > .scp-tab-faq {
+    padding-top: 0;
+  }
+
+  /* ---- tab banners (.scp-up-head): 86px -> 62px, same pieces */
+  .scp.scp.scp.scp .scp-up-head {
+    gap: 12px;
+    min-height: 62px;
+    padding: 9px 20px !important;
+  }
+
+  .scp.scp.scp.scp .scp-up-head-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
+  }
+
+  .scp.scp.scp.scp .scp-up-head-icon svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  .scp.scp.scp.scp .scp-up-head-rule {
+    height: 34px;
+  }
+
+  .scp.scp.scp.scp .scp-up-head .scp-up-h2 {
+    font-size: 22px !important;
+    line-height: 1.15;
+  }
+
+  .scp.scp.scp.scp .scp-up-head .scp-up-dek {
+    margin-top: 3px !important;
+    font-size: 13px !important;
+    line-height: 1.35;
+  }
+
+  .scp.scp.scp.scp .scp-up-art {
+    height: 62px;
+  }
+
+  .scp.scp.scp.scp .scp-up-head .scp-glp-hero-l {
+    gap: 12px;
+  }
+
+  /* ---- card bodies: 12-16px inside, 8px under a section head's rule */
+  .scp.scp.scp.scp :is(.scp-ovp-body, .scp-ox-bgc-body, .scp-cp-body, .scp-glp-finishes-body, .scp-olr-body, .scp-olp-body, .scp-bkp-body) {
+    padding: 14px 16px 16px !important;
+  }
+
+  .scp.scp.scp.scp :is(.scp-ovp-bar, .scp-ox-bgc-head, .scp-cp-bar, .scp-glp-bar, .scp-olr-bar, .scp-olp-bar, .scp-bkp-hero):not(.scp-up-head) + :is(.scp-ovp-body, .scp-ox-bgc-body, .scp-cp-body, .scp-glp-finishes-body, .scp-olr-body, .scp-olp-body, .scp-bkp-body) {
+    padding-top: 6px !important;
+  }
+
+  .scp.scp.scp.scp .scp-glp-hero.scp-up-head ~ .scp-glp-body {
+    padding: 14px 16px 16px !important;
+  }
+
+  .scp.scp.scp.scp .scp-glp-body {
+    gap: 16px;
+  }
+
+  .scp.scp.scp.scp .scp-glp-main {
+    gap: 12px;
+  }
+
+  .scp.scp.scp.scp .scp-bkp-wrap {
+    gap: 20px;
+  }
+
+  /* Season Stats (Overview): the strip and its link sit closer. */
+  .scp.scp.scp.scp .scp-ovp-sec:has(#scp-ox-season-h) a.scp-ox-more {
+    margin-top: 10px;
+    font-size: 13.5px;
+  }
+
+  /* ---- Outlook: the projection KPI cards, 132px -> ~100px */
+  .scp.scp.scp.scp .scp-olr-kpi {
+    min-height: 0;
+    padding: 9px 12px;
+  }
+
+  .scp.scp.scp.scp .scp-olr-kpi dd {
+    font-size: 28px;
+  }
+
+  /* ---- Game Log: the season chips */
+  .scp.scp.scp.scp .scp-glp-chip {
+    padding: 5px 16px;
+  }
+
+  /* ---- Game Log: the four KPI cards, 108px -> ~78px */
+  .scp.scp.scp.scp .scp-glp-kpis {
+    gap: 12px;
+  }
+
+  .scp.scp.scp.scp .scp-glp-kpi {
+    gap: 12px;
+    padding: 10px 14px;
+  }
+
+  .scp.scp.scp.scp .scp-glp-kpi-ico,
+  .scp.scp.scp.scp .scp-glp-kpi-ico svg {
+    width: 28px;
+    height: 28px;
+  }
+
+  .scp.scp.scp.scp .scp-glp-kpi-v {
+    font-size: 26px;
+    line-height: 1;
+  }
+
+  .scp.scp.scp.scp .scp-glp-kpi-l {
+    font-size: 13px;
+  }
+
+  .scp.scp.scp.scp .scp-glp-kpi-c {
+    margin-top: 2px;
+    font-size: 12.5px;
+    line-height: 1.35;
+  }
+
+  /* ---- Game Log: the table, 42px rows -> ~34px */
+  .scp.scp.scp.scp .scp-glp-table :is(th, td) {
+    padding: 4px 10px;
+  }
+
+  .scp.scp.scp.scp .scp-glp-table thead th {
+    padding-top: 7px;
+    padding-bottom: 7px;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+  }
+
+  .scp.scp.scp.scp .scp-glp-table :is(td, tbody th) {
+    height: 34px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .scp.scp.scp.scp .scp-glp-table :is(thead, tfoot) :is(th, td) {
+    height: 34px;
+  }
+
+  .scp.scp.scp.scp .scp-glp-opp-logo {
+    width: 22px;
+    height: 22px;
+  }
+
+  .scp.scp.scp.scp .scp-glp-table .scp-glp-pts {
+    font-size: 16px;
+  }
+
+  /* Finish and matchup markers: quiet tags, not capsules. */
+  .scp.scp.scp.scp .scp-glp-pill {
+    padding: 2px 7px;
+    border-radius: 5px;
+    font-size: 12.5px;
+    line-height: 1.35;
+  }
+
+  .scp.scp.scp.scp .scp-glp-diff > b {
+    padding: 1px 7px;
+    border-radius: 5px;
+    font-size: 12.5px;
+  }
+
+  .scp.scp.scp.scp .scp-glp-note {
+    padding-top: 8px;
+  }
+
+  /* ---- Game Log: finish cards 80px -> ~62px, game rows 78px -> ~64px */
+  .scp.scp.scp.scp .scp-glp-fcards {
+    gap: 12px;
+  }
+
+  .scp.scp.scp.scp .scp-glp-fcard {
+    min-height: 62px;
+    padding: 8px 14px;
+  }
+
+  .scp.scp.scp.scp .scp-glp-fcard-v {
+    font-size: 30px;
+  }
+
+  .scp.scp.scp.scp .scp-glp-fcard-ico {
+    width: 36px;
+    height: 36px;
+  }
+
+  .scp.scp.scp.scp .scp-bkp-rows {
+    gap: 5px;
+  }
+
+  .scp.scp.scp.scp .scp-bkp-row {
+    padding: 4px 10px 4px 14px;
+  }
+
+  .scp.scp.scp.scp .scp-bkp-week {
+    padding-top: 3px;
+    padding-bottom: 3px;
+  }
+}
+
+/* ---- the hero: about 6% shorter, the name 12% smaller (container 901+) */
+@container pp (min-width: 901px) {
+  .scp.scp.scp.scp .scp-phead-hero {
+    --pp-pad-b: 14px;
+    row-gap: 10px;
+  }
+
+  .scp.scp.scp.scp .scp-pid {
+    gap: 3px;
+    padding-top: 12px;
+  }
+
+  .scp.scp.scp.scp .scp-pboard-wrap {
+    padding-top: 12px;
+  }
+
+  .scp.scp.scp.scp .scp-phead .scp-phead-h1 {
+    font-size: clamp(36px, 3.95cqw, 42px) !important;
+  }
+
+  .scp.scp.scp.scp .scp-phead .scp-phead-h1:has(.scp-phead-name.is-long) {
+    font-size: clamp(32px, calc(2.4cqw + 8px), 39px) !important;
+  }
+
+  .scp.scp.scp.scp .scp-pp-card {
+    min-height: 60px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+  }
+
+  .scp.scp.scp.scp .scp-pp-card-v {
+    font-size: 24px;
+  }
+
+  .scp.scp.scp.scp .scp-pp-card-v.is-long {
+    font-size: 20px;
   }
 }
