@@ -22525,3 +22525,16 @@ button.scp-search-opt {
     font-size: 20px;
   }
 }
+
+/* A section head's short description (the finish summary, "Fantasy points
+   per game, every season.") rides the title row on wide screens instead of
+   adding a line under the rule; under 1000px it stays under the rule. */
+@media (min-width: 1000px) {
+  .scp.scp.scp.scp.scp.scp.scp :is(.scp-glp-bar, .scp-bkp-hero, .scp-cp-bar, .scp-pr-hero, .scp-stp-bar, .scp-inp-bar) :is(.scp-glp-bar-sum, .scp-bkp-sub, .scp-cp-bar-sub, .scp-pr-sub, .scp-stp-bar-sub, .scp-inp-bar-note) {
+    order: 0 !important;
+    flex: 0 1 auto !important;
+    max-width: 55% !important;
+    margin: 0 0 0 auto !important;
+    text-align: right !important;
+  }
+}
