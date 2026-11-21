@@ -22528,9 +22528,10 @@ button.scp-search-opt {
 
 /* A section head's short description (the finish summary, "Fantasy points
    per game, every season.") rides the title row on wide screens instead of
-   adding a line under the rule; under 1000px it stays under the rule. */
-@media (min-width: 1000px) {
-  .scp.scp.scp.scp.scp.scp.scp :is(.scp-glp-bar, .scp-bkp-hero, .scp-cp-bar, .scp-pr-hero, .scp-stp-bar, .scp-inp-bar) :is(.scp-glp-bar-sum, .scp-bkp-sub, .scp-cp-bar-sub, .scp-pr-sub, .scp-stp-bar-sub, .scp-inp-bar-note) {
+   adding a line under the rule; under 700px it stays under the rule. Tab
+   banners keep their own layout. */
+@media (min-width: 700px) {
+  .scp.scp.scp.scp.scp.scp.scp :is(.scp-glp-bar, .scp-bkp-hero, .scp-cp-bar, .scp-pr-hero, .scp-stp-bar, .scp-inp-bar):not(.scp-up-head) :is(.scp-glp-bar-sum, .scp-bkp-sub, .scp-cp-bar-sub, .scp-pr-sub, .scp-stp-bar-sub, .scp-inp-bar-note) {
     order: 0 !important;
     flex: 0 1 auto !important;
     max-width: 55% !important;
