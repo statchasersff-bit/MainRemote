@@ -187,11 +187,10 @@ describe("the sections, in the brief's order (mak, 2026-11-05)", () => {
     const root = doc.querySelector("#usage .sct-us");
     const fantasy = root.querySelector(".sct-us-fantasy");
     const ctas = [...root.querySelectorAll("[data-cta]")];
-    // 6+ since the handcuff bridges' five links went (2026-11-06).
-    assert.ok(ctas.length >= 6, String(ctas.length));
+    // The close cards went 2026-11-21 (mak), so there may be none at all.
     for (const a of ctas) assert.ok(fantasy.contains(a), `${a.getAttribute("data-cta")} sits above the fantasy section`);
-    // The tiered table, its legend, the signal cards, the handcuff line and the close cards are all inside it.
-    for (const sel of [".sct-us-table", ".sct-us-key-help", ".sct-us-signals", ".sct-us-handcuff", ".sct-us-convert"]) {
+    // The tiered table, its legend, the signal cards and the handcuff line are all inside it.
+    for (const sel of [".sct-us-table", ".sct-us-key-help", ".sct-us-signals", ".sct-us-handcuff"]) {
       assert.ok(fantasy.querySelector(sel), sel);
     }
     // The read tiers (fantasy labels) appear nowhere above it.
@@ -303,25 +302,26 @@ describe("the sections, in the brief's order (mak, 2026-11-05)", () => {
       n.querySelectorAll(".sct-us-sit-short").forEach((x) => x.remove());
       assert.equal(n.textContent, `${ne.rbSituationTotals[keys[i]]} opportunities`);
     });
-    assert.match(doc.querySelector("#situational .sct-us-sit-fine").textContent, /Opportunities, not snaps/);
-    const cards = [...doc.querySelectorAll("#situational .sct-us-sit-card")];
-    const takeaways = cards.map((c) => `${c.querySelector(".sct-us-sit-card-title").textContent}: ${c.querySelector(".sct-us-sit-card-body").textContent}`);
+    // No fine print and no paragraph cards since 2026-11-21 (mak: the phone version everywhere).
+    assert.equal(doc.querySelector("#situational .sct-us-sit-fine"), null);
+    assert.equal(doc.querySelector("#situational .sct-us-sit-card"), null);
+    const blocks = [...doc.querySelectorAll("#situational .sct-us-pa-block")];
+    const takeaways = blocks.map((b) => b.textContent.replace(/\s+/g, " ").trim());
     assert.equal(takeaways.length, 3);
-    assert.match(takeaways[0], /^Stevenson's Workload: \d+ carries and \d+ targets in \d+ games, \d+% of the backs' touches and \d+% of the offensive snaps\./);
-    assert.match(takeaways[1], /^Third-Down Specialist: Rhamondre Stevenson accounts for \d+% of the backs' third-down carries and targets \(\d+ opportunities\), compared with/);
-    assert.match(takeaways[2], /^If Stevenson Misses Time: Henderson is next in line\./);
+    assert.match(takeaways[0], /^Stevenson's Workload/);
+    assert.match(takeaways[1], /^Third-Down Specialist/);
+    assert.match(takeaways[2], /^If Stevenson Misses Time.*Henderson is next in line\./);
     // No fantasy words in the NFL section.
     for (const t of takeaways) assert.ok(!/stash|cut|RB2-level|bench/.test(t), t);
   });
 
-  test("passing distribution states its coverage; rushing direction carries attempt shares", async () => {
+  test("passing distribution maps six zones; rushing direction carries attempt shares", async () => {
     const { doc } = await page("/team/new-england-patriots/usage/");
     const ne = usage.teams.ne;
     const maye = ne.players.find((p) => p.name === "Drake Maye");
-    assert.match(doc.querySelector("#passing .sct-us-prm-sub").textContent, new RegExp(`^Share of Maye's ${ne.passerZoneAttempts} pass attempts`));
-    const coverage = [...doc.querySelectorAll("#passing .sct-us-prm-fine")].map((p) => p.textContent).join(" ");
-    if (maye.passAttempts > ne.passerZoneAttempts) assert.match(coverage, new RegExp(`${ne.passerZoneAttempts} of Maye's ${maye.passAttempts} pass attempts`));
-    else assert.match(coverage, new RegExp(`^All ${ne.passerZoneAttempts} of Maye's pass attempts carry a charted location`));
+    // No explainer and no coverage fine print since 2026-11-21 (mak: the phone version everywhere).
+    void maye;
+    assert.equal(doc.querySelector("#passing .sct-us-prm-sub, #passing .sct-us-prm-fine"), null);
     const zones = [...doc.querySelectorAll("#passing .sct-us-prm-zone")];
     assert.equal(zones.length, 6);
     for (const z of zones) assert.match(z.textContent, /\d+\.\d YPA · \d+ att|no attempts/);
@@ -374,16 +374,16 @@ describe("the sections, in the brief's order (mak, 2026-11-05)", () => {
     assert.match(defs[3], /not of snaps/);
   });
 
-  test("no umbrella line and no Command links: the close cards end the block (mak, 2026-10-22)", async () => {
+  test("no umbrella line and no Command links: no close cards (mak, 2026-10-22, 2026-11-21)", async () => {
     const { doc } = await page("/team/buffalo-bills/usage/");
     const us = doc.querySelector(".sct-us");
     assert.equal(us.querySelector(".sct-us-close"), null);
     assert.ok(!us.textContent.includes("core inputs behind our player pricing"));
     const commands = [...us.querySelectorAll("a")].filter((a) => /^(Redraft|Dynasty) Command$/.test(a.textContent.trim()));
     assert.equal(commands.length, 0);
-    // The six decision cards are the last thing in the block
-    // (the tool row went 2026-10-20, the umbrella line 2026-10-22).
-    assert.equal(us.querySelector(".sct-us-convert").lastElementChild.className, "sct-us-products");
+    // The six decision cards ("Put This Usage Data to Work") went 2026-11-21 (mak).
+    assert.equal(us.querySelector(".sct-us-convert, .sct-us-product"), null);
+    assert.ok(!us.textContent.includes("Put This Usage Data to Work"));
   });
 });
 
@@ -446,14 +446,16 @@ describe("the table (mak's critique, 2026-11-03)", () => {
     }
     // The QB is no longer a blank cell under a header meant for everyone.
     const qb = doc.querySelector(".sct-us-band.is-qb .sct-us-row td.is-opp");
-    assert.match(qb.textContent, /pctile QB/);
+    // No "pctile QB" unit under the figure since 2026-11-21 (mak: the phone version everywhere).
+    assert.doesNotMatch(qb.textContent, /pctile/);
     assert.match(qb.querySelector(".sct-us-cap").textContent, /^\d+\.\d xFP\/game$/);
   });
 
   test("one move window, said once in the header; the player's own weeks only in his profile", async () => {
     const { doc } = await page("/team/new-england-patriots/usage/");
-    const sub = doc.querySelector(".sct-us-table thead tr.sct-us-th-sub");
-    assert.match(sub.textContent, /pp change, last 3 vs\. prior 3/);
+    // The units row went 2026-11-21 (mak: the phone version everywhere); the
+    // Snap % tip still states the window.
+    assert.equal(doc.querySelector(".sct-us-table thead tr.sct-us-th-sub"), null);
     for (const d of doc.querySelectorAll(".sct-us-row .sct-us-delta")) {
       assert.match(d.textContent, /^(Steady|[+−-]\d+(\.\d+)? pp|[+−-]\d+\/g)$/);
     }
@@ -698,33 +700,14 @@ describe("product bridges (mak, 2026-10-05; specific tools 2026-10-08)", () => {
     // longer term?") and their five links came off 2026-11-06 (mak).
     assert.deepEqual(ctas.filter((c) => c.endsWith("-usage-handcuff")), []);
     assert.ok(!/Need the handcuff\?|Thinking longer term\?/.test(us.textContent));
-    for (const want of [
-      "trade-analyzer-usage-close",
-      "startsit-usage-close",
-      "ros-rankings-usage-close",
-      "waiver-wire-usage-close",
-      "league-analyzer-usage-close",
-      "dynasty-league-analyzer-usage-close",
-    ]) assert.ok(ctas.includes(want), `missing ${want}`);
+    // The close cards and their six tool links went 2026-11-21 (mak).
+    assert.deepEqual(ctas.filter((c) => c.endsWith("-usage-close")), []);
+    assert.equal(us.querySelector(".sct-us-convert"), null);
     // Unconfirmed tools stay off the page.
     assert.ok(!ctas.some((c) => /trade-finder|blsh|lineup-optimizer/.test(c)));
     // The Commands are not linked from the block at all since 2026-10-22.
     assert.deepEqual(ctas.filter((c) => /^(redraft|dynasty)-command/.test(c)), []);
-    // Dynasty stays a minority of the product links (7 of 19 since the
-    // projections line's three redraft links went 2026-10-22).
-    const dynasty = ctas.filter((c) => c.startsWith("dynasty")).length;
-    assert.ok(dynasty < ctas.length / 2, `${dynasty} of ${ctas.length} links are dynasty`);
-    // The close: six decision cards (the tool row under them is gone).
-    assert.equal(us.querySelector(".sct-us-convert h4").textContent, "Put This Usage Data to Work");
-    assert.deepEqual(
-      [...us.querySelectorAll(".sct-us-product.is-ask .sct-us-product-title")].map((p) => p.textContent),
-      ["Making a trade?", "Setting your lineup?", "Looking ahead?", "Working the waiver wire?", "Evaluating your whole league?", "Playing dynasty?"],
-    );
     assert.equal(us.querySelector(".sct-us-toolrow"), null);
-    // The anchors carry the tool's name, which is the search signal.
-    const trade = us.querySelector("[data-cta='trade-analyzer-usage-close']");
-    assert.equal(trade.textContent, "Open Trade Analyzer");
-    assert.equal(trade.getAttribute("href"), "https://statchasers.com/redraft-command/fantasy-football-trade-calculator");
     // The Dynasty Trade Calculator is linked from nowhere on the page since the
     // handcuff bridges went (2026-11-06); the close card dropped it 2026-10-22.
     assert.equal(us.querySelector("[data-cta='dynasty-trade-calc-usage-handcuff']"), null);
@@ -763,7 +746,7 @@ describe("the premium comparison blocks (mak's brief, 2026-11-05)", () => {
     assert.equal(prmPass.querySelectorAll(".sct-us-prm-zone.is-deep .sct-us-prm-arc").length, 3, "a route arc on every deep card");
     assert.equal(prmPass.querySelectorAll(".sct-us-prm-zone.is-short .sct-us-prm-bars").length, 3, "bars on every short card");
     assert.ok(prmPass.querySelectorAll(".sct-us-prm-insight p").length >= 1);
-    assert.match(text(prmPass.querySelector(".sct-us-prm-fine")), /pass attempts carry a charted location/);
+    assert.equal(prmPass.querySelector(".sct-us-prm-fine"), null, "no fine print since 2026-11-21");
     assert.equal(text(prmPass.querySelector(".sct-us-prm-divider")), "Deep = 20+ air yards");
     assert.equal(text(prmPass.querySelector(".sct-us-prm-title")), "Passing Distribution");
 
@@ -771,7 +754,7 @@ describe("the premium comparison blocks (mak's brief, 2026-11-05)", () => {
     assert.equal(root.querySelectorAll(".sct-us-prm .sct-us-h3").length, 0);
   });
 
-  test("the Situational Usage dashboard is the section: the backs, their shares and samples from the file, the takeaways as cards", async () => {
+  test("the Situational Usage dashboard is the section: the backs, their shares and samples from the file, the takeaways as figures", async () => {
     const { doc } = await page("/team/new-england-patriots/usage/");
     const root = doc.querySelector("#usage .sct-us");
     const text = (el) => el.textContent.replace(/\s+/g, " ").trim();
@@ -801,13 +784,14 @@ describe("the premium comparison blocks (mak's brief, 2026-11-05)", () => {
       assert.equal(r.querySelectorAll(".sct-us-sit-cell.is-owner").length, 1);
     });
     assert.ok(prm.querySelectorAll(".sct-us-sit-row.is-standout").length <= 2);
-    const cards = [...prm.querySelectorAll(".sct-us-sit-card")];
-    assert.equal(cards.length, 3);
-    assert.ok(cards[0].classList.contains("is-featured"));
-    assert.equal(cards.filter((c) => c.classList.contains("is-featured")).length, 1);
-    assert.match(text(cards[0].querySelector(".sct-us-sit-card-title")), /^[A-Z][A-Za-z.'-]+'s Workload$/);
-    assert.match(text(cards[0].querySelector(".sct-us-sit-card-body")), new RegExp(`^${rbs[0].carries} carries and ${rbs[0].targets} targets in ${rbs[0].games} games`));
-    assert.match(text(cards[cards.length - 1].querySelector(".sct-us-sit-card-title")), /^If [A-Z][A-Za-z.'-]+ Misses Time$/);
+    // The phone analysis at every width since 2026-11-21 (mak): figures,
+    // bars and one line each; the paragraph cards are gone.
+    assert.equal(prm.querySelector(".sct-us-sit-card"), null);
+    const blocks = [...prm.querySelectorAll(".sct-us-pa-block")];
+    assert.equal(blocks.length, 3);
+    assert.match(text(blocks[0].querySelector(".sct-us-pa-title")), /^[A-Z][A-Za-z.'-]+'s Workload$/);
+    assert.deepEqual([...blocks[0].querySelectorAll(".sct-us-pa-val")].slice(0, 2).map(text), [String(rbs[0].carries), String(rbs[0].targets)]);
+    assert.match(text(blocks[blocks.length - 1].querySelector(".sct-us-pa-title")), /^If [A-Z][A-Za-z.'-]+ Misses Time$/);
     assert.doesNotMatch(prm.textContent, /—/);
   });
 

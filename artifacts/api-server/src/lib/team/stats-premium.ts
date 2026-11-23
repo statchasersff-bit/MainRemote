@@ -236,6 +236,7 @@ function history(input: StatsPremiumInput): string {
     })
     .join("");
   const span = seasons[seasons.length - 1]?.season;
+  const phone = historyPhone(input);
   // The wrapper is the phone card (the recap card design, mak 2026-11-14); unstyled above 560px.
   return (
     `<div class="sct-sp-history">` +
@@ -243,6 +244,53 @@ function history(input: StatsPremiumInput): string {
     `<div class="sct-sp-h-scroll"><table class="sct-sp-h">` +
     `<caption class="sct-visually-hidden">${e(`Team production by season${span ? ` back to ${span}` : ""}, with each figure's NFL rank for that season. Green cells rank in the top ten, red cells in the bottom ten.`)}</caption>` +
     `<thead>${head}</thead><tbody>${body}</tbody></table></div>` +
+    phone +
+    `</div>`
+  );
+}
+
+/**
+ * Season History on phones (mak, 2026-11-21: "agreed" to the Coaching Season
+ * by Season pattern): one row per season with points scored and points
+ * allowed and their ranks, the other columns behind a tap. team.css shows
+ * it at 560px and under in place of the table, which scrolled sideways there.
+ */
+function historyPhone(input: StatsPremiumInput): string {
+  const seasons = input.history;
+  const columns = seasons[0]?.cells ?? [];
+  const lead = ["off-points", "def-points"].filter((k) => columns.some((c) => c.key === k));
+  if (!lead.length) return "";
+  const cell = (c: StatRow | undefined, cls: string): string => {
+    if (!c) return `<span class="${cls}">–</span>`;
+    const tier = input.historyTier(c);
+    const wash = c.rank === null ? "none" : tier === "elite" || tier === "good" ? "good" : tier === "poor" ? "poor" : "mid";
+    return (
+      `<span class="${cls}" data-tier="${wash}"><b>${e(c.value)}</b>` +
+      (c.rankLabel ? `<span class="sct-sph-rank">${e(c.rankLabel)}<span class="sct-visually-hidden"> of 32</span></span>` : "") +
+      `</span>`
+    );
+  };
+  const rows = seasons
+    .map((s, i) => {
+      const by = new Map(s.cells.map((c) => [c.key, c]));
+      const rest = columns.filter((c) => !lead.includes(c.key));
+      const games = s.gamesPlayed ? `<span class="sct-sph-games">${e(`${s.gamesPlayed} ${s.gamesPlayed === 1 ? "game" : "games"}`)}</span>` : "";
+      return (
+        `<details class="sct-sph-row${i === 0 ? " is-current" : ""}">` +
+        `<summary class="sct-sph-sum"><span class="sct-sph-season"><span class="sct-sph-yr">${e(String(s.season))}</span>${games}</span>` +
+        lead.map((k) => cell(by.get(k), "sct-sph-val")).join("") +
+        `<span class="sct-sph-chev" aria-hidden="true"></span></summary>` +
+        `<dl class="sct-sph-detail">` +
+        rest.map((col) => `<div class="sct-sph-kv"><dt>${e(col.label)}<span class="sct-visually-hidden">: ${e(col.description)}</span></dt><dd>${cell(by.get(col.key), "sct-sph-kv-val")}</dd></div>`).join("") +
+        `</dl></details>`
+      );
+    })
+    .join("");
+  const label = (k: string) => columns.find((c) => c.key === k)?.label ?? k;
+  return (
+    `<div class="sct-sph">` +
+    `<div class="sct-sph-head" aria-hidden="true"><span>Season</span>${lead.map((k) => `<span>${e(label(k))}</span>`).join("")}<span></span></div>` +
+    rows +
     `</div>`
   );
 }
@@ -443,9 +491,7 @@ function renderStatsDashboard(input: StatsPremiumInput): string {
     (passRush ? `<div class="sct-sp-grid">${passRush}</div>` : "") +
     `<div class="sct-sp-grid">${discipline}${pace}</div>` +
     (mixes ? `<div class="sct-sp-mixes">${mixes}</div>` : "");
-  const detail =
-    (more ? `<details class="sct-sp-more"><summary>More team statistics: pass protection, pass rush, snaps, discipline and play mix</summary>${more}</details>` : "") +
-    history(input);
+  const detail = more ? `<details class="sct-sp-more"><summary>More team statistics: pass protection, pass rush, snaps, discipline and play mix</summary>${more}</details>` : "";
   const how =
     `<details class="sct-sp-how"><summary>How these are measured</summary>` +
     `<p>${e(`Every figure is ${season} regular season${d.throughWeek ? `, completed games through Week ${d.throughWeek}` : ""}, from the play-by-play (the same games as the Usage and Coaching tabs). Ranks are among all 32 teams on the value as printed: equal figures share a rank (T-). "NFL" is the average of the 32 teams' values (each team counts once). Season totals (touchdowns, sacks, takeaways, giveaways, turnover margin) are shown, ranked and averaged per game, because teams past their bye have played one game fewer; the total is under the label. On every scale bar right is better; snaps, attempts, blitz rate and time to throw rank most to least and have no better end.`)}</p>` +
@@ -468,7 +514,11 @@ function renderStatsDashboard(input: StatsPremiumInput): string {
     `<div class="sct-sp-top">${snapshot(input)}${recentForm(input)}</div>` +
     unitSection("offense", input) +
     unitSection("defense", input) +
-    `<section class="sct-sp-detail">${band(ICON.lines, "Detailed Statistics", "Pass protection and pass rush, snaps and play mix, discipline, five seasons of history and how every figure is measured.")}${detail}${how}</section>` +
+    // Season History and the definitions sit beside Detailed Statistics, not
+    // inside it, so each wears its own card above 560px (mak, 2026-11-21).
+    // Phones read the same order; .sct-sp-past is unstyled there.
+    `<section class="sct-sp-detail">${band(ICON.lines, "Detailed Statistics", "Pass protection and pass rush, snaps and play mix, discipline, five seasons of history and how every figure is measured.")}${detail}</section>` +
+    `<section class="sct-sp-past">${history(input)}${how}</section>` +
     `</div>`
   );
 }

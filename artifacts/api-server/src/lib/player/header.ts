@@ -526,8 +526,32 @@ function injuryPill(status: string, href: string | null): string {
   const key = status.trim().toLowerCase();
   const label = /^ir\b/.test(key) || key.includes("injured reserve") ? "IR" : status.trim();
   const tone = severity === "out" || severity === "doubtful" ? "is-bad" : severity === "probable" ? "is-good" : "is-mid";
-  if (!href) return `<span class="scp-ptag-inj ${tone}">${escapeHtml(label)}</span>`;
-  return `<a class="scp-ptag-inj ${tone}" href="${escapeHtml(href)}" target="_top">${escapeHtml(label)}</a>`;
+  // Both forms print; the phone header (560px and under) shows the short one.
+  const short = designationShort(label);
+  const inner =
+    short.toLowerCase() === label.toLowerCase()
+      ? escapeHtml(label)
+      : `<span class="scp-ptag-long">${escapeHtml(label)}</span><span class="scp-ptag-short">${escapeHtml(short)}</span>`;
+  if (!href) return `<span class="scp-ptag-inj ${tone}">${inner}</span>`;
+  return `<a class="scp-ptag-inj ${tone}" href="${escapeHtml(href)}" target="_top">${inner}</a>`;
+}
+
+/**
+ * The pill's phone label: the designation as an injury report abbreviates it
+ * ("QUES", "DOUB", "OUT", "IR"). Anything unrecognized keeps its own words.
+ */
+export function designationShort(status: string): string {
+  const key = status.trim().toLowerCase();
+  if (key.startsWith("ques")) return "QUES";
+  if (key.startsWith("doub")) return "DOUB";
+  if (key.startsWith("prob")) return "PROB";
+  if (key === "out") return "OUT";
+  if (/^ir\b/.test(key) || key.includes("injured reserve")) return "IR";
+  if (/^pup\b/.test(key) || key.includes("physically unable")) return "PUP";
+  if (/^nfi\b/.test(key) || key.includes("non-football")) return "NFI";
+  if (key.startsWith("sus")) return "SUSP";
+  if (/^dnr\b/.test(key) || key === "did not report") return "DNR";
+  return status.trim();
 }
 
 /**

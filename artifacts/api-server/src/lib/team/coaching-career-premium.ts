@@ -413,7 +413,7 @@ function chart(c: TeamCoaching, stops: Stop[]): string {
     `<p class="sct-cc-readout" aria-live="polite">Tap a point for its season.</p>` +
     `<figcaption class="sct-cc-cap">` +
     legend +
-    `<span class="sct-cc-note">${e(`Points per game, ${x0}-${x1}, one line per stop.`)}</span>` +
+    // The "Points per game, ... one line per stop" caption came off 2026-11-21 (mak).
     `</figcaption>` +
     `</figure>`
   );

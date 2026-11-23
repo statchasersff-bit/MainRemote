@@ -78,7 +78,7 @@ describe("header ink survives `#left-area table th`", () => {
   for (const [file, rule] of [
     ["fpa.css", /\.scf \.scf-table thead th \{[^}]*color: #fff !important/],
     ["schedule.css", /\.scs \.scs-matrix thead th \{[^}]*color: hsl\(var\(--scs-muted-foreground\)\) !important/],
-    ["player.css", /\.scp \.scp-table tfoot th \{[^}]*color: var\(--sc-navy\) !important/],
+    ["player.css", /\.scp \.scp-table tfoot th \{[^}]*color: var\(--tp-ink, var\(--sc-navy\)\) !important/],
     ["rb-handcuffs.css", /\.rbh \.rbh-table thead th \{[^}]*color: #fff !important/],
   ]) {
     test(file, () => assert.match(read(file).replace(/\/\*[\s\S]*?\*\//g, ""), rule));

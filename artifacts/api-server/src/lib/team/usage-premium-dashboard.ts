@@ -20,7 +20,6 @@ import { escapeHtml } from "../render";
 import { premiumTabHead } from "./premium-head";
 import { slotChip } from "../team-render";
 import {
-  BADGE_FROM,
   BOARD_ROWS,
   boardLines,
   faceWell,
@@ -164,13 +163,8 @@ function boardPanel(kind: "targets" | "carries", view: UsageView): string {
   const others = lines.filter((l) => !named.includes(l));
   const unit = isT ? "target" : "carry";
   const cols = 4 + (conventional ? 2 : 0) + (isT ? 1 : 0);
-  const move = (delta: number | null) =>
-    delta == null || Math.abs(delta) < BADGE_FROM
-      ? ""
-      : `<span class="sct-up-move is-${delta > 0 ? "up" : "down"}" title="${e(`Last 3 weeks ${delta > 0 ? "+" : "−"}${Math.abs(delta)}% vs season share`)}">` +
-        `<span aria-hidden="true">${delta > 0 ? "▲" : "▼"}</span><span class="sct-us-sr">${delta > 0 ? "up" : "down"}</span> ${Math.abs(delta)}%</span>`;
   const rows = named
-    .map(({ p, season, recent, delta }) => {
+    .map(({ p, season, recent }) => {
       const yds = isT ? p.recYards : rushYardsOnCarries(p);
       const air = p.airYardsShare == null ? "–" : `${Math.round(Math.max(0, p.airYardsShare))}%`;
       const extra = !conventional
@@ -184,7 +178,8 @@ function boardPanel(kind: "targets" | "carries", view: UsageView): string {
         `<td class="sct-up-td is-num is-lead">${e(String(count(p)))}</td>` +
         extra +
         `<td class="sct-up-td is-bar">${bar(season, "is-share")}</td>` +
-        `<td class="sct-up-td is-recent">${recent == null ? "–" : `${move(delta)}<span class="sct-up-recent">${recent}%</span>`}</td>` +
+        // No "▲ 5%" move chip since 2026-11-21 (mak: the phone version everywhere).
+        `<td class="sct-up-td is-recent">${recent == null ? "–" : `<span class="sct-up-recent">${recent}%</span>`}</td>` +
         (isT ? `<td class="sct-up-td is-num is-air">${e(air)}</td>` : "") +
         `</tr>`
       );
@@ -201,7 +196,7 @@ function boardPanel(kind: "targets" | "carries", view: UsageView): string {
   const seasonTitle = isT
     ? `Club season share: his share of the club's season targets through Week ${view.throughWeek}, games he missed included, so the column adds up to 100%. His target share on his player page and in the fantasy table below is over the games he played`
     : `Club season share: his share of the club's season carries (scrambles included, kneel-downs not) through Week ${view.throughWeek}, games he missed included, so the column adds up to 100%`;
-  const recentTitle = `Share over the player's last three games; the badge is its gap to the season share, from ${BADGE_FROM}%`;
+  const recentTitle = `Share over the player's last three games`;
   return (
     `<section class="sct-up-panel sct-up-board" aria-label="${e(isT ? "Target Distribution" : "Rushing Distribution")}">` +
     panelHead(isT ? "Target Distribution" : "Rushing Distribution", isT ? "target" : "run") +

@@ -176,8 +176,8 @@ export function renderSeasonHistoryTable(c: TeamCoaching): string {
     (older.length
       ? `<label class="sct-cs-more" for="${id}"><span class="sct-cs-more-show">${e(`Show all ${m.rows.length} seasons`)}</span><span class="sct-cs-more-hide">Show recent seasons only</span></label>`
       : "") +
-    `<p class="sct-cs-hint" aria-hidden="true">Scroll sideways to see every column.</p>` +
-    `<p class="sct-cs-note">${e(m.note)}</p>` +
+    // The scroll hint and the footnote came off 2026-11-21 (mak: the phone
+    // version everywhere).
     `</div>`
   );
 }

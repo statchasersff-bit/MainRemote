@@ -342,13 +342,15 @@ const XP_ICON = {
  * The section's title bar: the Rushing Direction header (mak, 2026-11-07),
  * icon, title beside its explainer, stripes; its own icon, title and explainer.
  */
-function xpHead(id: string, icon: string, title: string, sub: string, subTip = ""): string {
+function xpHead(id: string, icon: string, title: string, subTip = ""): string {
   return (
     `<header class="sct-us-prm-head">` +
     `<span class="sct-us-prm-icon" aria-hidden="true">${icon}</span>` +
     `<div class="sct-us-prm-titles">` +
     `<h3 class="sct-us-prm-title" id="${e(id)}">${e(title)}</h3>` +
-    `<p class="sct-us-prm-sub"><span class="sct-us-prm-sub-text">${e(sub)}</span>${subTip ? ` ${tip(subTip)}` : ""}</p>` +
+    // No explainer text under the title at any width since 2026-11-21 (mak:
+    // the phone version everywhere); a section with a tip keeps the tip.
+    (subTip ? `<p class="sct-us-prm-sub">${tip(subTip)}</p>` : "") +
     `</div>` +
     `<span class="sct-us-prm-stripes" aria-hidden="true"></span>` +
     `</header>`
@@ -406,7 +408,6 @@ function trendsBlock(view: UsageView, team: NflTeam): string {
       "usage-trends-title",
       XP_ICON.trend,
       "Notable Usage Changes",
-      "Role changes that clear the steady band: snap share by 5% or target share by 2%, the last three games a player played against the three before them, with the weeks each window covers.",
     ) +
     `<div class="sct-us-xp-body">` +
     lines +
@@ -569,10 +570,8 @@ function opportunityCell(row: UsageRow): string {
   const p = row.player;
   const band = BAND[bandOf(p)];
   const pct = p.pct[band.key] ?? null;
-  const unit = band.unit === "pctile" ? `pctile ${p.pos}` : band.unit;
-  // "pctile" and the position apart, so a phone row can drop the position
-  // its band heading already names.
-  const unitHtml = e(unit).replace(/^pctile (\w+)$/, `pctile<span class="sct-us-unit-pos"> $1</span>`);
+  // No "pctile RB" unit under the figure since 2026-11-21 (mak: the phone
+  // version everywhere); the bar's label still names it.
   // One compact line under the percentile (reviewer's critique, 2026-11-10):
   // the band's own stat, plus the target-share move for receivers. Touch
   // share and WOPR live in the expanded profile.
@@ -595,7 +594,7 @@ function opportunityCell(row: UsageRow): string {
     `<td class="sct-us-td is-opp">` +
     (pct == null
       ? num("–", "is-lead")
-      : `${num(nth(pct), "is-lead")}<span class="sct-us-unit">${unitHtml}</span>` +
+      : num(nth(pct), "is-lead") +
         `<span class="sct-us-pbar is-${t}" role="img" aria-label="${e(label)}" title="${e(label)}"><span style="width:${Math.max(3, pct)}%"></span></span>`) +
     (native ? `<span class="sct-us-cap">${native}</span>` : "") +
     `</td>`
@@ -797,11 +796,6 @@ function table(view: UsageView, team: NflTeam): string {
     `<th scope="col" class="sct-us-th">Opportunity${tip(COL_TIP.opp)}</th>` +
     `<th scope="col" class="sct-us-th">Snap %${tip(COL_TIP.snap)}</th>` +
     `<th scope="col" class="sct-us-th">RZ Opps${tip(COL_TIP.rz)}</th>` +
-    `</tr>` +
-    `<tr class="sct-us-th-sub"><th class="sct-us-th" colspan="2"><span class="sct-us-sr">Units</span></th>` +
-    `<th class="sct-us-th">vs. NFL at position</th>` +
-    `<th class="sct-us-th">pp change, last 3 vs. prior 3</th>` +
-    `<th class="sct-us-th">carries + targets inside the 20</th>` +
     `</tr></thead>` +
     bands +
     `</table></div>`
@@ -879,61 +873,6 @@ function handcuff(view: UsageView): string {
 }
 
 /**
- * The close: one card per decision the reader might be making, each naming
- * the tool that makes it. It stands in for the hub's shared "Use this
- * research" block, which the Usage page hides.
- */
-function conversion(): string {
-  const ask = (title: string, body: string, actions: string[]) => {
-    const links = linkRow(actions, "sct-us-product-links");
-    return links
-      ? `<article class="sct-us-product is-ask">` +
-        `<p class="sct-us-product-title">${e(title)}</p>` +
-        `<p class="sct-us-product-lead">${e(body)}</p>` +
-        links +
-        `</article>`
-      : "";
-  };
-  return (
-    `<div class="sct-us-convert">` +
-    `<div class="sct-us-xp-ph"><span class="sct-us-xp-ph-icon" aria-hidden="true">${XP_ICON.tools}</span>` +
-    `<h4 class="sct-us-h4">Put This Usage Data to Work</h4></div>` +
-    `<p class="sct-us-convert-lead">Usage data becomes much more useful when you connect it to the decision you are actually trying to make.</p>` +
-    `<div class="sct-us-products">` +
-    ask(
-      "Making a trade?",
-      "Check current player values, compare both sides of a deal, and measure the impact on your roster with the Fantasy Football Trade Analyzer.",
-      [tool(TRADE_CALCULATOR_URL, "Open Trade Analyzer", "trade-analyzer-usage-close")],
-    ) +
-    ask(
-      "Setting your lineup?",
-      "Compare players using weekly projections, matchup strength, opportunity and expected fantasy production in the Start/Sit Tool.",
-      [tool(START_SIT_URL, "Open Start/Sit Tool", "startsit-usage-close")],
-    ) +
-    ask("Looking ahead?", "See updated player expectations in our Rest-of-Season Rankings.", [
-      tool(ROS_RANKINGS_URL, "View ROS Rankings", "ros-rankings-usage-close"),
-    ]) +
-    ask(
-      "Working the waiver wire?",
-      "Find players whose roles are growing before the box score fully catches up with the Waiver Wire Scanner.",
-      [tool(WAIVER_WIRE_URL, "Open Waiver Wire Scanner", "waiver-wire-usage-close")],
-    ) +
-    ask(
-      "Evaluating your whole league?",
-      "Connect your league to the League Analyzer to identify roster strengths, weaknesses, trade opportunities and areas to improve.",
-      [tool(LEAGUE_ANALYZER_URL, "Open League Analyzer", "league-analyzer-usage-close")],
-    ) +
-    ask(
-      "Playing dynasty?",
-      "Use current role changes alongside age, long-term value and future outlook in the Dynasty League Analyzer.",
-      [tool(DYNASTY_LEAGUE_ANALYZER_URL, "Dynasty League Analyzer", "dynasty-league-analyzer-usage-close")],
-    ) +
-    `</div>` +
-    `</div>`
-  );
-}
-
-/**
  * Advanced & Fantasy Analysis: the one section of the page in fantasy
  * terms (mak's brief, 2026-11-05). The tiered player table with its
  * expandable profiles (xFP, FPOE, WOPR, first-read share, percentiles), the
@@ -949,7 +888,6 @@ function fantasy(view: UsageView, team: NflTeam): string {
       "usage-fantasy-title",
       XP_ICON.star,
       "Advanced & Fantasy Analysis",
-      "Player opportunities, usage trends and fantasy roles.",
       `Opportunity is a percentile against every NFL player at the same position. The + button opens each player's advanced profile: xFP (expected fantasy points), FPOE (points over expected), WOPR, first-read share and air-yards share, each as a percentile against the league.`,
     ) +
     `<div class="sct-us-xp-body">` +
@@ -957,7 +895,8 @@ function fantasy(view: UsageView, team: NflTeam): string {
     legend() +
     signals(view) +
     handcuff(view) +
-    conversion() +
+    // "Put This Usage Data to Work" (the six tool cards) came off
+    // 2026-11-21 at mak's request.
     `</div>` +
     `</section>`
   );

@@ -284,9 +284,10 @@ describe("player page content", () => {
     assert.match(owned[1], /^(<1|\d+)%$|^-$/, "ownership is a whole percentage");
     assert.match(doc.querySelector(".scp-pboard-cap").textContent.trim(), /^\d{4} Fantasy Season$/);
     // The season's counting totals are the four stat cards, when he has a logged
-    // game; a QB's phone-only Comp % card (2026-11-05) is a rate.
+    // game; a QB's phone-only card is the passer rating since 2026-11-06
+    // (Comp % before), one decimal and no unit.
     for (const v of doc.querySelectorAll(".scp-pp-card:not(.is-phone) .scp-pp-card-v")) assert.match(v.textContent.trim(), /^[\d,./-]+$/);
-    for (const v of doc.querySelectorAll(".scp-pp-card.is-phone .scp-pp-card-v")) assert.match(v.textContent.trim(), /^\d+\.\d%$/);
+    for (const v of doc.querySelectorAll(".scp-pp-card.is-phone .scp-pp-card-v")) assert.match(v.textContent.trim(), /^\d+\.\d$/);
   });
 
   test("the header's buttons say where they go and tag the tab", async () => {
@@ -1943,6 +1944,9 @@ describe("the news tab", () => {
     if (lead) assert.ok(!feed.includes(lead));
     for (const a of tab.querySelectorAll('a[target="_blank"]')) {
       assert.equal(a.getAttribute("rel"), "noopener");
+      // "Read report" repeats the headline's link for sighted readers only
+      // (aria-hidden, out of the tab order); the headline says it.
+      if (a.getAttribute("aria-hidden") === "true") continue;
       assert.match(a.textContent, /\(opens in new tab\)$/);
     }
   });
@@ -2060,7 +2064,9 @@ describe("the bio tab", () => {
 
       const clone = bio.cloneNode(true);
       clone.querySelectorAll(ALLOWED).forEach((n) => n.remove());
-      const text = clone.textContent.toLowerCase();
+      // "Claimed off waivers" is a transaction, the NFL's waiver wire, not
+      // fantasy's (evan-hull, 2026-11-21); any other "waiver" still fails.
+      const text = clone.textContent.toLowerCase().replace(/\boff waivers\b/g, "");
       for (const word of banned) {
         assert.ok(
           !text.includes(word),
