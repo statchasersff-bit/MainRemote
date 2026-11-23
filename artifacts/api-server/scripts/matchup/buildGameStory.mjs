@@ -466,6 +466,21 @@ async function buildSeason(season) {
         const hit = injuries.find((x) => x.team === club(m[1]) && x.player === m[2]);
         if (hit) hit.returned = true;
       }
+      // The try after a touchdown (2026-11-23): nflverse logs it on its own
+      // row, which the play filter below drops, so a missed extra point or a
+      // two-point try reached the recap only as odd arithmetic (TEN @ DAL
+      // read 6-0 after a touchdown). Hung on the touchdown it follows; a made
+      // extra point, the usual case, writes nothing. A retry after a penalty
+      // overwrites the first result.
+      const xp = str(r.extra_point_result);
+      const two = str(r.two_point_conv_result);
+      if (xp || two) {
+        const last = plays[plays.length - 1];
+        if (last?.td) {
+          if (xp === "good") delete last.tryResult;
+          else last.tryResult = xp ? `xp_${xp}` : `2pt_${two}`;
+        }
+      }
       const hwp = num(r.home_wp);
       if (hwp === null) continue;
       // The WP after the play: the next snap's, or the final.
@@ -485,10 +500,11 @@ async function buildSeason(season) {
       const fumble = r.fumble_lost === "1";
       const td = r.touchdown === "1";
       const fg = type === "field_goal" ? str(r.field_goal_result) : null;
+      const safety = r.safety === "1";
       const explosive = (type === "pass" && yds !== null && yds >= 20) || (type === "run" && yds !== null && yds >= 15);
       const swing = Math.abs(after - hwp) >= 0.05;
-      if (!(int || fumble || td || fg || explosive || swing)) continue;
-      if (/No Play/.test(desc) && !int && !fumble && !td) continue;
+      if (!(int || fumble || td || fg || safety || explosive || swing)) continue;
+      if (/No Play/.test(desc) && !int && !fumble && !td && !safety) continue;
       plays.push({
         playId: num(r.play_id),
         qtr,
@@ -517,6 +533,13 @@ async function buildSeason(season) {
         // Who lost the ball on a lost fumble: on punts and kickoffs nflverse's
         // posteam is the kicking club, while the fumble is usually the returner's.
         fumbleTeam: fumble ? club(r.fumbled_1_team) : null,
+        // The recap's scoring list (2026-11-23): a safety is two points nobody
+        // else lists, and a kick or punt return touchdown needs its returner.
+        // Written only when set, so every other play keeps its old shape.
+        ...(safety ? { safety: true } : {}),
+        ...(td && (type === "kickoff" || type === "punt")
+          ? { returner: str(r.kickoff_returner_player_name) ?? str(r.punt_returner_player_name), returnYds: num(r.return_yards) }
+          : {}),
         wpBefore: pm(hwp),
         wpAfter: pm(after),
         homeScore: num(r.total_home_score),

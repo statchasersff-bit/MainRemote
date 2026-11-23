@@ -69,9 +69,9 @@
     "Purdy completed 22 of 28 passes for 389 yards and three touchdowns, and San Francisco averaged 9.4 yards per play. Prescott answered with 343 yards and five touchdown passes, three of them to Pickens, who caught 11 passes for 145 yards. The last, a 1-yard throw to CeeDee Lamb with 47 seconds left, made it 46–40.",
     "San Francisco did not turn the ball over despite being sacked five times, and Ryan Flournoy's fumble after a catch with 2 seconds left ended Dallas' final possession. The 49ers improved to 8-1 with their second straight win; Dallas fell to 4-6."
    ],
-   "hash": "4fe682cde860e983",
+   "hash": "aae09ed95a6ee847",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-18T05:55:13.750Z",
+   "writtenAt": "2026-11-23T06:09:39.455Z",
    "words": 260,
    "checked": "house checks + checker agent"
   },
@@ -111,9 +111,9 @@
     "The Colts got one back when Jackson fumbled on a sack and Taylor scored from the 3 on the ensuing drive, but Tyler Loop's 57-yard field goal with five seconds left sent Baltimore to the break ahead 31–13. Indianapolis matched Baltimore over the second half, yet Henry's 3-yard run early in the fourth quarter made it 38–16.",
     "Jackson completed 17 of 25 passes for 324 yards and ran for 40 more, and Flowers turned five catches into 150 yards. Baltimore outgained Indianapolis 506 yards to 251 and held the ball for 35:20. Taylor ran for 98 yards and two touchdowns for the Colts, who converted three of 10 third downs. The Ravens opened 1-0; the Colts fell to 0-1."
    ],
-   "hash": "abe1a719002a7ce7",
+   "hash": "5728abdb4477e9dd",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:09:40.924Z",
+   "writtenAt": "2026-11-23T06:09:25.167Z",
    "words": 233,
    "checked": "house checks + checker agent"
   },
@@ -125,9 +125,9 @@
     "The fourth quarter swung back and forth. Stroud's 7-yard touchdown pass to Montgomery early in the period put Houston ahead 28–27, Tyler Bass answered with a 33-yard field goal, and Ka'imi Fairbairn's 58-yarder midway through the quarter gave the Texans a 31–30 lead. Allen then drove Buffalo 96 yards again, hitting Dalton Kincaid for 35 yards on the way to the winning throw.",
     "Houston's last chance began at its own 29 and moved 47 yards in 10 plays before Stroud fumbled on a sack with 16 seconds left and the Bills recovered. Buffalo did not commit a turnover. Allen finished 20 of 29 for 334 yards with two touchdown passes and two scoring runs, and Kincaid caught five passes for 130 yards. The Bills opened 1-0; the Texans fell to 0-1."
    ],
-   "hash": "70b37d170d4f5c71",
+   "hash": "c1f4fa99fa57719f",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:09:41.869Z",
+   "writtenAt": "2026-11-23T06:09:36.741Z",
    "words": 255,
    "checked": "house checks + checker agent"
   },
@@ -153,9 +153,9 @@
     "Hubbard's 2-yard run tied it again in the third quarter, and Carolina never drew even after that. Swift capped a 13-play drive with a 1-yard run, and Kyle Monangai went 61 yards for a touchdown on the first play of Chicago's next drive. After Tetairoa McMillan lost a fumble at the start of the fourth quarter, Williams finished a 12-play drive with a 1-yard touchdown pass to Jahdae Walker for a 52–31 lead.",
     "Chicago converted 10 of 14 third downs and was four of four in the red zone. Williams completed 21 of 29 passes for 269 yards and two touchdowns and ran for two more. Young threw for 361 yards and three touchdowns for Carolina, two of them to Jalen Coker, who caught eight passes for 138 yards, but the Panthers committed three turnovers. Chicago opened 1-0; Carolina fell to 0-1."
    ],
-   "hash": "7e10a69b419bd195",
+   "hash": "25150d3c0c87d5ae",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:09:42.367Z",
+   "writtenAt": "2026-11-23T06:09:38.262Z",
    "words": 256,
    "checked": "house checks + checker agent"
   },
@@ -167,9 +167,9 @@
     "Dart and Likely connected again from 2 yards out to finish a 12-play drive midway through the third quarter. Javonte Williams' 1-yard run late in the period pulled Dallas within 21–14, but the Giants answered with a 13-play march that ended in Dart's 9-yard touchdown pass to Devin Singletary midway through the fourth quarter.",
     "Prescott threw for 175 yards and two scores, the second a 17-yard pass to Williams with 5:26 left that made it 28–20 on the Cowboys' final possession. Dart completed 23 of 29 passes for 230 yards and ran for 54 more, Likely caught all eight of his targets for 78 yards, and Cam Skattebo ran for 81 yards and the opening touchdown. The division win moved the Giants to 1-0; the Cowboys fell to 0-1."
    ],
-   "hash": "84ed6077b5fb40a9",
+   "hash": "254b803d989f329b",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:09:43.370Z",
+   "writtenAt": "2026-11-23T06:09:25.160Z",
    "words": 229,
    "checked": "house checks + checker agent"
   },
@@ -195,9 +195,9 @@
     "Wentz's 16-yard touchdown pass to T.J. Hockenson late in the third quarter started the rally, and Aaron Jones Sr. capped an 83-yard drive with a 3-yard run with 6:42 left to put Minnesota ahead 25–22. Green Bay then gave the ball away twice in a row. Love fumbled on a sack, and Jordan Mason scored from the 1 on the next play; on the Packers' following series James Pierre intercepted Love, and Wentz threw a 9-yard touchdown pass to Jefferson.",
     "Minnesota won despite being outgained 419 yards to 239. Love threw for 387 yards and Watson caught six passes for 147 yards and two touchdowns, but Green Bay was one of four in the red zone and three of 12 on third downs. The division win moved the Vikings to 1-0; the Packers fell to 0-1."
    ],
-   "hash": "8ed3d79dc3a1112b",
+   "hash": "bed63ad5b021cdab",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:09:43.857Z",
+   "writtenAt": "2026-11-23T06:09:36.746Z",
    "words": 249,
    "checked": "house checks + checker agent"
   },
@@ -252,9 +252,9 @@
     "Detroit opened overtime with a 10-play, 70-yard drive that ended in Goff's second touchdown pass to St. Brown. The Saints matched it with an 80-yard drive, but Shough's 8-yard touchdown pass to Noah Fant with 1:38 remaining left them a point short, and the game ended 31–30.",
     "Shough completed 35 of 56 passes for 410 yards, and Olave caught 10 passes for 182 yards, but the Saints were sacked five times and committed three turnovers. Detroit held the ball for 36:51. The Lions opened 1-0; the Saints fell to 0-1."
    ],
-   "hash": "7d4006885ee48a86",
+   "hash": "b7e88cae2e4005e8",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:09:45.618Z",
+   "writtenAt": "2026-11-23T06:09:38.265Z",
    "words": 256,
    "checked": "house checks + checker agent"
   },
@@ -280,9 +280,9 @@
     "Jake Elliott's 35-yard field goal late in the third quarter made it 17–9. Jayden Daniels answered early in the fourth with a 10-yard touchdown pass to Stefon Diggs to pull Washington within 17–16, but Philadelphia needed only eight plays to go 74 yards for Goedert's second touchdown.",
     "Washington drove 63 yards in 12 plays on its last possession, and Daniels' 1-yard touchdown pass to Antonio Williams with 1:05 left made it 24–22, but the Commanders got no closer. They held the ball for 33:20 and were three of three in the red zone, yet averaged 4.4 yards per play to the Eagles' 6.0. Neither team committed a turnover. The division win moved Philadelphia to 1-0; Washington fell to 0-1."
    ],
-   "hash": "a7b1247b1ceb2af5",
+   "hash": "1ba0499a9cce7778",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:09:46.969Z",
+   "writtenAt": "2026-11-23T06:09:25.279Z",
    "words": 226,
    "checked": "house checks + checker agent"
   },
@@ -337,9 +337,9 @@
     "Goff's 2-yard touchdown pass to Amon-Ra St. Brown midway through the third quarter cut it to 27–17. Buffalo responded with a 15-play, 75-yard drive capped by Allen's 2-yard run, and after Sam LaPorta's 1-yard touchdown catch early in the fourth made it 34–24, James Cook III scored from the 1 with 2:53 left.",
     "Cook ran for 135 yards as Buffalo piled up 203 on the ground and held the ball for 33:45. Goff completed 26 of 38 passes for 327 yards and four touchdowns, and St. Brown caught nine passes for 142 yards, including a 27-yard touchdown with 1:48 left. Buffalo lost DJ Moore to an injury in the second quarter, and he did not return. Neither team committed a turnover. The Bills improved to 2-0; the Lions fell to 1-1."
    ],
-   "hash": "9009dbed06c84833",
+   "hash": "222d33bfc69315d9",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:09:48.342Z",
+   "writtenAt": "2026-11-23T06:09:36.862Z",
    "words": 245,
    "checked": "house checks + checker agent"
   },
@@ -407,9 +407,9 @@
     "Herbert put Los Angeles ahead 14–10 with a 10-yard touchdown pass to Oronde Gadsden midway through the third quarter, but Cousins answered with an 11-play, 74-yard drive that ended in a 13-yard scoring pass to Cody White. After Hampton's fumble, Cousins needed three plays to find White again from 11 yards for a 24–14 lead with 3:03 left. Masses intercepted Herbert on the next series, and after a Raiders punt the Chargers took over at their own 6 and gave up a safety on the first play.",
     "Cousins completed 19 of 29 passes for 253 yards and three touchdowns, with Tucker catching five for 119. Hampton ran for 94 yards, but the Chargers, who lost David Njoku to an injury at the start of the second quarter, turned the ball over three times. The division win moved Las Vegas to 2-0; Los Angeles fell to 0-2 with its second straight loss."
    ],
-   "hash": "f41e19e4cc4fe86a",
+   "hash": "7903edf3e6a235a9",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:09:50.497Z",
+   "writtenAt": "2026-11-23T06:02:52.594Z",
    "words": 239,
    "checked": "house checks + checker agent"
   },
@@ -435,9 +435,9 @@
     "New Orleans owned the ball from there. Shough found Chris Olave for a 21-yard touchdown midway through the fourth quarter to tie it at 17, then led a 68-yard drive that began with 8:06 left and ended with his own run. Shough completed 27 of 34 passes for 252 yards, Olave caught eight for 86, and the Saints held the ball for 32:45 and converted eight of 15 third downs without a turnover.",
     "Baltimore had one chance left, and Jackson moved the Ravens 34 yards from their 29 before Julian Blackmon intercepted him with 20 seconds remaining. Jackson finished 21 of 31 for 235 yards. The comeback left both teams at 1-1, with the Ravens unable to hold an 11-point lead at home."
    ],
-   "hash": "4eae837281077d54",
+   "hash": "1d8161fce5d24172",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:09:52.043Z",
+   "writtenAt": "2026-11-23T06:09:38.252Z",
    "words": 243,
    "checked": "house checks + checker agent"
   },
@@ -510,9 +510,9 @@
     "Purdy then ran for 35 yards, and Kittle caught a 20-yard touchdown with 1:36 left for a 36–27 lead. Chad Ryland's 49-yard field goal with 39 seconds remaining was Arizona's last score.",
     "The 49ers had the ball for just 21:16 but averaged 8.7 yards per play, and Purdy's 297 yards came on 15 completions. Kittle finished with six catches for 82 yards and two scores, and McCaffrey added 116 yards from scrimmage. San Francisco stayed unbeaten, while Arizona has lost two straight."
    ],
-   "hash": "06852fb44d87f2da",
+   "hash": "f59383a40839253a",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:09:54.622Z",
+   "writtenAt": "2026-11-23T06:09:25.334Z",
    "words": 250,
    "checked": "house checks + checker agent"
   },
@@ -540,9 +540,9 @@
     "Green Bay never found a running game, finishing with 17 yards on nine carries. Love completed 28 of 53 passes for 312 yards, and his 15-yard touchdown to Matthew Golden made it 27–14 midway through the fourth. Bijan Robinson's 2-yard run with 3:35 left answered it, and Xavier Watts intercepted Love on the final drive.",
     "Atlanta's only giveaway, a Penix interception early in the first quarter, ended in a Green Bay punt, and the Falcons were never sacked."
    ],
-   "hash": "b8ad41bc0063bd8a",
+   "hash": "d9d131fe62dbda28",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:09:55.426Z",
+   "writtenAt": "2026-11-23T06:09:36.916Z",
    "words": 251,
    "checked": "house checks + checker agent"
   },
@@ -555,9 +555,9 @@
     "Jackson answered with an 11-play, 64-yard drive that ended with a 2-yard touchdown pass to Matthew Hibner with 1:34 left. Aubrey's 23-yard field goal tied it, leaving Baltimore seven seconds.",
     "Jackson completed 15 of 20 passes for 186 yards and ran for 50 more, and Henry carried 26 times for 89 yards. Dallas outgained Baltimore 415 to 378, but the Ravens did not turn the ball over and were not sacked, while the Cowboys lost a Ferguson fumble early in the third quarter and Aubrey made three of four field goal tries."
    ],
-   "hash": "bc8b28bf09c87411",
+   "hash": "f6b6c4994675e617",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:09:55.878Z",
+   "writtenAt": "2026-11-23T06:09:38.424Z",
    "words": 252,
    "checked": "house checks + checker agent"
   },
@@ -570,9 +570,9 @@
     "Watson then led a 65-yard drive that included his 21-yard run and finished it with the pass to Fannin. Carolina got one more chance after Cleveland turned it over on downs, but Ronnie Hickman intercepted Young with 16 seconds left.",
     "Carolina outgained Cleveland 360 to 259, but Young needed 48 attempts for his 291 yards, and the Panthers converted four of 15 third downs and scored one touchdown in three red-zone trips. Mason Graham sacked Young twice, and Carolina fell to 1-2."
    ],
-   "hash": "c67b2c86201d10d4",
+   "hash": "d02d62ee48d84abc",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:09:55.879Z",
+   "writtenAt": "2026-11-23T06:09:25.337Z",
    "words": 241,
    "checked": "house checks + checker agent"
   },
@@ -630,9 +630,9 @@
     "The Saints gave the ball away twice more: Shough fumbled on another sack late in the game, and Johnson lost a fumble with 1:02 left. Shough finished 29 of 42 for 255 yards and four touchdowns, and New Orleans scored touchdowns on all four of its red-zone trips.",
     "Cousins completed 22 of 33 passes for 248 yards and three touchdowns without an interception, and Bowers caught 10 passes for 116 yards. New Orleans lost a game it led through three quarters."
    ],
-   "hash": "8cde69f47e52223e",
+   "hash": "c15bc58d1d185883",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:09:58.868Z",
+   "writtenAt": "2026-11-23T06:09:38.438Z",
    "words": 256,
    "checked": "house checks + checker agent"
   },
@@ -645,9 +645,9 @@
     "Stafford answered with a 48-yard touchdown pass to Konata Mumpfield with 3:46 left, and Nix responded with a 65-yard drive, helped by a 39-yard completion to Bryant, that ended with his own 1-yard run. Stafford, who finished 30 of 55 for 390 yards, moved the Rams 48 yards on the final possession before Hufanga's second interception.",
     "Hufanga also had a sack, and Denver scored on all three of its red-zone trips. The Rams fell to 1-2 despite 158 yards from scrimmage by Kyren Williams."
    ],
-   "hash": "2626a9af0fba7d51",
+   "hash": "80714967163d28c1",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:09:58.876Z",
+   "writtenAt": "2026-11-23T06:09:36.919Z",
    "words": 259,
    "checked": "house checks + checker agent"
   },
@@ -655,15 +655,15 @@
    "headline": "Reichard's three field goals help Vikings outlast Buccaneers 23–16",
    "paragraphs": [
     "Neither offense could convert on third down, and the Minnesota Vikings leaned on their kicker. Will Reichard made field goals from 54, 56 and 43 yards, Minnesota sacked Tampa Bay quarterbacks six times, and the Vikings beat the Buccaneers 23–16 on Sunday to move to 3-0. Tampa Bay fell to 0-3.",
-    "Reichard's 54-yarder opened the scoring early in the first quarter, and the teams traded touchdowns, Tampa Bay's on Ted Hurst III's only catch, a 40-yard score, leaving Minnesota ahead 10–7 after one quarter. Chase McLaughlin tied it with a 28-yard field goal midway through the second, and Kyler Murray answered with a 41-yard touchdown pass to Jordan Addison late in the half for a 17–10 lead.",
+    "Reichard's 54-yarder opened the scoring early in the first quarter, Myles Price returned a punt 86 yards for a touchdown, and Tampa Bay answered on Ted Hurst III's only catch, a 40-yard score, leaving Minnesota ahead 10–7 after one quarter. Chase McLaughlin tied it with a 28-yard field goal midway through the second, and Kyler Murray answered with a 41-yard touchdown pass to Jordan Addison late in the half for a 17–10 lead.",
     "The second half belonged to the defenses. A'Shawn Robinson intercepted Murray midway through the third, setting up McLaughlin's 38-yard field goal, and his 54-yarder midway through the fourth made it 17–16. The teams combined for 16 punts, and Minnesota converted two of 15 third downs to Tampa Bay's two of 17.",
     "Reichard's 56-yard field goal with 3:15 left made it 20–16. Andrew Van Ginkel intercepted Baker Mayfield with 1:54 left, and Reichard added a 43-yarder. Mayfield, hurt with 1:54 remaining, did not return, and Isaiah Rodgers intercepted his replacement, Jalon Daniels, with eight seconds left.",
     "Minnesota gained only 230 yards, but a pass rush led by Eric Wilson and Kyle Van Noy, with 1.5 sacks each, held Tampa Bay to 3.8 yards per play and out of the end zone on both of its red-zone trips."
    ],
-   "hash": "54f823626aa9abf4",
+   "hash": "c5350e82d9b17194",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:09:59.761Z",
-   "words": 253,
+   "writtenAt": "2026-11-23T06:02:52.604Z",
+   "words": 260,
    "checked": "house checks + checker agent"
   },
   "2026_03_NE_JAX": {
@@ -690,9 +690,9 @@
     "Gibbs finished with 99 rushing yards on 20 carries and 164 yards from scrimmage. Detroit sacked Smith five times, twice by DJ Wonnum, and Smith fumbled on a sack with 51 seconds left, with the Lions recovering to close it out.",
     "Detroit did not turn the ball over and scored touchdowns on four of five red-zone trips. The Lions improved to 2-1; the Jets, who lost Breece Hall to an injury early in the fourth quarter and Wilson in the final minute, fell to 1-2 with a second straight loss."
    ],
-   "hash": "23e89f92b5887644",
+   "hash": "e55cce8a48d809bc",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:10:00.221Z",
+   "writtenAt": "2026-11-23T06:09:25.454Z",
    "words": 258,
    "checked": "house checks + checker agent"
   },
@@ -720,9 +720,9 @@
     "Washington then put together a 12-play drive for Stevens' 36-yard field goal with 4:39 left, and on Seattle's next possession Medrano intercepted Darnold and returned it for a touchdown to make it 33–24. Darnold's 7-yard touchdown pass to Cooper Kupp with 2:55 left made it 33–31, but the Seahawks did not score again.",
     "Darnold completed 31 of 45 passes for 379 yards and four touchdowns, and Smith-Njigba caught 10 for 128. Mariota threw three touchdown passes without a turnover, which was enough for an offense that averaged 4.0 yards per play and converted three of 13 third downs."
    ],
-   "hash": "485dbbc16fb000db",
+   "hash": "66e19403d778d369",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:10:01.403Z",
+   "writtenAt": "2026-11-23T06:09:37.030Z",
    "words": 250,
    "checked": "house checks + checker agent"
   },
@@ -749,9 +749,9 @@
     "Winston answered late in the third with an 11-yard touchdown pass to Theo Johnson for a 27–24 lead, and Zvada's 52-yard field goal with 2:16 left made it 30–24. Winston finished with 250 yards and three touchdowns, and Nabers caught six passes for 112 yards.",
     "New York scored the last 17 points despite three turnovers of its own, including a Najee Harris fumble early in the fourth that Arizona could not convert, and its defense intercepted Brissett three times."
    ],
-   "hash": "03eb070d30634c23",
+   "hash": "a3b87c4ddb76e85b",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:10:01.413Z",
+   "writtenAt": "2026-11-23T06:09:38.582Z",
    "words": 258,
    "checked": "house checks + checker agent"
   },
@@ -791,9 +791,9 @@
     "Denver kept coming. Bo Nix found Jaylen Waddle for a 13-yard touchdown with 4:10 left, pulling the Broncos within 17–14. Purdy needed five plays to respond, the last a 56-yard touchdown pass to George Kittle with 2:25 to go, and Denver's final drive ended with a missed field goal.",
     "Nix completed 25 of 42 passes for 214 yards and RJ Harvey caught all 10 of his targets, but Denver averaged 4.6 yards per play and reached the red zone only once. The Broncos also lost Pat Surtain II in the final minute of the first half and Pat Bryant late in the third quarter; neither returned. San Francisco, which ran for 140 yards and was not sacked, won its fourth straight. Denver fell to 2-2."
    ],
-   "hash": "4a1fdd76bdb325a0",
+   "hash": "a1ec2cc089147056",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:10:03.777Z",
+   "writtenAt": "2026-11-23T06:09:25.577Z",
    "words": 211,
    "checked": "house checks + checker agent"
   },
@@ -805,9 +805,9 @@
     "Jared Goff threw for 412 yards, completing 32 of 52 passes, and Jameson Williams caught six for 102. But Detroit ran for 46 yards on 15 carries and scored touchdowns on only two of its four trips inside the red zone, and Bates' 26-yard field goal midway through the third was the Lions' only answer in the second half until late.",
     "Young completed 29 of 41 passes for 329 yards and Hubbard ran for 122, part of an offense that held the ball for 33:15 and did not turn it over. Goff's 8-yard touchdown pass to Sam LaPorta with 3:42 left cut the lead to 32–26, but Detroit's last drive, from its own 13, ended on downs. Both teams are 2-2."
    ],
-   "hash": "78b628b53a95b5f7",
+   "hash": "5d94c4913d1d2eeb",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:10:04.164Z",
+   "writtenAt": "2026-11-23T06:09:37.081Z",
    "words": 228,
    "checked": "house checks + checker agent"
   },
@@ -847,9 +847,9 @@
     "Kansas City needed four plays to answer. Mahomes hit Thornton for 55 yards, and Walker scored from 2 yards out with 3:25 left for a 23–19 lead. Walker struck again on a 22-yard touchdown run with 3:10 left, making it 30–19, the last of 13 straight Kansas City points. Thornton, injured on the go-ahead drive, did not return.",
     "Kirk Cousins threw for 365 yards and found Brock Bowers for a 20-yard touchdown with 1:54 left to cut it to 30–27. Pinned at its own 1 after a punt, Las Vegas drove 50 yards before Xavier Nwankpa intercepted Cousins with 10 seconds left. Kansas City, which did not turn the ball over, won its fourth straight. Las Vegas fell to 3-1 with the division loss."
    ],
-   "hash": "a66d08c12f61c12b",
+   "hash": "559878417ebad2f3",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:10:05.553Z",
+   "writtenAt": "2026-11-23T06:09:25.581Z",
    "words": 253,
    "checked": "house checks + checker agent"
   },
@@ -862,9 +862,9 @@
     "Burrow completed 39 of 54 passes and Tee Higgins caught 11 for 157 yards, but the Bengals ran for 23 yards on 15 carries and scored touchdowns on two of four red-zone trips. Burrow's 1-yard run with 3:33 left made it 22–17, and Cincinnati's last drive, from its own 17, moved 71 yards before ending on downs.",
     "Jacksonville did not turn the ball over. Lawrence completed 18 of 23 passes for 227 yards, Brenton Strange caught seven for 95 and Little made all three field goals. The Jaguars moved to 3-1. The Bengals fell to 2-2 with their second straight loss."
    ],
-   "hash": "c764638b8abf5fd1",
+   "hash": "b9d26315b0854207",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:10:05.557Z",
+   "writtenAt": "2026-11-23T06:09:38.644Z",
    "words": 240,
    "checked": "house checks + checker agent"
   },
@@ -876,9 +876,9 @@
     "Darnold's 6-yard touchdown pass to Tory Horton early in the third quarter made it 27–6. Los Angeles rallied from there. Herbert found Kimani Vidal for a 9-yard touchdown late in the third, and after a Jason Myers field goal, the Chargers scored the final 10 points: Omarion Hampton finished a 16-play, 85-yard drive midway through the fourth quarter, and Dicker kicked a 36-yard field goal with 2:17 left to make it 30–23.",
     "Seattle finished three of 12 on third downs, but its defense closed the game. Herbert fumbled on a sack with 1:03 left, and Seattle recovered to end the last Los Angeles drive. The Chargers committed four turnovers and were sacked four times. Seattle moved to 3-1, while Los Angeles fell to 0-4 with its fourth straight loss."
    ],
-   "hash": "df046f5270a6a354",
+   "hash": "54d349bce872a162",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:10:06.435Z",
+   "writtenAt": "2026-11-23T06:09:37.079Z",
    "words": 259,
    "checked": "house checks + checker agent"
   },
@@ -920,9 +920,9 @@
     "Maye's 2-yard touchdown pass to Doubs midway through the third quarter capped a 14-play drive and put New England back in front 21–17. Bass made it 21–20 early in the fourth, and Josh Allen hit Keon Coleman for a 34-yard touchdown with 4:33 left to give Buffalo a 26–21 lead.",
     "The Patriots needed eight plays to cover 73 yards, and Chism's touchdown made it 29–26. Craig Woodson then intercepted Allen with 1:14 left to end Buffalo's last drive. New England went 3 of 3 in the red zone, ran for 143 yards and held the ball for 33:41, overcoming two turnovers and the loss of Mack Hollins in the third quarter. The division win evened the Patriots at 2-2, and the Bills fell to 3-1."
    ],
-   "hash": "8c792affbda34045",
+   "hash": "6b3df7a324e21fc9",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:10:07.678Z",
+   "writtenAt": "2026-11-23T06:09:38.649Z",
    "words": 244,
    "checked": "house checks + checker agent"
   },
@@ -934,9 +934,9 @@
     "Both New York scores to that point came after Chicago turnovers, and the Bears kept the Jets from building on them. Monangai's 5-yard run late in the third quarter made it 20–6, and Santos added a 21-yarder early in the fourth. Chicago ran for 232 yards, though it scored touchdowns on only two of seven red-zone trips.",
     "New York's offense barely had the ball. The Jets ran 14 times, converted none of their seven third downs and finished with 157 yards; their only touchdown came on Geno Smith's 58-yard pass to Isaiah Williams midway through the fourth quarter. Bagent completed 25 of 34 passes for 268 yards. Chicago moved to 3-1 with its second straight win, and New York fell to 1-3, its third straight loss."
    ],
-   "hash": "a3d7a3e4bb477c0e",
+   "hash": "e30cf1a26e35c348",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:10:07.681Z",
+   "writtenAt": "2026-11-23T06:09:25.682Z",
    "words": 238,
    "checked": "house checks + checker agent"
   },
@@ -948,9 +948,9 @@
     "Neither team scored in the third quarter, in which Watson lost a fumble. Robert Spears-Jennings intercepted Watson early in the fourth, and Rodgers hit Darnell Washington for a 21-yard touchdown on the next possession. Szmyt's 44-yard kick made it 24–16, but Rodgers found DK Metcalf for gains of 22 and 28 yards on an 80-yard drive, and his 3-yard touchdown pass to Pat Freiermuth with 1:46 left tied it 24–24.",
     "Cleveland moved 36 yards in seven plays to set up Szmyt, and Grant Delpit intercepted Rodgers with 10 seconds left to end it. Rodgers threw for 299 yards and three touchdowns but was intercepted twice and sacked five times. Watson completed 24 of 33 passes for 268 yards. The division win lifted Cleveland to 3-1, and Pittsburgh fell to 2-2."
    ],
-   "hash": "544da5ad63fd94d7",
+   "hash": "6811a12198961113",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:10:08.550Z",
+   "writtenAt": "2026-11-23T06:09:37.174Z",
    "words": 242,
    "checked": "house checks + checker agent"
   },
@@ -963,9 +963,9 @@
     "Huntley then drove the Ravens 71 yards in six plays and threw a 7-yard touchdown pass to Devontez Walker, and Baltimore tied it 23–23. The Ravens took the opening possession of overtime 68 yards in 14 plays, and Kyle Hamilton intercepted Tua Tagovailoa on Atlanta's answering drive.",
     "Henry ran for 102 yards as Baltimore piled up 208 on the ground and held the ball for 35:10, and Huntley completed 24 of 32 passes for 201 yards. The Ravens moved to 4-1 with their third straight win. The Falcons fell to 2-3."
    ],
-   "hash": "d855ba88383d8192",
+   "hash": "65642340c51c8922",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:10:09.062Z",
+   "writtenAt": "2026-11-23T06:09:25.742Z",
    "words": 246,
    "checked": "house checks + checker agent"
   },
@@ -977,9 +977,9 @@
     "Jackson finished 15 of 20 for 222 yards. Tyler Huntley completed eight of nine passes for 63 yards in relief, but Baltimore's second-half possessions produced no points, and its last one, an 11-play drive, ended with a missed field goal.",
     "Tennessee crept back with a 33-yard field goal by Joey Slye in the third quarter and Ward's 3-yard touchdown pass to Wan'Dale Robinson with 1:16 left, which made it 24–18. Tate caught nine passes for 145 yards. Baltimore, which did not turn the ball over and scored touchdowns on all three of its red-zone trips, moved to 3-1. Tennessee fell to 0-4 with its fourth straight loss."
    ],
-   "hash": "215412a0c3946f9a",
+   "hash": "b4f3100a51171198",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:10:09.063Z",
+   "writtenAt": "2026-11-23T06:09:38.749Z",
    "words": 244,
    "checked": "house checks + checker agent"
   },
@@ -991,9 +991,9 @@
     "Khalil Shakir's 57-yard catch moved Buffalo into position early in overtime, but Cook lost a fumble on the drive. The Rams then moved 50 yards before the drive ended with a missed field goal, one of two misses for Harrison Mevis. Allen's 19-yard run helped set up Bass' winning kick.",
     "Buffalo won on the ground. Allen ran for 121 yards on 10 carries, Cook ran for 111 and two touchdowns, and the Bills averaged 7.6 yards per play while Allen threw only 19 passes. Stafford completed 40 of 54 for 383 yards and three touchdowns, Puka Nacua caught 17 passes for 138 yards, and the Rams scored touchdowns on all five red-zone trips without a turnover. Buffalo moved to 4-1; Los Angeles fell to 2-3."
    ],
-   "hash": "dad4e4000cb76fa2",
+   "hash": "5f8aea56b0e6ef84",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:10:09.984Z",
+   "writtenAt": "2026-11-23T06:09:37.222Z",
    "words": 245,
    "checked": "house checks + checker agent"
   },
@@ -1005,9 +1005,9 @@
     "Green Bay put it away in the third quarter. Love found Watson for a 53-yard touchdown early in the quarter, and Trey Smack added a 35-yard field goal. McKinney then picked off Bagent again late in the third, and Lloyd's 4-yard run on the first play of the fourth made it 31–7.",
     "The Packers could have added more. Ty'Ron Hopper intercepted Case Keenum in the end zone and Rome Odunze lost a fumble, but Smack missed field goals after both. Love completed 25 of 31 passes for 367 yards, Watson finished with 143 receiving yards and Matthew Golden added 123. Chicago managed 246 yards and 3.6 per play and was sacked four times. Green Bay moved to 3-2 with its second straight win, and Chicago fell to 3-2."
    ],
-   "hash": "795481cdee1b0a8b",
+   "hash": "063a1081f154d117",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:10:10.399Z",
+   "writtenAt": "2026-11-23T06:09:38.822Z",
    "words": 217,
    "checked": "house checks + checker agent"
   },
@@ -1019,9 +1019,9 @@
     "After a Miami field goal, Burrow's 45-yard touchdown pass to Ja'Marr Chase with 47 seconds left in the third quarter made it 28–10. The Dolphins answered with a 14-play, 80-yard drive capped by Willis' 3-yard touchdown pass to Kevin Coleman Jr., cutting it to 28–18 midway through the fourth. But Willis fumbled on a sack with 2:34 left, and Evan McPherson's 26-yard field goal made it 31–18 before Willis ran in from 1 yard with 48 seconds left.",
     "Burrow completed 23 of 32 passes for 190 yards and was not sacked, and Cincinnati converted nine of 13 third downs. Willis ran for 74 yards and Ollie Gordon II for 88, but Miami turned the ball over three times. The Bengals improved to 3-2; the Dolphins fell to 0-5."
    ],
-   "hash": "12ffac503f195e1e",
+   "hash": "9126d020944efafe",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:10:10.402Z",
+   "writtenAt": "2026-11-23T06:09:25.738Z",
    "words": 244,
    "checked": "house checks + checker agent"
   },
@@ -1033,9 +1033,9 @@
     "Then the ball started coming loose. Smith fumbled on a sack with 4:20 left and Cleveland recovered, but on the Browns' next possession Corey Bojorquez fumbled, and the Jets recovered at the Cleveland 23. Allen scored three plays later. Watson fumbled on a sack with 57 seconds left, ending Cleveland's last drive.",
     "The Jets' pass rush shaped the game. Cleveland was sacked eight times, three of them by David Bailey, and finished with 198 yards, 3.0 per play and four conversions on 16 third downs. Watson completed 15 of 33 passes for 155 yards. Allen ran for 116 yards on 24 carries and Wilson caught seven passes for 104. New York improved to 2-3, and Cleveland fell to 3-2."
    ],
-   "hash": "f35cdbb444e0e3ee",
+   "hash": "fef72e8aefd00858",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:10:11.249Z",
+   "writtenAt": "2026-11-23T06:09:37.227Z",
    "words": 225,
    "checked": "house checks + checker agent"
   },
@@ -1118,9 +1118,9 @@
     "The New Orleans offense never found a rhythm. The Saints gained 142 yards, averaged 3.3 yards per play, converted two of 10 third downs and held the ball for 20:23 to Minnesota's 39:37. Shough completed 16 of 25 passes for 96 yards, and Murphy's second interception ended the last New Orleans possession late in the fourth quarter.",
     "Minnesota improved to 5-0 with its fifth straight win. New Orleans fell to 1-4 and has lost three straight."
    ],
-   "hash": "1ea9cfb01bbe31e2",
+   "hash": "9bf2279681694c44",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:10:13.665Z",
+   "writtenAt": "2026-11-23T06:09:38.808Z",
    "words": 247,
    "checked": "house checks + checker agent"
   },
@@ -1133,9 +1133,9 @@
     "Washington caught six passes for 124 yards and two touchdowns, and Lawrence threw for 331 yards. Jacksonville outgained Philadelphia 408 to 232 despite failing to score a touchdown on any of its three red zone trips. The Eagles averaged 3.9 yards per play, ran for 22 yards and punted six times, while Hurts completed 21 of 40 passes for 220 yards. Jalen Carter had two sacks.",
     "The Jaguars improved to 4-1 with their third straight win. The Eagles fell to 2-3 and have lost three straight."
    ],
-   "hash": "256a1004f53e489e",
+   "hash": "adadef8e4acfc94c",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:10:14.510Z",
+   "writtenAt": "2026-11-23T06:09:25.835Z",
    "words": 252,
    "checked": "house checks + checker agent"
   },
@@ -1147,9 +1147,9 @@
     "The 49ers then handed the ball back. A Nehemiah Pritchett interception of Purdy set up Darnold's 16-yard touchdown pass to Jaxon Smith-Njigba, and a Deebo Samuel Sr. fumble led to a field goal as Seattle scored 13 unanswered points to lead 26–21. Samuel was hurt in the third quarter and did not return. Purdy's 7-yard touchdown pass to Brandin Cooks put San Francisco back in front early in the fourth quarter, and Jason Myers, who made all five of his field goals, tied it at 29 before Pineiro's kick.",
     "The 49ers sacked Darnold five times and forced four turnovers. Seattle's final drive started at its 15 and ended on downs. San Francisco moved to 5-0 with the division win, and Seattle fell to 3-2."
    ],
-   "hash": "82a05b13bd67ec51",
+   "hash": "96b5bacd1dcd8567",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:10:14.899Z",
+   "writtenAt": "2026-11-23T06:09:37.322Z",
    "words": 252,
    "checked": "house checks + checker agent"
   },
@@ -1161,9 +1161,9 @@
     "Irving's 21 carries anchored an offense that ran for 241 yards, held the ball for 39:21 and did not turn it over. Daniels completed 19 of 25 passes for 189 yards and a touchdown, a 5-yard throw to Irving that tied the game at the start of the second quarter. Dallas ran only 13 times.",
     "Prescott threw for 316 yards and George Pickens caught nine passes for 130 yards, including an 18-yard touchdown midway through the fourth quarter that capped a 99-yard drive and cut the deficit to 24–16. But Alex Anzalone intercepted Prescott in the final two minutes to end the last Dallas threat. Tampa Bay improved to 1-4, and Dallas fell to 2-3."
    ],
-   "hash": "1d744c0c2cfd51b6",
+   "hash": "c7f0be66388d63e4",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:10:15.399Z",
+   "writtenAt": "2026-11-23T06:09:38.924Z",
    "words": 253,
    "checked": "house checks + checker agent"
   },
@@ -1175,9 +1175,9 @@
     "Ryland's 38- and 27-yard field goals, the second capping a 14-play drive, put Arizona ahead 15–9, and a Tyler Higbee fumble midway through the fourth quarter gave the Cardinals the ball back. The Rams still went in front when Stafford drove them 86 yards, helped by a 43-yard catch by Puka Nacua, and hit Colby Parkinson for a 6-yard touchdown with 52 seconds left. Brissett then moved Arizona 40 yards in five plays, with a 21-yard throw to Jalen Brooks, to set up the winner.",
     "The Cardinals reached the red zone five times without a touchdown, but they held the ball for 34:52 and sacked Stafford three times. Stafford threw for 222 yards and two touchdowns, and Los Angeles also lost Davante Adams to an injury in the final two minutes. Both teams are 2-4, and the Rams have lost two straight."
    ],
-   "hash": "b28e32559a1ecd6f",
+   "hash": "a7acef370c9b5155",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:10:15.402Z",
+   "writtenAt": "2026-11-23T06:09:25.899Z",
    "words": 251,
    "checked": "house checks + checker agent"
   },
@@ -1218,9 +1218,9 @@
     "Young threw for 281 yards and two touchdowns, both to Tremble, and Jalen Coker caught six passes for 97 yards. Neither team turned the ball over, so the gap came from the line of scrimmage: Carolina held the ball for 34:48, while Philadelphia averaged 3.6 yards per play, ran 13 times for 35 yards and punted eight times. McKee completed 26 of 45 passes for 215 yards. The Eagles also lost Nolan Smith Jr. to an injury early in the second quarter.",
     "Carolina moved to 3-2 with its second straight win. Philadelphia fell to 2-4."
    ],
-   "hash": "badb285d57a4f46b",
+   "hash": "91df2ec9ad8989d7",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:10:16.636Z",
+   "writtenAt": "2026-11-23T06:09:37.368Z",
    "words": 242,
    "checked": "house checks + checker agent"
   },
@@ -1232,9 +1232,9 @@
     "Atlanta then found its offense. Michael Penix Jr. threw touchdown passes of 10 and 5 yards to Kyle Pitts Sr., the second coming after Johnson fumbled midway through the fourth quarter, and the Falcons were within 31–23 with 5:46 left. Chicago's next drive lost a yard and ended in a punt, but Penix fumbled on a sack late in the quarter and the Bears recovered to close it out.",
     "Atlanta was sacked five times and converted three of 12 third downs, and it ran only 12 times while Chicago held the ball for 40:08. Penix threw for 225 yards and three touchdowns. Luther Burden III caught all eight of his targets for 95 yards for Chicago. The Bears improved to 4-2, and the Falcons fell to 2-4 with their second straight loss."
    ],
-   "hash": "74546bfda8f002bf",
+   "hash": "3c3ed251ec271fa3",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:10:17.386Z",
+   "writtenAt": "2026-11-23T06:09:38.979Z",
    "words": 224,
    "checked": "house checks + checker agent"
   },
@@ -1246,9 +1246,9 @@
     "Dallas lost KaVontae Turpin to an injury on its opening drive and Winters early in the second quarter; neither returned. Javonte Williams scored on a 1-yard run in the third quarter, but Smack answered with field goals of 44 and 29 yards to make it 23–7. Green Bay converted 11 of 18 third downs, which kept its offense on the field even as it averaged 4.5 yards per play. Golden finished with six catches for 104 yards.",
     "Prescott completed 34 of 54 passes for 258 yards, and his 6-yard touchdown pass to Ryan Flournoy came with 52 seconds left. The Cowboys ran 15 times for 48 yards. Green Bay moved to 4-2, and Dallas fell to 2-4 with its second straight loss."
    ],
-   "hash": "1c11e6f361126039",
+   "hash": "9a67f3e18d1575bb",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:10:17.395Z",
+   "writtenAt": "2026-11-23T06:09:25.902Z",
    "words": 250,
    "checked": "house checks + checker agent"
   },
@@ -1274,9 +1274,9 @@
     "The second half produced only a Cameron Dicker field goal until Kansas City recovered a KeAndre Lambert-Smith fumble midway through the fourth quarter and used 11 plays to set up Butker's 30-yarder with 3:56 left. Herbert completed 22 of 37 passes for 204 yards without a touchdown, and the Chargers were sacked four times and went without a touchdown on three red zone trips. Their last drive covered 62 yards and ended on downs.",
     "Mahomes completed 23 of 30 passes for 272 yards, and Kansas City averaged 7.4 yards per play. The division win lifted the Chiefs to 5-0, their fifth straight victory. The Chargers fell to 0-6 and have lost six straight."
    ],
-   "hash": "cb2b8bc6700117e4",
+   "hash": "9ee14a04c726ab3e",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:10:18.607Z",
+   "writtenAt": "2026-11-23T06:09:37.371Z",
    "words": 228,
    "checked": "house checks + checker agent"
   },
@@ -1289,9 +1289,9 @@
     "With McCarthy at quarterback, New York scored the last 17 points. Tracy ran 5 yards for a touchdown after the Donaldson fumble, McCarthy found Isaiah Likely for 24 yards, and Zvada kicked a 41-yarder with 2:08 left, but the Giants' last drive ended on downs. Malik Nabers caught 12 passes for 165 yards.",
     "Shough threw three touchdown passes, and the Saints ran for 175 yards and sacked New York five times without allowing a sack. New Orleans improved to 2-4, and the Giants fell to 3-2-1."
    ],
-   "hash": "b5c3958a7adbd514",
+   "hash": "f09e50d61221af90",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:10:18.609Z",
+   "writtenAt": "2026-11-23T06:09:38.982Z",
    "words": 254,
    "checked": "house checks + checker agent"
   },
@@ -1304,9 +1304,9 @@
     "Leading 23–16, New England took over at its 40 with 7:20 left and ran 13 plays before Borregales' 27-yard field goal with 1:14 to go. Sanders, four for four on field goals, hit from 36 yards with 36 seconds left. The Jets reached the red zone three times without a touchdown.",
     "Maye completed 18 of 32 passes for 235 yards, Doubs did not return after a first-quarter injury, and Cooper caught six passes for 103 yards for the Jets. The Patriots moved to 4-2 with the division win, and the Jets fell to 2-4."
    ],
-   "hash": "2b6dbf9dac562333",
+   "hash": "08cb27f7bb8eb481",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:10:19.947Z",
+   "writtenAt": "2026-11-23T06:09:26.013Z",
    "words": 255,
    "checked": "house checks + checker agent"
   },
@@ -1334,9 +1334,9 @@
     "Darnold completed 27 of 51 passes for 278 yards with two interceptions, and Jaxon Smith-Njigba caught 12 passes for 134 yards. Seattle was sacked five times and turned the ball over three times; Denver had no turnovers. Bo Nix threw for 107 yards, and the Broncos averaged 2.9 yards per play and punted eight times.",
     "Denver, a 3-point underdog, improved to 4-2 with its second straight win. Seattle fell to 3-3 and has lost two straight."
    ],
-   "hash": "34e1d9c8cf3720a2",
+   "hash": "a5576296fe812874",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:10:19.953Z",
+   "writtenAt": "2026-11-23T06:09:37.479Z",
    "words": 226,
    "checked": "house checks + checker agent"
   },
@@ -1363,9 +1363,9 @@
     "Eddy Pineiro's 33-yard field goal made it 23–3 in the third quarter, and from there the Commanders scored 14 unanswered points. Jayden Daniels threw a 1-yard touchdown pass to Stefon Diggs with 18 seconds left in the third quarter and a 9-yard scoring pass to Rachaad White midway through the fourth. Washington's last drive went 13 plays and 61 yards before ending on downs.",
     "Daniels completed 29 of 40 passes for 300 yards, and Chig Okonkwo caught all seven of his targets. But Washington converted three of 12 third downs and was sacked four times. Purdy completed 21 of 29 passes for 264 yards, and McCaffrey finished with 117 yards from scrimmage. San Francisco improved to 6-0 with its sixth straight win, and Washington fell to 1-4-1."
    ],
-   "hash": "dfb608dfc97ff60d",
+   "hash": "7f01b9d9c4082023",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:10:21.189Z",
+   "writtenAt": "2026-11-23T06:09:39.084Z",
    "words": 244,
    "checked": "house checks + checker agent"
   },
@@ -1468,9 +1468,9 @@
     "Willis had the answer. On a three-play, 76-yard drive, he hit Douglas for a 63-yard touchdown with 4:55 to play, and that score proved just enough. Smith found Mason Taylor for a 12-yard touchdown with 3:30 left, Taylor's second of the day, to make it 28–25, but the Jets got no closer.",
     "Smith threw for 287 yards and three touchdowns, with an interception, and Cooper caught five passes for 115 yards. Willis completed 14 of 21 passes for 208 yards without a turnover. Miami improved to 1-5, and New York fell to 2-5 with its second straight loss."
    ],
-   "hash": "ca79516777cfd659",
+   "hash": "fd84b4b99d4300ef",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:10:24.934Z",
+   "writtenAt": "2026-11-23T06:09:39.146Z",
    "words": 256,
    "checked": "house checks + checker agent"
   },
@@ -1483,9 +1483,9 @@
     "Los Angeles answered on the ground. A 12-play, 70-yard drive ended with Blake Corum's 4-yard touchdown run with 6:37 left, and Gay's 36-yard field goal was the Raiders' only reply. The Rams ran for 199 yards to 48 for Las Vegas, with Williams gaining 99 and Corum 93, and they scored on five of five red zone trips while the Raiders went one of five and converted three of 14 third downs.",
     "Cousins threw for 295 yards and two touchdowns, and Tucker caught five passes for 103 yards. The Rams improved to 3-4; the Raiders, also 3-4, have lost four straight."
    ],
-   "hash": "398b5868535adcce",
+   "hash": "4a8f0d209fcc4f46",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:10:24.937Z",
+   "writtenAt": "2026-11-23T06:09:37.535Z",
    "words": 260,
    "checked": "house checks + checker agent"
   },
@@ -1513,9 +1513,9 @@
     "The Giants still left points on the field. Dominic Zvada missed both of his field goal attempts. C.J. Stroud threw two short touchdown passes, a 6-yarder to Marvin Harrison Jr. that tied the game at halftime and a 3-yarder to Xavier Hutchinson that forced overtime, and Ka'imi Fairbairn made field goals from 58 and 57 yards.",
     "Houston, which averaged 4.4 yards per play and converted three of 12 third downs, fell to 2-5. New York, which lost Tyrone Tracy Jr. to an injury in the second quarter after his first-quarter touchdown run, moved to 4-2-1."
    ],
-   "hash": "ca3c5998ea8e5736",
+   "hash": "bb9c4e22d563caa4",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:10:26.269Z",
+   "writtenAt": "2026-11-23T06:09:26.067Z",
    "words": 255,
    "checked": "house checks + checker agent"
   },
@@ -1543,9 +1543,9 @@
     "Purdy answered with a 1-yard touchdown pass to Kyle Juszczyk with 5:09 left, but the 49ers gave the ball away twice more. Kendal Daniels intercepted Purdy, setting up Folk's 31-yard field goal at the two-minute mark, and George Kittle fumbled after a 21-yard catch with 57 seconds left, ending the 49ers' final drive.",
     "Penix completed 25 of 34 passes for 213 yards and three touchdowns, and Atlanta did not commit a turnover. Three of the 49ers' four turnovers led to Atlanta points while the fourth ended the game. The Falcons improved to 3-4, and the 49ers fell to 6-1."
    ],
-   "hash": "715a6ed1bd23874b",
+   "hash": "2b5c0e01539d528b",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:10:27.155Z",
+   "writtenAt": "2026-11-23T06:09:37.538Z",
    "words": 252,
    "checked": "house checks + checker agent"
   },
@@ -1558,9 +1558,9 @@
     "Carolina could not protect Young. Yaya Diaby had three of the Buccaneers' five sacks, and Tykee Smith's third-quarter interception led to one of Chase McLaughlin's two field goals. Young finished 14 of 27 for 163 yards with two interceptions, and the Panthers' only second-half points came on Anthony Tyus III's 12-yard run midway through the fourth.",
     "The Buccaneers improved to 2-5 with the division win, and Carolina fell to 3-3."
    ],
-   "hash": "1fea65a6aaa15024",
+   "hash": "8955c5bb911ce995",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:10:27.532Z",
+   "writtenAt": "2026-11-23T06:09:39.141Z",
    "words": 246,
    "checked": "house checks + checker agent"
   },
@@ -1573,9 +1573,9 @@
     "Allgeier ran for 147 yards on 11 carries and caught five passes for 44 yards, including a 5-yard touchdown early in the fourth quarter. Minshew completed 17 of 23 passes for 188 yards and threw all three Arizona touchdown passes; Brissett was 10 of 23 for 119 yards. Arizona outgained Dallas 467 to 261, and the Cowboys averaged 3.6 yards per play.",
     "Dallas sacked Arizona quarterbacks five times and took the ball away twice, but Arizona outscored it 33–16 after the 14–0 start, with 20 points in the fourth quarter. Both teams are 3-5."
    ],
-   "hash": "36619e48dac963aa",
+   "hash": "c576f4e26376ab08",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-18T05:55:12.080Z",
+   "writtenAt": "2026-11-23T06:09:26.163Z",
    "words": 259,
    "checked": "house checks + checker agent"
   },
@@ -1603,9 +1603,9 @@
     "The Baltimore offense never found a rhythm. The Ravens finished with 144 yards, averaged 2.9 per play and converted three of 13 third downs, while Fagnano completed 10 of 21 passes for 91 yards. Buffalo sacked Baltimore quarterbacks four times and held the ball for 37:36.",
     "Allen threw for 289 yards and two touchdowns. Buffalo improved to 6-1 despite two turnovers of its own. Baltimore fell to 4-4 with its third straight loss."
    ],
-   "hash": "f0129d794046926b",
+   "hash": "64211c6bbe9bf0a9",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:10:28.959Z",
+   "writtenAt": "2026-11-23T06:09:37.621Z",
    "words": 254,
    "checked": "house checks + checker agent"
   },
@@ -1618,9 +1618,9 @@
     "The Panthers made it close anyway. Ryan Fitzgerald kicked a 50-yard field goal, and Young's 26-yard touchdown pass to Jalen Coker with 5:45 left cut the deficit to 27–19. Green Bay turned the ball over three times, including a Love interception early in the fourth quarter, but none of those turnovers led to points. Carolina's final chance ended when Tetairoa McMillan fumbled after a catch with four seconds left and the Packers recovered.",
     "Green Bay improved to 5-3. Carolina fell to 3-4 with its second straight loss."
    ],
-   "hash": "d8369fd0e9450c3e",
+   "hash": "bd946a60598a34de",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:10:28.966Z",
+   "writtenAt": "2026-11-23T06:09:39.243Z",
    "words": 254,
    "checked": "house checks + checker agent"
   },
@@ -1633,9 +1633,9 @@
     "Swift needed 27 carries for his 69 yards, but the Bears scored touchdowns on all four of their red zone trips and held the ball for 35:03. Williams completed 24 of 34 passes for 247 yards without an interception. Seattle converted one of 11 third downs, and Smith-Njigba finished with six catches for 118 yards.",
     "Chicago improved to 6-2. Seattle fell to 4-4, and its last drive ended on downs."
    ],
-   "hash": "b48725fac9cd3f7c",
+   "hash": "8b7bc84abd24a8dc",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:10:29.890Z",
+   "writtenAt": "2026-11-23T06:09:26.215Z",
    "words": 256,
    "checked": "house checks + checker agent"
   },
@@ -1677,9 +1677,9 @@
     "Kansas City still had time. Starting at its own 44 with 1:56 to play, the Chiefs moved the ball with help from Travis Kelce's 32-yard catch, but the drive ended on downs.",
     "Neither team turned the ball over, and Denver scored touchdowns on all three of its red zone trips despite converting only two of 11 third downs. Nix threw for 222 yards and two touchdowns. Denver improved to 6-2 in the division matchup, and Kansas City fell to 5-2 with its second straight loss."
    ],
-   "hash": "231a318427e39966",
+   "hash": "13e15da62091af8c",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:10:31.144Z",
+   "writtenAt": "2026-11-23T06:09:37.716Z",
    "words": 247,
    "checked": "house checks + checker agent"
   },
@@ -1702,14 +1702,14 @@
    "headline": "Cousins, Bowers lead Raiders past Jets 38–33 in shootout",
    "paragraphs": [
     "The New York Jets outgained Las Vegas and led 30–21 in the third quarter, but they kept settling for field goals, and the Raiders made them pay. Kirk Cousins threw three touchdown passes and ran for another, and Las Vegas beat the Jets 38–33 on Sunday after Jeremy Chinn intercepted Geno Smith in the end zone with 14 seconds left.",
-    "The lead changed hands five times. Smith threw touchdown passes to Isaiah Williams and Adonai Mitchell in the second quarter, and Dylan Laube answered the first of them immediately with a touchdown for Las Vegas. Jason Sanders kicked four field goals, and New York led 23–14 at halftime and went back ahead 30–21 on Braelon Allen's 21-yard touchdown run midway through the third quarter.",
+    "The lead changed hands five times. Smith threw touchdown passes to Isaiah Williams and Adonai Mitchell in the second quarter, and Dylan Laube answered the first of them immediately with a 95-yard kickoff return touchdown. Jason Sanders kicked four field goals, and New York led 23–14 at halftime and went back ahead 30–21 on Braelon Allen's 21-yard touchdown run midway through the third quarter.",
     "Las Vegas answered with 14 unanswered points. Cousins scored on a 1-yard run late in the third quarter, then capped an 84-yard drive with a 2-yard touchdown pass to Jalen Nailor with 11:37 left for a 35–30 lead. Sanders' 31-yard field goal cut it to 35–33, and Matt Gay made a 53-yarder with 31 seconds left.",
     "Cousins completed 19 of 26 passes for 247 yards and three touchdowns, and Brock Bowers caught seven passes for 92 yards and two scores. The Raiders scored touchdowns on all four of their red zone trips, while the Jets managed two touchdowns in six. Allen ran for 147 yards and Mitchell caught seven passes for 142 for New York.",
     "Las Vegas evened its record at 4-4. New York fell to 2-6 with its third straight loss."
    ],
-   "hash": "3d5e5414c07b29c2",
+   "hash": "edb56a7107eb9a57",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:10:31.640Z",
+   "writtenAt": "2026-11-23T06:02:52.598Z",
    "words": 256,
    "checked": "house checks + checker agent"
   },
@@ -1722,9 +1722,9 @@
     "Minnesota went back in front after Murray hit Jordan Addison for 51 yards and then found T.J. Hockenson for an 8-yard touchdown midway through the fourth quarter, making it 15–12. Detroit responded with a seven-play, 69-yard drive that included a 17-yard Gibbs run and ended with Goff's touchdown pass. The Vikings got the ball back with 4:35 left but went three plays for 5 yards and punted.",
     "Andrew Van Ginkel had 2.5 of Minnesota's four sacks of Goff. The division win was Detroit's third straight and moved the Lions to 5-2. Minnesota fell to 6-1."
    ],
-   "hash": "900cbb4a6a651a0c",
+   "hash": "6f1c8c5aa6ef0284",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:10:32.563Z",
+   "writtenAt": "2026-11-23T06:09:39.297Z",
    "words": 244,
    "checked": "house checks + checker agent"
   },
@@ -1737,9 +1737,9 @@
     "Stevens added a 42-yarder late in the fourth quarter, and Rasul Douglas intercepted McKee on Philadelphia's next possession. Rachaad White broke a 33-yard run and scored from 1 yard out with 1:55 left.",
     "Daniels completed 16 of 29 passes for 217 yards and a touchdown without an interception, and Washington did not turn the ball over after its first-quarter fumble. The Commanders moved to 2-4-1. Philadelphia fell to 2-6 and has lost six straight."
    ],
-   "hash": "2a0dcf8bd4222835",
+   "hash": "3ba30ce5ca32efd3",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-18T05:55:12.083Z",
+   "writtenAt": "2026-11-23T06:09:37.671Z",
    "words": 260,
    "checked": "house checks + checker agent"
   },
@@ -1752,9 +1752,9 @@
     "Maye completed 16 of 20 passes for 199 yards without an interception, and Rhamondre Stevenson ran for 82 yards. The New England defense sacked Miami quarterbacks five times, with Cory Durden and Gabe Jacas getting 1.5 each, and held the Dolphins to 4.5 yards per play.",
     "Willis threw a 35-yard touchdown pass to Kevin Coleman Jr. with 2:10 left, but Miami got no closer. New England improved to 5-3, and Miami fell to 1-6."
    ],
-   "hash": "a51fd0069830fe90",
+   "hash": "3ed6d8b07cce397e",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:10:32.990Z",
+   "writtenAt": "2026-11-23T06:09:26.219Z",
    "words": 221,
    "checked": "house checks + checker agent"
   },
@@ -1767,9 +1767,9 @@
     "Cincinnati had the ball first in overtime and went 70 yards in five plays.",
     "Burrow completed 38 of 48 passes for 462 yards and five touchdowns. Higgins caught 10 passes for 155 yards and two scores. Cincinnati improved to 5-2 with its third straight win, and Tennessee fell to 1-7."
    ],
-   "hash": "9b85566ab1ac0cbc",
+   "hash": "e1c881f25974adf4",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:10:33.870Z",
+   "writtenAt": "2026-11-23T06:09:39.300Z",
    "words": 258,
    "checked": "house checks + checker agent"
   },
@@ -1826,9 +1826,9 @@
     "Shough threw for 265 yards and ran for 51 more, and Chris Olave caught seven passes for 98 yards. Sanders threw for 297 yards and two touchdowns without an interception, yet Cleveland went 0 of 2 in the red zone and was sacked five times, twice by Carl Granderson.",
     "The Saints also gave up five sacks and missed a field goal, but they held the ball for 34:51. New Orleans improved to 3-5. Cleveland fell to 5-4 with its second straight loss."
    ],
-   "hash": "263ba2ddbec92a23",
+   "hash": "6f6b1b57913b3cd1",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:10:35.866Z",
+   "writtenAt": "2026-11-23T06:09:26.315Z",
    "words": 260,
    "checked": "house checks + checker agent"
   },
@@ -1856,9 +1856,9 @@
     "Nix completed 25 of 37 passes for 237 yards and two touchdowns, and Denver converted six of 10 third downs. Young threw for 276 yards and three touchdowns, and Waller caught eight passes for 90 yards, but Ryan Fitzgerald missed Carolina's only field goal try.",
     "Young's 4-yard touchdown pass to Tetairoa McMillan late in the fourth cut the gap to 26–21, but Young fumbled on a sack in the final two minutes and Denver recovered to end it. The Broncos improved to 7-2. The Panthers fell to 3-5 with their third straight loss."
    ],
-   "hash": "26240c8d16d7d0ef",
+   "hash": "c974e3d333201b19",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:10:36.337Z",
+   "writtenAt": "2026-11-23T06:09:37.720Z",
    "words": 245,
    "checked": "house checks + checker agent"
   },
@@ -1886,9 +1886,9 @@
     "Love completed 23 of 29 passes for 372 yards and three touchdowns without an interception. Watson caught seven passes for 171 yards, and Matthew Golden caught all 10 balls thrown his way for 164 yards. Green Bay averaged 7.5 yards per play, scored on four of five trips inside the 20 and did not turn the ball over.",
     "Maye threw for 299 yards and three touchdowns but was intercepted three times, and New England lost Stevenson to an injury late in the third quarter. The Packers improved to 6-3 with their second straight win. The Patriots fell to 5-4."
    ],
-   "hash": "7adee87382271931",
+   "hash": "32a3de13fd20eb79",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:10:37.606Z",
+   "writtenAt": "2026-11-23T06:09:39.404Z",
    "words": 250,
    "checked": "house checks + checker agent"
   },
@@ -1901,9 +1901,9 @@
     "The Houston pass rush shaped the Chargers' afternoon. Los Angeles was sacked eight times, with two each from Sheldon Rankins, Jadeveon Clowney and Will Anderson Jr., and averaged 4.6 yards per play while converting five of 17 third downs. Herbert threw for 193 yards and a 58-yard touchdown to Quentin Johnston, and DJ Uiagalelei threw a late scoring pass to Derius Davis.",
     "Houston improved to 3-5. Los Angeles fell to 0-8 with its eighth straight loss."
    ],
-   "hash": "47da9eb74c994a05",
+   "hash": "dfdeaed9d20f2343",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:10:37.610Z",
+   "writtenAt": "2026-11-23T06:09:26.400Z",
    "words": 240,
    "checked": "house checks + checker agent"
   },
@@ -1961,9 +1961,9 @@
     "Philadelphia managed 220 yards and 3.3 yards per play and converted five of 18 third downs. Milton completed 18 of 34 passes for 169 yards and ran for 64, while Barkley gained 22 yards on 13 carries. New York was held to 243 yards and 3.8 yards per play, and Zack Baun sacked the Giants twice.",
     "Jake Elliott's 45-yard field goal with 2:00 left made it 19–11, and the Eagles' last possession, which began at their own 5, ended on downs. The Giants improved to 5-2-1 with their second straight win. Philadelphia fell to 2-7 and has lost seven straight."
    ],
-   "hash": "a54a557b10066ba5",
+   "hash": "70bdf3c9122a8db7",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-18T05:55:13.726Z",
+   "writtenAt": "2026-11-23T06:09:37.816Z",
    "words": 258,
    "checked": "house checks + checker agent"
   },
@@ -1991,9 +1991,9 @@
     "Tampa Bay scored the next 11 points. McLaughlin kicked a 35-yard field goal early in the fourth quarter, and Burden fumbled after a catch late in the quarter. Irving scored on a 6-yard run two plays later to tie it at 24 with 2:56 left.",
     "Chicago answered with an eight-play, 49-yard drive, and Williams' 38-yard completion to Colston Loveland set up Santos. Williams finished with 279 yards and two touchdowns, and Chicago overcame five turnovers while Tampa Bay converted two of 12 third downs. The Bears improved to 7-2 with their fourth straight win. The Buccaneers fell to 3-6."
    ],
-   "hash": "29b1a4d68681d5fc",
+   "hash": "6501c3800149d73a",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:10:40.173Z",
+   "writtenAt": "2026-11-23T06:09:39.452Z",
    "words": 245,
    "checked": "house checks + checker agent"
   },
@@ -2081,9 +2081,9 @@
     "Neither team scored again. Gonzalez made only one of his three field goal attempts, and the Dolphins' last possession, from their own 42, gained 9 yards before ending on downs.",
     "Indianapolis ran for 172 yards, with Jonathan Taylor gaining 83 and McGowan 77, which covered for an offense that threw for 104 yards and gave up an interception return. Jones completed 11 of 22 passes. The Colts improved to 3-7. The Dolphins fell to 1-8 with their third straight loss."
    ],
-   "hash": "6ab820fa2b9259c0",
+   "hash": "245b0df2ac56d110",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:10:43.604Z",
+   "writtenAt": "2026-11-23T06:09:26.403Z",
    "words": 237,
    "checked": "house checks + checker agent"
   },
@@ -2111,9 +2111,9 @@
     "Pittsburgh was held to 222 yards and 3.8 yards per play, and it came away empty on both of its red-zone trips. Aaron Rodgers completed 15 of 29 passes for 143 yards. His two fourth-quarter touchdown passes, 22 yards to DK Metcalf and 27 yards to Pat Freiermuth, came after the Bengals had built a 31–3 lead, and Samaje Perine's 1-yard run in between kept the margin wide.",
     "Cincinnati improved to 7-2 with its fifth straight win. Pittsburgh fell to 6-3."
    ],
-   "hash": "0a7349010c7419d7",
+   "hash": "2ba9020b985879d5",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-17T02:10:44.093Z",
+   "writtenAt": "2026-11-23T06:09:37.828Z",
    "words": 242,
    "checked": "house checks + checker agent"
   },
@@ -2156,9 +2156,9 @@
     "Williams carried 25 times for 155 yards and a touchdown, including a 34-yard run early in the fourth quarter, and Dallas finished with 204 rushing yards and eight conversions on 13 third downs. Prescott completed 15 of 27 passes for 212 yards and three touchdowns, and Aubrey made all three of his field goal attempts.",
     "DeMarvion Overshown intercepted McKee midway through the fourth quarter, and Philadelphia's last possession ended on downs. The Eagles also lost Pierce and Moro Ojomo to injuries in the fourth, and neither returned. Dallas moved to 3-4 with the division win, while Philadelphia fell to 2-5 and has lost five straight."
    ],
-   "hash": "b7af039f96fec18d",
+   "hash": "fb066981d7499c4b",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-18T05:55:11.976Z",
+   "writtenAt": "2026-11-23T06:09:26.070Z",
    "words": 255,
    "checked": "house checks + checker agent"
   },
@@ -2176,7 +2176,180 @@
    "writtenAt": "2026-11-18T05:55:13.736Z",
    "words": 260,
    "checked": "house checks + checker agent"
+  },
+  "2026_11_ARI_KC": {
+   "headline": "Mahomes throws three touchdowns as Chiefs beat Cardinals 34–7",
+   "paragraphs": [
+    "Kansas City scored touchdowns on its first two drives and led by 20 at halftime, beating the Arizona Cardinals 34–7 on Sunday. Patrick Mahomes completed 27 of 39 passes for 324 yards and three touchdowns, two of them to Travis Kelce.",
+    "The Chiefs opened with two long touchdown drives. Mahomes found Kelce from 8 yards out to cap an 11-play, 72-yard march, and Emmett Johnson finished a 16-play, 80-yard drive with a 3-yard run late in the first quarter. Josh Johnson's 2-yard touchdown pass to Simi Fehoko pulled Arizona within 14–7 midway through the second quarter, but those were the Cardinals' only points. Kansas City answered with Harrison Butker's 40-yard field goal, Kelce's 22-yard touchdown catch with two minutes left in the half and Butker's 44-yarder with five seconds left for a 27–7 lead.",
+    "Arizona's offense could not keep pace against a pass rush led by George Karlaftis, who had 2.5 of the Chiefs' three sacks. The Cardinals managed 205 yards and 3.7 yards per play, and Josh Johnson finished 18 of 31 for 155 yards.",
+    "Neither team turned the ball over, and Kansas City outgained Arizona 435–205 while holding the ball for 32:26. Emmett Johnson ran for 105 yards on 23 carries, and a 97-yard drive that started at the Kansas City 3 ended with Mahomes' 18-yard touchdown pass to Xavier Worthy at the start of the fourth quarter. The Chiefs improved to 8-2 with their third straight win. The Cardinals fell to 3-8 and have lost three in a row."
+   ],
+   "hash": "c1c1802aea93a0cc",
+   "model": "claude-code-session",
+   "writtenAt": "2026-11-23T05:48:31.636Z",
+   "words": 252,
+   "checked": "house checks + checker agent"
+  },
+  "2026_11_BAL_CAR": {
+   "headline": "Fitzgerald's late field goal lifts Panthers past Ravens 35–33",
+   "paragraphs": [
+    "Carolina fell behind 12–0 in the first quarter, traded the lead with Baltimore seven times and won it on Ryan Fitzgerald's 37-yard field goal with 1:47 left, beating the Ravens 35–33 on Sunday.",
+    "Mike Green sacked Bryce Young in the end zone for a safety, and Baltimore led 9–0 after Jacoby Brissett's 52-yard touchdown pass to Rashod Bateman, and Riley Patterson's 28-yard field goal made it 12–0. Bryce Young answered with a 23-yard touchdown pass to Mitchell Evans with nine seconds left in the first quarter, and a Baltimore fumble set up Chuba Hubbard's 18-yard touchdown run that put the Panthers ahead 14–12. The second quarter swung back and forth from there, and Justice Hill's 19-yard touchdown run sent the Ravens to halftime up 26–22.",
+    "Hubbard's 1-yard run early in the third quarter gave Carolina the lead again, and Fitzgerald's 33-yard field goal made it 32–26. Derrick Henry put Baltimore back in front 33–32 with a 15-yard touchdown run midway through the fourth quarter. Carolina responded with a 12-play, 55-yard drive that ended with Fitzgerald's winning kick.",
+    "Hubbard finished with 120 yards and two touchdowns on 27 carries, and Young completed 22 of 30 passes for 254 yards and two touchdowns, with one interception. Baltimore averaged 6.9 yards per play to Carolina's 5.6, and Brissett threw for 276 yards, but Baltimore turned the ball over four times to Carolina's one. Tyrel Dodson intercepted Brissett with 36 seconds left to end Baltimore's last drive. The Panthers moved to 5-5 with their second straight win. The Ravens fell to 4-7 and have lost six in a row."
+   ],
+   "hash": "8c6ee9f4d724617e",
+   "model": "claude-code-session",
+   "writtenAt": "2026-11-23T06:09:26.456Z",
+   "words": 265,
+   "checked": "house checks + checker agent"
+  },
+  "2026_11_IND_HOU": {
+   "headline": "Stroud throws three touchdowns as Texans beat Colts 26–3",
+   "paragraphs": [
+    "Indianapolis kicked a field goal on its first possession, then did not score again as the Houston Texans answered with 26 unanswered points in a 26–3 division win on Thursday night. C.J. Stroud completed 21 of 27 passes for 194 yards and three touchdowns.",
+    "Spencer Shrader's 34-yard field goal gave the Colts a 3–0 lead, and Indianapolis wasted a chance to add to it when A.J. Haulcy intercepted Stroud midway through the first quarter, setting up a missed field goal. Stroud's 42-yard touchdown pass to Nico Collins late in the quarter put Houston ahead to stay. Kamari Lassiter then intercepted Daniel Jones at the start of the second quarter, and the Texans followed with a 12-play, 85-yard drive that ended in Stroud's 24-yard touchdown pass to Kayshon Boutte. Ka'imi Fairbairn's field goal made it 17–3 at halftime.",
+    "Houston leaned on its running game. The Texans ran for 167 yards, David Montgomery had 107 of them on 26 carries, and they held the ball for 37:46. Jones completed 12 of 27 passes for 144 yards, the Colts converted one of 11 third downs, and Shrader made one of three field goal tries. Indianapolis finished with 167 yards and 3.5 yards per play.",
+    "Houston added nine points in the third quarter, the last on Stroud's 13-yard touchdown pass to Marlin Klein for a 26–3 lead. The Colts also lost Seth McGowan to an injury just before halftime, and he did not return. Houston improved to 4-6, and Indianapolis fell to 3-8."
+   ],
+   "hash": "472a1654b8013f92",
+   "model": "claude-code-session",
+   "writtenAt": "2026-11-23T06:02:52.773Z",
+   "words": 249,
+   "checked": "house checks + checker agent"
+  },
+  "2026_11_JAX_NYG": {
+   "headline": "Giants intercept Lawrence twice, upset Jaguars 23–18",
+   "paragraphs": [
+    "The New York Giants turned two interceptions of Trevor Lawrence into points and held off a late Jacksonville rally, beating the Jaguars 23–18 on Sunday. Jacksonville had been a 6-point favorite.",
+    "Deonte Banks picked off Lawrence midway through the first quarter, and Dominic Zvada converted the short field into a 53-yard field goal that tied the game. Jameis Winston's 1-yard touchdown run put New York ahead 10–3. J.J. McCarthy's 8-yard touchdown pass to Malik Nabers and Zvada's 54-yard field goal with 16 seconds left in the half sent the Giants into the break ahead 20–6.",
+    "Jacksonville moved the ball but kept settling for field goals. The Jaguars reached the red zone six times and scored one touchdown, and Cam Little made four field goals. After Little's 31-yarder early in the fourth quarter, Paulson Adebo intercepted Lawrence, and Zvada's 43-yard field goal made it 23–9.",
+    "Lawrence threw for 301 yards and led two scoring drives late, an 18-yard touchdown pass to Brian Thomas Jr. with 6:47 left and Little's 26-yard field goal with 3:43 left, but Jacksonville did not score again. Lawrence completed 25 of 47 passes, and Parker Washington caught eight for 103 yards. McCarthy finished 18 of 38 for 173 yards for New York, and Abdul Carter had two of the Giants' three sacks. The Giants moved to 6-3-1. The Jaguars fell to 7-3."
+   ],
+   "hash": "53a30ac156e49fdf",
+   "model": "claude-code-session",
+   "writtenAt": "2026-11-23T06:09:37.825Z",
+   "words": 225,
+   "checked": "house checks + checker agent"
+  },
+  "2026_11_LV_DEN": {
+   "headline": "Coleman runs for three touchdowns as Broncos beat Raiders 38–24",
+   "paragraphs": [
+    "Las Vegas erased a 17-point deficit to tie the game in the third quarter, and Denver answered with two Jonah Coleman touchdown runs before Ja'Quan McMillian's interception return closed out a 38–24 division win on Sunday. Coleman ran for 111 yards and three touchdowns on 24 carries.",
+    "The Broncos scored the first 17 points, on Wil Lutz's 38-yard field goal, Bo Nix's 1-yard touchdown pass to Adam Trautman and Coleman's 1-yard run. The Raiders came back behind Fernando Mendoza. Matt Gay kicked a field goal, Mendoza hit Ashton Jeanty for a 68-yard touchdown late in the second quarter, and his 19-yard touchdown pass to Ian Thomas tied it 17–17 with 5:20 left in the third.",
+    "Denver regained the lead with 24 seconds left in the third quarter on Coleman's 4-yard run, the end of a 10-play, 72-yard drive, and his 7-yard run midway through the fourth made it 31–17. The Broncos scored on all four of their red-zone trips and sacked Las Vegas five times, two of them by Jonathon Cooper.",
+    "Mendoza threw for 267 yards and three touchdowns, and his 7-yard pass to Jack Bech late in the fourth quarter pulled Las Vegas within 31–24. McMillian then intercepted him and returned it for a touchdown at the two-minute mark. Jeanty finished with 169 yards from scrimmage. The Broncos improved to 8-2 with their sixth straight win. The Raiders fell to 4-7 and have lost three in a row."
+   ],
+   "hash": "40bf9c2a3b924af8",
+   "model": "claude-code-session",
+   "writtenAt": "2026-11-23T05:48:31.910Z",
+   "words": 239,
+   "checked": "house checks + checker agent"
+  },
+  "2026_11_MIA_BUF": {
+   "headline": "Bills hold Dolphins to 185 yards in 26–9 win",
+   "paragraphs": [
+    "Buffalo built a 20–6 halftime lead and kept Miami out of the end zone in a 26–9 division win on Sunday. The Bills outgained the Dolphins 405–185 and did not punt.",
+    "Tyler Bass opened the scoring with field goals of 43 and 54 yards, and Josh Allen's 4-yard touchdown pass to DJ Moore early in the second quarter capped a 12-play, 79-yard drive. James Cook III added a 1-yard touchdown run late in the half to make it 20–3.",
+    "The final 1:45 of the first half brought three interceptions. Jacob Rodriguez picked off Allen, and Daniel Carlson turned that into a 52-yard field goal even after Miami lost 12 yards on the drive. Zayne Anderson intercepted Allen again with 25 seconds left, but Damar Hamlin picked off Kyle McCord with 18 seconds left, so the second turnover cost Buffalo nothing.",
+    "Allen completed 27 of 45 passes for 304 yards, with Khalil Shakir catching five for 101 yards and Moore eight for 91. Miami's offense managed 3.4 yards per play and converted two of 14 third downs. McCord completed 12 of 33 passes for 102 yards, and Carlson's three field goals were all the Dolphins could produce.",
+    "Bass added two fourth-quarter field goals, the last at the two-minute mark after a 13-play drive, and Buffalo held the ball for 36:45 despite Allen's two interceptions. The Bills improved to 9-1 with their sixth straight win. The Dolphins fell to 1-9 and have lost four in a row."
+   ],
+   "hash": "76e3e03edd6fa994",
+   "model": "claude-code-session",
+   "writtenAt": "2026-11-23T05:48:31.918Z",
+   "words": 245,
+   "checked": "house checks + checker agent"
+  },
+  "2026_11_MIN_SF": {
+   "headline": "Purdy throws three touchdown passes as 49ers beat Vikings 35–10",
+   "paragraphs": [
+    "Two touchdowns late in the first half in Mexico City turned a four-point game into a rout, and the San Francisco 49ers beat the Minnesota Vikings 35–10 on Sunday night. Brock Purdy completed 21 of 26 passes for 255 yards and three touchdowns, and Ji'Ayir Brown added one on defense.",
+    "Purdy found George Kittle for a 17-yard touchdown early in the first quarter, and Aaron Jones Sr. answered with an 11-yard run late in the quarter. Kittle caught an 8-yard score early in the second, and Will Reichard's 48-yard field goal midway through the period cut the lead to 14–10. Purdy then hit Mike Evans for a 4-yard touchdown late in the half, and moments later Brown intercepted Kirk Cousins and returned it for a touchdown, sending San Francisco to the break ahead 28–10.",
+    "Minnesota moved the ball, finishing with 324 yards and holding it for 32:23, but its drives stalled. The Vikings were one of three in the red zone, and Reichard made one of three field-goal tries. San Francisco scored on all four red-zone trips and did not turn the ball over. Evans caught six passes for 109 yards.",
+    "Justin Jefferson's fumble early in the third quarter was Minnesota's second turnover. Christian McCaffrey's 6-yard run early in the fourth quarter capped a 98-yard drive and completed 21 unanswered points. The 49ers, 3.5-point favorites, won by far more and moved to 9-1 with their third straight win. The Vikings fell to 7-3."
+   ],
+   "hash": "6954ec5c0f4a4c7a",
+   "model": "claude-code-session",
+   "writtenAt": "2026-11-23T05:48:46.068Z",
+   "words": 243,
+   "checked": "house checks + checker agent"
+  },
+  "2026_11_NYJ_LAC": {
+   "headline": "Smith throws three touchdown passes as Jets edge Chargers 27–24",
+   "paragraphs": [
+    "The New York Jets did not punt, did not turn the ball over and converted nine of 11 third downs, and that was enough to beat the Los Angeles Chargers 27–24 on Sunday as 3-point underdogs. Geno Smith completed 17 of 21 passes for 176 yards and three touchdowns.",
+    "After the teams traded field goals in the first quarter, Smith threw a 7-yard touchdown pass to Breece Hall early in the second quarter and an 8-yard score to Sterling Shepard late in the half, 14 unanswered points for a 17–3 lead. Justin Herbert ran 10 yards for a touchdown with six seconds left in the half to make it 17–10, and Jason Sanders' 24-yard field goal late in the third quarter, at the end of an 18-play drive, pushed the lead back to 20–10.",
+    "The Chargers kept coming back. Herbert's 11-yard touchdown pass to Ladd McConkey early in the fourth quarter cut it to 20–17, but the Jets answered with a six-play, 62-yard drive that ended with Smith's 16-yard touchdown pass to Shepard midway through the quarter. Shepard's two catches were both touchdowns. Hall ran for 86 yards and finished with 100 yards from scrimmage as the Jets rushed for 165 yards.",
+    "Los Angeles was sacked six times, two by David Bailey, and managed 261 yards. Its last answer, a 16-play drive that ended with Herbert's 6-yard touchdown pass to McConkey with 2:01 left, made it a three-point game, but the Jets ran out the clock. New York improved to 3-8. Los Angeles fell to 1-9."
+   ],
+   "hash": "adda1bd847a558fa",
+   "model": "claude-code-session",
+   "writtenAt": "2026-11-23T05:48:46.130Z",
+   "words": 256,
+   "checked": "house checks + checker agent"
+  },
+  "2026_11_NO_CHI": {
+   "headline": "Simmons posts three sacks as Bears hold off Saints 21–13",
+   "paragraphs": [
+    "The New Orleans Saints turned the ball over twice in the second quarter, and the Chicago Bears turned both into touchdowns on the way to a 21–13 win on Sunday, their fifth straight. Jeffery Simmons had three of Chicago's six sacks.",
+    "Cairo Santos opened the scoring with a 41-yard field goal in the first quarter. Then CJ Donaldson fumbled after a catch, and Caleb Williams threw a 3-yard touchdown pass to D'Andre Swift on the next possession. Dillon Thieneman intercepted Tyler Shough midway through the second quarter, and Williams followed with a 15-yard scoring pass to Colston Loveland that made it 16–0 and completed 16 unanswered points.",
+    "New Orleans steadied before halftime. Shough threw a 1-yard touchdown pass to Alvin Kamara late in the second quarter, and Charlie Smyth kicked a 56-yard field goal with three seconds left to make it 16–10. Santos added a 35-yard field goal midway through the third quarter for a 19–10 lead, and Montez Sweat sacked Shough in the end zone for a safety early in the fourth to make it 21–10.",
+    "Shough completed 25 of 42 passes for 222 yards, New Orleans averaged 4.3 yards per play, and the Saints were sacked six times. Chris Olave caught nine passes for 102 yards and Travis Etienne Jr. ran for 76 yards, but Swift's fumble early in the fourth quarter produced only a turnover on downs.",
+    "Smyth's 51-yard field goal with 1:15 left made the final 21–13. Chicago improved to 8-2. New Orleans fell to 3-7 with its second straight loss."
+   ],
+   "hash": "7722cd747fffc312",
+   "model": "claude-code-session",
+   "writtenAt": "2026-11-23T06:09:39.464Z",
+   "words": 255,
+   "checked": "house checks + checker agent"
+  },
+  "2026_11_PIT_PHI": {
+   "headline": "Elliott kicks four field goals as Eagles hold off Steelers 19–16",
+   "paragraphs": [
+    "The Philadelphia Eagles scored 13 points in the first quarter and held on from there, beating the Pittsburgh Steelers 19–16 on Sunday as 3.5-point underdogs. Jake Elliott made all four of his field-goal attempts, two of them from 53 and 55 yards.",
+    "Elliott kicked field goals of 41 and 29 yards in the opening quarter, and Saquon Barkley broke a 38-yard touchdown run late in the period to make it 13–0. Pittsburgh's first points came on a 17-play, 77-yard drive that ended with Chris Boswell's 25-yard field goal late in the second quarter.",
+    "The second half was a kicking exchange. Boswell made a 40-yard field goal in the third quarter, Elliott answered with a 53-yarder for a 16–6 lead, and Boswell's 52-yarder made it 16–9. His 55-yard kick late in the fourth quarter made it 19–9.",
+    "Pittsburgh held the ball for 35:30 but averaged 3.7 yards per play, went five of 17 on third downs, came away empty on both red-zone trips and was sacked five times, twice by Byron Young. Aaron Rodgers completed 30 of 44 passes for 227 yards. Philadelphia's offense managed only 214 yards, with Joe Milton completing 11 of 21 passes for 141 yards, but the kicks were enough.",
+    "Rodgers threw a 20-yard touchdown pass to Max Hurleman with 1:26 left to finish a 13-play, 72-yard drive, but the Steelers got no closer. Philadelphia improved to 3-7. Pittsburgh fell to 6-4 with its second straight loss."
+   ],
+   "hash": "26111192bba6e8f4",
+   "model": "claude-code-session",
+   "writtenAt": "2026-11-23T05:48:46.237Z",
+   "words": 240,
+   "checked": "house checks + checker agent"
+  },
+  "2026_11_TB_DET": {
+   "headline": "Gibbs scores twice late as Lions pull away from Buccaneers 31–21",
+   "paragraphs": [
+    "Tampa Bay had pulled within 17–14 late in the third quarter before Jahmyr Gibbs scored twice in the fourth, and the Detroit Lions beat the Buccaneers 31–21 on Sunday for their sixth straight win. Gibbs ran 23 times for 98 yards.",
+    "After a scoreless first quarter, Jared Goff threw a 14-yard touchdown pass to Amon-Ra St. Brown early in the second to finish a 14-play, 90-yard drive, and Jake Bates added a 56-yard field goal in the final two minutes of the half. Baker Mayfield answered with a 23-yard touchdown pass to Ted Hurst III with 10 seconds left, and Detroit led 10–7 at halftime.",
+    "Goff found Jameson Williams for a 57-yard touchdown midway through the third quarter. Tampa Bay came right back, and Bucky Irving's 1-yard run late in the quarter capped a 12-play, 70-yard drive that made it 17–14.",
+    "Detroit then scored 14 unanswered points. Gibbs ran in from 1 yard with 5:27 left, and after a 26-yard run on the next drive he scored from 4 yards out with two minutes left for a 31–14 lead. Goff completed 20 of 28 passes for 279 yards, Williams caught four passes for 93 yards, and the Lions averaged 6.7 yards per play and scored on all three red-zone trips.",
+    "Neither team turned the ball over. Tampa Bay held the ball for 32:01 but was sacked four times, and Hurst's second touchdown, a 4-yard catch with 13 seconds left, came too late. Detroit improved to 8-2. Tampa Bay fell to 3-7 with its second straight loss."
+   ],
+   "hash": "456c77ed0b4a1253",
+   "model": "claude-code-session",
+   "writtenAt": "2026-11-23T05:48:46.258Z",
+   "words": 256,
+   "checked": "house checks + checker agent"
+  },
+  "2026_11_TEN_DAL": {
+   "headline": "Prescott throws four touchdown passes as Cowboys beat Titans 51–30",
+   "paragraphs": [
+    "The Dallas Cowboys did not punt, were not sacked and scored on all six of their red-zone trips in a 51–30 win over the Tennessee Titans on Sunday, a game that produced 81 combined points. Dak Prescott completed 28 of 33 passes for 325 yards and four touchdowns and ran for another score.",
+    "Javonte Williams scored on a 1-yard run midway through the first quarter, and Dallas never trailed. KaVontae Turpin's 22-yard touchdown run and Prescott's 8-yard scoring pass to CeeDee Lamb made it 20–3, and Prescott's 10-yard touchdown pass to George Pickens late in the half made it 27–6. Joey Slye's third field goal, with one second left in the half, cut it to 27–9.",
+    "Tennessee pushed back in the third quarter. Cam Ward ran for a 1-yard touchdown early in the period, and after Prescott's 11-yard scoring pass to Williams, Ward threw a 59-yard touchdown pass to Carnell Tate to make it 34–23. Dallas answered with 17 unanswered points, starting with Prescott's 2-yard touchdown run late in the quarter.",
+    "The Cowboys averaged 7.6 yards per play. Lamb caught 11 passes for 132 yards and Pickens caught seven for 102. The Titans were sacked five times, and when Ward fumbled on a sack midway through the fourth quarter, Prescott's 2-yard touchdown pass to Brevyn Spann-Ford followed for a 51–23 lead.",
+    "Ward threw a 12-yard touchdown pass to Calvin Ridley with 45 seconds left, and Tony Pollard ran for 110 yards. Dallas, which did not turn the ball over, improved to 5-6. Tennessee fell to 1-9 with its fourth straight loss."
+   ],
+   "hash": "7ac4bc991d4ce287",
+   "model": "claude-code-session",
+   "writtenAt": "2026-11-23T06:09:26.465Z",
+   "words": 261,
+   "checked": "house checks + checker agent"
   }
  },
- "updatedAt": "2026-11-18T05:55:13.750Z"
+ "updatedAt": "2026-11-23T06:09:39.464Z"
 }

@@ -67,6 +67,19 @@ export interface StoryPlay {
   fumbleTeam?: string | null;
   /** On a sack, who made it (nflverse spelling); absent in an older store. */
   sacker?: string | null;
+  /** A safety (nflverse safety = 1); absent in an older store and on every other play. */
+  safety?: boolean;
+  /** On a kickoff or punt return touchdown, the returner (nflverse spelling). */
+  returner?: string | null;
+  /**
+   * On a touchdown, the try when it was anything but a made extra point:
+   * nflverse's extra_point_result ("xp_failed", "xp_blocked") or
+   * two_point_conv_result ("2pt_success", "2pt_failure", ...). Absent in an
+   * older store and after a made extra point.
+   */
+  tryResult?: string;
+  /** On a kickoff or punt return touchdown, the return's yards. */
+  returnYds?: number | null;
   /** Home win probability before and after, per mille. */
   wpBefore: number;
   wpAfter: number;

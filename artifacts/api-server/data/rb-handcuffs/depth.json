@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-18T05:32:28.568Z",
+  "generated_at": "2026-11-23T05:38:32.709Z",
   "source": {
     "depth": "https://www.ourlads.com/nfldepthcharts/depthchartpos/RB",
     "players": "https://api.sleeper.app/v1/players/nfl"
@@ -47,13 +47,13 @@
     },
     "DAL": {
       "rb1": "Javonte Williams",
-      "rb2": null,
+      "rb2": "Jashaun Corbin",
       "rb3": null
     },
     "DEN": {
       "rb1": "Jonah Coleman",
       "rb2": "J.K. Dobbins",
-      "rb3": null
+      "rb3": "Cody Schrader"
     },
     "DET": {
       "rb1": "Jahmyr Gibbs",
@@ -118,12 +118,12 @@
     "NO": {
       "rb1": "Travis Etienne Jr.",
       "rb2": "Alvin Kamara",
-      "rb3": "Audric Estimé"
+      "rb3": "CJ Donaldson"
     },
     "NYG": {
       "rb1": "Cam Skattebo",
       "rb2": "Devin Singletary",
-      "rb3": "Gregory Desrosiers"
+      "rb3": "Phil Mafah"
     },
     "NYJ": {
       "rb1": "Breece Hall",
@@ -132,8 +132,8 @@
     },
     "PHI": {
       "rb1": "Saquon Barkley",
-      "rb2": null,
-      "rb3": null
+      "rb2": "Will Shipley",
+      "rb3": "Jaydon Blue"
     },
     "PIT": {
       "rb1": "Jaylen Warren",
@@ -157,7 +157,7 @@
     },
     "TEN": {
       "rb1": "Tony Pollard",
-      "rb2": "Tyjae Spears",
+      "rb2": "Michael Carter",
       "rb3": "Julius Chestnut"
     },
     "WAS": {
@@ -196,14 +196,6 @@
       "team": "LV",
       "sleeperId": "12527",
       "age": 22,
-      "injuryStatus": null,
-      "status": "Active"
-    },
-    "audric estime": {
-      "name": "Audric Estimé",
-      "team": "NO",
-      "sleeperId": "11579",
-      "age": 23,
       "injuryStatus": null,
       "status": "Active"
     },
@@ -303,6 +295,22 @@
       "injuryStatus": null,
       "status": "Active"
     },
+    "cj donaldson": {
+      "name": "CJ Donaldson",
+      "team": "NO",
+      "sleeperId": "13277",
+      "age": 22,
+      "injuryStatus": null,
+      "status": "Active"
+    },
+    "cody schrader": {
+      "name": "Cody Schrader",
+      "team": "DEN",
+      "sleeperId": "11644",
+      "age": 27,
+      "injuryStatus": null,
+      "status": "Active"
+    },
     "corey kiner": {
       "name": "Corey Kiner",
       "team": "NE",
@@ -324,7 +332,7 @@
       "team": "HOU",
       "sleeperId": "5892",
       "age": 29,
-      "injuryStatus": "Out",
+      "injuryStatus": null,
       "status": "Active"
     },
     "deejay dallas": {
@@ -340,7 +348,7 @@
       "team": "BAL",
       "sleeperId": "3198",
       "age": 32,
-      "injuryStatus": null,
+      "injuryStatus": "Questionable",
       "status": "Active"
     },
     "devin singletary": {
@@ -407,14 +415,6 @@
       "injuryStatus": "Out",
       "status": "Active"
     },
-    "gregory desrosiers": {
-      "name": "Gregory Desrosiers",
-      "team": "NYG",
-      "sleeperId": "13603",
-      "age": 25,
-      "injuryStatus": null,
-      "status": "Active"
-    },
     "isaiah davis": {
       "name": "Isaiah Davis",
       "team": "NYJ",
@@ -471,6 +471,14 @@
       "injuryStatus": null,
       "status": "Active"
     },
+    "jashaun corbin": {
+      "name": "Jashaun Corbin",
+      "team": "DAL",
+      "sleeperId": "8194",
+      "age": 26,
+      "injuryStatus": null,
+      "status": "Active"
+    },
     "javonte williams": {
       "name": "Javonte Williams",
       "team": "DAL",
@@ -484,7 +492,15 @@
       "team": "KC",
       "sleeperId": "13419",
       "age": 23,
-      "injuryStatus": "Out",
+      "injuryStatus": null,
+      "status": "Active"
+    },
+    "jaydon blue": {
+      "name": "Jaydon Blue",
+      "team": "PHI",
+      "sleeperId": "12457",
+      "age": 22,
+      "injuryStatus": null,
       "status": "Active"
     },
     "jaylen warren": {
@@ -588,7 +604,7 @@
       "team": "LAC",
       "sleeperId": "9511",
       "age": 24,
-      "injuryStatus": null,
+      "injuryStatus": "Questionable",
       "status": "Active"
     },
     "kenneth walker": {
@@ -628,7 +644,7 @@
       "team": "CHI",
       "sleeperId": "12534",
       "age": 24,
-      "injuryStatus": "Out",
+      "injuryStatus": null,
       "status": "Active"
     },
     "kyren williams": {
@@ -636,7 +652,7 @@
       "team": "LAR",
       "sleeperId": "8150",
       "age": 26,
-      "injuryStatus": null,
+      "injuryStatus": "Questionable",
       "status": "Active"
     },
     "lan larison": {
@@ -671,6 +687,14 @@
       "injuryStatus": null,
       "status": "Active"
     },
+    "michael carter": {
+      "name": "Michael Carter",
+      "team": "TEN",
+      "sleeperId": "7607",
+      "age": 27,
+      "injuryStatus": null,
+      "status": "Active"
+    },
     "mike washington": {
       "name": "Mike Washington Jr.",
       "team": "LV",
@@ -695,6 +719,14 @@
       "injuryStatus": null,
       "status": "Active"
     },
+    "phil mafah": {
+      "name": "Phil Mafah",
+      "team": "NYG",
+      "sleeperId": "12738",
+      "age": 24,
+      "injuryStatus": null,
+      "status": "Active"
+    },
     "quinshon judkins": {
       "name": "Quinshon Judkins",
       "team": "CLE",
@@ -708,7 +740,7 @@
       "team": "WAS",
       "sleeperId": "8136",
       "age": 27,
-      "injuryStatus": null,
+      "injuryStatus": "Questionable",
       "status": "Active"
     },
     "rasheen ali": {
@@ -764,7 +796,7 @@
       "team": "CHI",
       "sleeperId": "10235",
       "age": 25,
-      "injuryStatus": null,
+      "injuryStatus": "Out",
       "status": "Active"
     },
     "samaje perine": {
@@ -780,7 +812,7 @@
       "team": "PHI",
       "sleeperId": "4866",
       "age": 29,
-      "injuryStatus": null,
+      "injuryStatus": "Questionable",
       "status": "Active"
     },
     "sean tucker": {
@@ -796,7 +828,7 @@
       "team": "IND",
       "sleeperId": "13424",
       "age": 25,
-      "injuryStatus": null,
+      "injuryStatus": "Out",
       "status": "Active"
     },
     "sione vaki": {
@@ -847,19 +879,19 @@
       "injuryStatus": null,
       "status": "Active"
     },
-    "tyjae spears": {
-      "name": "Tyjae Spears",
-      "team": "TEN",
-      "sleeperId": "9508",
-      "age": 25,
-      "injuryStatus": null,
-      "status": "Active"
-    },
     "tyler allgeier": {
       "name": "Tyler Allgeier",
       "team": "ARI",
       "sleeperId": "8132",
       "age": 26,
+      "injuryStatus": null,
+      "status": "Active"
+    },
+    "will shipley": {
+      "name": "Will Shipley",
+      "team": "PHI",
+      "sleeperId": "11577",
+      "age": 24,
       "injuryStatus": null,
       "status": "Active"
     },

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-11-18T05:36:30.314Z",
+  "generated_at": "2026-11-23T05:37:48.775Z",
   "moves": [],
   "players": {
     "1": {
@@ -12856,7 +12856,10 @@
       "slug": "jack-strand"
     },
     "13603": {
-      "slug": "gregory-desrosiers"
+      "slug": "gregory-desrosiers-jr",
+      "previous": [
+        "gregory-desrosiers"
+      ]
     },
     "13604": {
       "slug": "sincere-brown"
@@ -13419,5 +13422,6 @@
     "WAS": {
       "slug": "washington-commanders"
     }
-  }
+  },
+  "migrated_at": "2026-11-23T05:37:49.535Z"
 }

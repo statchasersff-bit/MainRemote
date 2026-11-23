@@ -1546,6 +1546,29 @@ function qClock(qtr: number, clock: string | null): string {
   return `${qtr >= 5 ? "OT" : `Q${qtr}`} ${(clock ?? "").replace(/^0/, "")}`.trim();
 }
 
+/** nflverse's try results (StoryPlay.tryResult) as the scoring list says them. */
+const TRY_WORDS: Record<string, string> = {
+  xp_failed: "extra point missed",
+  xp_blocked: "extra point blocked",
+  xp_aborted: "extra point botched",
+  "2pt_success": "two-point try good",
+  "2pt_failure": "two-point try failed",
+};
+
+/**
+ * A kick or punt return touchdown for the recap's scoring list: "an 86-yard
+ * kickoff return touchdown by Devontez Walker" (2026-11-23; it used to read
+ * just "touchdown"). Null for any other play, a muffed kick (a fumble
+ * recovery, and the stored returner is the man who lost it), a punt with no
+ * returner (a block), or a store built before the returner was kept.
+ */
+function returnTouchdown(c: Ctx, p: StoryPlay): string | null {
+  if ((p.type !== "kickoff" && p.type !== "punt") || p.fumble || !p.returner) return null;
+  const who = c.name(p.returner, p.tdTeam)?.full;
+  const yds = p.returnYds != null && p.returnYds > 0 ? `${aYards(p.returnYds)} ` : "a ";
+  return `${yds}${p.type} return touchdown${who ? ` by ${who}` : ""}`;
+}
+
 export function recapFacts(input: NarrativeInput, gameId: string): RecapFacts | null {
   const draft = composeRecap(input);
   const c = buildCtx(input);
@@ -1562,24 +1585,47 @@ export function recapFacts(input: NarrativeInput, gameId: string): RecapFacts | 
   };
 
   const scoring: string[] = [];
-  for (const p of c.plays.filter((x) => x.td || x.fg === "made").sort((x, y) => at(x) - at(y))) {
+  for (const p of c.plays.filter((x) => x.td || x.fg === "made" || x.safety).sort((x, y) => at(x) - at(y))) {
     let s: DriveState | null = null;
     for (const x of c.states) if (x.start <= at(p)) s = x;
+    // A safety is scored by the defense (nflverse's defteam); it has no try,
+    // so the play's own score is the score after (2026-11-23: safeties were
+    // missing from this list and the writers met unexplained points).
+    if (p.safety && !p.td) {
+      const sacker = p.sack ? c.name(p.sacker, p.def)?.full : null;
+      const victim = c.name(p.passer ?? p.rusher, p.pos)?.full;
+      const how = sacker && victim
+        ? `: ${sacker} sacked ${victim} in the end zone`
+        : p.type === "run" && victim
+          ? ` on a run by ${victim}`
+          : "";
+      scoring.push(`${qClock(p.qtr, p.clock)} ${p.def}: safety${how}. Score after: ${game.away.abbr} ${p.awayScore}, ${game.home.abbr} ${p.homeScore}`);
+      continue;
+    }
     const by = p.td ? p.tdTeam : p.pos;
+    const ret = p.td ? returnTouchdown(fresh(), p) : null;
     const defensive = p.td && p.tdTeam !== p.pos;
     const what = p.fg === "made"
       ? `${c.name(p.kicker, p.pos)?.full ?? "kicker"} ${p.kickDistance ?? "?"}-yard field goal`
-      : defensive
-        ? `${playSentence(fresh(), p) ?? "defensive touchdown"}`
-        : `${playNoun(fresh(), p, true) ?? playSentence(fresh(), p) ?? "touchdown"}`;
+      : ret
+        ? ret
+        : defensive
+          ? `${playSentence(fresh(), p) ?? "defensive touchdown"}`
+          : `${playNoun(fresh(), p, true) ?? playSentence(fresh(), p) ?? "touchdown"}`;
     const drive = s && !defensive && s.drive.team === by && s.drive.plays != null && s.drive.yards != null && s.drive.plays > 0
       ? ` (drive: ${s.drive.plays} plays, ${s.drive.yards} yards${s.drive.start ? `, started at ${s.drive.start}` : ""})`
       : "";
     // The score after the drive (extra point or two-point try included); the play's own score when no drive holds it.
-    const after = s && s.drive.away != null && s.drive.home != null && s.drive.away + s.drive.home >= (p.awayScore ?? 0) + (p.homeScore ?? 0)
+    // A punt return scores during the kicking club's drive, whose stored
+    // score is not this play's (MIN @ TB 2026 read 10-7 for a 10-0 lead):
+    // a return touchdown takes the drive's score only from its own drive.
+    const after = s && !(ret && s.drive.team !== by) && s.drive.away != null && s.drive.home != null && s.drive.away + s.drive.home >= (p.awayScore ?? 0) + (p.homeScore ?? 0)
       ? `${game.away.abbr} ${s.drive.away}, ${game.home.abbr} ${s.drive.home}`
       : `${game.away.abbr} ${p.awayScore}, ${game.home.abbr} ${p.homeScore} before the try`;
-    scoring.push(`${qClock(p.qtr, p.clock)} ${by}: ${what}${drive}`.replace(/\.$/, "") + `. Score after: ${after}`);
+    // The try, when it was anything but a made extra point (2026-11-23), so a
+    // 6- or 8-point touchdown is explained rather than left to arithmetic.
+    const tried = p.td && p.tryResult ? TRY_WORDS[p.tryResult] ?? null : null;
+    scoring.push(`${qClock(p.qtr, p.clock)} ${by}: ${what}${drive}`.replace(/\.$/, "") + `${tried ? `; ${tried}` : ""}. Score after: ${after}`);
   }
 
   const turnovers = c.plays

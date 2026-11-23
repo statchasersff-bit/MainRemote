@@ -1,6 +1,6 @@
 {
   "season": 2026,
-  "builtAt": "2026-11-19",
+  "builtAt": "2026-11-23",
   "snapshot": {
     "season": 2026,
     "throughWeek": 10,
@@ -79,10 +79,10 @@
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
             "prior": "−3.5%",
-            "current": "−4%",
+            "current": "−2%",
             "change": {
-              "dir": "down",
-              "text": "−0.5"
+              "dir": "up",
+              "text": "+1.5"
             },
             "nflAvg": "0%",
             "priorNum": -3.5,
@@ -855,10 +855,10 @@
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
             "prior": "+3.8%",
-            "current": "−0.6%",
+            "current": "−0.2%",
             "change": {
               "dir": "down",
-              "text": "−4.4"
+              "text": "−4"
             },
             "nflAvg": "0%",
             "priorNum": 3.8,
@@ -1344,10 +1344,10 @@
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
             "prior": "−6.2%",
-            "current": "−7.5%",
+            "current": "−6%",
             "change": {
-              "dir": "down",
-              "text": "−1.3"
+              "dir": "flat",
+              "text": "steady"
             },
             "nflAvg": "0%",
             "priorNum": -6.2,
@@ -1713,7 +1713,7 @@
       "bottomLine": "The fantasy bottom line: Tommy Rees is new to the Falcons call sheet in 2026, so 2025 tendencies describe a different coach's offense. Through 10 games, the Falcons have been more under-center, less motion-heavy and less aggressive on short 4th downs than under the 2025 staff. Historically, Rees's offenses have also directed a below-average share of targets to wide receivers. Current personnel usage should still carry weight alongside these tendencies.",
       "faq": {
         "question": "How does Tommy Rees's play-calling affect Falcons fantasy players?",
-        "answer": "Tommy Rees is a first-year play-caller for the Falcons, so last season's tendencies carry little predictive weight. Through Week 10 2026, the offense shows 4th-down go rate below league average (67% vs 75%) and pass rate over expected below league average (−7.5% vs +0%). The lead back handles 76% of backfield weighted opportunities, and the target split leans toward wide receivers (51% vs a 58% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
+        "answer": "Tommy Rees is a first-year play-caller for the Falcons, so last season's tendencies carry little predictive weight. Through Week 10 2026, the offense shows 4th-down go rate below league average (67% vs 75%) and pass rate over expected below league average (−6% vs +0%). The lead back handles 76% of backfield weighted opportunities, and the target split leans toward wide receivers (51% vs a 58% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
       }
     },
     "bal": {
@@ -1780,10 +1780,10 @@
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
             "prior": "−8.7%",
-            "current": "−5.2%",
+            "current": "−4.2%",
             "change": {
               "dir": "up",
-              "text": "+3.5"
+              "text": "+4.5"
             },
             "nflAvg": "0%",
             "priorNum": -8.7,
@@ -2160,10 +2160,10 @@
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
             "prior": "−5.9%",
-            "current": "+2%",
+            "current": "+2.6%",
             "change": {
               "dir": "up",
-              "text": "+7.9 - 4th in NFL"
+              "text": "+8.5 - 4th in NFL"
             },
             "nflAvg": "0%",
             "priorNum": -5.9,
@@ -2308,11 +2308,11 @@
           "note": null
         },
         {
-          "key": "earlyDownPassRate",
-          "stat": "61.1",
-          "unit": "early-down pass %",
-          "heading": "Passing on the downs that are a choice.",
-          "body": "A real lean toward the pass when the staff has the choice.",
+          "key": "proe",
+          "stat": "+2.6",
+          "unit": "PROE",
+          "heading": "A pass lean has emerged.",
+          "body": "Adjusted for situation, so the pass lean reads as intent, not game script.",
           "note": null
         }
       ],
@@ -2471,7 +2471,7 @@
         ],
         "note": "A clear pass-rate increase when trailing. The Panthers have passed on 71% of plays while trailing by 7+, compared with 56% while leading by 7+. The 15-point difference is worth monitoring; play counts are shown so you can weigh each bucket's sample."
       },
-      "bottomLine": "The fantasy bottom line: Brad Idzik is new to the Panthers call sheet in 2026, so 2025 tendencies describe a different coach's offense. Through 9 games, the Panthers have been more motion-heavy, faster-paced and pass-heavier on early downs than under the 2025 staff. This season the offense has directed an above-average share of targets to tight ends. Current personnel usage should still carry weight alongside these tendencies.",
+      "bottomLine": "The fantasy bottom line: Brad Idzik is new to the Panthers call sheet in 2026, so 2025 tendencies describe a different coach's offense. Through 9 games, the Panthers have been more motion-heavy, faster-paced and more pass-leaning by PROE than under the 2025 staff. This season the offense has directed an above-average share of targets to tight ends. Current personnel usage should still carry weight alongside these tendencies.",
       "faq": {
         "question": "How does Brad Idzik's play-calling affect Panthers fantasy players?",
         "answer": "Brad Idzik is a first-year play-caller for the Panthers, so last season's tendencies carry little predictive weight. Through Week 10 2026, the offense shows 4th-down go rate above league average (90% vs 75%) and red-zone pass rate above league average (64.9% vs 53%). The lead back handles 80% of backfield weighted opportunities, and the target split leans toward tight ends (29% vs a 24% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
@@ -2541,10 +2541,10 @@
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
             "prior": "−3.8%",
-            "current": "+0.5%",
+            "current": "+0.6%",
             "change": {
               "dir": "up",
-              "text": "+4.3 - 6th in NFL"
+              "text": "+4.4"
             },
             "nflAvg": "0%",
             "priorNum": -3.8,
@@ -2682,7 +2682,7 @@
         },
         {
           "key": "proe",
-          "stat": "+0.5",
+          "stat": "+0.6",
           "unit": "PROE",
           "heading": "A pass lean has emerged.",
           "body": "Adjusted for situation, so the pass lean reads as intent, not game script.",
@@ -3129,10 +3129,10 @@
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
             "prior": "+1.9%",
-            "current": "+9%",
+            "current": "+10.3%",
             "change": {
               "dir": "up",
-              "text": "+7.1 - 1st in NFL"
+              "text": "+8.4 - 1st in NFL"
             },
             "nflAvg": "0%",
             "priorNum": 1.9,
@@ -3270,7 +3270,7 @@
         },
         {
           "key": "proe",
-          "stat": "+9",
+          "stat": "+10.3",
           "unit": "PROE",
           "heading": "A pass lean has emerged.",
           "body": "Adjusted for situation, so the pass lean reads as intent, not game script.",
@@ -3966,10 +3966,10 @@
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
             "prior": "−3.5%",
-            "current": "−0.2%",
+            "current": "+0.6%",
             "change": {
               "dir": "up",
-              "text": "+3.3 - 8th in NFL"
+              "text": "+4.1"
             },
             "nflAvg": "0%",
             "priorNum": -3.5,
@@ -4570,10 +4570,10 @@
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
             "prior": "−0.9%",
-            "current": "−0.3%",
+            "current": "+1.1%",
             "change": {
               "dir": "up",
-              "text": "+0.6"
+              "text": "+2 - 8th in NFL"
             },
             "nflAvg": "0%",
             "priorNum": -0.9,
@@ -5406,10 +5406,10 @@
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
             "prior": "+1.5%",
-            "current": "−1.4%",
+            "current": "−0.4%",
             "change": {
               "dir": "down",
-              "text": "−2.9"
+              "text": "−1.9"
             },
             "nflAvg": "0%",
             "priorNum": 1.5,
@@ -5787,10 +5787,10 @@
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
             "prior": "−4.4%",
-            "current": "−2.4%",
+            "current": "−0.7%",
             "change": {
               "dir": "up",
-              "text": "+2"
+              "text": "+3.7"
             },
             "nflAvg": "0%",
             "priorNum": -4.4,
@@ -6326,10 +6326,10 @@
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
             "prior": "−4.4%",
-            "current": "+3.6%",
+            "current": "+3.8%",
             "change": {
               "dir": "up",
-              "text": "+8 - 3rd in NFL"
+              "text": "+8.2 - 3rd in NFL"
             },
             "nflAvg": "0%",
             "priorNum": -4.4,
@@ -7213,10 +7213,10 @@
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
             "prior": "−0.9%",
-            "current": "−0.4%",
+            "current": "+1.4%",
             "change": {
               "dir": "up",
-              "text": "+0.5"
+              "text": "+2.3 - 6th in NFL"
             },
             "nflAvg": "0%",
             "priorNum": -0.9,
@@ -7637,10 +7637,10 @@
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
             "prior": "−0.8%",
-            "current": "−4.5%",
+            "current": "−2.8%",
             "change": {
               "dir": "down",
-              "text": "−3.7"
+              "text": "−2"
             },
             "nflAvg": "0%",
             "priorNum": -0.8,
@@ -8513,10 +8513,10 @@
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
             "prior": "+2.1%",
-            "current": "−3.7%",
+            "current": "−2.3%",
             "change": {
               "dir": "down",
-              "text": "−5.8"
+              "text": "−4.4"
             },
             "nflAvg": "0%",
             "priorNum": 2.1,
@@ -8995,10 +8995,10 @@
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
             "prior": "+4.2%",
-            "current": "+5.1%",
+            "current": "+5.8%",
             "change": {
               "dir": "up",
-              "text": "+0.9 - 2nd in NFL"
+              "text": "+1.6 - 2nd in NFL"
             },
             "nflAvg": "0%",
             "priorNum": 4.2,
@@ -10013,7 +10013,7 @@
       "bottomLine": "The fantasy bottom line: Reid called this offense in 2025 too, giving those tendencies more predictive value than they would have after a play-caller change. Through 9 games, the Chiefs have been more under-center, heavier on play-action and less aggressive on short 4th downs than in 2025. Historically, Reid's offenses have also directed a below-average share of targets to wide receivers. Current personnel usage should still carry weight alongside these tendencies.",
       "faq": {
         "question": "How does Andy Reid's play-calling affect Chiefs fantasy players?",
-        "answer": "Andy Reid is calling the Chiefs offense for the 14th straight season, so last year's tendencies remain predictive. Through Week 10 2026, the offense shows play-action rate above league average (29.7% vs 22.7%) and no-huddle rate below league average (0.9% vs 6.7%). The lead back handles 70% of backfield weighted opportunities, and the target split leans toward wide receivers (52% vs a 59% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
+        "answer": "Andy Reid is calling the Chiefs offense for the 14th straight season, so last year's tendencies remain predictive. Through Week 10 2026, the offense shows play-action rate above league average (29.7% vs 22.7%) and pass rate over expected above league average (+5.8% vs +0%). The lead back handles 70% of backfield weighted opportunities, and the target split leans toward wide receivers (52% vs a 59% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
       }
     },
     "lac": {
@@ -10076,10 +10076,10 @@
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
             "prior": "+0.8%",
-            "current": "−9.8%",
+            "current": "−9.4%",
             "change": {
               "dir": "down",
-              "text": "−10.6"
+              "text": "−10.2"
             },
             "nflAvg": "0%",
             "priorNum": 0.8,
@@ -10217,7 +10217,7 @@
         },
         {
           "key": "proe",
-          "stat": "−9.8",
+          "stat": "−9.4",
           "unit": "PROE",
           "heading": "A run lean has emerged.",
           "body": "Adjusted for situation, so the run lean reads as intent, not game script.",
@@ -10663,10 +10663,10 @@
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
             "prior": "+3%",
-            "current": "−1%",
+            "current": "+0.9%",
             "change": {
               "dir": "down",
-              "text": "−4"
+              "text": "−2.1"
             },
             "nflAvg": "0%",
             "priorNum": 3,
@@ -11592,7 +11592,7 @@
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
             "prior": "−1.9%",
-            "current": "−2.3%",
+            "current": "−1.8%",
             "change": {
               "dir": "flat",
               "text": "steady"
@@ -12212,10 +12212,10 @@
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
             "prior": "−5.7%",
-            "current": "−10.3%",
+            "current": "−10.7%",
             "change": {
               "dir": "down",
-              "text": "−4.6"
+              "text": "−5"
             },
             "nflAvg": "0%",
             "priorNum": -5.7,
@@ -12695,10 +12695,10 @@
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
             "prior": "−1%",
-            "current": "−1.5%",
+            "current": "+0%",
             "change": {
-              "dir": "down",
-              "text": "−0.5"
+              "dir": "up",
+              "text": "+1"
             },
             "nflAvg": "0%",
             "priorNum": -1,
@@ -13450,10 +13450,10 @@
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
             "prior": "+2.7%",
-            "current": "−1.2%",
+            "current": "−0.1%",
             "change": {
               "dir": "down",
-              "text": "−3.9"
+              "text": "−2.8"
             },
             "nflAvg": "0%",
             "priorNum": 2.7,
@@ -14532,10 +14532,10 @@
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
             "prior": "−2.9%",
-            "current": "−0.4%",
+            "current": "+1.4%",
             "change": {
               "dir": "up",
-              "text": "+2.5"
+              "text": "+4.3 - 6th in NFL"
             },
             "nflAvg": "0%",
             "priorNum": -2.9,
@@ -15404,10 +15404,10 @@
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
             "prior": "−4.8%",
-            "current": "−4.4%",
+            "current": "−4.2%",
             "change": {
-              "dir": "flat",
-              "text": "steady"
+              "dir": "up",
+              "text": "+0.6"
             },
             "nflAvg": "0%",
             "priorNum": -4.8,
@@ -16185,10 +16185,10 @@
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
             "prior": "−8.5%",
-            "current": "−3.1%",
+            "current": "−2.9%",
             "change": {
               "dir": "up",
-              "text": "+5.4"
+              "text": "+5.6"
             },
             "nflAvg": "0%",
             "priorNum": -8.5,
@@ -17084,7 +17084,7 @@
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
             "prior": "−2.4%",
-            "current": "−2.2%",
+            "current": "−2%",
             "change": {
               "dir": "flat",
               "text": "steady"
@@ -17464,10 +17464,10 @@
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
             "prior": "−0.7%",
-            "current": "+0.2%",
+            "current": "+1%",
             "change": {
               "dir": "up",
-              "text": "+0.9 - 7th in NFL"
+              "text": "+1.7"
             },
             "nflAvg": "0%",
             "priorNum": -0.7,
@@ -18362,10 +18362,10 @@
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
             "prior": "−6.5%",
-            "current": "−6.8%",
+            "current": "−5.3%",
             "change": {
-              "dir": "flat",
-              "text": "steady"
+              "dir": "up",
+              "text": "+1.2"
             },
             "nflAvg": "0%",
             "priorNum": -6.5,
@@ -18739,10 +18739,10 @@
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
             "prior": "−0.9%",
-            "current": "+0.8%",
+            "current": "+2.6%",
             "change": {
               "dir": "up",
-              "text": "+1.7 - 5th in NFL"
+              "text": "+3.5 - 4th in NFL"
             },
             "nflAvg": "0%",
             "priorNum": -0.9,
@@ -19815,10 +19815,10 @@
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
             "prior": "−3.5%",
-            "current": "−10.2%",
+            "current": "−10.3%",
             "change": {
               "dir": "down",
-              "text": "−6.7"
+              "text": "−6.8"
             },
             "nflAvg": "0%",
             "priorNum": -3.5,
@@ -20234,7 +20234,7 @@
       "bottomLine": "The fantasy bottom line: Zac Robinson is new to the Buccaneers call sheet in 2026, so 2025 tendencies describe a different coach's offense. Through 9 games, the Buccaneers have been less aggressive on short 4th downs, more run-heavy in the red zone and run-heavier on early downs than under the 2025 staff. Historically, Robinson's offenses have also directed a below-average share of targets to tight ends. Current personnel usage should still carry weight alongside these tendencies.",
       "faq": {
         "question": "How does Zac Robinson's play-calling affect Buccaneers fantasy players?",
-        "answer": "Zac Robinson is a first-year play-caller for the Buccaneers, so last season's tendencies carry little predictive weight. Through Week 9 2026, the offense shows pre-snap motion above league average (69.4% vs 58.5%) and pass rate over expected below league average (−10.2% vs +0%). The lead back handles 65% of backfield weighted opportunities, and the target split leans toward tight ends (20% vs a 23% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
+        "answer": "Zac Robinson is a first-year play-caller for the Buccaneers, so last season's tendencies carry little predictive weight. Through Week 9 2026, the offense shows pre-snap motion above league average (69.4% vs 58.5%) and pass rate over expected below league average (−10.3% vs +0%). The lead back handles 65% of backfield weighted opportunities, and the target split leans toward tight ends (20% vs a 23% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
       }
     },
     "ten": {
@@ -20301,7 +20301,7 @@
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
             "prior": "−3.7%",
-            "current": "−3.3%",
+            "current": "−3.5%",
             "change": {
               "dir": "flat",
               "text": "steady"
@@ -21115,10 +21115,10 @@
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
             "prior": "−4.4%",
-            "current": "−0.4%",
+            "current": "+0.1%",
             "change": {
               "dir": "up",
-              "text": "+4"
+              "text": "+4.5"
             },
             "nflAvg": "0%",
             "priorNum": -4.4,
