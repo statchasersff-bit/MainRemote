@@ -403,8 +403,78 @@ test("a play-by-play and story cut after Detroit's Q3 go-ahead touchdown never r
     game, story, stats: { away: null, home: null }, players, leaders: [],
     city: { away: "Green Bay", home: "Detroit" }, playerUrl: () => null, photo: () => "", highlights: "",
     inks: { away: "#203731", home: "#0076b6" }, drives: pbp.drives, pbp, gameId: ID,
+    // The complete box-score sequence: Green Bay ties it 17-17 in the fourth.
+    scoring: plays,
   });
-  const text = main.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
+  const text = main.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").replace(/&#39;/g, "'");
   assert.doesNotMatch(text, /game-winning|on the final play|final play of the game/);
-  globalThis.__truncatedRender = text;
+  // The lead did not hold: no "rest of the way", no "for good", only the lead taken.
+  assert.doesNotMatch(text, /led the rest of the way|ahead [0-9–]* ?for good|never gave up the lead/);
+  assert.match(text, /Detroit took the lead\./);
+});
+
+describe("'led the rest of the way' only when the box score's scoring sequence confirms it", () => {
+  const sp = (quarter, team, type) => ({ quarter, clock: "5:00", team, type, yards: 10, ...(type === "pass_td" ? { pat: { type: "kick", result: "good" } } : {}) });
+  // 7-0 GB, 7-7, then Detroit's Q2 field goal takes a 10-7 lead (the score before it: 7-7).
+  const opening = [sp(1, "GB", "pass_td"), sp(1, "DET", "pass_td"), sp(2, "DET", "field_goal")];
+  const from = { quarter: 2, side: "home", before: { away: 7, home: 7 } };
+  // 7-13, then 10-13: Detroit never trails or is tied again.
+  const held = [...opening, sp(3, "DET", "field_goal"), sp(4, "GB", "field_goal")];
+
+  test("an uninterrupted lead through the final is confirmed", () => {
+    assert.equal(facts.leadHeldToFinal(held, "GB", "DET", { away: 10, home: 13 }, from), true);
+  });
+
+  test("a later tie is not 'the rest of the way'", () => {
+    // Green Bay ties it 10-10 in Q3 before Detroit wins it 13-10.
+    const tied = [...opening, sp(3, "GB", "field_goal"), sp(4, "DET", "field_goal")];
+    assert.equal(facts.leadHeldToFinal(tied, "GB", "DET", { away: 10, home: 13 }, from), false);
+  });
+
+  test("a later lead change is not 'the rest of the way'", () => {
+    // Green Bay goes ahead 14-10 in Q3; Detroit wins it 17-14.
+    const changed = [...opening, sp(3, "GB", "pass_td"), sp(4, "DET", "pass_td")];
+    assert.equal(facts.leadHeldToFinal(changed, "GB", "DET", { away: 14, home: 17 }, from), false);
+  });
+
+  test("a sequence that does not add up to the final confirms nothing", () => {
+    assert.equal(facts.leadHeldToFinal(held.slice(0, 4), "GB", "DET", { away: 10, home: 13 }, from), false, "a dropped score");
+    assert.equal(facts.leadHeldToFinal(null, "GB", "DET", { away: 10, home: 13 }, from), false);
+  });
+
+  test("a halftime lead the second half erased is not 'never gave up the lead'", () => {
+    const erased = [sp(1, "DET", "pass_td"), sp(3, "GB", "pass_td"), sp(4, "DET", "field_goal")];
+    assert.equal(facts.halftimeLeadHeld(erased, "GB", "DET", { away: 7, home: 10 }, "home"), false);
+    const kept = [sp(1, "DET", "pass_td"), sp(3, "GB", "field_goal"), sp(4, "DET", "field_goal")];
+    assert.equal(facts.halftimeLeadHeld(kept, "GB", "DET", { away: 3, home: 10 }, "home"), true);
+  });
+
+  test("Broncos at 49ers, Week 4 (stored): San Francisco's lead held, so the recap says so", async () => {
+    const ID = "2026_04_DEN_SF";
+    const pbp = facts.refineDrives(read("pbp", "2026", `${ID}.json`));
+    const story = read("game_story_2026.json").games[ID];
+    const stored = Object.entries(read("boxscores", "2026.json").games).find(([, g]) => g.week === 4 && g.name === "DEN @ SF");
+    const box = boxscore.parseEspnSummary(stored[0], stored[1].summary);
+    const scoring = facts.pbpScoringPlays(box.scoringPlays, pbp, "DEN", "SF");
+    const total = (abbr) => scoring.filter((p) => p.team === abbr).reduce((n, p) => n + (p.type === "field_goal" ? 3 : p.type === "safety" ? 2 : 6 + (p.pat?.result === "good" ? (p.pat.type === "kick" ? 1 : 2) : 0)), 0);
+    assert.equal(total("SF"), 24);
+    assert.equal(total("DEN"), 14);
+    const game = {
+      status: "final", seasonLabel: "2026", gameType: "regular", roundLabel: "Week 4", kickoff: "2026-10-04T20:25:00.000Z", venue: null,
+      away: { abbr: "DEN", name: "Denver Broncos", short: "Broncos", quarters: null, ot: null, score: 14 },
+      home: { abbr: "SF", name: "San Francisco 49ers", short: "49ers", quarters: null, ot: null, score: 24 },
+    };
+    const players = gamePlayers.buildGamePlayers(box.players, null, box.scoringPlays);
+    const render = (seq) =>
+      overview.renderRecapOverviewParts({
+        game, story, stats: { away: null, home: null }, players, leaders: [],
+        city: { away: "Denver", home: "San Francisco" }, playerUrl: () => null, photo: () => "", highlights: "",
+        inks: { away: "#fb4f14", home: "#aa0000" }, drives: pbp.drives, pbp, scoring: seq,
+      }).main.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
+    assert.match(render(scoring), /San Francisco led the rest of the way\./);
+    // Without the box score's sequence the claim cannot be checked, so it is not made.
+    const unchecked = render(null);
+    assert.doesNotMatch(unchecked, /led the rest of the way/);
+    assert.match(unchecked, /San Francisco took the lead\./);
+  });
 });

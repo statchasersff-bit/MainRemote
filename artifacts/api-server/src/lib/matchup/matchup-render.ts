@@ -828,6 +828,8 @@ function renderOverview(data: MatchupData, input: RecapBodyInput, added: AddedSe
     gameId: entry.id,
     drives: pbp?.drives ?? null,
     pbp,
+    // Already on the play-by-play's clocks (matchup-data withPlayByPlay).
+    scoring: data.boxscore?.scoringPlays ?? null,
     odds: data.boxscore?.odds ?? null,
     records:
       meeting.seasonType === "regular"
