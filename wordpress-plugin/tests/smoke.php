@@ -1970,7 +1970,7 @@ is( apply_filters( 'rank_math/sitemap/providers', 'not-an-array' ), 'not-an-arra
 $GLOBALS['pages_by_path'] = $saved_by_path ?? array();
 $GLOBALS['rank_math_invalidated'] = array();
 statchasers_matchup_games_invalidate_sitemap();
-is( $GLOBALS['rank_math_invalidated'], array( 'game' ), 'a changed list drops only Rank Math\'s copy of this file' );
+is( $GLOBALS['rank_math_invalidated'], array( 'game', '1' ), 'a changed list drops Rank Math\'s copy of this file and of the index that lists its pages' );
 
 /*
  * The matchup trail. Rank Math builds it from the holder, so it ended at the

@@ -1500,10 +1500,22 @@ function statchasers_matchup_games(): array {
 /** The Rank Math sitemap type the game pages are published under: /game-sitemap.xml. */
 const STATCHASERS_MATCHUP_SITEMAP_TYPE = 'game';
 
-/** Drop Rank Math's cached /game-sitemap.xml so the next request rebuilds it. */
+/**
+ * Drop Rank Math's cached /game-sitemap*.xml AND its cached sitemap index, so
+ * the next requests rebuild both.
+ *
+ * The index ('1' in Rank Math's cache) lists one entry per page of games and
+ * each page's lastmod, so it changes whenever the list does. Rank Math's own
+ * watcher always clears '1' with any type it clears; this used to clear only
+ * 'game', and a local WordPress + Rank Math run (WEB-001, 2026-11-24) showed
+ * the result: the list grew from 298 to 1,586 games and the pages were
+ * rebuilt, but the cached index went on advertising two pages with their old
+ * lastmods until a post was saved somewhere on the site.
+ */
 function statchasers_matchup_games_invalidate_sitemap(): void {
 	if ( class_exists( '\RankMath\Sitemap\Cache' ) && method_exists( '\RankMath\Sitemap\Cache', 'invalidate_storage' ) ) {
 		\RankMath\Sitemap\Cache::invalidate_storage( STATCHASERS_MATCHUP_SITEMAP_TYPE );
+		\RankMath\Sitemap\Cache::invalidate_storage( '1' );
 	}
 }
 
