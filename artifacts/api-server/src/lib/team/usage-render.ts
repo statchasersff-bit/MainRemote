@@ -21,13 +21,15 @@
  * never a set of empty cards.
  */
 
+import { linkFirstMentions, usageProsePlayers } from "./prose-links";
 import { shortName } from "./contracts-render";
 import { headshotImg } from "../headshot-html";
 import { escapeHtml } from "../render";
 import { slotChip } from "../team-render";
 import { premiumPassMap, premiumRunDirection } from "./usage-premium";
 import { premiumSituational } from "./usage-situational-premium";
-import { getPlayerPageUrl } from "./links";
+import { playerProfileUrl } from "./links";
+import { usageRef } from "./overview";
 import {
   DYNASTY_LEAGUE_ANALYZER_URL,
   LEAGUE_ANALYZER_URL,
@@ -72,8 +74,14 @@ function num(value: string, extra = ""): string {
   return `<span class="sct-us-num${extra ? ` ${extra}` : ""}">${e(value)}</span>`;
 }
 
+/**
+ * A usage row's player, linked to his page. Resolved like the hub's rows
+ * (WEB-044, 2026-11-24): by the row's Sleeper and GSIS ids through
+ * playerProfileUrl(), so a link exists only for a published profile; the
+ * builder's raw slug used to be linked as it stood, published or not.
+ */
 export function playerLink(p: UsagePlayer, className: string, withShort = false): string {
-  const href = getPlayerPageUrl(p.slug);
+  const href = playerProfileUrl(p.name, usageRef(p));
   // `data-short` ("R. Stevenson"): on phones team.ts's fitDraftNames() paints
   // it in place of a name that would wrap (2026-11-15, the fantasy table).
   const short = withShort ? shortName(p.name) : p.name;
@@ -1020,6 +1028,9 @@ export function renderUsageSection(
     `</div>`;
 
   const faq = usageFaq(view, team);
+  // Each answer links its first mention of a player (WEB-044); the FAQPage
+  // schema is built from the plain answers and is unchanged.
+  const people = usageProsePlayers(view);
   const faqHtml = faq.length
     ? `<div class="sct-block">` +
       faqHeading("Common Questions") +
@@ -1029,7 +1040,7 @@ export function renderUsageSection(
           (q) =>
             `<details class="sct-faq-item">` +
             `<summary class="sct-faq-q-row"><h3 class="sct-faq-q">${e(q.question)}</h3></summary>` +
-            `<p class="sct-faq-a">${faqAnswer(q)}</p>` +
+            `<p class="sct-faq-a">${linkFirstMentions(faqAnswer(q), people)}</p>` +
             `</details>`,
         )
         .join("") +

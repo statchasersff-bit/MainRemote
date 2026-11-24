@@ -31,7 +31,9 @@ import {
   type BoardLine,
 } from "./usage-render";
 import { signed } from "./usage-copy";
-import { getPlayerPageUrl } from "./links";
+import { playerProfileUrl } from "./links";
+import { usageRef } from "./overview";
+import { nameForms } from "./name-forms";
 import type { NflTeam } from "./teams";
 import type { UsagePlayer, UsageView } from "./usage";
 
@@ -51,31 +53,27 @@ function panelHead(title: string, icon: string): string {
   return `<div class="sct-up-ph"><span class="sct-up-ph-icon">${ICON[icon]}</span><h3 class="sct-up-ph-title">${e(title)}</h3></div>`;
 }
 
-/** "Tetairoa McMillan" -> "T. McMillan"; a one-word name is left as it is. */
-function shortName(name: string): string {
-  const [first, ...rest] = name.trim().split(/\s+/);
-  return rest.length && first ? `${first.charAt(0)}. ${rest.join(" ")}` : name;
-}
-
 /**
  * A row's player cell: headshot well, then the name as first initial and
  * last name with the position beside it, on one line (mak, 2026-11-06:
  * not the name over a position row). The full name stays in the link for
  * screen readers and crawlers, visually hidden, with a title on hover.
  *
- * Both visible forms are printed (mak, 2026-11-14): the full name and the
- * short one. CSS shows the short one by default; in the Snap Counts table on
- * phones the full name shows, and team.ts's fitSnapNames() switches a row to
- * the short form only when its full name would be cut off.
+ * Both visible forms (mak, 2026-11-14): the full name and the short one.
+ * CSS shows the short one by default; in the Snap Counts table on phones
+ * the full name shows, and team.ts's fitSnapNames() switches a row to the
+ * short form only when its full name would be cut off. Since WEB-044
+ * (2026-11-24) the name is printed once (nameForms()) and the short form is
+ * drawn from it, instead of three copies (full, short, visually hidden);
+ * the link's aria-label keeps the full name for screen readers whichever
+ * form is painted. The link is resolved like the hub's rows, by the row's
+ * ids (playerProfileUrl + usageRef), so only a published profile is linked.
  */
 function who(p: UsagePlayer): string {
-  const href = getPlayerPageUrl(p.slug);
-  const label =
-    `<span class="sct-up-nm is-full" aria-hidden="true">${e(p.name)}</span>` +
-    `<span class="sct-up-nm is-short" aria-hidden="true">${e(shortName(p.name))}</span>` +
-    `<span class="sct-visually-hidden">${e(p.name)}</span>`;
+  const href = playerProfileUrl(p.name, usageRef(p));
+  const label = `<span class="sct-up-nm">${nameForms(p.name)}</span>`;
   const name = href
-    ? `<a class="sct-up-name sct-player-link" href="${e(href)}" target="_top" title="${e(p.name)}">${label}</a>`
+    ? `<a class="sct-up-name sct-player-link" href="${e(href)}" target="_top" title="${e(p.name)}" aria-label="${e(p.name)}">${label}</a>`
     : `<span class="sct-up-name" title="${e(p.name)}">${label}</span>`;
   return (
     `<span class="sct-up-who">${faceWell(p)}` +

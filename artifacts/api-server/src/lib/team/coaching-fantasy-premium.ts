@@ -19,8 +19,10 @@ import type { TeamCoaching } from "./coaching";
 import type { UsageView } from "./usage";
 import { TEAMS, type NflTeam } from "./teams";
 import { finishRows, finishStop, finishTier, readFinish, rowViews, seasonOf, surnameOf, type FinishRow } from "./coaching-render";
-import { reliabilityRating } from "./coaching";
+import { reliabilityRating, type FinishCell } from "./coaching";
 import { ICON, usageStyleHead } from "./coaching-premium-tendencies";
+import { playerProfileUrl } from "./links";
+import { nameForms } from "./name-forms";
 
 const e = escapeHtml;
 
@@ -40,7 +42,7 @@ function clubCrest(club: string): string {
 
 /* ---------------------------------------------------------------- finishes */
 
-/** "Patriots" / "Oakland Raiders" as the club's code ("NE", "LV"), for the phone stop label. */
+/** "Patriots" / "Oakland Raiders" as the club's code ("NE", "LV"): the club a finish is matched on. */
 function clubCode(club: string): string {
   const team = TEAMS.find((t) => t.nickname === club || club.endsWith(` ${t.nickname}`)) ?? null;
   return team ? team.abbreviation.toUpperCase() : club;
@@ -52,6 +54,43 @@ function rankPill(pos: string, rank: number, current: boolean): string {
   return `<span class="sct-cf-pill ${current ? "is-current" : `is-${key}`}" title="${e(title)}">${e(`${pos}${rank}`)}</span>`;
 }
 
+/** The four finish columns, for naming a cell with no finish. */
+const POSN = ["QB", "RB1", "WR1", "TE1"];
+
+/**
+ * The player behind a finish, printed once (WEB-044, 2026-11-24): the full
+ * name where the data carries it (the cell's `name`, 2026-11-15), else the
+ * stored surname. The table used to print the stored surname ("Brown" for
+ * Amon-Ra St. Brown) and a phone copy the full name. Phones now paint the
+ * surname from the same text (team.css "Name forms"); the aria-label and
+ * title carry the full name.
+ *
+ * Linked to the player's StatChasers page only when exactly one player of
+ * that name played for that club, in that position group, that season
+ * (playerProfileUrl, by name inside club and position, with the season's
+ * game logs for the club): the finishes store no player ids, so the club
+ * and the season are the identity. Anything less certain stays plain text.
+ */
+function finishWho(cell: FinishCell, f: { pos: string; player: string }, club: string, year: string): string {
+  const full = (cell.name || f.player).trim();
+  const season = Number(year);
+  const href = playerProfileUrl(full, {
+    team: clubCode(club),
+    pos: f.pos,
+    game: Number.isInteger(season) && season > 0 ? { season } : null,
+  });
+  return href
+    ? `<a class="sct-cf-who sct-player-link" href="${e(href)}" target="_top" title="${e(full)}" aria-label="${e(full)}">${nameForms(full)}</a>`
+    : `<span class="sct-cf-who" title="${e(full)}">${nameForms(full)}</span>`;
+}
+
+/**
+ * One season's row. The only rendering of the finishes since WEB-044
+ * (2026-11-24): the phones' <details> list that repeated every row (mak,
+ * 2026-11-15) is gone, and team.css fits this table to a phone instead,
+ * every position still in view with no sideways scroll: the crest and the
+ * first names step aside there, the pills and surnames stay.
+ */
 function finishRow(row: FinishRow): string {
   const { club, year } = finishStop(row);
   const pace = row.context.match(/^pace through (Week \d+)$/i);
@@ -65,47 +104,14 @@ function finishRow(row: FinishRow): string {
     `</span></span>` +
     `</th>` +
     row.cells
-      .map((cell) => {
+      .map((cell, i) => {
         const f = readFinish(cell.text);
         return f
-          ? `<td class="sct-cf-td is-fin">${rankPill(f.pos, f.rank, !!row.current)}<span class="sct-cf-who">${e(f.player)}</span></td>`
-          : `<td class="sct-cf-td is-fin"><span class="sct-cf-none">${e(cell.text || "–")}</span></td>`;
+          ? `<td class="sct-cf-td is-fin">${rankPill(f.pos, f.rank, !!row.current)}${finishWho(cell, f, club, year)}</td>`
+          : `<td class="sct-cf-td is-fin"><span class="sct-cf-none" aria-label="${e(`${POSN[i] ?? "Finish"}: none`)}">${e(cell.text || "–")}</span></td>`;
       })
       .join("") +
     `</tr>`
-  );
-}
-
-/**
- * Phones' finishes (mak, 2026-11-15): one row per season that fits the
- * screen, the stop short ("2016 NE" over the role) then the four rank pills
- * (same tiers and colors as the table) and a chevron; the row opens to the
- * player behind each finish, by full name where the data carries it (the
- * cell's `name`, 2026-11-15) and the stored surname otherwise. Newest first,
- * five seasons and then Show all, like Season by Season. team.css shows
- * this list at 560px and under in place of the table.
- */
-function phoneFinishRow(row: FinishRow): string {
-  const { club, year } = finishStop(row);
-  const pace = row.context.match(/^pace through (Week \d+)$/i);
-  const role = row.current ? (pace ? `Thru ${pace[1]!.replace("Week", "Wk")}` : "In-season") : row.context;
-  const POSN = ["QB", "RB1", "WR1", "TE1"];
-  const finishes = row.cells.map((cell) => readFinish(cell.text));
-  const pills = finishes
-    .map((f, i) => `<span class="sct-cfp-cell">${f ? rankPill(f.pos, f.rank, !!row.current) : `<span class="sct-cf-none" aria-label="${e(`${POSN[i]}: none`)}">–</span>`}</span>`)
-    .join("");
-  const people = finishes
-    .map((f, i) => `<div class="sct-cfp-kv"><dt>${e(POSN[i]!)}</dt><dd>${f ? `<span class="sct-cfp-rk">${e(`${f.pos}${f.rank}`)}</span> ${e(row.cells[i]?.name || f.player)}` : "–"}</dd></div>`)
-    .join("");
-  return (
-    `<details class="sct-cfp-row${row.current ? " is-current" : ""}">` +
-    `<summary class="sct-cfp-sum">` +
-    `<span class="sct-cfp-stop"><span class="sct-cfp-yr"><b>${e(year)}</b> ${e(clubCode(club))}</span><span class="sct-cfp-role">${e(role)}</span></span>` +
-    pills +
-    `<span class="sct-cfp-chev" aria-hidden="true"></span>` +
-    `</summary>` +
-    `<dl class="sct-cfp-detail" aria-label="${e(`Players, ${year} ${club}`)}">${people}</dl>` +
-    `</details>`
   );
 }
 
@@ -115,8 +121,8 @@ function finishes(c: TeamCoaching, team: NflTeam): string {
   const last = surnameOf(c);
   const possessive = /s$/.test(last) ? `${last}'` : `${last}'s`;
   const newest = [...rows].reverse();
-  const phoneRecent = newest.slice(0, 5);
-  const phoneOlder = newest.slice(5);
+  const recent = newest.slice(0, 5);
+  const older = newest.slice(5);
   const allId = `sct-cfp-all-${c.playCaller.name.toLowerCase().replace(/[^a-z]+/g, "-")}`;
   return (
     `<section class="sct-cf-panel" aria-labelledby="sct-cf-fin-h">` +
@@ -124,9 +130,8 @@ function finishes(c: TeamCoaching, team: NflTeam): string {
     usageStyleHead("Fantasy Finishes by Season", ICON["bars"]!, `Where ${possessive} QB1, RB1, WR1 and TE1 finished in PPR fantasy scoring`, "sct-cf-fin-h") +
     // Newest first and five seasons then Show all at every width (Team Pages
     // Phase 2, 2026-11-19), the Season by Season rule; the checkbox precedes
-    // both renderings so one toggle opens the table's older rows and the
-    // phone list's.
-    (phoneOlder.length ? `<input type="checkbox" class="sct-cfp-all" id="${allId}">` : "") +
+    // the table so it can open the older rows (team.css).
+    (older.length ? `<input type="checkbox" class="sct-cfp-all" id="${allId}">` : "") +
     `<div class="sct-cf-scroll" tabindex="0" role="region" aria-label="${e(`Positional fantasy finishes under the ${team.nickname} play-caller`)}">` +
     `<table class="sct-cf-table">` +
     `<thead><tr>` +
@@ -135,16 +140,10 @@ function finishes(c: TeamCoaching, team: NflTeam): string {
     `<th scope="col" class="sct-cf-th is-fin">RB1</th>` +
     `<th scope="col" class="sct-cf-th is-fin">WR1</th>` +
     `<th scope="col" class="sct-cf-th is-fin">TE1</th>` +
-    `</tr></thead><tbody>${phoneRecent.map(finishRow).join("")}</tbody>` +
-    (phoneOlder.length ? `<tbody class="sct-cf-older">${phoneOlder.map(finishRow).join("")}</tbody>` : "") +
+    `</tr></thead><tbody>${recent.map(finishRow).join("")}</tbody>` +
+    (older.length ? `<tbody class="sct-cf-older">${older.map(finishRow).join("")}</tbody>` : "") +
     `</table></div>` +
-    // Phones: the season list in place of the table (team.css).
-    `<div class="sct-cfp">` +
-    `<div class="sct-cfp-head" aria-hidden="true"><span>Season</span><span>QB</span><span>RB1</span><span>WR1</span><span>TE1</span><span></span></div>` +
-    `<div class="sct-cfp-recent">${phoneRecent.map(phoneFinishRow).join("")}</div>` +
-    (phoneOlder.length ? `<div class="sct-cfp-older">${phoneOlder.map(phoneFinishRow).join("")}</div>` : "") +
-    `</div>` +
-    (phoneOlder.length
+    (older.length
       ? `<label class="sct-cfp-more" for="${allId}"><span class="sct-cfp-more-show">${e(`Show all ${rows.length} seasons`)}</span><span class="sct-cfp-more-hide">Show recent seasons only</span></label>`
       : "") +
     // The note and the method were the same sentence twice; one disclosure.

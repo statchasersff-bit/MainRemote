@@ -384,17 +384,32 @@ describe("signals and the career block", () => {
     assert.doesNotMatch(block.textContent, /—/);
   });
 
-  test("phones' finishes list: newest first, five seasons then Show all, full names in the opened row (2026-11-15)", async () => {
+  test("finishes: ONE table, newest first, five seasons then Show all, each player once by full name and linked by club + season (WEB-044)", async () => {
     const { doc } = await page("/team/new-england-patriots/coaching/");
-    const list = doc.querySelector("#coaching-fantasy-premium .sct-cfp");
-    const recent = [...list.querySelectorAll(".sct-cfp-recent > details")];
+    const panel = doc.querySelector("#coaching-fantasy-premium .sct-cf-panel");
+    // The phones' <details> list that repeated every row is gone (WEB-044).
+    assert.equal(panel.querySelectorAll(".sct-cfp, details.sct-cfp-row").length, 0, "no phone copy of the finishes");
+    assert.equal(panel.querySelectorAll("table").length, 1);
+    const recent = [...panel.querySelectorAll(".sct-cf-table > tbody:not(.sct-cf-older) > tr")];
     assert.equal(recent.length, 5);
     assert.ok(recent[0].classList.contains("is-current"), "newest first");
     const total = coaching.teams.ne.finishes.history.length + 1;
-    assert.equal(list.querySelectorAll("details").length, total);
+    assert.equal(panel.querySelectorAll(".sct-cf-table tbody tr").length, total);
     assert.ok(doc.querySelector(".sct-cfp-all") && doc.querySelector(".sct-cfp-more"));
-    const names = [...recent[0].querySelectorAll(".sct-cfp-kv dd")].map((d) => d.textContent);
-    assert.equal(names[0], "QB4 Drake Maye");
+    const qb = recent[0].querySelector("td.is-fin");
+    assert.match(qb.querySelector(".sct-cf-pill").textContent, /^QB\d+$/);
+    const who = qb.querySelector(".sct-cf-who");
+    // The full name is the cell's text, once; phones paint the surname from it.
+    assert.equal(who.textContent, "Drake Maye");
+    assert.equal(who.querySelector(".sct-nm-last").textContent, "Maye");
+    assert.equal(who.tagName, "A");
+    assert.match(who.getAttribute("href"), /\/nfl\/players\/drake-maye\/$/);
+    assert.equal(who.getAttribute("aria-label"), "Drake Maye");
+    // Every name prints once in the panel: no surname-only copy beside it.
+    const text = panel.textContent;
+    assert.equal(text.split("Drake Maye").length - 1, recent.filter((r) => /Drake Maye/.test(r.textContent)).length);
+    // A historical stop links only the player who played for that club that season; anyone else stays text.
+    for (const a of panel.querySelectorAll("a.sct-cf-who")) assert.match(a.getAttribute("href"), /\/nfl\/players\/[a-z0-9-]+\/$/);
     // Every finish cell in the data carries the full name, ending in its stored surname (suffixes aside).
     for (const t of Object.values(coaching.teams)) {
       for (const r of [...(t.finishes.history ?? []), ...t.finishes.rows]) {

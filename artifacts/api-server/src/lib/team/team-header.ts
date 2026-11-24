@@ -62,6 +62,24 @@ const KPI_ICON: Record<string, string> = {
   ),
 };
 
+/**
+ * The club's roster - the Depth Chart tab, which is the roster on these
+ * pages - one tap from the header (WEB-044, 2026-11-24).
+ *
+ * The strip already links it on every tab, but it is the eighth of nine tabs:
+ * wherever the strip is too narrow to show them all (phones, narrow columns)
+ * it sits off the end and takes a swipe to find. This is the same address as
+ * that tab (its NavItem href, so the embed's team path prefix applies), shown
+ * by team.css only where the header's container is too narrow for the strip
+ * to show that tab (`@container tpb`, under 680px), and left out on the Depth
+ * Chart tab itself.
+ */
+function rosterLink(team: NflTeam, tabs: NavItem[]): string {
+  const tab = tabs.find((t) => t.id === "depth-chart");
+  if (!tab || tab.active) return "";
+  return `<p class="sct-tpb-roster"><a class="sct-tpb-roster-link" href="${e(tab.href)}">${e(`${team.nickname} roster & depth chart`)}</a></p>`;
+}
+
 export function renderTeamHeader(input: TeamHeaderInput): string {
   const { team, season, headingTag, facts, updatedMs, switcher, tabs } = input;
   const kpis = facts
@@ -146,6 +164,7 @@ export function renderTeamHeader(input: TeamHeaderInput): string {
     // wear the player pages' format); hidden above 560px (team.css).
     (kpis ? `<p class="sct-tpb-season" aria-hidden="true">${e(`${season} Regular Season`)}</p><ul class="sct-tpb-stats">${kpis}</ul>` : "") +
     updated +
+    rosterLink(team, tabs) +
     `</div>` +
     `</header>` +
     strip +

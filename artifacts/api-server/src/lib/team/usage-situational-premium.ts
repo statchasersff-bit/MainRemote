@@ -13,6 +13,7 @@
  * Styles are `.sct-us-sit-*` in team.css, on the `.sct-us-prm` tokens.
  */
 
+import { linkFirstMentions, usageProsePlayers } from "./prose-links";
 import { escapeHtml as e } from "../render";
 import type { UsagePlayer, UsageView } from "./usage";
 import { surname } from "./usage";
@@ -291,6 +292,8 @@ export function premiumSituational(view: UsageView, team: NflTeam): string {
     `</div>`;
 
   const takeaways = backfieldTakeaways(view, team.nickname);
+  // Each card links its first mention of a player (WEB-044).
+  const people = usageProsePlayers(view);
   const cards = takeaways
     .map((t, i) => {
       const c = cardOf(t, i, view);
@@ -298,7 +301,7 @@ export function premiumSituational(view: UsageView, team: NflTeam): string {
         `<article class="sct-us-sit-card${c.featured ? " is-featured" : ""}">` +
         `<div class="sct-us-sit-card-head"><span class="sct-us-sit-card-icon" aria-hidden="true">${c.icon}</span>` +
         `<h4 class="sct-us-sit-card-title">${e(c.title)}</h4></div>` +
-        `<p class="sct-us-sit-card-body">${prose(t.body)}</p>` +
+        `<p class="sct-us-sit-card-body">${linkFirstMentions(prose(t.body), people)}</p>` +
         `</article>`
       );
     })
