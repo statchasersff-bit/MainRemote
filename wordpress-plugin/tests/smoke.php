@@ -374,6 +374,7 @@ require_once "$dir/statchasers-assets.php";
 require_once "$dir/statchasers-bdp-assets.php";
 require_once "$dir/statchasers-host-css.php";
 require_once "$dir/statchasers-perf.php";
+require_once "$dir/statchasers-divi-late-css.php";
 require_once "$dir/statchasers-team.php";
 require_once "$dir/statchasers-team-pages.php";
 require_once "$dir/statchasers-matchup.php";
@@ -469,6 +470,40 @@ if ( 'main' === $group ) {
 	is( statchasers_perf_is_bundle( 'https://news.statchasers.com/dist/statchasers-rb-handcuffs.js?ver=1' ), true, 'every tool bundle qualifies, query string or not' );
 	is( statchasers_perf_rocket_exclusions( array( '/keep-me.js' ) ), array( '/keep-me.js', '/dist/statchasers-' ), "WP Rocket's own lists gain the bundle path and keep theirs" );
 	is( statchasers_perf_rocket_exclusions( null ), array( '/dist/statchasers-' ), 'and survive a non-array' );
+	echo "\n";
+}
+
+if ( 'main' === $group ) {
+	echo "Divi late-CSS loader (WEB-024)\n";
+	$one  = 'https://statchasers.com/wp-content/et-cache/4825/et-divi-dynamic-tb-268-tb-269-4825-late.css';
+	$two  = 'https://statchasers.com/wp-content/et-cache/4825/et-divi-dynamic-tb-268-tb-269-late.css';
+	$divi = static function ( array $files ): string {
+		return "<p>footer</p>\n\t\t<script type=\"application/javascript\">\n\t\t\t(function() {\n\t\t\t\tvar file     = " . json_encode( $files ) . ";\n" .
+			"\t\t\t\tvar handle   = document.getElementById('divi-style-css');\n\t\t\t\tvar location = handle.parentNode;\n\n" .
+			"\t\t\t\tif (0===document.querySelectorAll('link[href=\"' + file + '\"]').length) {\n\t\t\t\t\tvar link  = document.createElement('link');\n" .
+			"\t\t\t\t\tlink.rel  = 'stylesheet';\n\t\t\t\t\tlink.id   = 'et-dynamic-late-css';\n\t\t\t\t\tlink.href = file;\n\n" .
+			"\t\t\t\t\tlocation.insertBefore(link, handle.nextSibling);\n\t\t\t\t}\n\t\t\t})();\n\t\t</script>\n<script>var other = 1;</script>";
+	};
+	$out = statchasers_divi_late_css_rewrite( $divi( array( $one, $two ) ) );
+	is( false !== strpos( $out, 'link.href = file;' ), false, "two files: Divi's comma-joining assignment is gone" );
+	is( false !== strpos( $out, 'var files=["' . $one . '","' . $two . '"];' ), true, 'both files kept, in order, each its own URL' );
+	is( false !== strpos( $out, 'link.href=files[i]' ), true, 'one link per file' );
+	is( false !== strpos( $out, 'split("?")[0]' ), true, 'an already linked file is matched without its ?ver' );
+	is( substr( $out, 0, 13 ), "<p>footer</p>", 'the rest of the footer is untouched (before)' );
+	is( substr( $out, -31 ), '<script>var other = 1;</script>', 'and after' );
+	$dup = statchasers_divi_late_css_rewrite( $divi( array( $one, $one ) ) );
+	is( substr_count( $dup, $one ), 1, 'a file listed twice is linked once' );
+	$single = statchasers_divi_late_css_rewrite( $divi( array( $one ) ) );
+	is( false !== strpos( $single, 'var files=["' . $one . '"];' ), true, 'one file: same loader' );
+	$odd = $divi( array( 'javascript:alert(1)' ) );
+	is( statchasers_divi_late_css_rewrite( $odd ), $odd, 'an array that is not stylesheet URLs is left alone' );
+	$plain = '<script>(function(){ var file = ["x.css"]; })();</script>';
+	is( statchasers_divi_late_css_rewrite( $plain ), $plain, 'a script that is not the late-CSS loader is left alone' );
+	$GLOBALS['query'] = array();
+	is( statchasers_divi_late_css_applies(), false, 'off outside the matchup template' );
+	$GLOBALS['query'] = array( 'sc_matchup' => 'detroit-lions-vs-green-bay-packers' );
+	is( statchasers_divi_late_css_applies(), true, 'on for a matchup request' );
+	$GLOBALS['query'] = array();
 	echo "\n";
 }
 

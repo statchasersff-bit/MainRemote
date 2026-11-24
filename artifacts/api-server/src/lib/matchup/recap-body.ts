@@ -16,7 +16,6 @@
  */
 
 import { escapeHtml, escapeJsonLd } from "../render";
-import { railHead } from "./rail-head";
 import type { BoxTeamStats } from "./boxscore";
 import { superBowlNumeral } from "./recap";
 import {
@@ -28,7 +27,6 @@ import {
 } from "./rivalry";
 import {
   pairColors,
-  scoreboardKickoff,
   scoreboardResult,
   type ScoreboardGame,
 } from "./scoreboard-hero";
@@ -903,17 +901,24 @@ interface FaqCandidate extends FaqItem {
 }
 
 const FAQ_GROUPS: FaqCandidate["group"][] = ["result", "fantasy", "flow", "history", "betting"];
-const FAQ_MAX = 15;
 
-/** The strongest questions, at most 15, shown by topic in priority order within each. */
+/**
+ * One question per topic, the strongest, in topic order: at most five
+ * (WEB-041, 2026-11-24). The page had grown to 15, and most of them restated
+ * the score header, the leaders card, the Rivalry tab or the Betting tab in
+ * a second and third wording ("Who won", "What was the final score", "What
+ * happened"; the spread, the cover and the total as three questions). The
+ * pool still offers the alternatives, so a game without the top candidate in
+ * a topic falls back to the next one that its data supports, and a topic the
+ * data cannot answer is simply left out.
+ */
 function pickFaq(pool: FaqCandidate[]): FaqItem[] {
-  const kept = [...pool].sort((a, b) => b.score - a.score).slice(0, FAQ_MAX);
-  return FAQ_GROUPS.flatMap((g) =>
-    kept
-      .filter((c) => c.group === g)
-      .sort((a, b) => b.score - a.score)
-      .map(({ question, answer, link, links }) => ({ question, answer, ...(link ? { link } : {}), ...(links ? { links } : {}) })),
-  );
+  return FAQ_GROUPS.flatMap((g) => {
+    const best = pool.filter((c) => c.group === g).sort((a, b) => b.score - a.score)[0];
+    if (!best) return [];
+    const { question, answer, link, links } = best;
+    return [{ question, answer, ...(link ? { link } : {}), ...(links ? { links } : {}) }];
+  });
 }
 
 const ROUND_WORDS: Record<string, string> = {
@@ -992,17 +997,14 @@ function faqPool(input: RecapBodyInput): FaqCandidate[] {
         : `The ${game[ha > hh ? "away" : "home"].short} led ${Math.max(ha, hh)}${DASH}${Math.min(ha, hh)} at halftime`;
     const second = (side: "away" | "home"): number => result[side] - half(side) - (game[side].ot ?? 0);
     const ot = game.away.ot !== null || game.home.ot !== null;
-    add({
-      group: "result",
-      score: 95,
-      question: `What was the final score of ${pair}?`,
-      answer:
-        (w && l
-          ? `The final score was ${game[w].short} ${result[w]}, ${game[l].short} ${result[l]}${ot ? " in overtime" : ""}. `
-          : `The final score was ${game.away.short} ${result.away}, ${game.home.short} ${result.home}${ot ? " after overtime" : ""}. `) +
-        `${halfText}, and the second half went ${game.away.short} ${second("away")}, ${game.home.short} ${second("home")}` +
-        `${ot ? ` before overtime` : ""}.`,
-    });
+    // The final score's own question folded into "Who won" (WEB-041): the
+    // score is the header's; what this adds is how the halves split.
+    const whoWon = pool.find((c) => c.group === "result");
+    if (whoWon) {
+      whoWon.answer +=
+        ` ${halfText}, and the second half went ${game.away.short} ${second("away")}, ${game.home.short} ${second("home")}` +
+        `${ot ? ` before overtime` : ""}.`;
+    }
   }
 
   if (facts.story && w && l) {
@@ -1028,9 +1030,11 @@ function faqPool(input: RecapBodyInput): FaqCandidate[] {
     const wp = facts.winningPlay;
     const mine = w === "home" ? wp.home : wp.away;
     const theirs = w === "home" ? wp.away : wp.home;
+    // A fallback for the "how" topic, which already names this play when it
+    // prints (WEB-041).
     add({
-      group: "result",
-      score: 78,
+      group: "flow",
+      score: 70,
       question: `What was the game-winning score in ${pair}?`,
       answer:
         `${wp.text} with ${wp.clock} left in the ${ordinalQuarter(wp.quarter)} gave the ${game[w].short} a ` +
@@ -1186,7 +1190,7 @@ function faqPool(input: RecapBodyInput): FaqCandidate[] {
       answer:
         `The ${game[better].short} won the turnover battle ${to[worse]}${DASH}${to[better]}: the ${game[worse].short} gave the ball away ` +
         `${to[worse]} time${to[worse] === 1 ? "" : "s"} and the ${game[better].short} ${to[better] === 0 ? "not at all" : `${to[better]} time${to[better] === 1 ? "" : "s"}`}.` +
-        (w === better ? ` The ${game[better].short} won the game.` : ` The ${game[worse].short} won the game anyway.`),
+        (!w ? ` The game still ended in a tie.` : w === better ? ` The ${game[better].short} won the game.` : ` The ${game[worse].short} won the game anyway.`),
     });
   }
 
@@ -1287,41 +1291,26 @@ function faqPool(input: RecapBodyInput): FaqCandidate[] {
         : cover > 0
           ? `the ${game[fav!].short} covered by ${trimNum(cover)}`
           : `the ${game[fav === "home" ? "away" : "home"].short} covered as ${trimNum(odds.line)}-point underdogs`;
-    add({
-      group: "betting",
-      score: 84,
-      question: `What was the closing spread for ${pair}?`,
-      // The line and what it implied; who covered is its own question.
-      answer:
-        `The consensus closing spread at kickoff was ${lineText}` +
-        `${pickem ? "" : `, making the ${game[fav!].name} ${trimNum(odds.line)}-point favorites`}, ` +
-        `with a closing total of ${trimNum(odds.total)}. ` +
-        (pickem
-          ? `That implied about ${(odds.total / 2).toFixed(1)} points for each side.`
-          : `That implied about ${((odds.total + odds.line) / 2).toFixed(1)} points for the ${game[fav!].short} and ` +
-            `${((odds.total - odds.line) / 2).toFixed(1)} for the ${game[fav === "home" ? "away" : "home"].short}.`),
-    });
+    // One betting question (WEB-041): the closing spread, the cover and the
+    // total were three, all restating the Betting tab's first card. The
+    // cover answer names the closing line, and the total rides along.
+    const off = points - odds.total;
+    const totalText =
+      off === 0
+        ? ` The teams combined for ${points} points, exactly the closing total of ${trimNum(odds.total)}, a push.`
+        : ` The teams combined for ${points} points, ${off > 0 ? "over" : "under"} the closing total of ${trimNum(odds.total)}.`;
     add({
       group: "betting",
       score: 72,
       question: pickem || cover !== 0 ? `Who covered the spread in ${pair}?` : `Was ${pair} a push against the spread?`,
       answer:
-        pickem || cover !== 0
+        (pickem || cover !== 0
           ? `${coverText.charAt(0).toUpperCase()}${coverText.slice(1)} against the closing line of ${lineText}. ` +
-            `The final margin was ${Math.abs(result.home - result.away)} point${Math.abs(result.home - result.away) === 1 ? "" : "s"}.`
+            (result.home === result.away
+              ? `The game ended in a ${result.home}${DASH}${result.away} tie.`
+              : `The final margin was ${Math.abs(result.home - result.away)} point${Math.abs(result.home - result.away) === 1 ? "" : "s"}.`)
           : `Yes. The ${game[fav!].short} closed as ${trimNum(odds.line)}-point favorites and won by exactly ${trimNum(odds.line)}, ` +
-            `so the spread was a push: neither side covered, and spread bets were refunded.`,
-    });
-    const off = points - odds.total;
-    add({
-      group: "betting",
-      score: 83,
-      question: `Did ${pair} go over or under the total?`,
-      answer:
-        off === 0
-          ? `Neither: ${points} points landed exactly on the closing total of ${trimNum(odds.total)}, a push.`
-          : `The game went ${off > 0 ? "over" : "under"}. The consensus closing total was ${trimNum(odds.total)}, and the teams ` +
-            `combined for ${points} points, ${trimNum(Math.abs(off))} ${off > 0 ? "over" : "under"} the number.`,
+            `so the spread was a push: neither side covered, and spread bets were refunded.`) + totalText,
     });
   }
 
@@ -1464,46 +1453,6 @@ export function renderRedraftStrip(input: RecapBodyInput): string {
   );
 }
 
-export function renderGameInfo(input: RecapBodyInput): string {
-  const { game } = input;
-  const result = scoreboardResult(game);
-  const when = scoreboardKickoff(game);
-  const rows: Array<[string, string]> = [["Round", game.roundLabel]];
-  if (game.kickoff) {
-    rows.push([
-      "Date",
-      `<time datetime="${escapeHtml(isoDate(game.kickoff))}">${escapeHtml(
-        eastern(game.kickoff, { month: "short", day: "numeric", year: "numeric" }),
-      )}</time>`,
-    ]);
-  }
-  if (when) rows.push(["Kickoff (ET)", escapeHtml(when.time.replace(/\s*ET$/, ""))]);
-  if (game.venue) {
-    rows.push([
-      "Venue",
-      escapeHtml([game.venue.name, game.venue.city, game.venue.state].filter(Boolean).join(", ")),
-    ]);
-  }
-  if (result) {
-    rows.push(["Winner", escapeHtml(result.winner ? game[result.winner].name : "Tie")]);
-    if (result.winner) {
-      const margin = Math.abs(result.away - result.home);
-      rows.push(["Margin", `${margin} point${margin === 1 ? "" : "s"}`]);
-    }
-  }
-  // Time of game and the coaches have no feed here, so those rows are left out.
-  if (input.info?.tv) rows.push(["TV", escapeHtml(input.info.tv)]);
-  if (input.info?.attendance) rows.push(["Attendance", input.info.attendance.toLocaleString("en-US")]);
-  return (
-    `<section class="sct-rb-card sct-rb-info" aria-labelledby="sct-rb-info">` +
-    railHead("info", "sct-rb-info", "Game info", input.premiumRail === true) +
-    `<dl class="sct-rb-dl">` +
-    rows.map(([k, v]) => `<dt>${escapeHtml(k)}</dt><dd>${k === "Round" ? escapeHtml(v) : v}</dd>`).join("") +
-    `</dl>` +
-    `</section>`
-  );
-}
-
 /* ----------------------------------------------------------------- layout */
 
 /**
@@ -1564,7 +1513,8 @@ export function renderRecapBody(input: RecapBodyInput, parts: RecapBodyParts = {
     `</div>` +
     `<aside class="sct-rb-aside" aria-label="Redraft Command and game info">` +
     renderRedraftCard(input) +
-    renderGameInfo(input) +
+    // No Game info card (WEB-041, 2026-11-24): its round, date, kickoff,
+    // venue, TV, attendance and winner are all in the score header above.
     (parts.asideAfter ?? "") +
     `</aside>` +
     `</div>`

@@ -234,24 +234,22 @@ describe("the Cardinals–Rams Wild Card (Rams win, series 8–3)", () => {
 
   test("FAQ: postgame questions only, the result first, answered in the first sentence", () => {
     const items = [...doc.querySelectorAll("details.sct-rb-qa")];
+    // One question per topic (WEB-041, 2026-11-24): the final score's own
+    // question is folded into "Who won", which carries the halves.
     assert.deepEqual(items.map((d) => text(d.querySelector("summary"))), [
       "Who won the 2021 Cardinals vs Rams Wild Card game?",
-      "What was the final score of Cardinals vs Rams?",
       "How did the Rams beat the Cardinals?",
       "What is the Cardinals vs Rams record since 2021?",
     ]);
     assert.equal(
       text(items[0].querySelector("p")),
       `The Los Angeles Rams beat the Arizona Cardinals 34${DASH}11 in the Wild Card round of the 2021 playoffs. ` +
-        "The game was played at SoFi Stadium in Inglewood, CA, on January 17, 2022.",
-    );
-    assert.equal(
-      text(items[1].querySelector("p")),
-      `The final score was Rams 34, Cardinals 11. The Rams led 21${DASH}0 at halftime, and the second half went Cardinals 11, Rams 13.`,
+        "The game was played at SoFi Stadium in Inglewood, CA, on January 17, 2022. " +
+        `The Rams led 21${DASH}0 at halftime, and the second half went Cardinals 11, Rams 13.`,
     );
   });
 
-  test("FAQ facts turn questions on: a push, a big fantasy day, Super Bowl history, and never more than 15", () => {
+  test("FAQ facts turn questions on: a push, a big fantasy day, history; one per topic, never more than 5", () => {
     const player = (name, team, ppr, extra = {}) => ({
       name, team, pos: "WR", line: "8 catches for 122 yards and a touchdown", logUrl: `/nfl/players/x/game-log/?log=2021`,
       ppr, half: ppr - 4, std: ppr - 8, finish: "WR6", targetShare: 0.46, carryShare: null, ...extra,
@@ -278,14 +276,26 @@ describe("the Cardinals–Rams Wild Card (Rams win, series 8–3)", () => {
     };
     const items = body.recapFaq(rich);
     const qs = items.map((q) => q.question);
-    assert.ok(items.length <= 15);
+    // WEB-041 (2026-11-24): about five distinct questions, one per topic -
+    // result, fantasy, how it was won, history, betting - the strongest the
+    // game's data supports in each.
+    assert.ok(items.length <= 5);
     assert.equal(new Set(qs).size, qs.length, "no question twice");
     assert.ok(!qs.some((q) => /\bwill\b|predict|pick|should I bet|who is better/i.test(q)), "no pregame intent");
-    assert.ok(qs.includes("How many fantasy points did Cooper Kupp score against the Cardinals?"));
-    assert.ok(qs.includes("Have the Cardinals and Rams played in the Super Bowl?"));
-    assert.ok(qs.includes("Was Cardinals vs Rams a push against the spread?"));
-    assert.match(items.find((q) => /over or under/.test(q.question)).answer, /^Neither: 45 points landed exactly on the closing total of 45, a push\.$/);
-    assert.match(items.find((q) => /closing spread/.test(q.question)).answer, /^The consensus closing spread at kickoff was Rams −23/);
+    assert.deepEqual(qs, [
+      "Who won the 2021 Cardinals vs Rams Wild Card game?",
+      "Who scored the most fantasy points in Cardinals vs Rams?",
+      "How did the Rams beat the Cardinals?",
+      "What is the all-time Cardinals vs Rams record?",
+      "Was Cardinals vs Rams a push against the spread?",
+    ]);
+    assert.ok(!qs.some((q) => /final score|What happened|passing, rushing and receiving|How many fantasy points|closing spread|over or under/.test(q)), "no restated question");
+    // The spread and the total are one answer; both pushes are called pushes.
+    assert.equal(
+      items.at(-1).answer,
+      "Yes. The Rams closed as 23-point favorites and won by exactly 23, so the spread was a push: neither side covered, " +
+        "and spread bets were refunded. The teams combined for 45 points, exactly the closing total of 45, a push.",
+    );
     // Links go to other pages (a game log, a schedule), never to this page's own tabs.
     const hrefs = items.flatMap((q) => [q.link, ...(q.links ?? [])].filter(Boolean).map((l) => l.href));
     assert.ok(hrefs.includes("/nfl/players/x/game-log/?log=2021"));
@@ -313,15 +323,10 @@ describe("the Cardinals–Rams Wild Card (Rams win, series 8–3)", () => {
     assert.equal(text(doc.querySelector(".sct-rb-redraft h3")), "Got a Cardinal or Ram on your team?");
     assert.match(text(doc.querySelector(".sct-rb-redraft-text")), /before Week 6\.$/);
     assert.equal(doc.querySelector(".sct-rb-button").getAttribute("data-cta"), "recap-sidebar");
-    const dl = [...doc.querySelectorAll(".sct-rb-dl dt")].map((dt) => [text(dt), text(dt.nextElementSibling)]);
-    assert.deepEqual(dl, [
-      ["Round", "NFC Wild Card"],
-      ["Date", "Jan 17, 2022"],
-      ["Kickoff (ET)", "8:15 PM"],
-      ["Venue", "SoFi Stadium, Inglewood, CA"],
-      ["Winner", "Los Angeles Rams"],
-      ["Margin", "23 points"],
-    ]);
+    // No Game info card since WEB-041 (2026-11-24): round, date, kickoff,
+    // venue, TV, attendance and the winner are all in the score header.
+    assert.equal(doc.querySelector(".sct-rb-info"), null);
+    assert.equal(doc.querySelector(".sct-rb-dl"), null);
   });
 
   test("related pages: a labeled nav with four descriptive pills", () => {
@@ -386,7 +391,7 @@ describe("a game the away team won", () => {
       "Arizona won the turnover and time of possession battles.",
     );
     assert.deepEqual([...advantages(input).querySelectorAll(".sct-rb-take-value")].map(text), ["+2", "+64", "+10:20"]);
-    assert.equal(text(doc.querySelector(".sct-rb-dl dd:nth-of-type(5)")), "Arizona Cardinals");
+    assert.match(body.recapFaq(input)[0].answer, /^The Arizona Cardinals beat the Los Angeles Rams/);
   });
 
   test("a figure the winner lost on is swapped, never shown negative", () => {
@@ -423,10 +428,14 @@ describe("a tie", () => {
     assert.equal(text(doc.querySelector(".sct-rb-meetings .is-current .sct-rb-chip.is-tie")), `Tie 20${DASH}20`);
     assert.equal(doc.querySelector(".sct-rb-h2h-run"), null, "two games: no run to speak of");
     assert.equal(text(doc.querySelector(".sct-rb-h2h-figure")), `1${DASH}0${DASH}1`);
-    assert.match(body.recapFaq(input)[0].answer, /^The Arizona Cardinals and Los Angeles Rams tied 20–20/);
-    const dl = [...doc.querySelectorAll(".sct-rb-dl dt")].map(text);
-    assert.ok(!dl.includes("Margin"));
-    assert.equal(text([...doc.querySelectorAll(".sct-rb-dl dd")][4]), "Tie");
+    const faq = body.recapFaq(input);
+    assert.match(faq[0].answer, /^The Arizona Cardinals and Los Angeles Rams tied 20–20/);
+    assert.match(faq[0].answer, /The teams were tied 10–10 at halftime/);
+    assert.ok(!faq.some((q) => /beat|won the game|game-winning|covered by/.test(q.question + q.answer.replace(/^.*?\. /, ""))), "no winner in a tie");
+    // A turnover edge in a tie says the game was tied, not that someone won it.
+    const turned = body.recapFaq({ ...input, faqFacts: { turnovers: { away: 0, home: 2 } } });
+    assert.match(turned.find((q) => /turnover battle/.test(q.question)).answer, /The game still ended in a tie\.$/);
+    assert.equal(doc.querySelector(".sct-rb-dl"), null, "no Game info card (WEB-041)");
   });
 
   test("an even series says so", () => {
@@ -450,9 +459,9 @@ describe("no meetings left on the schedule", () => {
 
   test("no when-next or start/sit question and no upcoming list", () => {
     const questions = body.recapFaq(input).map((q) => q.question);
-    assert.equal(questions.length, 4);
+    assert.equal(questions.length, 3);
     assert.ok(!questions.some((q) => /play next|^Should I start/.test(q)));
-    assert.equal(doc.querySelectorAll("details.sct-rb-qa").length, 4);
+    assert.equal(doc.querySelectorAll("details.sct-rb-qa").length, 3);
     assert.equal(doc.querySelectorAll("ul.sct-rb-meetings").length, 1);
   });
 

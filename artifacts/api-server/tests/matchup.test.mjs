@@ -2338,11 +2338,13 @@ describe("recap Overview tab (new design)", () => {
       "Myers makes the go-ahead field goal.",
       "Jobe's late interception seals the victory.",
     ]);
-    // Game leaders moved to the sidebar, directly under Game info (mak, 2026-11-08).
+    // Game leaders moved to the sidebar (mak, 2026-11-08), directly under the
+    // Redraft Command card since the Game info card went (WEB-041, 2026-11-24:
+    // every row of it repeated the score header).
     assert.equal(ov.querySelector(".sct-ov-leader"), null, "no leaders card in the Overview column");
-    const info = doc.querySelector(".sct-rb-aside .sct-rb-info:not(.sct-rb-leaders)");
-    const side = info.nextElementSibling;
-    assert.ok(side.classList.contains("sct-rb-leaders"), "leaders follow Game info");
+    assert.equal(doc.querySelector(".sct-rb-aside .sct-rb-info:not(.sct-rb-leaders):not(.sct-ba)"), null, "no Game info card");
+    const side = doc.querySelector(".sct-rb-aside .sct-rb-redraft").nextElementSibling;
+    assert.ok(side.classList.contains("sct-rb-leaders"), "leaders follow Redraft Command");
     assert.deepEqual([...side.querySelectorAll("dt")].map((n) => n.textContent), ["Passing", "Rushing", "Receiving", "Defense"]);
     assert.match(side.textContent, /Game-sealing INT/);
     assert.ok(ov.querySelector(".is-highlights .sct-hl"), "the highlights");
@@ -2586,13 +2588,20 @@ describe("recap Fantasy tab (fantasy-tab.ts)", () => {
       assert.ok(verdictsH2.parentElement.classList.contains("sct-mu-ps-head"));
       assert.equal(verdictsH2.closest("section")?.classList.contains("sct-fp-takeaways"), true);
     }
-    assert.equal(tab.querySelectorAll(".sct-fz-card").length, 3);
+    // The three highlight cards are tags in the Fantasy Box Score's rows
+    // (WEB-041, 2026-11-24), one per player, following the scoring switch.
+    assert.equal(tab.querySelectorAll(".sct-fz-card").length, 0, "no highlight cards above the table");
     assert.equal(tab.querySelectorAll(".sct-fz-cta, .sct-fp-cta").length, 0, "no Redraft Command banners (2026-11-11)");
     assert.equal(tab.querySelector("#stock"), null, "stock merged into the takeaways (2026-11-11)");
-    assert.deepEqual(
-      [...tab.querySelectorAll(".sct-fz-card-tag")].map((t) => t.textContent),
-      ["Top Scorer", "Biggest Overperformer", "Biggest Underperformer"],
-    );
+    const tagged = [...tab.querySelectorAll(".is-box tbody .sct-fz-tag")].filter((t) => t.textContent);
+    // In table order (by points), so compare as a set.
+    assert.deepEqual(tagged.map((t) => t.textContent).sort(), ["Overperformer", "Top scorer", "Underperformer"]);
+    assert.deepEqual(tagged.map((t) => t.dataset.tier).sort(), ["over", "top", "under"]);
+    assert.equal(tagged[0].closest("tr"), tab.querySelector(".is-box tbody tr"), "the top scorer is the first row");
+    for (const t of tab.querySelectorAll(".sct-fz-tag")) {
+      assert.ok(t.hasAttribute("data-ppr") && t.hasAttribute("data-half") && t.hasAttribute("data-std"), "tag text per scoring");
+      assert.ok(t.hasAttribute("data-tier-ppr") && t.hasAttribute("data-tier-std"), "tag kind per scoring");
+    }
     // fantasy-tab.ts's own sections carry no start/sit links; the moved
     // verdicts and decisions (2026-11-09, mak's request) do.
     assert.equal(tab.querySelectorAll(".sct-fz a[href*='who-should-i-start']").length, 0, "no start/sit links in the five sections");
