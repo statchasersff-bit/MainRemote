@@ -703,9 +703,11 @@ add_action( 'template_redirect', 'statchasers_matchup_cache_headers', 20 );
  * 2. Clears WP Rocket's files for exactly those URLs (rocket_clean_files),
  *    desktop and mobile.
  * 3. Fires `statchasers_purge_edge_urls` with the absolute URLs, the hook for
- *    the edge purge. Rocket.net's CDN Cache Plugin purges by URL through its
- *    own API; which function of it to call has to be confirmed on the host
- *    (docs/WEB-040-LIVE-MATCHUP-2026-11-24b.md) before anything is hooked here.
+ *    the edge purge. Rocket.net's CDN Cache Plugin (mu-plugin
+ *    cdn-cache-management) purges a URL list through
+ *    CDN_Clear_Cache_Api::cache_api_call( $urls, 'purge' ); confirmed on the
+ *    host 2026-11-24 (CDN_HTML_PURGE false, so the list is honored, not widened
+ *    to every HTML page). statchasers_matchup_purge_edge() is hooked below.
  */
 function statchasers_matchup_register_purge(): void {
 	register_rest_route(
@@ -784,6 +786,23 @@ function statchasers_matchup_purge_games( $request ) {
 
 	return new WP_REST_Response( array( 'ok' => true, 'purged' => count( $urls ) ), 200 );
 }
+
+/**
+ * The edge half of the game purge: Rocket.net's own per-URL purge, 30 URLs a
+ * call (the API's file limit). Absent outside Rocket.net (local sites, tests),
+ * where it does nothing.
+ *
+ * @param array<int,string> $urls Absolute URLs.
+ */
+function statchasers_matchup_purge_edge( $urls ): void {
+	if ( ! is_array( $urls ) || empty( $urls ) || ! class_exists( 'CDN_Clear_Cache_Api' ) ) {
+		return;
+	}
+	foreach ( array_chunk( array_values( $urls ), 30 ) as $chunk ) {
+		CDN_Clear_Cache_Api::cache_api_call( $chunk, 'purge' );
+	}
+}
+add_action( 'statchasers_purge_edge_urls', 'statchasers_matchup_purge_edge' );
 
 /** The shortcode: prints the pair's fragment. Team assets, same bundle. */
 function statchasers_matchup_shortcode(): string {
