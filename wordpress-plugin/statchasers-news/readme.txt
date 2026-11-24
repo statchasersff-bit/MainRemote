@@ -2,7 +2,7 @@
 Contributors: statchasers
 Requires at least: 6.3
 Requires PHP: 7.4
-Stable tag: 1.10.66
+Stable tag: 1.10.67
 License: GPL-2.0-or-later
 
 Mounts the StatChasers NFL news tool, the 32 team hubs, the player pages, the Fantasy Points Allowed table, the rest-of-season rankings, the NFL schedule, the advanced player stats, the RB handcuff rankings, the fantasy football strength of schedule, the dynasty rookie hit rates and the redraft draft strategy analysis into WordPress pages.
@@ -19,6 +19,9 @@ answers that question directly, with a Last-Modified header that says when the
 upload landed. Keep "Stable tag" in step with the Version header.
 
 == Changelog ==
+
+= 1.10.67 =
+* NFL Player Stats audit (2026-11-24), on top of 1.10.66 (team audit, live 2026-11-24). WEB-003: a WP-cron check every five minutes reads the API's stats version (GET /embed/player-stats/version, needs the matching API deploy) and, when it moves, refreshes the four pages' fragment copies, clears WP Rocket for them, purges their paths (and /qb/ and old ?season= variants) at the Rocket.net edge through its CDN Cache Plugin, then warms them as desktop and phone; a failed or inconsistent fetch changes nothing. The pages ask for a six-hour edge lifetime (needs the Rocket.net rule in docs/WEB-003-STATS-FRESHNESS.md to take effect) and send X-SC-Stats-Cache. WEB-002: an expired fragment is fetched once under concurrency, others serve the backup. WEB-020: ?season= on a stats page 301s to the position's canonical with #season= (the season menu is buttons now, in the API). WEB-021: og:image and the Organization/WebSite/WebPage graph on the four stats routes via statchasers-page-identity.php. Upload, run `wp eval 'statchasers_news_run_upgrade_now();'`, then `wp eval 'print_r( statchasers_player_stats_publish_check( true ) );'`.
 
 = 1.10.66 =
 * Team audit of 2026-11-24, on top of 1.10.65 (live 19:45 UTC): team routes join the shared page-identity mechanism (WEB-021) as a third family. The directory, the 32 hubs and every team tab get Rank Math's Organization, WebSite and WebPage graph (page node at {canonical}#webpage, the hub FAQ folded into it), and the brand card as a fallback og:image, twitter:image and primaryImageOfPage, keeping a page's own featured image. The hub breadcrumb item is the team name. Generated team tab and hub descriptions are 160 characters or fewer. The hub FAQ, Coaching labels, Fantasy Finishes names and the Schedule tab's previous-season results ship with the API. Upload, then purge through `pnpm purge-and-warm`.
