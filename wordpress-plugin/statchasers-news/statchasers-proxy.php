@@ -162,7 +162,7 @@ function statchasers_proxy( WP_REST_Request $request ) {
 	$url = $origin . '/' . $path . ( $query ? '?' . http_build_query( $query, '', '&', PHP_QUERY_RFC3986 ) : '' );
 
 	$cache_key = 'sc_proxy_' . md5( $url );
-	$cached    = get_transient( $cache_key );
+	$cached    = statchasers_cache_get( $cache_key );
 	if ( is_array( $cached ) && isset( $cached['type'], $cached['body'] ) ) {
 		statchasers_proxy_send( 200, (string) $cached['type'], (string) $cached['body'], true );
 	}

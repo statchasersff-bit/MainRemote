@@ -79,7 +79,7 @@ function statchasers_rds_fetch(): ?array {
 	$cache_key  = 'sc_rds_ssr_' . $key;
 	$backup_key = 'sc_rds_ssr_bak_' . $key;
 
-	$cached = get_transient( $cache_key );
+	$cached = statchasers_cache_get( $cache_key );
 	if ( is_array( $cached ) && isset( $cached['html'] ) ) {
 		return '' === $cached['html'] ? null : $cached;
 	}
@@ -99,7 +99,7 @@ function statchasers_rds_fetch(): ?array {
 	// error. Cached as a failure for a minute so a deployment mid-setup costs
 	// one request a minute.
 	if ( 200 !== $code || '' === trim( $body ) ) {
-		$backup = get_transient( $backup_key );
+		$backup = statchasers_cache_get( $backup_key );
 		if ( is_array( $backup ) && isset( $backup['html'] ) ) {
 			// Held under the fresh key for a minute, so the next views do not
 			// each retry the origin and wait out the timeout.
