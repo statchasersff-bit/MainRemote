@@ -559,6 +559,29 @@ describe("the premium dashboard (mak's brief, 2026-11-05; the tab's own design s
     assert.doesNotMatch(prm.textContent, /—/);
   });
 
+  // WEB-039 verify pass (2026-11-24): "No injury designation for Week 12 at
+  // the Rams" printed while the Week 12 report was not on file (Bo Melton,
+  // GB, after the Week 11 bye). Only a final report says there is none.
+  test("no designation: the card says 'yet' until the week's report is final", () => {
+    const cs = (reportState) => ({
+      playerId: "3257", season: 2026, week: 4, designation: null, designated: false,
+      label: reportState === "final" ? "No designation" : "No designation yet", reportState,
+      rosterStatus: null, practice: null, injury: null, kind: "active", source: "none", prior: null,
+      missedWeek: null, reportFetchedAt: null, rosterFetchedAt: Date.parse("2026-09-29T08:00:00Z"),
+      freshness: "current",
+      message: reportState === "final" ? "No game designation for Week 4." : "No Week 4 game designation yet; the Week 4 injury report is not on file.",
+    });
+    const card = (reportState) => text(render({ currentStatus: cs(reportState) }).doc.querySelector(".scp-inp"));
+    for (const state of ["missing", "pending"]) {
+      const t = card(state);
+      assert.match(t, /No game designation yet for Week 4 at the Giants\./, state);
+      assert.doesNotMatch(t, /No injury designation for Week 4/, state);
+    }
+    const fin = card("final");
+    assert.match(fin, /No injury designation for Week 4 at the Giants\./);
+    assert.doesNotMatch(fin, /designation yet/);
+  });
+
   test("no injury record: nothing renders, as the tab itself does not", () => {
     assert.equal(inp.renderInjuryPremium(state({ injury: null }), { now: NOW }), "");
     assert.equal(tab.renderInjuryTab(state({ injury: null }), { now: NOW }), "");

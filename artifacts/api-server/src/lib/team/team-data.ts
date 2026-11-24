@@ -49,6 +49,7 @@ import {
 } from "./depth-charts";
 import { currentDepthCharts, currentRoster, injuryFreshness, type InjuryFreshness } from "./current-injuries";
 import { recentTeamNews } from "./news-window";
+import { practiceStamp } from "../player/injury-tab-data";
 
 /** Stories shown before "View more" reveals the rest. */
 export const TEAM_NEWS_VISIBLE = 10;
@@ -312,6 +313,11 @@ export function dataVersion(data: TeamPageData, contentVersion: string): string 
     data.nextOpponentDefense?.rankLabel ?? "",
     data.state.season,
     data.state.week,
+    // The official practice report (WEB-039): an evening read that clears a
+    // Questionable changes this page's injury list, and every matchup page
+    // built on it (matchupVersion includes this), without touching the
+    // roster snapshot or any other input here.
+    practiceStamp(data.state.season),
     // The Usage tab reads a file the daily chain rebuilds in place; the
     // Coaching tab reads one that hand edits and new club entries change.
     usageVersion(data.state.season),

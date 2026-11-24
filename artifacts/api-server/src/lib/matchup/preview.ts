@@ -33,7 +33,7 @@ import type { MatchupData, Meeting } from "./matchup-data";
 import { impliedTotals, type Forecast, type GameLine, type WeekLines } from "./game-lines";
 import { battlesFor, pickBattles, defendersVersion, gameConditions, teamForm, type Battle, type BattleSide, type Conditions, type TeamForm } from "./preview-extras";
 import { starters } from "./preview-starters";
-import { gameRoster, isNextGame, notExpected, PENDING } from "./availability";
+import { gameRoster, isNextGame, notExpected, PENDING, type WeekReport } from "./availability";
 import { depthChartsVersion, nameKey } from "../team/depth-charts";
 import { teamTrends, type TeamTrends } from "./preview-betting";
 import type { ScheduleGame } from "../schedule/schedule-data";
@@ -199,6 +199,13 @@ export interface Preview {
   fpaNote: string | null;
   fpaHeadlines: { soft: FpaHeadline; tough: FpaHeadline } | null;
   injuries: Record<SideKey, InjuryRow[]>;
+  /**
+   * Each club's official report for THIS game's week (WEB-039, 2026-11-24
+   * verify pass): missing, pending (no game statuses yet) or final, with the
+   * time it was read. The Injury Watch prints it beside its count, so "0
+   * designated" is never read as a clean report that does not exist yet.
+   */
+  injuryReports: Record<SideKey, WeekReport>;
   h2h: H2hStrip | null;
   injuryImpact: InjuryImpact | null;
   usageThrough: number | null;
@@ -714,6 +721,7 @@ export function buildPreview(data: MatchupData, inputs: PreviewInputs): Preview 
     away: injuryRows(away, owned, inputs.now, meeting),
     home: injuryRows(home, owned, inputs.now, meeting),
   };
+  const injuryReports = { away: sideReport(away), home: sideReport(home) };
 
   return {
     away,
@@ -733,6 +741,7 @@ export function buildPreview(data: MatchupData, inputs: PreviewInputs): Preview 
     fpaNote: fpaNote(away, home),
     fpaHeadlines: fpaHeadlines(away, home, facts),
     injuries,
+    injuryReports,
     h2h: buildH2h(data, meeting, line),
     injuryImpact: injuryImpact(away, home, injuries),
     usageThrough: usage?.throughWeek ?? null,
@@ -1161,6 +1170,15 @@ function fpaHeadlines(
 
 /* ---------------------------------------------------------------- injuries */
 
+/** The club's report for this game, as its roster's availability carries it (one per club). */
+function sideReport(side: PreviewSide): WeekReport {
+  for (const r of side.roster) {
+    const a = (r as RosterPlayer & { availability?: { report?: WeekReport } }).availability;
+    if (a?.report) return a.report;
+  }
+  return { state: "missing", fetchedAt: null };
+}
+
 function injuryRows(
   side: PreviewSide,
   owned: (id: string) => number,
@@ -1279,9 +1297,15 @@ function injuryRows(
       listing: "clean",
       name: "Clean sheet",
       pos: "",
+      // Only a final report says nobody is designated (WEB-039): before the
+      // week's game statuses are out, a missing designation is not news that
+      // every role is available.
       fallout:
-        `${rows.length ? "Apart from the depth and long-term absences above, no" : "No"} ${side.team.nickname} player rostered in 5%+ of leagues ` +
-        `carries a designation this week, so every role in the Usage Report is available.`,
+        sideReport(side).state === "final"
+          ? `${rows.length ? "Apart from the depth and long-term absences above, no" : "No"} ${side.team.nickname} player rostered in 5%+ of leagues ` +
+            `carries a designation this week, so every role in the Usage Report is available.`
+          : `${rows.length ? "Apart from the listings above, no" : "No"} ${side.team.nickname} player rostered in 5%+ of leagues ` +
+            `has a ${meeting.weekLabel} game designation yet; the club's game statuses are not out.`,
       rostered: 0,
       impact: "none",
       beneficiary: null,
