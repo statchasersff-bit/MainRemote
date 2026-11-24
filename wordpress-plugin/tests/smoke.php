@@ -663,6 +663,14 @@ unset( $GLOBALS['http_code'], $GLOBALS['query']['sc_matchup_game'] );
 $GLOBALS['http_headers'] = array();
 is( statchasers_matchup_unindexed(), false, 'the pair page itself: indexed' );
 is( apply_filters( 'rank_math/frontend/canonical', 'x' ), statchasers_matchup_url( 'new-england-patriots-vs-philadelphia-eagles' ), 'the pair page: self-canonical, unchanged' );
+// WEB-001: a segment the validator refuses is a 404 too, and must not claim
+// the pair's canonical or index (it printed both before 1.10.61).
+foreach ( array( '2026-week-30', '2026-week-02' ) as $bad ) {
+	$GLOBALS['query']['sc_matchup_game'] = $bad;
+	is( statchasers_matchup_unindexed(), true, "a refused segment ($bad): unindexed" );
+	is( apply_filters( 'rank_math/frontend/canonical', 'x' ), false, "a refused segment ($bad): no canonical" );
+}
+unset( $GLOBALS['query']['sc_matchup_game'] );
 $GLOBALS['http_body'] = '';
 
 echo "\nplayer meta mirrors the shell script\n";

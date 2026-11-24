@@ -1244,7 +1244,11 @@ function statchasers_matchup_unindexed(): bool {
 	}
 	$game = statchasers_matchup_game();
 	if ( '' === $game ) {
-		return false;
+		// A segment the rewrite let through but the validator refused (a week
+		// past 25, a leading zero) is the 404 template_redirect set: unindexed
+		// too, so it prints neither index nor the pair's canonical (WEB-001;
+		// it printed both before 1.10.61). The pair page itself has no segment.
+		return '' !== trim( (string) get_query_var( 'sc_matchup_game' ) );
 	}
 	$data = statchasers_matchup_fetch( $pair['slug'], $game );
 	if ( ! is_array( $data ) ) {
