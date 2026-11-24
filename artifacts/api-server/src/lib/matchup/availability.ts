@@ -18,8 +18,12 @@
  *      practice store, data/player/practice_reports/<season>.json, refreshed
  *      three times a day on production), it decides: the player's game status
  *      once it is published (Friday for a Sunday game); before that, a player
- *      who missed the club's last game and is on the report is "pending"; a
- *      player not on the report has no designation.
+ *      who missed the club's last game and is on the report is "pending"; any
+ *      other player has no designation ("No designation yet" until the
+ *      report's game statuses are out). Sleeper's field is never consulted
+ *      for a game status once the report has the club (WEB-039, 2026-11-24:
+ *      Luther Burden III was on the Week 11 report with a full practice and
+ *      no status while Sleeper still read Questionable).
  *   3. With no report for this week yet, a Sleeper game designation (Out,
  *      Doubtful, Questionable) is NOT believed as current: Sleeper's field is
  *      not tied to a week, and a designation is filed before the game it is
@@ -28,7 +32,14 @@
  *      audit WEB-039, 2026-11-18). A player who missed the last game with one
  *      is "pending"; one who played has no current designation, and the
  *      note carries the old one as history. (Until 2026-11-19 a player who
- *      played kept the designation.)
+ *      played kept the designation.) A Sleeper status filed SINCE the last
+ *      game (Team Pages Phase 4) is reported, not official: an Out or
+ *      Doubtful makes him "pending", a Questionable is a note. It is never a
+ *      game designation (WEB-039: Burden's Questionable, filed after Week 9,
+ *      read as his Week 11 status across the Week 10 bye).
+ *
+ * `designated` is true only for an official game status for THIS week: the
+ * one thing an Injury Watch counts and conditional advice may act on.
  *
  * Nothing is inferred from news or headlines.
  */
@@ -59,7 +70,27 @@ export interface Availability {
   practice: string | null;
   /** One plain sentence for the page; null when there is nothing to say. */
   note: string | null;
+  /** True only for an official Out / Doubtful / Questionable on THIS week's report. */
+  designated: boolean;
+  /** This week's official report for the club, as the page knows it. */
+  report: WeekReport;
+  /** What the status slot says: the designation, the reserve list, or "No designation (yet)". */
+  label: string;
 }
+
+/**
+ * The club's official report for the game's week: "missing" (no rows on
+ * file yet - not "healthy"), "pending" (practice rows, game statuses not
+ * out yet) or "final" (game statuses published). With its fetch time.
+ */
+export interface WeekReport {
+  state: "missing" | "pending" | "final";
+  fetchedAt: number | null;
+}
+
+/** The slot's words for a player with no game designation. */
+export const NO_DESIGNATION_YET = "No designation yet";
+export const NO_DESIGNATION = "No designation";
 
 const RESERVE = new Set(["ir", "pup", "nfi", "sus", "suspended", "dnr", "cov", "na", "ir-r"]);
 const GAME = new Set(["out", "doubtful", "questionable"]);
@@ -73,7 +104,7 @@ interface PracticeRow {
   days: Record<string, string>;
 }
 export interface PracticeDoc {
-  weeks: Record<string, { teams: Record<string, Record<string, PracticeRow>> }>;
+  weeks: Record<string, { fetchedAt?: string; teams: Record<string, Record<string, PracticeRow>> }>;
 }
 
 function practiceDoc(season: number): PracticeDoc | null {
@@ -101,6 +132,30 @@ function reportFor(season: number, week: number, team: NflTeam, doc?: PracticeDo
   const club = wk.teams?.[team.nickname];
   if (!club || !Object.keys(club).length) return null;
   return new Map(Object.values(club).map((r) => [availabilityKey(r.name), r]));
+}
+
+/**
+ * Final once any of the club's rows carries a game status, or once a read
+ * landed inside the 30 hours before kickoff (a club can file a final report
+ * that gives nobody a status). Before that the statuses are still to come.
+ */
+const FINAL_WINDOW_MS = 30 * 60 * 60 * 1000;
+export function weekReport(
+  season: number,
+  week: number,
+  team: NflTeam,
+  doc?: PracticeDoc | null,
+  kickoffMs?: number | null,
+): WeekReport {
+  const d = doc === undefined ? practiceDoc(season) : doc;
+  const wk = d?.weeks?.[String(week)];
+  const at = wk?.fetchedAt ? Date.parse(wk.fetchedAt) : NaN;
+  const fetchedAt = Number.isFinite(at) ? at : null;
+  const rows = Object.values(wk?.teams?.[team.nickname] ?? {});
+  if (!rows.length) return { state: "missing", fetchedAt };
+  const anyStatus = rows.some((r) => !!r.gameStatus && GAME.has(r.gameStatus.toLowerCase()));
+  const late = kickoffMs != null && fetchedAt !== null && fetchedAt >= kickoffMs - FINAL_WINDOW_MS;
+  return { state: anyStatus || late ? "final" : "pending", fetchedAt };
 }
 
 /** The club's last game week before `week`, from every player's game log. Cached per season and log object. */
@@ -161,6 +216,10 @@ function kindOf(status: string): AvailabilityKind {
  * stale case (Sione Vaki: Questionable for Week 10, played) and expires.
  * With no previous report to compare against it cannot be dated and expires,
  * as before.
+ *
+ * Since WEB-039 (2026-11-24) "stands" means reported, not designated: an Out
+ * or Doubtful makes the player pending, a Questionable is a note, and only
+ * while this week's report does not have the club.
  */
 function designatedSinceLastGame(
   raw: string,
@@ -181,6 +240,8 @@ export interface AvailabilityOptions {
   logs?: Record<string, GameLogEntry[]>;
   /** The season's practice-report store; the stored file by default. For the tests. */
   practice?: PracticeDoc | null;
+  /** The game's kickoff, which dates the report's game statuses as final. */
+  kickoffMs?: number | null;
 }
 
 /**
@@ -200,9 +261,28 @@ export function gameAvailability(
   const nextGame = options.nextGame !== false;
   const out = new Map<string, Availability>();
   const report = reportFor(season, week, team, options.practice);
+  const wr: WeekReport = nextGame
+    ? weekReport(season, week, team, options.practice, options.kickoffMs)
+    : { state: "missing", fetchedAt: null };
   const weeks = teamWeeks(season, options.logs).get(team.code.toUpperCase()) ?? [];
   const last = [...weeks].filter((w) => w < week).pop() ?? null;
   const lastReport = last !== null ? reportFor(season, last, team, options.practice) : null;
+  // No game status: "No designation" once the report's statuses are out,
+  // "No designation yet" before then - and with no report on file at all,
+  // which is not a clean bill of health.
+  const none = wr.state === "final" ? NO_DESIGNATION : NO_DESIGNATION_YET;
+  const set = (id: string, a: Omit<Availability, "designated" | "report" | "label">): void => {
+    const designated = a.source === "nfl-report" && (a.kind === "out" || a.kind === "doubtful" || a.kind === "questionable");
+    const label =
+      a.kind === "reserve" || designated
+        ? a.status!
+        : a.kind === "pending"
+          ? NO_DESIGNATION_YET
+          : a.status && !GAME.has(a.status.toLowerCase())
+            ? a.status
+            : none;
+    out.set(id, { ...a, designated, report: wr, label });
+  };
 
   for (const r of roster) {
     const raw = (r.injuryStatus ?? "").trim();
@@ -212,23 +292,25 @@ export function gameAvailability(
     const base = { lastGame, priorStatus: prior, practice: null as string | null };
 
     if (RESERVE.has(lower)) {
-      out.set(r.id, { ...base, kind: "reserve", status: raw, source: "reserve", note: null });
+      set(r.id, { ...base, kind: "reserve", status: raw, source: "reserve", note: null });
       continue;
     }
 
     if (!nextGame) {
-      out.set(r.id, { ...base, kind: "active", status: null, source: "none", note: null });
+      set(r.id, { ...base, kind: "active", status: null, source: "none", note: null });
       continue;
     }
 
     if (report) {
+      // The club is on this week's official report: it alone decides. A
+      // Sleeper status is not consulted for a game designation here (WEB-039).
       const row = report.get(availabilityKey(r.name)) ?? null;
       const practice = row ? practiceLine(row) : null;
       if (row?.gameStatus && GAME.has(row.gameStatus.toLowerCase())) {
         const status = row.gameStatus.charAt(0).toUpperCase() + row.gameStatus.slice(1).toLowerCase();
-        out.set(r.id, { ...base, practice, kind: kindOf(status), status, source: "nfl-report", note: null });
+        set(r.id, { ...base, practice, kind: kindOf(status), status, source: "nfl-report", note: null });
       } else if (row && lastGame && !lastGame.played && (raw || prior)) {
-        out.set(r.id, {
+        set(r.id, {
           ...base,
           practice,
           kind: "pending",
@@ -236,20 +318,8 @@ export function gameAvailability(
           source: "nfl-report",
           note: `Missed Week ${lastGame.week}${row.injury ? ` (${row.injury.toLowerCase()})` : ""}; no Week ${week} game status yet${practice ? ` (practice: ${practice})` : ""}.`,
         });
-      } else if (designatedSinceLastGame(raw, prior, lastGame, lastReport)) {
-        // On (or missing from) this week's report with no game status yet,
-        // and designated since the last game: Sleeper's status stands.
-        const status = capStatus(raw);
-        out.set(r.id, {
-          ...base,
-          practice,
-          kind: kindOf(status),
-          status,
-          source: "sleeper",
-          note: `Listed ${status} after Week ${lastGame!.week}; no official Week ${week} game status yet${practice ? ` (practice: ${practice})` : ""}.`,
-        });
       } else {
-        out.set(r.id, { ...base, practice, kind: "active", status: null, source: row ? "nfl-report" : "none", note: null });
+        set(r.id, { ...base, practice, kind: "active", status: null, source: row ? "nfl-report" : "none", note: null });
       }
       continue;
     }
@@ -257,7 +327,7 @@ export function gameAvailability(
     if (GAME.has(lower)) {
       if (lastGame && !lastGame.played) {
         const was = prior && GAME.has(prior.toLowerCase()) ? prior : raw;
-        out.set(r.id, {
+        set(r.id, {
           ...base,
           kind: "pending",
           status: PENDING,
@@ -267,18 +337,20 @@ export function gameAvailability(
             `no Week ${week} designation yet.`,
         });
       } else if (designatedSinceLastGame(raw, prior, lastGame, lastReport)) {
+        // Reported since the last game, before any Week N report: real news,
+        // not an official game status. An Out or Doubtful keeps him out of
+        // the lineup reads as pending; a Questionable is only a note.
         const status = capStatus(raw);
-        out.set(r.id, {
-          ...base,
-          kind: kindOf(status),
-          status,
-          source: "sleeper",
-          note: `Listed ${status} after Week ${lastGame!.week}; no official Week ${week} injury report yet.`,
-        });
+        const note = `Reported ${status} after Week ${lastGame!.week}; not an official Week ${week} game status (no Week ${week} injury report yet).`;
+        if (status === "Questionable") {
+          set(r.id, { ...base, kind: "active", status: null, source: "sleeper", note });
+        } else {
+          set(r.id, { ...base, kind: "pending", status: PENDING, source: "sleeper", note });
+        }
       } else {
         // Expired: filed for a game he then played (or for no known game).
         const was = raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
-        out.set(r.id, {
+        set(r.id, {
           ...base,
           kind: "active",
           status: null,
@@ -291,7 +363,7 @@ export function gameAvailability(
       continue;
     }
 
-    out.set(r.id, { ...base, kind: "active", status: raw || null, source: raw ? "sleeper" : "none", note: null });
+    set(r.id, { ...base, kind: "active", status: raw || null, source: raw ? "sleeper" : "none", note: null });
   }
   return out;
 }

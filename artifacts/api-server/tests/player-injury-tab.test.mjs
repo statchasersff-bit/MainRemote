@@ -276,7 +276,8 @@ describe("rendered", () => {
       doc.querySelector(".scp-inp-now-text").textContent,
       "No injury designation for Week 4 at the Giants.",
     );
-    assert.equal(doc.querySelector(".scp-inp-now-word").textContent, "Active");
+    // Never "Active" (WEB-039, 2026-11-24): the slot says what the report says.
+    assert.equal(doc.querySelector(".scp-inp-now-word").textContent, "No designation");
     assert.ok(doc.querySelector(".scp-inp-now.is-good"));
     // "Status checked" is the snapshot time, not the render time.
     assert.equal(doc.querySelector(".scp-inp-checked time").getAttribute("datetime"), "2026-09-29T08:00:00.000Z");
@@ -453,7 +454,7 @@ describe("durability profile (Redraft Command's injury card, mak 2026-10-30)", (
     const hp = card.querySelector(".scp-inp-hp");
     assert.match(hp.getAttribute("aria-label"), /^Durability score \d+\.\d of 100, /);
     assert.match(hp.getAttribute("style"), /--hp:#/);
-    assert.equal(card.querySelector(".scp-inp-dur-status b").textContent, "Active");
+    assert.equal(card.querySelector(".scp-inp-dur-status b").textContent, "No designation");
     // The grid: a row per season, outlined missed weeks only where the record says.
     assert.ok(card.querySelectorAll(".scp-in-av-row").length >= 2);
     for (const b of card.querySelectorAll(".scp-in-ab.is-mark")) assert.ok(b.classList.contains("is-r"));

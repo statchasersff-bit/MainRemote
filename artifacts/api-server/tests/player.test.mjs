@@ -1731,7 +1731,8 @@ describe("the injury tab", () => {
         `${player.slug}: ${questions.length} questions - the ceiling is 15`,
       );
       // State-aware (2026-09-30): the injured-only questions only when he is.
-      const designated = Boolean(doc.querySelector("#injury .scp-inp-now:not(.is-good)"));
+      // is-susp is also "No designation yet" (WEB-039, 2026-11-24): neutral, not designated.
+      const designated = Boolean(doc.querySelector("#injury .scp-inp-now:not(.is-good):not(.is-susp)"));
       if (!designated) {
         assert.ok(!questions.some((q) => /^What injury does|^Why isn't/.test(q)), `${player.slug}: a healthy player asked about an injury`);
       }

@@ -868,6 +868,19 @@ describe("the upcoming page (premium design)", () => {
         assert.ok(d && !d.open && d.querySelector("summary .sct-mpp-inj-name"), `${p}: collapsed row`);
         assert.doesNotMatch(copy, /Game-time decision/, `${p}: implied outcome`);
         if (/^(Questionable|Doubtful)$/i.test(status)) assert.doesNotMatch(copy, /is open|With him out/, `${p}: ${status} written as out`);
+        // Only an official game status for this week is a designated row (WEB-039).
+        const listing = item.getAttribute("data-listing");
+        assert.equal(listing === "designated", /^(Questionable|Doubtful|Out)$/.test(status), `${p}: ${status} listed as ${listing}`);
+      }
+      // The "N designated" counts match the rows they name (WEB-039): the
+      // bar for both teams, each column for its own.
+      const count = (el) => Number((el?.textContent.match(/(\d+) designated/) ?? [])[1]);
+      const injCard = doc.querySelector(".sct-mpp-card.is-injuries");
+      if (injCard) {
+        assert.equal(count(injCard.querySelector(".sct-mpp-tag")), injCard.querySelectorAll('.sct-mpp-inj[data-listing="designated"]').length, `${p}: bar count`);
+        for (const col of injCard.querySelectorAll(".sct-mpp-col")) {
+          assert.equal(count(col.querySelector(".sct-mpp-colhead small")), col.querySelectorAll('.sct-mpp-inj[data-listing="designated"]').length, `${p}: column count`);
+        }
       }
       await assertPremiumHero(hero);
       assert.equal(doc.querySelector(".sct-mpp.is-top nav.sct-mpp-crumbs"), null, "no visible breadcrumb (mak, 2026-11-18)");

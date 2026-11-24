@@ -158,6 +158,12 @@ export interface InjuryRow {
   ppg: number | null;
   /** The roster's Sleeper id, the headshot key (faces since 2026-11-02). */
   sleeperId: string | null;
+  /**
+   * What the row is (WEB-039): an official game status for THIS week
+   * ("designated", the only rows the Injury Watch counts), a reserve list,
+   * or no designation yet after a missed game ("pending").
+   */
+  listing: "designated" | "reserve" | "pending" | "clean";
 }
 
 /** The strip above the injury cards (mak, 2026-10-05). */
@@ -446,6 +452,7 @@ export function buildPreview(data: MatchupData, inputs: PreviewInputs): Preview 
       // week itself; page.roster is already normalized for the next game.
       roster: gameRoster(team, season, meeting.week, (page.sourceRoster ?? page.roster)?.players ?? [], {
         nextGame: isNextGame(page.schedule?.games, meeting.week, meeting.seasonType),
+        kickoffMs: meeting.kickoffMs,
       }),
       ppr: {},
     };
@@ -1219,8 +1226,11 @@ function injuryRows(
     // A designation that is not confirmed for this game says so first
     // (availability.ts): what happened last week, and that this week's
     // status is not out yet.
-    const note = (r as RosterPlayer & { availability?: { note: string | null } }).availability?.note ?? null;
+    const avail = (r as RosterPlayer & { availability?: { note: string | null; designated: boolean; kind: string } }).availability;
+    const note = avail?.note ?? null;
+    const listing: InjuryRow["listing"] = avail?.designated ? "designated" : status === PENDING ? "pending" : "reserve";
     return {
+      listing,
       status,
       chip: chipCode(status),
       name: r.name,
@@ -1242,6 +1252,7 @@ function injuryRows(
     rows.push({
       status: "Healthy",
       chip: "OK",
+      listing: "clean",
       name: "Clean sheet",
       pos: "",
       fallout:

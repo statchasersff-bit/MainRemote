@@ -30,6 +30,7 @@ import { etDay } from "./news-tab-data";
 import type { PlayerRenderOptions } from "../player-render";
 import type { PlayerPageData } from "./player-data";
 import { lastName, STARTSIT_BASE, teamInk } from "./header";
+import { NO_DESIGNATION, NO_DESIGNATION_YET } from "../matchup/availability";
 import { getTeamByAbbreviation } from "../team/teams";
 import {
   bodyMap,
@@ -230,6 +231,12 @@ interface Model {
    * injury designation", which says healthy.
    */
   pending: { missedWeek: number | null } | null;
+  /**
+   * No designation, and this week's report is missing or has no game
+   * statuses yet (current-status reportState): "No designation yet", never
+   * "Active" or "on track to play" (WEB-039).
+   */
+  notYet: boolean;
   playedThisSeason: number;
   report: ReportRow[];
   practice: PracticeRow[];
@@ -286,8 +293,14 @@ function model(data: PlayerPageData, options: PlayerRenderOptions): Model | null
     lastPlayedWeek: injury.lastPlayedWeek,
     pending:
       data.currentStatus?.kind === "pending"
-        ? { missedWeek: data.currentStatus.prior?.week ?? null }
+        ? { missedWeek: data.currentStatus.missedWeek ?? null }
         : null,
+    notYet:
+      code === "ACTIVE" &&
+      next !== null &&
+      !!data.currentStatus &&
+      data.currentStatus.kind !== "pending" &&
+      data.currentStatus.reportState !== "final",
     playedThisSeason,
     report,
     practice: [],
@@ -803,14 +816,19 @@ export function injuryPremiumModel(data: PlayerPageData, options: PlayerRenderOp
   const cs = data.currentStatus;
   const stale = (m.checkedMs > 0 && m.next !== null && m.now - m.checkedMs > STALE_MS) || cs?.freshness === "stale";
   const pending = m.code === "ACTIVE" && cs?.kind === "pending";
+  // No designation (WEB-039, 2026-11-24): "No designation yet" until this
+  // week's report has its game statuses, never "Active" - a missing or empty
+  // report is not a clean bill of health. Neutral, not green, until then.
+  const undesignated = m.code === "ACTIVE" && !pending && m.next !== null;
+  const notYet = m.notYet;
+  // The note under the status: the shared record's own sentence (what this
+  // week's report says, practice, last week's tag as history, a Sleeper tag
+  // that is not official) whenever it adds to the card's line above.
+  const adds = !!cs && (cs.reportState !== "final" || !!cs.practice || !!cs.prior || cs.source === "sleeper");
   const statusNote = !cs
     ? null
-    : pending
+    : pending || (undesignated && adds)
       ? cs.message
-      // Designated after his last game, not yet on an official report
-      // (Team Pages Phase 4): the note says it is not the official status.
-      : cs.source === "sleeper" && cs.designation
-        ? `Reported after Week ${cs.prior?.week ?? (m.lastPlayedWeek ?? "his last game")}; not yet an official ${m.next ? `Week ${m.next.week} ` : ""}game status.`
       : m.code === "ACTIVE" && cs.prior
         ? `No current game designation reported. Listed ${cs.prior.status} for Week ${cs.prior.week}.`
         : cs.freshness === "unavailable" && m.next
@@ -849,8 +867,8 @@ export function injuryPremiumModel(data: PlayerPageData, options: PlayerRenderOp
     out,
     status: {
       code: m.code,
-      word: pending ? "Status pending" : STATUS_WORD[m.code],
-      kind: pending ? "mid" : STATUS_KIND[m.code],
+      word: pending ? "Status pending" : undesignated ? (notYet ? NO_DESIGNATION_YET : NO_DESIGNATION) : STATUS_WORD[m.code],
+      kind: pending ? "mid" : notYet ? "susp" : STATUS_KIND[m.code],
       answer: statusAnswer(m),
       part: ["Q", "D", "O", "IR", "PUP", "NFI"].includes(m.code) && m.bodyPart ? m.bodyPart : null,
       checked: m.checkedMs > 0 ? { iso: new Date(m.checkedMs).toISOString(), text: stampText(m.checkedMs) } : null,
@@ -908,7 +926,9 @@ function injuryPool(m: Model, data: PlayerPageData, options: PlayerRenderOptions
       ? `No. ${asOf ? `As of ${asOf}, ` : ""}${m.name} is suspended, not injured.${missedLine}`
       : hurt
         ? `Yes. ${asOf ? `As of ${asOf}, ` : ""}${m.name} is ${statusWord}${m.bodyPart ? ` with ${article(part)}` : ""}.${missedLine}`
-        : `No. ${asOf ? `As of ${asOf}, ` : ""}${m.name} is ${m.code === "ACTIVE" ? "active" : "healthy"} with no injury designation.${missedLine}`,
+        : m.notYet
+          ? `No. ${asOf ? `As of ${asOf}, ` : ""}${m.name} has no injury designation for Week ${m.next!.week} yet; the club's game statuses are not out.${missedLine}`
+          : `No. ${asOf ? `As of ${asOf}, ` : ""}${m.name} is ${m.code === "ACTIVE" ? "active" : "healthy"} with no injury designation.${missedLine}`,
     link: hurt ? outlook : null,
   });
 
@@ -918,7 +938,9 @@ function injuryPool(m: Model, data: PlayerPageData, options: PlayerRenderOptions
     const date = m.next.kickoffMs ? (() => { const p = et(m.next.kickoffMs!); return `${new Date(m.next.kickoffMs!).toLocaleDateString("en-US", { weekday: "long", timeZone: "America/New_York" })}, ${MONTHS[p.m - 1]} ${p.d}`; })() : "";
     const vs = `Week ${m.next.week} ${m.next.homeAway === "home" ? "against" : "at"} the ${opp}${date ? ` on ${date}` : ""}`;
     let s =
-      m.code === "ACTIVE"
+      m.code === "ACTIVE" && m.notYet
+        ? `${m.name} has no injury designation for ${vs} yet; the club's game statuses are not out.`
+        : m.code === "ACTIVE"
         ? `${m.name} has no injury designation for ${vs}, so he is on track to play.`
         : m.code === "O" || m.code === "IR" || m.code === "PUP" || m.code === "NFI" || m.code === "SUSP"
           ? `No. ${m.name} is ${statusWord} for ${vs}.`

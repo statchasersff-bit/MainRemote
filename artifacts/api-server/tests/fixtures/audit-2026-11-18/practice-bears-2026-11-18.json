@@ -1,0 +1,124 @@
+{
+ "season": 2026,
+ "source": "NFL.com official injury report",
+ "note": "Bears rows of data/player/practice_reports/2026.json at 8bb9692 (2026-11-18): Week 9 refetched without Burden, Week 11 fetched before any Bears rows. WEB-039 follow-up fixture.",
+ "weeks": {
+  "9": {
+   "fetchedAt": "2026-11-18T05:29:36.514Z",
+   "teams": {
+    "Bears": {
+     "theo-benedet": {
+      "name": "Theo Benedet",
+      "pos": "T",
+      "injury": null,
+      "gameStatus": null,
+      "final": "FULL",
+      "days": {
+       "2026-11-05": "LIMITED",
+       "2026-11-08": "FULL"
+      }
+     },
+     "t-j-edwards": {
+      "name": "T.J. Edwards",
+      "pos": "LB",
+      "injury": null,
+      "gameStatus": null,
+      "final": "FULL",
+      "days": {
+       "2026-11-05": "FULL",
+       "2026-11-08": "FULL"
+      }
+     },
+     "d-marco-jackson": {
+      "name": "D&#x27;Marco Jackson",
+      "pos": "LB",
+      "injury": null,
+      "gameStatus": null,
+      "final": "FULL",
+      "days": {
+       "2026-11-05": "DNP",
+       "2026-11-08": "FULL"
+      }
+     },
+     "grady-jarrett": {
+      "name": "Grady Jarrett",
+      "pos": "DT",
+      "injury": null,
+      "gameStatus": null,
+      "final": "FULL",
+      "days": {
+       "2026-11-05": "LIMITED",
+       "2026-11-08": "FULL"
+      }
+     },
+     "kyle-monangai": {
+      "name": "Kyle Monangai",
+      "pos": "RB",
+      "injury": "Thumb, Toe",
+      "gameStatus": "Questionable",
+      "final": "LIMITED",
+      "days": {
+       "2026-11-05": "DNP",
+       "2026-11-08": "LIMITED"
+      }
+     },
+     "malik-muhammad": {
+      "name": "Malik Muhammad",
+      "pos": "CB",
+      "injury": "Toe",
+      "gameStatus": "Questionable",
+      "final": "LIMITED",
+      "days": {
+       "2026-11-05": "LIMITED",
+       "2026-11-08": "LIMITED"
+      }
+     },
+     "zavier-scott": {
+      "name": "Zavier Scott",
+      "pos": "RB",
+      "injury": null,
+      "gameStatus": null,
+      "final": "DNP",
+      "days": {
+       "2026-11-05": "DNP",
+       "2026-11-08": "DNP"
+      }
+     },
+     "joseph-michael-thuney": {
+      "name": "Joe Thuney",
+      "pos": "G",
+      "injury": null,
+      "gameStatus": null,
+      "final": "FULL",
+      "days": {
+       "2026-11-05": "DNP",
+       "2026-11-08": "FULL"
+      }
+     },
+     "tyrique-stevenson": {
+      "name": "Tyrique Stevenson",
+      "pos": "CB",
+      "injury": "Thumb",
+      "gameStatus": "Questionable",
+      "final": "LIMITED",
+      "days": {
+       "2026-11-08": "LIMITED"
+      }
+     }
+    }
+   }
+  },
+  "10": {
+   "fetchedAt": "2026-11-18T05:29:36.514Z",
+   "teams": {
+    "Bears": {}
+   }
+  },
+  "11": {
+   "fetchedAt": "2026-11-18T05:29:36.514Z",
+   "teams": {
+    "Bears": {}
+   }
+  }
+ }
+}
