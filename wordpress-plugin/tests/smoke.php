@@ -506,7 +506,18 @@ if ( 'main' === $group ) {
 	$GLOBALS['query'] = array();
 	is( statchasers_divi_late_css_applies(), false, 'off outside the matchup template' );
 	$GLOBALS['query'] = array( 'sc_matchup' => 'detroit-lions-vs-green-bay-packers' );
+	$sc_article               = new WP_Post();
+	$sc_article->ID           = 92;
+	$sc_holder_dl             = new WP_Post();
+	$sc_holder_dl->ID         = 50;
+	$GLOBALS['pages_by_path'] = array( STATCHASERS_MATCHUP_HOLDER => $sc_holder_dl );
+	$GLOBALS['page']['post']  = $sc_article;
+	is( statchasers_divi_late_css_applies(), false, 'off for ?sc_matchup= on any other page (WEB-013)' );
+	$GLOBALS['page']['post']  = $sc_holder_dl;
 	is( statchasers_divi_late_css_applies(), true, 'on for a matchup request' );
+	$GLOBALS['page']['is404'] = true;
+	is( statchasers_divi_late_css_applies(), true, 'and on a matchup 404, which still renders the holder' );
+	unset( $GLOBALS['page'], $GLOBALS['pages_by_path'] );
 	$GLOBALS['query'] = array();
 	echo "\n";
 }

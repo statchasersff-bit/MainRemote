@@ -42,7 +42,12 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Divi templates that print the same loader.
  */
 function statchasers_divi_late_css_applies(): bool {
-	$applies = '' !== (string) get_query_var( 'sc_matchup' );
+	// The pair var only counts on the matchup holder (WEB-013): `?sc_matchup=`
+	// on any other page is not the matchup template. A game 404 still renders
+	// the holder, so it keeps the rewrite.
+	$applies = function_exists( 'statchasers_matchup_raw' )
+		? '' !== statchasers_matchup_raw()
+		: '' !== (string) get_query_var( 'sc_matchup' );
 	return (bool) apply_filters( 'statchasers_divi_late_css_applies', $applies );
 }
 
