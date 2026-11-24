@@ -2,7 +2,7 @@
 Contributors: statchasers
 Requires at least: 6.3
 Requires PHP: 7.4
-Stable tag: 1.10.65
+Stable tag: 1.10.66
 License: GPL-2.0-or-later
 
 Mounts the StatChasers NFL news tool, the 32 team hubs, the player pages, the Fantasy Points Allowed table, the rest-of-season rankings, the NFL schedule, the advanced player stats, the RB handcuff rankings, the fantasy football strength of schedule, the dynasty rookie hit rates and the redraft draft strategy analysis into WordPress pages.
@@ -19,6 +19,9 @@ answers that question directly, with a Last-Modified header that says when the
 upload landed. Keep "Stable tag" in step with the Version header.
 
 == Changelog ==
+
+= 1.10.66 =
+* Team audit of 2026-11-24, on top of 1.10.65 (live 19:45 UTC): team routes join the shared page-identity mechanism (WEB-021) as a third family. The directory, the 32 hubs and every team tab get Rank Math's Organization, WebSite and WebPage graph (page node at {canonical}#webpage, the hub FAQ folded into it), and the brand card as a fallback og:image, twitter:image and primaryImageOfPage, keeping a page's own featured image. The hub breadcrumb item is the team name. Generated team tab and hub descriptions are 160 characters or fewer. The hub FAQ, Coaching labels, Fantasy Finishes names and the Schedule tab's previous-season results ship with the API. Upload, then purge through `pnpm purge-and-warm`.
 
 = 1.10.65 =
 * Matchup candidate of 2026-11-24 (local, not uploaded), on top of 1.10.64. Brings back WEB-001 (held for the 2026-12-02 window): every completed game is self-canonical at its season/week URL, refused game segments are 404 noindex with no canonical, numbered playoff spellings 301 to the named round, the game list is refreshed on sitemap requests and Rank Math's game sitemap cache is cleared when it changes, game sitemap lastmod comes from the API's stored content stamps. WEB-024: the Divi late-CSS gate is decided once, before the footer (the 1.10.64 gate did not run live). WEB-040: matchup cache states (live/pending 60 s edge, pregame until kickoff, recent 1 h for 48 h after a final, settled default; WP Rocket only stores settled pages) and a POST purge-games route that does nothing until its key is set. Ships with the matching API build. Upload, run `wp eval 'statchasers_news_run_upgrade_now();'`, let the cache upgrade sweep settle, then purge.
