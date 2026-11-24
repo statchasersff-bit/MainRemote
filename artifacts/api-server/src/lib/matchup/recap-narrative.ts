@@ -30,9 +30,10 @@
 
 import type { BoxTeamStats, GameOdds } from "./boxscore";
 import type { GamePlayer, GamePlayers } from "./game-players";
-import type { PbpDrive } from "./play-by-play";
+import type { GamePbp, PbpDrive } from "./play-by-play";
+import { downFacts, downText, endsGameAt, isFinalScore, matchStoryPlay, spotText, type StoryPlayFacts } from "./play-facts";
 import type { GameStory, StoryInjury, StoryPlay } from "./recap-overview";
-import type { ScoreboardGame } from "./scoreboard-hero";
+import { scoreboardResult, type ScoreboardGame } from "./scoreboard-hero";
 import { searchKey } from "../render";
 
 /* ------------------------------------------------------------- inputs */
@@ -56,6 +57,8 @@ export interface NarrativeInput {
   city: { away: string; home: string };
   /** nflverse's drives for the game (data/matchup/pbp), or null. */
   drives: PbpDrive[] | null;
+  /** The game's play-by-play (data/matchup/pbp), for down, distance and the final whistle (WEB-037); optional. */
+  pbp?: GamePbp | null;
   /** The closing line, or null. */
   odds: GameOdds | null;
   /** Each side's record through this game, when every earlier game is known. */
@@ -253,7 +256,13 @@ interface Ctx {
   ties: number;
   trailedInFourth: boolean;
   goAhead: { state: DriveState; play: StoryPlay | null } | null;
+  /** The go-ahead score ended the game (nothing snapped or kicked off after it). */
+  walkOff: boolean;
   sealer: StoryPlay | null;
+  /** A story play's play-by-play facts, or null when it matches no single row. */
+  pbpFact: (p: StoryPlay) => StoryPlayFacts | null;
+  /** "the Detroit 7" from "DET 7". */
+  spot: (at: string | null) => string | null;
   wwp: (homeWp: number) => number;
   /** Facts already told; a later sentence skips them. */
   told: Set<string>;
@@ -376,6 +385,24 @@ function buildCtx(input: NarrativeInput): Ctx | null {
       .reverse()
       .find((p) => (p.int || p.fumble) && p.def === W.code && at(p) >= 3300 && (scoreOf(p, winner) ?? 0) > (scoreOf(p, loser) ?? 0) && (scoreOf(p, winner) ?? 0) - (scoreOf(p, loser) ?? 0) <= 8) ?? null;
 
+  const pbp = input.pbp ?? null;
+  // endsGame needs the play-by-play AND the final to agree (WEB-037): a
+  // partial file that stops at a score does not make it the last one.
+  // The box score's final first: the story's own finals come from the same play-by-play.
+  const line = scoreboardResult(game);
+  const final = line ? { away: line.away, home: line.home } : { away: a, home: h };
+  const pbpFact = (p: StoryPlay): StoryPlayFacts | null => {
+    if (!pbp?.plays.length) return null;
+    const i = matchStoryPlay(p, pbp.plays);
+    if (i < 0) return null;
+    // Who scored on it: the touchdown's club, the defense on a safety, else the offense.
+    const by = p.td ? p.tdTeam : p.safety ? p.def : p.pos;
+    const side = by === game.away.abbr ? "away" : by === game.home.abbr ? "home" : null;
+    const last = side !== null && endsGameAt(pbp.plays, i) && isFinalScore(p, final, side, p.td);
+    return { down: downFacts(pbp, i), endsGame: last };
+  };
+  const cityOf = (code: string) => (code === game.away.abbr ? input.city.away : code === game.home.abbr ? input.city.home : null);
+
   return {
     input,
     plays: story.plays,
@@ -393,7 +420,10 @@ function buildCtx(input: NarrativeInput): Ctx | null {
     ties,
     trailedInFourth,
     goAhead,
+    walkOff: goAhead?.play ? pbpFact(goAhead.play)?.endsGame === true : false,
     sealer,
+    pbpFact,
+    spot: (at) => spotText(at, cityOf),
     wwp,
     told: new Set(),
     named: new Set(),
@@ -704,17 +734,33 @@ function playSentence(c: Ctx, p: StoryPlay, opts: { short?: boolean } = {}): str
     const k = nm(p.kicker, p.pos);
     return `${k ?? "the kicker"} made ${p.kickDistance ? `${aYards(p.kickDistance)} field goal` : "a field goal"}`;
   }
+  // Down and distance from the play-by-play (WEB-037): a fourth down short
+  // of the line is a turnover on downs, a converted one says so.
+  const down = c.pbpFact(p)?.down ?? null;
+  if (down?.turnoverOnDowns && (p.type === "pass" || p.type === "run")) {
+    const where = c.spot(down.at);
+    const tail = ` on ${downText(down, p.pos)}${where ? ` at ${where}` : ""}, a turnover on downs`;
+    if (p.type === "pass") {
+      const qb = nm(p.passer, p.pos);
+      const rec = p.receiver ? nm(p.receiver, p.pos) : null;
+      const pass = `${qb ? `${qb}${qb.endsWith("s") ? "'" : "'s"} pass` : "the pass"}${rec ? ` to ${rec}` : ""}`;
+      return `${pass} ${down.incomplete ? "fell incomplete" : "came up short"}${tail}`;
+    }
+    const r = p.rusher ? nm(p.rusher, p.pos) : null;
+    return `${r ?? "the runner"} was stopped${tail}`;
+  }
+  const onFourth = down?.converted && !p.td ? ` on ${downText(down, p.pos)}` : "";
   if (p.type === "pass" && p.receiver) {
     const qb = nm(p.passer, p.pos);
     const rec = nm(p.receiver, p.pos);
     if (!qb || !rec) return null;
     const verb = c.pick(`pass-verb-${at(p)}`, ["hit", "found", "connected with"]);
-    return p.td ? `${qb} ${verb} ${rec} for ${aYards(yd)} touchdown` : `${qb} ${verb} ${rec} for ${yd} yards`;
+    return p.td ? `${qb} ${verb} ${rec} for ${aYards(yd)} touchdown` : `${qb} ${verb} ${rec} for ${yd} yards${onFourth}`;
   }
   if (p.type === "run" && p.rusher) {
     const r = nm(p.rusher, p.pos);
     if (!r) return null;
-    return p.td ? `${r} scored on ${aYards(yd)} run` : `${r} broke ${aYards(yd)} run`;
+    return p.td ? `${r} scored on ${aYards(yd)} run` : `${r} broke ${aYards(yd)} run${onFourth}`;
   }
   return null;
 }
@@ -1116,8 +1162,10 @@ function goAheadSentence(c: Ctx, out: Sentence[]): void {
   const dc = driveClause(c, ga.state);
   const late = p.qtr >= 4;
   const score = `${ga.state.w}–${ga.state.l}`;
+  // A score that ended the game won it (WEB-037); "ahead for good" is for a
+  // lead that then had to hold through another possession.
   const text = late
-    ? `${capital(line)} ${p.qtr >= 5 ? (/^00:/.test(p.clock ?? "") ? `${clockLeft(p.clock)} in overtime` : "in overtime") : clockLeft(p.clock)}${dc ? `, finishing ${dc}` : ""}, to put ${c.W.city} ahead ${score} for good.`
+    ? `${capital(line)} ${p.qtr >= 5 ? (/^00:/.test(p.clock ?? "") ? `${clockLeft(p.clock)} in overtime` : "in overtime") : clockLeft(p.clock)}${dc ? `, finishing ${dc}` : ""}, ${c.walkOff ? `to win it ${score} on the final play` : `to put ${c.W.city} ahead ${score} for good`}.`
     : `${capital(line)} ${when(p)}${dc ? `, finishing ${dc}` : ""}, and ${c.W.city} led the rest of the way.`;
   out.push({ text, keep: 8, at: at(p) });
   c.told.add("goahead");
@@ -1402,6 +1450,7 @@ function conclusion(c: Ctx, type: GameType, hurt: InjuryStory[]): Sentence[] {
         int: "ended in an interception",
         fumble: "ended in a lost fumble",
         missed_fg: "ended with a missed field goal",
+        blocked_fg: "ended with a blocked field goal",
       };
       const what = how[last.drive.result];
       if (what) out.push({ text: `${possessive(c.L.city)} final possession ${what.startsWith("turned") ? `ended when the ${c.L.nick} ${what}` : what}${last.drive.start ? ` after starting at the ${last.drive.start.replace(/^([A-Z]+) (\d+)$/, (_m, t, y) => (t === c.L.code ? `${c.L.city} ${y}` : `${c.W.city} ${y}`))}` : ""}.`, keep: 6 });
@@ -1522,6 +1571,8 @@ export interface RecapFacts {
     bigPlays: string[];
     /** Runs of 10+ unanswered points. */
     scoringRuns: string[];
+    /** Field goal tries the defense blocked; absent when there were none. */
+    blockedKicks?: string[];
     /** Each team's last possession that did not end with the clock (a final kneel-down or clock-out drive is not counted). */
     finalPossessions: string[];
     injuries: string[];
@@ -1625,8 +1676,15 @@ export function recapFacts(input: NarrativeInput, gameId: string): RecapFacts | 
     // The try, when it was anything but a made extra point (2026-11-23), so a
     // 6- or 8-point touchdown is explained rather than left to arithmetic.
     const tried = p.td && p.tryResult ? TRY_WORDS[p.tryResult] ?? null : null;
-    scoring.push(`${qClock(p.qtr, p.clock)} ${by}: ${what}${drive}`.replace(/\.$/, "") + `${tried ? `; ${tried}` : ""}. Score after: ${after}`);
+    // WEB-037: a score nothing was snapped or kicked off after ended the game.
+    const last = c.pbpFact(p)?.endsGame ? "; the final play of the game" : "";
+    scoring.push(`${qClock(p.qtr, p.clock)} ${by}: ${what}${drive}`.replace(/\.$/, "") + `${tried ? `; ${tried}` : ""}${last}. Score after: ${after}`);
   }
+
+  // Blocked field goals (WEB-037): the drive result alone reads "missed".
+  const blockedKicks = c.plays
+    .filter((p) => p.type === "field_goal" && p.fg === "blocked")
+    .map((p) => `${qClock(p.qtr, p.clock)} ${p.pos}: ${c.name(p.kicker, p.pos)?.full ?? "kicker"} ${p.kickDistance ?? "?"}-yard field goal try blocked`);
 
   const turnovers = c.plays
     .filter((p) => p.int || p.fumble)
@@ -1761,7 +1819,7 @@ export function recapFacts(input: NarrativeInput, gameId: string): RecapFacts | 
     if (s.cluster) return clusterSentence(cc, s.cluster).text;
     switch (s.kind) {
       case "comeback": return `${c.W.city} trailed by as many as ${c.maxDeficit.size} (${c.maxDeficit.at ? `${c.maxDeficit.at.l}-${c.maxDeficit.at.w}` : ""}) and won`;
-      case "late-winner": return c.goAhead?.play ? `go-ahead score ${qClock(c.goAhead.play.qtr, c.goAhead.play.clock)}: ${playSentence(cc, c.goAhead.play)}` : "late go-ahead score";
+      case "late-winner": return c.goAhead?.play ? `${c.walkOff ? "game-winning score on the final play" : "go-ahead score"} ${qClock(c.goAhead.play.qtr, c.goAhead.play.clock)}: ${playSentence(cc, c.goAhead.play)}` : "late go-ahead score";
       case "back-and-forth": return `${c.leadChanges} lead changes, ${c.ties} ties`;
       case "line-of-scrimmage": return `${c.W.city} outgained ${c.L.city} ${c.W.stats?.totalYards}-${c.L.stats?.totalYards}`;
       case "defense": return `${c.L.city} held to ${c.L.stats?.totalYards} yards, sacked ${c.L.stats?.sacked ?? 0} times`;
@@ -1798,6 +1856,8 @@ export function recapFacts(input: NarrativeInput, gameId: string): RecapFacts | 
       turnovers,
       bigPlays,
       scoringRuns,
+      // Only when there is one, so a game without a block keeps its hash.
+      ...(blockedKicks.length ? { blockedKicks } : {}),
       finalPossessions: [c.W.code, c.L.code].map((code) => {
         const last = [...c.states].reverse().find((x) => x.drive.team === code && x.drive.result !== "end_game" && x.drive.result !== "end_half");
         return last ? `${code} last possession that did not end with the half or game clock running out: started Q${last.drive.qtr} ${(last.drive.clock ?? "").replace(/^0/, "")} at ${last.drive.start ?? "?"}, ${last.drive.plays ?? "?"} plays, ${last.drive.yards ?? "?"} yards, result ${last.drive.result}` : `${code} final possession: none`;

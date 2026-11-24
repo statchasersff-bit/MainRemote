@@ -800,6 +800,7 @@ function renderOverview(data: MatchupData, input: RecapBodyInput, added: AddedSe
   });
   if (!entry) return none;
   const story = entry.story;
+  const pbp = loadGamePbp(meeting.season, entry.id);
   const players = gamePlayers(data);
   const fantasy = fantasyInput(data);
   // The narrative's extra evidence: drives, the closing line, the records.
@@ -825,7 +826,8 @@ function renderOverview(data: MatchupData, input: RecapBodyInput, added: AddedSe
     highlights: added.highlights,
     inks: { away: "var(--mu-ink-away)", home: "var(--mu-ink-home)" },
     gameId: entry.id,
-    drives: loadGamePbp(meeting.season, entry.id)?.drives ?? null,
+    drives: pbp?.drives ?? null,
+    pbp,
     odds: data.boxscore?.odds ?? null,
     records:
       meeting.seasonType === "regular"
@@ -1105,6 +1107,7 @@ function faqFacts(
           clock: winner.play.clock,
           away: winner.away,
           home: winner.home,
+          ...(winner.play.endsGame ? { endsGame: true } : {}),
         }
       : null;
 

@@ -86,6 +86,7 @@ export type DriveResult =
   | "fumble"
   | "downs"
   | "missed_fg"
+  | "blocked_fg"
   | "safety"
   | "end_half"
   | "end_game"
@@ -458,7 +459,8 @@ export function driveResult(raw: string | undefined): { result: DriveResult; def
   if (/^(INT|INTERCEPTION)/.test(text)) return { result: "int", defensiveScore };
   if (/^(FUMBLE|FUM)/.test(text)) return { result: "fumble", defensiveScore };
   if (/^TD$|TOUCHDOWN/.test(text)) return { result: "td", defensiveScore: false };
-  if (/MISSED FG|FG MISSED|BLOCKED FG|MISSED FIELD GOAL/.test(text)) return { result: "missed_fg", defensiveScore };
+  if (/BLOCKED FG|BLOCKED FIELD GOAL/.test(text)) return { result: "blocked_fg", defensiveScore };
+  if (/MISSED FG|FG MISSED|MISSED FIELD GOAL/.test(text)) return { result: "missed_fg", defensiveScore };
   if (/^FG$|FIELD GOAL/.test(text)) return { result: "fg", defensiveScore: false };
   if (/PUNT/.test(text)) return { result: "punt", defensiveScore };
   if (/DOWNS/.test(text)) return { result: "downs", defensiveScore: false };

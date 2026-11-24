@@ -32,7 +32,8 @@ import type { LeaderPick } from "./leaders-strip";
 import { scoreboardResult, type ScoreboardGame } from "./scoreboard-hero";
 import { BAR_ICON } from "./recap-premium";
 import type { GameOdds } from "./boxscore";
-import type { PbpDrive } from "./play-by-play";
+import type { GamePbp, PbpDrive } from "./play-by-play";
+import { downText, isFinalScore, spotText, storyPlayFacts, type StoryPlayFacts } from "./play-facts";
 import { composeRecap, factsHash, recapFacts, resolver, type TeamRecord } from "./recap-narrative";
 import type { PlayerUrlFn } from "../team/links";
 
@@ -194,6 +195,8 @@ export interface OverviewInput {
   /** The recap narrative's extra evidence (recap-narrative.ts, 2026-11-17); all optional. */
   gameId?: string;
   drives?: PbpDrive[] | null;
+  /** The game's play-by-play, which down, distance and the final whistle are read from (WEB-037). */
+  pbp?: GamePbp | null;
   odds?: GameOdds | null;
   records?: { away: TeamRecord | null; home: TeamRecord | null };
   divisional?: boolean;
@@ -240,6 +243,12 @@ interface Facts {
   goAhead: StoryPlay | null;
   sealer: StoryPlay | null;
   longTd: StoryPlay | null;
+  /** A story play's play-by-play facts (down, distance, whether it ended the game); null when unmatched. */
+  pbpFacts: (p: StoryPlay) => StoryPlayFacts | null;
+  /** The go-ahead score ended the game: it won it, there was no lead left to keep. */
+  walkOff: boolean;
+  /** "the Detroit 7" from "DET 7". */
+  spot: (at: string | null) => string | null;
 }
 
 function teamOf(game: ScoreboardGame, s: Side) {
@@ -322,6 +331,9 @@ function facts(input: OverviewInput): Facts | null {
       .sort((a, b) => (b.yds ?? 0) - (a.yds ?? 0))[0] ?? null;
 
   const nick = (s: Side) => teamOf(game, s).short;
+  const known = storyPlayFacts(story.plays, input.pbp);
+  const pbpFacts = (p: StoryPlay) => known.get(p) ?? null;
+  const cityOf = (c: string) => (c === game.away.abbr ? input.city.away : c === game.home.abbr ? input.city.home : null);
   return {
     winner,
     loser,
@@ -337,6 +349,13 @@ function facts(input: OverviewInput): Facts | null {
     goAhead,
     sealer,
     longTd,
+    pbpFacts,
+    // The play-by-play says nothing came after it AND the final agrees: a
+    // file that stops short of the game is not a walk-off (WEB-037).
+    walkOff: goAhead
+      ? pbpFacts(goAhead)?.endsGame === true && isFinalScore(goAhead, { away: result.away, home: result.home }, winner, goAhead.td)
+      : false,
+    spot: (at) => spotText(at, cityOf),
   };
 }
 
@@ -451,7 +470,13 @@ function recapParagraphs(f: Facts, input: OverviewInput, name: ReturnType<typeof
   }
   if (f.goAhead && f.goAhead !== swing) {
     const line = describe(f.goAhead, f, name, "sentence");
-    if (line) second.push(`${capital(line)} ${when(f.goAhead)} to put ${f.W.city} ahead for good.`);
+    if (line) {
+      second.push(
+        f.walkOff
+          ? `${capital(line)} ${when(f.goAhead)} to win it on the final play.`
+          : `${capital(line)} ${when(f.goAhead)} to put ${f.W.city} ahead for good.`,
+      );
+    }
   }
   if (f.sealer) {
     const who = name(f.sealer.interceptor, f.W.code);
@@ -533,19 +558,38 @@ function describe(
   if (p.fg === "made") {
     const k = nm(p.kicker, p.pos);
     const kick = p.kickDistance ? `${aYards(p.kickDistance)} field goal` : "a field goal";
-    if (p === f.goAhead && m) return `${k ?? "The kicker"} makes the go-ahead field goal`;
+    // The last play of the game won it; "go-ahead" is for a lead that then had to hold.
+    if (p === f.goAhead && m) return `${k ?? "The kicker"} makes the ${f.walkOff ? "game-winning" : "go-ahead"} field goal`;
     return m ? `${k ?? "The kicker"} makes ${kick}` : `${k ?? "The kicker"} made ${kick}`;
   }
+  // Down and distance from the play-by-play (WEB-037): a fourth down that
+  // came up short is a turnover on downs, not a gain of no yards.
+  const down = f.pbpFacts(p)?.down ?? null;
+  if (down?.turnoverOnDowns && (p.type === "pass" || p.type === "run")) {
+    const where = f.spot(down.at);
+    const tail = ` on ${downText(down, p.pos)}${where ? ` at ${where}` : ""}, a turnover on downs`;
+    if (p.type === "pass") {
+      const qb = nm(p.passer, p.pos);
+      const rec = p.receiver ? nm(p.receiver, p.pos) : null;
+      const pass = `${qb ? `${qb}${qb.endsWith("s") ? "'" : "'s"} pass` : m ? "The pass" : "the pass"}${rec ? ` to ${rec}` : ""}`;
+      const how = down.incomplete ? (m ? "falls incomplete" : "fell incomplete") : m ? "comes up short" : "came up short";
+      return `${pass} ${how}${tail}`;
+    }
+    const r = p.rusher ? nm(p.rusher, p.pos) : null;
+    return `${r ?? (m ? "The runner" : "the runner")} ${m ? "is stopped" : "was stopped"}${tail}`;
+  }
+  // A converted fourth down says so; anything else reads as before.
+  const onFourth = down?.converted && !p.td ? ` on ${downText(down, p.pos)}` : "";
   if (p.type === "pass" && p.receiver) {
     const qb = nm(p.passer, p.pos);
     const rec = nm(p.receiver, p.pos);
     if (p.td) return m ? `${qb} connects with ${rec} for ${aYards(yd)} TD` : `${qb} hit ${rec} for ${aYards(yd)} touchdown`;
-    return m ? `${qb} finds ${rec} for ${yd} yards` : `${qb} found ${rec} for ${yd} yards`;
+    return m ? `${qb} finds ${rec} for ${yd} yards${onFourth}` : `${qb} found ${rec} for ${yd} yards${onFourth}`;
   }
   if (p.type === "run" && p.rusher) {
     const r = nm(p.rusher, p.pos);
     if (p.td) return m ? `${r} scores on ${aYards(yd)} run` : `${r} scored on ${aYards(yd)} run`;
-    return m ? `${r} runs for ${yd} yards` : `${r} ran for ${yd} yards`;
+    return m ? `${r} runs for ${yd} yards${onFourth}` : `${r} ran for ${yd} yards${onFourth}`;
   }
   if (p.sack) return m ? `A sack of ${nm(p.passer, p.pos) ?? "the quarterback"}` : null;
   return null;
@@ -756,6 +800,7 @@ export function renderRecapOverviewParts(input: OverviewInput): { main: string; 
     players: input.players,
     city: input.city,
     drives: input.drives ?? null,
+    pbp: input.pbp ?? null,
     odds: input.odds ?? null,
     records: input.records,
     divisional: input.divisional,

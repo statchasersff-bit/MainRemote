@@ -2456,10 +2456,12 @@ describe("recap Overview tab (new design)", () => {
     if (!tab) return; // no stored play-by-play for the game
     assert.equal(doc.querySelector("#tab-play-by-play").textContent, "Play-by-Play");
     assert.deepEqual([...tab.querySelectorAll(".sct-pbp-sec > h2, .sct-pbp-sec > .sct-pbp-head > h2")].map((h) => h.id), ["pbp-scoring", "pbp-full"]);
-    // Scoring summary: in order, the score after each (away-home).
+    // Scoring summary: in order, the score after each (away-home). The clock
+    // is the scoring snap's, as the drive log below prints it (WEB-037), not
+    // ESPN's after-the-play (or after-the-try) clock.
     assert.deepEqual(
       [...tab.querySelectorAll(".sct-pbp-score")].map((li) => [li.querySelector(".sct-pbp-when").textContent, li.querySelector(".sct-pbp-tally").textContent]),
-      [["Q2 · 9:11", "7–0"], ["Q3 · 11:49", "10–0"], ["Q3 · 3:13", "10–3"], ["Q4 · 11:28", "10–10"], ["Q4 · 5:50", "10–13"]],
+      [["Q2 · 9:14", "7–0"], ["Q3 · 11:53", "10–0"], ["Q3 · 3:16", "10–3"], ["Q4 · 11:38", "10–10"], ["Q4 · 5:53", "10–13"]],
     );
     // No Drive Overview (removed 2026-11-10): the full log lists the drives.
     assert.equal(tab.querySelector(".sct-pbp-strip, a.sct-pbp-chip, #pbp-drives"), null);
