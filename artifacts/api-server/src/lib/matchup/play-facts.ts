@@ -15,7 +15,10 @@
  *   matchStoryPlay      a story-store play's row in the play-by-play
  *   downFacts           down, distance and spot, a fourth down converted or
  *                       turned over on downs
- *   endsGameAt          no snap and no kickoff after this play: it ended the game
+ *   endsGameAt          no snap and no kickoff after this play in the file
+ *   withGameEnding      ESPN's drive chart, the independent record of how the
+ *                       game ended, attached to the play-by-play
+ *   endsGameConfirmed   endsGameAt AND that record: the play ended the game
  *   pbpScoringPlays     the ESPN scoring plays with the matched snap's clock,
  *                       and endsGame on the score that ended the game
  *
@@ -120,6 +123,69 @@ export function endsGameAt(plays: PbpPlay[], i: number): boolean {
     if (p.k === "kickoff" || isSnap(p)) return false;
   }
   return true;
+}
+
+/**
+ * How the game ended, from ESPN's drive chart (independent of the nflverse
+ * file): the last drive of the game was this club's scoring drive and, in
+ * regulation, it ran the clock to 0:00. Overtime ends on the score itself.
+ */
+export interface GameEnding {
+  /** The club with the ball on the last drive (the defense scored on a "defensive_td"). */
+  team: string;
+  quarter: number;
+  result: "td" | "fg" | "defensive_td";
+}
+
+const clockSec = (c: string | null | undefined): number | null => {
+  const m = /^(\d{1,2}):(\d{2})$/.exec(clockKey(c));
+  return m ? Number(m[1]) * 60 + Number(m[2]) : null;
+};
+
+/**
+ * The drive chart's evidence that a score ended the game, or null (WEB-037
+ * follow-up, 2026-11-24). A play-by-play with nothing after a score proves
+ * nothing on its own: the file may stop short, and a final that matches the
+ * play's score cannot tell a kick that ended the game from one followed by
+ * a kickoff and a kneel-down. ESPN's last drive is the check: it ended in a
+ * touchdown or field goal (or the defense's touchdown on it: a pick-six as
+ * time expired), and a fourth-quarter drive ended at 0:00 (start clock minus
+ * time elapsed). No drive chart, any other result, or a clock that does not
+ * reach zero: null, and no sentence says "final play".
+ */
+export function espnGameEnding(drives: Drive[] | null | undefined): GameEnding | null {
+  const last = drives?.at(-1);
+  if (!last) return null;
+  const result = last.defensiveScore ? "defensive_td" : last.result === "td" || last.result === "fg" ? last.result : null;
+  if (!result) return null;
+  if (last.quarter < 4) return null;
+  if (last.quarter === 4) {
+    const start = clockSec(last.startClock);
+    if (start === null || last.durationSeconds === null || start - last.durationSeconds > 0) return null;
+  }
+  return { team: last.team.toUpperCase(), quarter: last.quarter, result };
+}
+
+/** The play-by-play with the drive chart's ending attached (a copy; the cached file is not changed). */
+export function withGameEnding(pbp: GamePbp | null, drives: Drive[] | null | undefined): GamePbp | null {
+  if (!pbp) return null;
+  return { ...pbp, ending: espnGameEnding(drives) };
+}
+
+/**
+ * The play at `i` ended the game: nothing was snapped or kicked off after it
+ * in the file AND the drive chart's ending names its club, quarter and kind
+ * of score. Without the drive chart (`ending` null or never attached) the
+ * answer is no: the narrowest wording the data supports.
+ */
+export function endsGameConfirmed(pbp: GamePbp | null | undefined, i: number): boolean {
+  const end = pbp?.ending;
+  if (!pbp || !end || !endsGameAt(pbp.plays, i)) return false;
+  const row = pbp.plays[i]!;
+  if (row.q !== end.quarter || (row.t ?? "").toUpperCase() !== end.team) return false;
+  if (end.result === "fg") return row.k === "field_goal";
+  if (end.result === "defensive_td") return Boolean(row.td) && Boolean(row.int || row.fum);
+  return Boolean(row.td) && !row.int && !row.fum;
 }
 
 /**
@@ -244,14 +310,14 @@ export function pbpScoringPlays(plays: ScoringPlay[], pbp: GamePbp | null, away:
     used.add(i);
     const row = pbp.plays[i]!;
     const clock = clockKey(row.c) || play.clock;
-    const ends = last && endsGameAt(pbp.plays, i);
+    const ends = last && endsGameConfirmed(pbp, i);
     return { ...play, clock, ...(ends ? { endsGame: true } : {}) };
   });
 }
 
 export interface StoryPlayFacts {
   down: DownFacts | null;
-  /** Nothing was snapped or kicked off after it. */
+  /** It ended the game: nothing after it in the file, and the drive chart agrees (endsGameConfirmed). */
   endsGame: boolean;
 }
 
@@ -266,7 +332,7 @@ export function storyPlayFacts<T extends StoryPlayLike>(plays: T[], pbp: GamePbp
   for (const sp of plays) {
     const i = matchStoryPlay(sp, pbp.plays);
     if (i < 0) continue;
-    out.set(sp, { down: downFacts(pbp, i), endsGame: endsGameAt(pbp.plays, i) });
+    out.set(sp, { down: downFacts(pbp, i), endsGame: endsGameConfirmed(pbp, i) });
   }
   return out;
 }

@@ -23,7 +23,7 @@ import { isUpcomingFixture, pairInPreviewMode, type MatchupGameRef, type Matchup
 import { getFpaTable, type FpaRow } from "../fpa/fpa-data";
 import { getGameBoxscore, type GameBoxscore } from "./boxscore";
 import { loadGamePbp } from "./play-by-play";
-import { pbpScoringPlays, refineEspnDrives } from "./play-facts";
+import { pbpScoringPlays, refineEspnDrives, withGameEnding } from "./play-facts";
 import { findGameStoryEntry } from "./recap-overview";
 import { buildGameStats, type GameStats } from "./game-stats";
 import { logger } from "../logger";
@@ -600,7 +600,8 @@ function withPlayByPlay(box: GameBoxscore | null, meeting: Meeting): GameBoxscor
   const away = meeting.away.code.toUpperCase();
   const home = meeting.home.code.toUpperCase();
   const entry = findGameStoryEntry({ season: meeting.season, week: meeting.week, seasonType: meeting.seasonType, home, away });
-  const pbp = entry ? loadGamePbp(meeting.season, entry.id) : null;
+  // The drive chart says how the game ended; a play-by-play alone cannot (WEB-037).
+  const pbp = withGameEnding(entry ? loadGamePbp(meeting.season, entry.id) : null, box.drives);
   return {
     ...box,
     scoringPlays: pbpScoringPlays(box.scoringPlays ?? [], pbp, away, home),

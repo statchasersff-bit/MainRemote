@@ -106,6 +106,12 @@ export interface GamePbp {
   away: string;
   drives: PbpDrive[];
   plays: PbpPlay[];
+  /**
+   * How the game ended per ESPN's drive chart (play-facts withGameEnding),
+   * attached by the page; null when the chart does not show a score ending
+   * it, absent when never checked. Never stored in the file.
+   */
+  ending?: import("./play-facts").GameEnding | null;
 }
 
 /**

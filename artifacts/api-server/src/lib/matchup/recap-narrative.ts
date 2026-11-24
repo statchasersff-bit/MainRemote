@@ -31,7 +31,7 @@
 import type { BoxTeamStats, GameOdds } from "./boxscore";
 import type { GamePlayer, GamePlayers } from "./game-players";
 import type { GamePbp, PbpDrive } from "./play-by-play";
-import { downFacts, downText, endsGameAt, isFinalScore, leadHeldToFinal, matchStoryPlay, scoreBefore, spotText, type StoryPlayFacts } from "./play-facts";
+import { downFacts, downText, endsGameConfirmed, isFinalScore, leadHeldToFinal, matchStoryPlay, scoreBefore, spotText, type StoryPlayFacts } from "./play-facts";
 import type { ScoringPlay } from "./scoring-plays";
 import type { GameStory, StoryInjury, StoryPlay } from "./recap-overview";
 import { scoreboardResult, type ScoreboardGame } from "./scoreboard-hero";
@@ -403,7 +403,7 @@ function buildCtx(input: NarrativeInput): Ctx | null {
     // Who scored on it: the touchdown's club, the defense on a safety, else the offense.
     const by = p.td ? p.tdTeam : p.safety ? p.def : p.pos;
     const side = by === game.away.abbr ? "away" : by === game.home.abbr ? "home" : null;
-    const last = side !== null && endsGameAt(pbp.plays, i) && isFinalScore(p, final, side, p.td);
+    const last = side !== null && endsGameConfirmed(pbp, i) && isFinalScore(p, final, side, p.td);
     return { down: downFacts(pbp, i), endsGame: last };
   };
   const cityOf = (code: string) => (code === game.away.abbr ? input.city.away : code === game.home.abbr ? input.city.home : null);

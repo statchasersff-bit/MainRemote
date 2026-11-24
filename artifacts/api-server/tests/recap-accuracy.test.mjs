@@ -152,9 +152,16 @@ describe("walk-off vs go-ahead scores", () => {
       { quarter: 1, clock: "1:00", team: "AAA", type: "field_goal", yards: 30 },
     ];
     // Matched by the score it made: 0-3 for the only scoring play.
-    const [matched] = facts.pbpScoringPlays(espn, { drives: [], plays: walkOff.map((p) => ({ ...p, away: 0, home: p.score ? 3 : 0 })) }, "AAA", "BBB");
+    const file = { drives: [], plays: walkOff.map((p) => ({ ...p, away: 0, home: p.score ? 3 : 0 })) };
+    // The drive chart (ESPN, independent of the file): BBB's last drive, a field goal, ran out the clock.
+    const chart = [{ team: "BBB", quarter: 4, startClock: "1:30", durationSeconds: 90, result: "fg", defensiveScore: false }];
+    const [matched] = facts.pbpScoringPlays(espn, facts.withGameEnding(file, chart), "AAA", "BBB");
     assert.equal(matched.clock, "0:01");
     assert.equal(matched.endsGame, true);
+    // The same file without the drive chart: the clock is fixed, the ending is not claimed.
+    const [unconfirmed] = facts.pbpScoringPlays(espn, file, "AAA", "BBB");
+    assert.equal(unconfirmed.clock, "0:01");
+    assert.equal(unconfirmed.endsGame, undefined);
     const [kept] = facts.pbpScoringPlays(lead, pbp, "AAA", "BBB");
     assert.equal(kept.clock, "1:00");
     assert.equal(kept.endsGame, undefined);
@@ -196,10 +203,11 @@ describe("walk-off vs go-ahead scores", () => {
 
 describe("Packers at Lions, 2026 Week 7 (stored data)", () => {
   const ID = "2026_07_GB_DET";
-  const pbp = facts.refineDrives(read("pbp", "2026", `${ID}.json`));
-  const story = read("game_story_2026.json").games[ID];
   const stored = Object.entries(read("boxscores", "2026.json").games).find(([, g]) => g.week === 7 && g.name === "GB @ DET");
   const box = boxscore.parseEspnSummary(stored[0], stored[1].summary);
+  // As the page loads it: the play-by-play with ESPN's drive chart's ending attached.
+  const pbp = facts.withGameEnding(facts.refineDrives(read("pbp", "2026", `${ID}.json`)), box.drives);
+  const story = read("game_story_2026.json").games[ID];
 
   test("Smack's 35-yarder is blocked; his first-quarter 26-yarder stays missed", () => {
     const smack = pbp.drives.filter((d) => d.team === "GB" && /fg$/.test(d.result)).map((d) => [d.qtr, d.clock, d.result]);
@@ -476,5 +484,114 @@ describe("'led the rest of the way' only when the box score's scoring sequence c
     const unchecked = render(null);
     assert.doesNotMatch(unchecked, /led the rest of the way/);
     assert.match(unchecked, /San Francisco took the lead\./);
+  });
+});
+
+/* ---- WEB-037 follow-up (2026-11-24b): matching scores are not proof of the final play */
+
+describe("a score is called the final play only when ESPN's drive chart shows the game ending on it", () => {
+  const chartDrive = (o) => ({ team: "BBB", quarter: 4, startClock: "1:30", durationSeconds: 90, plays: 8, yards: 50, result: "fg", defensiveScore: false, ...o });
+
+  test("the drive chart's last drive decides: a score that ran the clock out, an overtime score, a pick-six", () => {
+    assert.deepEqual(facts.espnGameEnding([chartDrive()]), { team: "BBB", quarter: 4, result: "fg" });
+    assert.equal(facts.espnGameEnding([chartDrive({ durationSeconds: 60 })]), null, "0:30 still on the clock: a kickoff followed");
+    assert.equal(facts.espnGameEnding([chartDrive(), chartDrive({ team: "AAA", result: "end_game" })]), null, "a kneel-down drive came after");
+    assert.deepEqual(facts.espnGameEnding([chartDrive({ quarter: 5, startClock: "8:00", durationSeconds: 120 })]), { team: "BBB", quarter: 5, result: "fg" });
+    assert.deepEqual(facts.espnGameEnding([chartDrive({ team: "AAA", result: "int", defensiveScore: true })]), { team: "AAA", quarter: 4, result: "defensive_td" });
+    assert.equal(facts.espnGameEnding([chartDrive({ durationSeconds: null })]), null, "no elapsed time: nothing to check");
+    assert.equal(facts.espnGameEnding(null), null);
+  });
+
+  // Ravens at Panthers, Week 11 (stored): Fitzgerald's 37-yard field goal with
+  // 1:47 left was the last score and matches the 33-35 final, but a Baltimore
+  // drive (Dodson's interception) and a Carolina kneel-down followed.
+  const ID = "2026_11_BAL_CAR";
+  const stored = Object.entries(read("boxscores", "2026.json").games).find(([, g]) => g.week === 11 && g.name === "BAL @ CAR");
+  const box = boxscore.parseEspnSummary(stored[0], stored[1].summary);
+  const full = facts.refineDrives(read("pbp", "2026", `${ID}.json`));
+  const kick = full.plays.findIndex((p) => p.q === 4 && p.k === "field_goal" && p.score && p.home === 35);
+  // The play-by-play cut right after the kick: nothing after it in the file, and the final agrees.
+  const cut = { ...full, plays: full.plays.slice(0, kick + 1), drives: full.drives.filter((d) => d.n <= full.plays[kick].d) };
+  const fullStory = read("game_story_2026.json").games[ID];
+  const story = { ...fullStory, plays: fullStory.plays.filter((p) => p.qtr < 4 || (p.qtr === 4 && p.elapsed <= 3600 - 107)) };
+  const lines = stored[1].summary.header.competitions[0].competitors;
+  const side = (ha) => lines.find((c) => c.homeAway === ha).linescores.map((l) => Number(l.displayValue));
+  const game = {
+    status: "final", seasonLabel: "2026", gameType: "regular", roundLabel: "Week 11", kickoff: "2026-11-22T18:00:00.000Z", venue: null,
+    away: { abbr: "BAL", name: "Baltimore Ravens", short: "Ravens", quarters: side("away"), ot: null, score: 33 },
+    home: { abbr: "CAR", name: "Carolina Panthers", short: "Panthers", quarters: side("home"), ot: null, score: 35 },
+  };
+
+  const rendered = async (pbp) => {
+    const scoring = await importModule("lib/matchup/scoring-summary");
+    const plays = facts.pbpScoringPlays(box.scoringPlays, pbp, "BAL", "CAR");
+    const winner = scoring.runningScore(game, plays).find((s) => s.tag === "winner");
+    const faq = body.recapFaq({
+      game, teams: {}, stats: { away: null, home: null }, series: { sinceSeason: 2021, games: [], upcoming: [] }, links: {},
+      faqFacts: { winningPlay: { text: "Ryan Fitzgerald's 37-yard field goal", team: "CAR", quarter: winner.play.quarter, clock: winner.play.clock, away: winner.away, home: winner.home, ...(winner.play.endsGame ? { endsGame: true } : {}) } },
+    }).map((q) => q.answer).join(" ");
+    const players = gamePlayers.buildGamePlayers(box.players, null, box.scoringPlays);
+    const { main } = overview.renderRecapOverviewParts({
+      game, story, stats: { away: null, home: null }, players, leaders: [],
+      city: { away: "Baltimore", home: "Carolina" }, playerUrl: () => null, photo: () => "", highlights: "",
+      inks: { away: "#241773", home: "#0085ca" }, drives: pbp.drives, pbp, gameId: ID, scoring: plays,
+    });
+    const text = main.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").replace(/&#39;/g, "'");
+    return { plays, winner, faq, text };
+  };
+
+  test("the cut file: the kick reads as the go-ahead score, never the final play", async () => {
+    const pbp = facts.withGameEnding(cut, box.drives);
+    assert.equal(pbp.ending, null, "the drive chart ends on Carolina's kneel-down");
+    const { plays, winner, faq, text } = await rendered(pbp);
+    assert.equal(plays.some((p) => p.endsGame), false);
+    assert.equal(winner.play.clock, "1:47");
+    assert.doesNotMatch(faq, /on the final play/);
+    assert.doesNotMatch(text, /game-winning|on the final play|final play of the game|walk-off/);
+    // Before this fix: "Ryan Fitzgerald made a 37-yard field goal with 1:47 left, to win it 35–33 on the final play."
+    assert.match(text, /Fitzgerald made a 37-yard field goal with 1:47 left, to put Carolina ahead 35–33 for good\./);
+    assert.match(text, /Fitzgerald makes the go-ahead field goal\./);
+  });
+
+  test("Packers at Lions (stored), the genuine walk-off: the drive chart ends at 0:00 on Bates' kick, and every clock says 0:01", async () => {
+    const st = Object.entries(read("boxscores", "2026.json").games).find(([, g]) => g.week === 7 && g.name === "GB @ DET");
+    const gbBox = boxscore.parseEspnSummary(st[0], st[1].summary);
+    const raw = facts.refineDrives(read("pbp", "2026", "2026_07_GB_DET.json"));
+    const scoring = await importModule("lib/matchup/scoring-summary");
+    const g = {
+      status: "final", seasonLabel: "2026", gameType: "regular", roundLabel: "Week 7", kickoff: "2026-10-25T20:25:00.000Z", venue: null,
+      away: { abbr: "GB", name: "Green Bay Packers", short: "Packers", quarters: [7, 0, 7, 3], ot: null, score: 17 },
+      home: { abbr: "DET", name: "Detroit Lions", short: "Lions", quarters: [7, 3, 7, 3], ot: null, score: 20 },
+    };
+    const words = (pbp) => {
+      const plays = facts.pbpScoringPlays(gbBox.scoringPlays, pbp, "GB", "DET");
+      const w = scoring.runningScore(g, plays).find((s) => s.tag === "winner");
+      const faq = body.recapFaq({
+        game: g, teams: {}, stats: { away: null, home: null }, series: { sinceSeason: 2021, games: [], upcoming: [] }, links: {},
+        faqFacts: { winningPlay: { text: "Jake Bates' 22-yard field goal", team: "DET", quarter: w.play.quarter, clock: w.play.clock, away: w.away, home: w.home, ...(w.play.endsGame ? { endsGame: true } : {}) } },
+      }).map((q) => q.answer).join(" ");
+      const { main } = overview.renderRecapOverviewParts({
+        game: g, story: read("game_story_2026.json").games["2026_07_GB_DET"], stats: { away: null, home: null },
+        players: gamePlayers.buildGamePlayers(gbBox.players, null, gbBox.scoringPlays), leaders: [],
+        city: { away: "Green Bay", home: "Detroit" }, playerUrl: () => null, photo: () => "", highlights: "",
+        inks: { away: "#203731", home: "#0076b6" }, drives: pbp.drives, pbp, scoring: plays,
+      });
+      return { plays, w, faq, main: main.replace(/&#39;/g, "'") };
+    };
+
+    const confirmed = words(facts.withGameEnding(raw, gbBox.drives));
+    assert.deepEqual(confirmed.plays.at(-1), { ...confirmed.plays.at(-1), clock: "0:01", endsGame: true });
+    assert.match(confirmed.faq, /Bates' 22-yard field goal on the final play/);
+    assert.doesNotMatch(confirmed.faq, /0:00/);
+    assert.match(confirmed.main, /Bates makes the game-winning field goal\.<\/b><small>Q4 0:01 /);
+
+    // The same game with no drive chart (or a contradictory one): no ending is claimed, the clock stays.
+    for (const chart of [null, gbBox.drives.slice(0, -1)]) {
+      const unconfirmed = words(facts.withGameEnding(raw, chart));
+      assert.equal(unconfirmed.plays.some((p) => p.endsGame), false);
+      assert.equal(unconfirmed.plays.at(-1).clock, "0:01");
+      assert.doesNotMatch(unconfirmed.faq + unconfirmed.main, /on the final play|game-winning field goal|walk-off/);
+      assert.match(unconfirmed.main, /Bates makes the go-ahead field goal\./);
+    }
   });
 });
