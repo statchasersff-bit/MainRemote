@@ -39,6 +39,10 @@ if ( 'route404s' === $group ) {
 		'm:green-bay-packers-vs-detroit-lions/2026-week-3',
 		'f:2003',
 		'f:2025',
+		// The public var on an ordinary page: must mean nothing there.
+		'a:junk',
+		'a:' . SC_R404_PAIR,
+		'a:green-bay-packers-vs-detroit-lions',
 	);
 	foreach ( $routes as $route ) {
 		$child = array();
@@ -91,6 +95,7 @@ if ( 'm' === $kind ) {
 	$post->ID           = 50;
 	$post->post_title   = 'NFL Matchups';
 	$post->post_content = '[statchasers_matchup]';
+	$GLOBALS['pages_by_path'][ STATCHASERS_MATCHUP_HOLDER ] = $post;
 	$stored_canonical   = 'https://example.com/nfl/matchup/';
 	$stored_robots      = array( 'index' => 'noindex', 'follow' => 'follow' );
 	$GLOBALS['query']['sc_matchup'] = $parts[0];
@@ -115,6 +120,29 @@ if ( 'm' === $kind ) {
 		$GLOBALS['http_code'] = 404;
 		$GLOBALS['http_body'] = '';
 	}
+} elseif ( 'a' === $kind ) {
+	// An article, with the holder elsewhere: `?sc_matchup=` in its query.
+	$holder               = new WP_Post();
+	$holder->ID           = 50;
+	$holder->post_content = '[statchasers_matchup]';
+	$GLOBALS['pages_by_path'][ STATCHASERS_MATCHUP_HOLDER ] = $holder;
+	$post->ID           = 92;
+	$post->post_title   = 'Fantasy Football Tools';
+	$post->post_content = '<p>Tools.</p>';
+	$stored_canonical   = 'https://example.com/nfl/fantasy-football-tools/';
+	$stored_robots      = array( 'index' => 'index', 'follow' => 'follow' );
+	$GLOBALS['query']['sc_matchup'] = $path;
+	$GLOBALS['http_headers'] = array( 'x-matchup-title' => rawurlencode( 'Packers vs Lions Player Stats, Box Score & Highlights | 2025' ) );
+	$GLOBALS['http_body']    = '<div>game</div>';
+	// A 301 exits the request; this child must not end that way unnoticed.
+	register_shutdown_function(
+		static function () {
+			if ( empty( $GLOBALS['sc_r404_done'] ) ) {
+				echo "  FAIL  the request ended early (a redirect's exit)\n";
+				exit( 1 );
+			}
+		}
+	);
 } else {
 	$post->ID           = 96;
 	$post->post_title   = 'Fantasy Points Allowed by Position';
@@ -148,7 +176,7 @@ sc_r404_run( 'wp', 10, PHP_INT_MAX );
 
 $label = $route;
 
-if ( 0 === strpos( $path, 'green-bay-packers-vs-detroit-lions' ) ) {
+if ( 'm' === $kind && 0 === strpos( $path, 'green-bay-packers-vs-detroit-lions' ) ) {
 	// The reversed spelling 301s on template_redirect (which exits, so it is
 	// not run here); it must not have been made a 404 first.
 	is( statchasers_matchup_not_found(), false, "$label: a 301, not a 404" );
@@ -188,6 +216,19 @@ foreach ( array( 'facebook', 'twitter' ) as $network ) {
 	$images += $col->n;
 }
 $crumbs = apply_filters( 'rank_math/frontend/breadcrumb/items', array( array( 'Home', 'https://example.com' ) ) );
+
+if ( 'a' === $kind ) {
+	$GLOBALS['sc_r404_done'] = true;
+	is( $GLOBALS['status_code'], 200, "$label: the page is not a 404" );
+	is( is_404(), false, "$label: nor its template" );
+	is( statchasers_matchup_current(), null, "$label: no pair read off it" );
+	is( $title, $post->post_title, "$label: its own title" );
+	is( $canonical, $stored_canonical, "$label: its own canonical" );
+	is( $robots['index'], 'index', "$label: its own robots" );
+	is( $images, 0, "$label: no game share card" );
+	is( false === strpos( $graph, 'SportsEvent' ), true, "$label: no game nodes" );
+	return;
+}
 
 if ( in_array( $path, array( 'foo-vs-bar', SC_R404_PAIR . '/2026-week-30', SC_R404_PAIR . '/2026-week-3', '2003' ), true ) ) {
 	is( $GLOBALS['status_code'], 404, "$label: HTTP 404" );

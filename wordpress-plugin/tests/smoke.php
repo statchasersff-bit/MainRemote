@@ -664,6 +664,14 @@ is( statchasers_player_section_urls_enabled(), true, 'player sections' );
 is( statchasers_matchup_urls_enabled(), true, 'matchup pairs' );
 
 echo "\nmatchup headings\n";
+// The pair var is read only on the holder page (WEB-013): every matchup
+// check below renders it, as the rewrite does.
+$sc_holder                = new WP_Post();
+$sc_holder->ID            = 50;
+$sc_holder->post_name     = 'matchup';
+$sc_holder->post_content  = '[statchasers_matchup]';
+$GLOBALS['pages_by_path'] = array_merge( $GLOBALS['pages_by_path'] ?? array(), array( STATCHASERS_MATCHUP_HOLDER => $sc_holder ) );
+$GLOBALS['page']['post']  = $sc_holder;
 $GLOBALS['query']['sc_matchup'] = 'new-england-patriots-vs-philadelphia-eagles';
 is( statchasers_matchup_heading(), 'New England Patriots vs Philadelphia Eagles', 'pair' );
 

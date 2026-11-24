@@ -169,6 +169,34 @@ add_action(
 	}
 );
 
+/**
+ * Is the page being rendered the matchup holder - the page every pair URL's
+ * rewrite resolves to? By identity, not by shortcode: the holder is the page
+ * at STATCHASERS_MATCHUP_HOLDER.
+ */
+function statchasers_matchup_on_holder(): bool {
+	$queried = get_queried_object();
+	if ( ! $queried instanceof WP_Post ) {
+		return false;
+	}
+	$holder = get_page_by_path( STATCHASERS_MATCHUP_HOLDER );
+	return $holder instanceof WP_Post && (int) $holder->ID === (int) $queried->ID;
+}
+
+/**
+ * The pair segment this request names, or ''.
+ *
+ * Only on the holder (WEB-013, 2026-11-24). `sc_matchup` is a public query
+ * var, so before this `?sc_matchup=` on ANY page was read as a pair: a junk
+ * value made the page a 404, a real pair retitled it as that game with the
+ * pair's canonical, and a reversed pair 301'd it to the pair - all live on
+ * /nfl/fantasy-football-tools/.
+ */
+function statchasers_matchup_raw(): string {
+	$raw = (string) get_query_var( 'sc_matchup' );
+	return '' !== $raw && statchasers_matchup_on_holder() ? $raw : '';
+}
+
 /** The pair this request is for, validated, or null. */
 function statchasers_matchup_current(): ?array {
 	static $pair = null;
@@ -177,7 +205,7 @@ function statchasers_matchup_current(): ?array {
 		return $pair;
 	}
 	$done = true;
-	$raw  = (string) get_query_var( 'sc_matchup' );
+	$raw  = statchasers_matchup_raw();
 	$pair = '' === $raw ? null : statchasers_matchup_pair( $raw );
 	return $pair;
 }
@@ -299,7 +327,7 @@ function statchasers_matchup_not_found(): bool {
 		return $answer;
 	}
 	$answer = false;
-	if ( '' === (string) get_query_var( 'sc_matchup' ) ) {
+	if ( '' === statchasers_matchup_raw() ) {
 		return $answer;
 	}
 	$pair = statchasers_matchup_current();
@@ -359,7 +387,7 @@ add_action( 'wp', 'statchasers_matchup_404', 0 );
 add_action(
 	'template_redirect',
 	function (): void {
-		if ( '' === (string) get_query_var( 'sc_matchup' ) ) {
+		if ( '' === statchasers_matchup_raw() ) {
 			return;
 		}
 		$pair = statchasers_matchup_current();
