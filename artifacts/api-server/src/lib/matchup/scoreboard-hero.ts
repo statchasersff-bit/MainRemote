@@ -81,6 +81,11 @@ export interface ScoreboardGame {
   venue: ScoreboardVenue | null;
   away: ScoreboardTeam;
   home: ScoreboardTeam;
+  /**
+   * A game called off: its SportsEvent says EventPostponed / EventCancelled
+   * rather than EventScheduled (WEB-040). Absent for every other game.
+   */
+  calledOff?: "postponed" | "canceled";
 }
 
 export interface ScoreboardHeroOptions {
@@ -624,10 +629,16 @@ export function scoreboardSportsEvent(game: ScoreboardGame): Node | null {
     startDate: game.kickoff,
     // Completed once the game is final (the SEO brief of 2026-10-10); the
     // description under it carries the final score.
+    // A game in progress stays EventScheduled: schema.org has no
+    // in-progress status, and the page never claims one it cannot show.
     eventStatus:
       game.status === "final" && scoreboardResult(game)
         ? "https://schema.org/EventCompleted"
-        : "https://schema.org/EventScheduled",
+        : game.calledOff === "postponed"
+          ? "https://schema.org/EventPostponed"
+          : game.calledOff === "canceled"
+            ? "https://schema.org/EventCancelled"
+            : "https://schema.org/EventScheduled",
     eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
     location: {
       "@type": "StadiumOrArena",

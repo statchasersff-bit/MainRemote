@@ -256,8 +256,36 @@ export interface PolicyGame extends StatusFields {
  * whole season for the season grid.
  */
 export interface CachePolicy {
-  state: "live" | "pregame" | "settled";
+  state: "live" | "pregame" | "recent" | "settled";
   nextKickoffMs: number | null;
+}
+
+/**
+ * How long a final stays "recent" (WEB-040 matchup pages, 2026-11-24): the
+ * first 48 hours after the game, when box scores, stat corrections and the
+ * recap still land. Counted from the end estimate below, because no source
+ * here records the moment a game ended.
+ */
+export const RECENT_FINAL_MS = 48 * 60 * 60 * 1000;
+
+/** When a game is taken to have ended: kickoff plus a long game (overtime included). */
+export const GAME_END_ESTIMATE_MS = 4 * 60 * 60 * 1000;
+
+/** Is this final inside its first 48 hours? False without a kickoff. */
+export function isRecentFinal(kickoffMs: number | null, nowMs: number): boolean {
+  return kickoffMs !== null && kickoffMs + GAME_END_ESTIMATE_MS + RECENT_FINAL_MS > nowMs;
+}
+
+/**
+ * A settled policy whose games include a final in its first 48 hours becomes
+ * "recent": short enough at the edge (about an hour) that a stat correction or
+ * a late box score reaches readers the same day, long enough that a finished
+ * game costs almost nothing. Any other policy is returned unchanged.
+ */
+export function withRecentFinal(policy: CachePolicy, games: readonly PolicyGame[], nowMs: number): CachePolicy {
+  if (policy.state !== "settled") return policy;
+  const recent = games.some((game) => game.status === "final" && isRecentFinal(game.kickoffMs, nowMs));
+  return recent ? { state: "recent", nextKickoffMs: null } : policy;
 }
 
 export function schedulePagePolicy(games: readonly PolicyGame[], nowMs: number): CachePolicy {

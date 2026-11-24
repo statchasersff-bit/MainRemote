@@ -25,6 +25,7 @@ import { matchupPageMeta, matchupScoreLine } from "./matchup-seo";
 import { matchupPageHeading, matchupShare } from "./matchup-render";
 import { gameSegment, type MatchupPair } from "./pair";
 import { LruCache } from "../lru";
+import type { MatchupCachePolicy } from "./game-state";
 
 export interface MatchupSsrResult {
   html: string;
@@ -79,6 +80,13 @@ export interface MatchupSsrResult {
   description: string;
   /** A completed game's share image, path on this origin, and its alt text; null elsewhere. */
   shareImage: { path: string; alt: string } | null;
+  /**
+   * How long a shared cache may keep the page (WEB-040, game-state.ts).
+   * Decided per request, never from the render cache: a cached render of a
+   * preview is the same HTML a minute before and a minute after kickoff, but
+   * its lifetime is not.
+   */
+  cache: MatchupCachePolicy;
 }
 
 /** 496 pairs × two option sets is the ceiling; most are never asked for. */
@@ -130,7 +138,7 @@ async function renderWithData(
   const key = `${pair.slug}:${optionKey(options)}`;
 
   const hit = fragmentCache.get(key);
-  if (hit && hit.version === version) return { result: hit, data };
+  if (hit && hit.version === version) return { result: { ...hit, cache: data.cachePolicy }, data };
 
   const meta = matchupPageMeta(data, "");
   const share = matchupShare(data);
@@ -148,6 +156,7 @@ async function renderWithData(
     week: "",
     description: meta.description,
     shareImage: share ? { path: share.path, alt: share.alt } : null,
+    cache: data.cachePolicy,
   };
   fragmentCache.set(key, result);
   return { result, data };

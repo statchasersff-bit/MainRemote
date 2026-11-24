@@ -57,14 +57,26 @@ export const IN_PROGRESS_GRACE_MS = 4 * 60 * 60 * 1000;
  * The same test matchup-data.ts decides the page's state with: not final, and
  * either undated or kicked off less than IN_PROGRESS_GRACE_MS ago.
  */
-export function isUpcomingFixture(isFinal: boolean, kickoffMs: number | null, now: number): boolean {
-  return !isFinal && (kickoffMs === null || kickoffMs + IN_PROGRESS_GRACE_MS > now);
+export function isUpcomingFixture(
+  isFinal: boolean,
+  kickoffMs: number | null,
+  now: number,
+  inPlay = false,
+): boolean {
+  // A game a source still reports in progress (or whose status is pending:
+  // kicked off, no final yet) stays the current game however long it runs.
+  // Before WEB-040 (2026-11-24) the four-hour grace alone decided, so an
+  // overtime game, a weather delay or a stalled feed dropped the pair's page
+  // back to the previous result while the game was still being played.
+  return !isFinal && (inPlay || kickoffMs === null || kickoffMs + IN_PROGRESS_GRACE_MS > now);
 }
 
 /** What the ownership rule needs to know about one of a pair's meetings. */
 export interface MeetingFacts {
   kickoffMs: number | null;
   isFinal: boolean;
+  /** In progress, or kicked off with its status pending (WEB-040). */
+  inPlay?: boolean;
 }
 
 /**
@@ -87,7 +99,7 @@ export function pairInPreviewMode(meetings: readonly MeetingFacts[], now: number
 function nextMeeting(meetings: readonly MeetingFacts[], now: number): MeetingFacts | null {
   let next: MeetingFacts | null = null;
   for (const m of meetings) {
-    if (!isUpcomingFixture(m.isFinal, m.kickoffMs, now)) continue;
+    if (!isUpcomingFixture(m.isFinal, m.kickoffMs, now, m.inPlay === true)) continue;
     if (!next) next = m;
     else if (m.kickoffMs !== null && (next.kickoffMs === null || m.kickoffMs < next.kickoffMs)) next = m;
   }
@@ -147,12 +159,16 @@ export interface LinkedMeeting extends MeetingFacts {
  * - A finished game: its own dated address (meetingHasOwnAddress), always,
  *   since WEB-001 (2026-11-24). Until then the pair's page owned this
  *   season's latest result and its links went there.
- * - An unplayed game this season: the pair's page while that page is
- *   previewing it (pairPreviewsMeeting), otherwise its own dated preview.
- *   Before this rule an upcoming rematch more than six days out linked the
- *   pair's page, which was still the earlier meeting's box score. The dated
- *   preview is noindex and declares no canonical until the pair's page takes
- *   the game over, so no indexed URL changes (docs/MATCHUP-REMATCH-OPTIONS-A-VS-D.md).
+ * - An unplayed game this season: its own dated address, always (WEB-040,
+ *   2026-11-24: one stable URL per game). The same address serves the
+ *   preview before kickoff, the live score during the game and the box score
+ *   after it, so a reader who opens it from the schedule before kickoff never
+ *   has to find the game again. From Phase 7 (2026-11-20) until then the link
+ *   went to the pair's page while that page was previewing the game. What the
+ *   dated address declares is unchanged: noindex and no canonical until the
+ *   pair's page takes the game over, then a canonical up to the pair's page
+ *   (X-Matchup-Game: current), then its own once final (WEB-001); see
+ *   docs/MATCHUP-REMATCH-OPTIONS-A-VS-D.md and docs/WEB-040-LIVE-MATCHUP-2026-11-24b.md.
  * - A canceled game, or an unplayed one outside the current season: the
  *   pair's page, as before.
  *
@@ -160,13 +176,13 @@ export interface LinkedMeeting extends MeetingFacts {
  */
 export function meetingLinkTarget(
   game: LinkedMeeting,
-  meetings: readonly MeetingFacts[],
+  _meetings: readonly MeetingFacts[],
   currentSeason: number,
-  now: number,
+  _now: number,
 ): "own" | "pair" {
   if (game.isFinal) return meetingHasOwnAddress(game) ? "own" : "pair";
   if (game.canceled || game.season !== currentSeason) return "pair";
-  return pairPreviewsMeeting(game, meetings, now) ? "pair" : "own";
+  return "own";
 }
 
 /**

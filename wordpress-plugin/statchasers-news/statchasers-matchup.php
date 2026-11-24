@@ -496,6 +496,9 @@ function statchasers_matchup_fetch( string $slug, string $game = '' ): ?array {
 	if ( 200 !== $code || '' === trim( $body ) ) {
 		$backup = statchasers_cache_get( $backup_key );
 		if ( is_array( $backup ) && isset( $backup['html'] ) ) {
+			// The last good render, which may have been saved mid-game: the
+			// edge keeps it a minute and WP Rocket never (WEB-040).
+			$backup['cache_state'] = 'backup';
 			// Held under the fresh key for a minute too: otherwise every view,
 			// and every caller within a view, retries the origin and waits out
 			// the timeout for as long as it stays down.
@@ -506,6 +509,7 @@ function statchasers_matchup_fetch( string $slug, string $game = '' ): ?array {
 		return null;
 	}
 
+	$cache_state = strtolower( trim( (string) wp_remote_retrieve_header( $response, 'x-sc-matchup-cache-state' ) ) );
 	$payload = array(
 		'html'    => $body,
 		'version' => trim( (string) wp_remote_retrieve_header( $response, 'etag' ) ),
@@ -531,13 +535,254 @@ function statchasers_matchup_fetch( string $slug, string $game = '' ): ?array {
 		'description' => rawurldecode( trim( (string) wp_remote_retrieve_header( $response, 'x-matchup-description' ) ) ),
 		'image'       => trim( (string) wp_remote_retrieve_header( $response, 'x-matchup-image' ) ),
 		'image_alt'   => rawurldecode( trim( (string) wp_remote_retrieve_header( $response, 'x-matchup-image-alt' ) ) ),
+		// WEB-040: how long the page may be kept in front of WordPress, and
+		// when it changes on its own (kickoff, or the pair's page turning
+		// into the preview), epoch seconds. Empty from an API before it:
+		// then nothing changes (statchasers_matchup_page_cache_policy).
+		'cache_state' => in_array( $cache_state, array( 'live', 'pregame', 'recent', 'settled' ), true ) ? $cache_state : '',
+		'change_at'   => (int) wp_remote_retrieve_header( $response, 'x-sc-matchup-change-at' ),
 		'missing' => false,
 	);
 
-	set_transient( $cache_key, $payload, STATCHASERS_MATCHUP_CACHE_TTL );
+	set_transient( $cache_key, $payload, statchasers_matchup_transient_ttl( $payload, time() ) );
 	set_transient( $backup_key, $payload, STATCHASERS_MATCHUP_BACKUP_TTL );
 
 	return $payload;
+}
+
+/** Shared-cache lifetime of a matchup page while its game is live, or for the outage backup. */
+const STATCHASERS_MATCHUP_LIVE_EDGE_TTL = MINUTE_IN_SECONDS;
+
+/** Longest a preview is kept, however far off its kickoff. */
+const STATCHASERS_MATCHUP_PREGAME_EDGE_CAP = 6 * HOUR_IN_SECONDS;
+
+/** A final in its first 48 hours, or one still waiting for its box score. */
+const STATCHASERS_MATCHUP_RECENT_EDGE_TTL = HOUR_IN_SECONDS;
+
+/** The host's own long default, which "settled" leaves standing. */
+const STATCHASERS_MATCHUP_EDGE_DEFAULT = 30 * DAY_IN_SECONDS;
+
+/**
+ * How long this plugin's own copy of a render is kept: never past the page's
+ * next change, half a minute while live, five minutes otherwise.
+ *
+ * @param array<string,mixed> $payload The fetch result.
+ * @param int                 $now     Epoch seconds.
+ */
+function statchasers_matchup_transient_ttl( array $payload, int $now ): int {
+	$state = (string) ( $payload['cache_state'] ?? '' );
+	if ( 'live' === $state ) {
+		return 30;
+	}
+	$change = (int) ( $payload['change_at'] ?? 0 );
+	if ( $change > $now ) {
+		return max( 1, min( STATCHASERS_MATCHUP_CACHE_TTL, $change - $now ) );
+	}
+	return STATCHASERS_MATCHUP_CACHE_TTL;
+}
+
+/**
+ * How long the page in front of a matchup address may be kept (WEB-040,
+ * 2026-11-24). The schedule's rule (statchasers_schedule_page_cache_policy),
+ * applied to the game the page is about:
+ *
+ * - live / backup / nothing to show: a minute at the edge, never in WP Rocket;
+ * - pregame: until kickoff (capped at six hours), never in WP Rocket. This is
+ *   the case of a preview cached a minute before kickoff: it expires at
+ *   kickoff, and the copy it refills from is not a day-old WP Rocket file;
+ * - recent (a final in its first 48 hours, or still waiting for its box
+ *   score): an hour, never in WP Rocket;
+ * - settled: the long default stands and WP Rocket may keep it - unless the
+ *   page changes on its own clock sooner (the pair's page turning into a
+ *   preview six days before the next meeting), when the edge keeps it until
+ *   then and, inside a day of it, WP Rocket does not keep it at all.
+ * - an API too old to say (no X-SC-Matchup-Cache-State): nothing changes, as
+ *   before this version.
+ *
+ * Pure: `$now` is passed in so the smoke tests can walk a game day.
+ *
+ * @param array<string,mixed>|null $data The fetch result, or null.
+ * @param int                      $now  Epoch seconds.
+ * @return array{state:string,edge_ttl:int|null,page_cache:bool}
+ */
+function statchasers_matchup_page_cache_policy( ?array $data, int $now ): array {
+	if ( ! is_array( $data ) || '' === (string) ( $data['html'] ?? '' ) ) {
+		return array( 'state' => 'unavailable', 'edge_ttl' => STATCHASERS_MATCHUP_LIVE_EDGE_TTL, 'page_cache' => false );
+	}
+	$state  = (string) ( $data['cache_state'] ?? '' );
+	$change = (int) ( $data['change_at'] ?? 0 );
+	$until  = $change > $now ? $change - $now : 0;
+
+	switch ( $state ) {
+		case '':
+			return array( 'state' => 'legacy', 'edge_ttl' => null, 'page_cache' => true );
+		case 'settled':
+			if ( $until > 0 && $until < STATCHASERS_MATCHUP_EDGE_DEFAULT ) {
+				return array( 'state' => $state, 'edge_ttl' => $until, 'page_cache' => $until > DAY_IN_SECONDS );
+			}
+			return array( 'state' => $state, 'edge_ttl' => null, 'page_cache' => true );
+		case 'recent':
+			return array(
+				'state'      => $state,
+				'edge_ttl'   => $until > 0 ? min( STATCHASERS_MATCHUP_RECENT_EDGE_TTL, $until ) : STATCHASERS_MATCHUP_RECENT_EDGE_TTL,
+				'page_cache' => false,
+			);
+		case 'pregame':
+			if ( $change <= 0 ) {
+				$ttl = STATCHASERS_MATCHUP_PREGAME_EDGE_CAP;
+			} elseif ( $until > 0 ) {
+				$ttl = min( STATCHASERS_MATCHUP_PREGAME_EDGE_CAP, $until );
+			} else {
+				// The copy says pregame but its kickoff has passed.
+				$ttl = STATCHASERS_MATCHUP_LIVE_EDGE_TTL;
+			}
+			return array( 'state' => $state, 'edge_ttl' => $ttl, 'page_cache' => false );
+		default:
+			return array( 'state' => $state, 'edge_ttl' => STATCHASERS_MATCHUP_LIVE_EDGE_TTL, 'page_cache' => false );
+	}
+}
+
+/**
+ * Apply the policy to this response: DONOTCACHEPAGE for WP Rocket, and the
+ * lifetime three ways (see statchasers_schedule_apply_cache_policy for why).
+ * X-SC-Matchup-Cache says what was decided.
+ *
+ * @param array{state:string,edge_ttl:int|null,page_cache:bool} $policy From statchasers_matchup_page_cache_policy().
+ */
+function statchasers_matchup_apply_cache_policy( array $policy ): void {
+	if ( ! $policy['page_cache'] && ! defined( 'DONOTCACHEPAGE' ) ) {
+		define( 'DONOTCACHEPAGE', true );
+	}
+	if ( headers_sent() ) {
+		return;
+	}
+	if ( null !== $policy['edge_ttl'] ) {
+		$ttl = max( 1, (int) $policy['edge_ttl'] );
+		header( 'Cache-Control: public, max-age=0, s-maxage=' . $ttl );
+		header( 'CDN-Cache-Control: public, max-age=' . $ttl );
+		header( 'Cloudflare-CDN-Cache-Control: public, max-age=' . $ttl );
+	}
+	header(
+		'X-SC-Matchup-Cache: state=' . $policy['state'] .
+		'; edge-ttl=' . ( null === $policy['edge_ttl'] ? 'default' : (int) $policy['edge_ttl'] ) .
+		'; page-cache=' . ( $policy['page_cache'] ? 'allow' : 'skip' )
+	);
+}
+
+/**
+ * Decide before any output. A 404 has its own headers (nocache_headers), and
+ * a 301 never gets here; the fetch is the cached one the shortcode reuses.
+ */
+function statchasers_matchup_cache_headers(): void {
+	if ( is_admin() || '' === statchasers_matchup_raw() || statchasers_matchup_not_found() ) {
+		return;
+	}
+	$pair = statchasers_matchup_current();
+	if ( null === $pair || ! $pair['canonical'] ) {
+		return;
+	}
+	$data = statchasers_matchup_fetch( $pair['slug'], statchasers_matchup_game() );
+	statchasers_matchup_apply_cache_policy( statchasers_matchup_page_cache_policy( $data, time() ) );
+}
+add_action( 'template_redirect', 'statchasers_matchup_cache_headers', 20 );
+
+/* ---------------------------------------------------------------- purge */
+
+/**
+ * POST /wp-json/statchasers/v1/purge-games - the API names the pages a game
+ * status change made stale (WEB-040; the app's lib/schedule/game-events.ts):
+ * the dated game page, the pair's page, the schedule's week and season pages,
+ * and both clubs' hubs and schedule tabs.
+ *
+ * Off unless STATCHASERS_PURGE_KEY is defined in wp-config.php: without it
+ * the route answers 503 and touches nothing. With it, the request must carry
+ * the same key in X-SC-Purge-Key. What it does, in order:
+ *
+ * 1. Drops this plugin's own copies of those renders (matchup and schedule
+ *    transients; the outage backups are kept).
+ * 2. Clears WP Rocket's files for exactly those URLs (rocket_clean_files),
+ *    desktop and mobile.
+ * 3. Fires `statchasers_purge_edge_urls` with the absolute URLs, the hook for
+ *    the edge purge. Rocket.net's CDN Cache Plugin purges by URL through its
+ *    own API; which function of it to call has to be confirmed on the host
+ *    (docs/WEB-040-LIVE-MATCHUP-2026-11-24b.md) before anything is hooked here.
+ */
+function statchasers_matchup_register_purge(): void {
+	register_rest_route(
+		'statchasers/v1',
+		'/purge-games',
+		array(
+			'methods'             => 'POST',
+			'callback'            => 'statchasers_matchup_purge_games',
+			'permission_callback' => '__return_true',
+		)
+	);
+}
+add_action( 'rest_api_init', 'statchasers_matchup_register_purge' );
+
+/**
+ * The site paths a purge request may name: matchup, schedule and team pages
+ * only. Anything else is dropped.
+ *
+ * @param mixed $paths The request's `paths`.
+ * @return string[]
+ */
+function statchasers_matchup_purge_paths( $paths ): array {
+	if ( ! is_array( $paths ) ) {
+		return array();
+	}
+	$out = array();
+	foreach ( $paths as $path ) {
+		$path = (string) $path;
+		if ( preg_match( '#^/nfl/[a-z0-9-]+/(?:[a-z0-9-]+/){0,2}$#', $path ) ) {
+			$out[] = $path;
+		}
+	}
+	return array_values( array_unique( array_slice( $out, 0, 200 ) ) );
+}
+
+/**
+ * @param WP_REST_Request $request The request.
+ * @return WP_REST_Response|WP_Error
+ */
+function statchasers_matchup_purge_games( $request ) {
+	$key = defined( 'STATCHASERS_PURGE_KEY' ) ? (string) STATCHASERS_PURGE_KEY : '';
+	if ( '' === $key ) {
+		return new WP_Error( 'statchasers_purge_off', 'Purge hook not configured.', array( 'status' => 503 ) );
+	}
+	if ( ! hash_equals( $key, (string) $request->get_header( 'x_sc_purge_key' ) ) ) {
+		return new WP_Error( 'statchasers_purge_denied', 'Bad key.', array( 'status' => 403 ) );
+	}
+	$params = $request->get_json_params();
+	$paths  = statchasers_matchup_purge_paths( is_array( $params ) ? ( $params['paths'] ?? null ) : null );
+	if ( ! $paths ) {
+		return new WP_REST_Response( array( 'ok' => true, 'purged' => 0 ), 200 );
+	}
+
+	// 1. This plugin's renders. A matchup render is keyed by pair and game
+	// (statchasers_matchup_fetch); the schedule's by its arguments, so all
+	// of its fresh copies go (the backups stay).
+	$origin = statchasers_news_origin();
+	foreach ( $paths as $path ) {
+		if ( preg_match( '#^/nfl/([a-z0-9-]+-vs-[a-z0-9-]+)/(?:(' . STATCHASERS_MATCHUP_GAME_SHAPE . ')/)?$#', $path, $m ) ) {
+			delete_transient( 'sc_matchup_ssr_' . md5( $origin . '|matchup|' . $m[1] . '|' . ( $m[2] ?? '' ) ) );
+		}
+	}
+	if ( function_exists( 'statchasers_schedule_flush' ) ) {
+		statchasers_schedule_flush( false );
+	}
+
+	$urls = array_map( static fn( string $path ): string => home_url( $path ), $paths );
+
+	// 2. WP Rocket, exactly these pages (both caches).
+	if ( function_exists( 'rocket_clean_files' ) ) {
+		rocket_clean_files( $urls );
+	}
+
+	// 3. The edge.
+	do_action( 'statchasers_purge_edge_urls', $urls );
+
+	return new WP_REST_Response( array( 'ok' => true, 'purged' => count( $urls ) ), 200 );
 }
 
 /** The shortcode: prints the pair's fragment. Team assets, same bundle. */

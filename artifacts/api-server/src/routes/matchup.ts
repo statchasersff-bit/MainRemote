@@ -28,6 +28,7 @@ import { canonicalUrl, publicOrigin } from "../lib/request";
 import { assetVersion } from "./embed";
 import { gamePath, matchupPath, matchupShare } from "../lib/matchup/matchup-render";
 import { getMatchupData } from "../lib/matchup/matchup-data";
+import type { MatchupCachePolicy } from "../lib/matchup/game-state";
 import { archivedGames } from "../lib/matchup/game-index";
 import { renderShareImage } from "../lib/matchup/og-image";
 import { renderMatchupAppPage, renderMatchupFragment } from "../lib/matchup/matchup-ssr";
@@ -63,6 +64,29 @@ function publicPrefixes(): { team: string; matchup: string; linkQuery: string } 
   const linkQuery =
     override !== undefined ? override.trim() : team === TEAM_PATH_PREFIX ? "?embed=1" : "";
   return { team, matchup, linkQuery };
+}
+
+/**
+ * The page's cache policy, for the WordPress plugin (WEB-040, matchup pages):
+ * `X-SC-Matchup-Cache-State` is live / pregame / recent / settled, and
+ * `X-SC-Matchup-Change-At` the epoch second the page changes on its own (the
+ * kickoff, or the pair's page turning into the preview), when there is one.
+ * The response's own max-age follows: 30 s live, never past the change
+ * before a game, five minutes otherwise. The plugin's transient follows it.
+ */
+function setMatchupCacheHeaders(res: Response, cache: MatchupCachePolicy, dev: boolean): void {
+  const now = Date.now();
+  const untilChange = cache.changeAtMs !== null ? Math.floor((cache.changeAtMs - now) / 1000) : null;
+  const maxAge =
+    cache.state === "live"
+      ? 30
+      : untilChange !== null
+        ? Math.max(1, Math.min(300, untilChange))
+        : 300;
+  res
+    .set("Cache-Control", dev ? "no-store" : `public, max-age=${maxAge}`)
+    .set("X-SC-Matchup-Cache-State", cache.state);
+  if (cache.changeAtMs !== null) res.set("X-SC-Matchup-Change-At", String(Math.floor(cache.changeAtMs / 1000)));
 }
 
 function noStoreHtml(res: Response, status: number, html: string): void {
@@ -186,8 +210,8 @@ async function sendMatchupPage(
     }
     let html = dev ? liveReload().injectIntoHtml(result.html) : result.html;
     if (devBarEnabled()) html = injectDevBar(html, { path: req.path, embed });
+    setMatchupCacheHeaders(res, result.cache, dev);
     res
-      .set("Cache-Control", dev ? "no-store" : "public, max-age=60")
       .set("X-Robots-Tag", "noindex, indexifembedded")
       .type("html")
       .send(html);
@@ -316,8 +340,8 @@ router.get("/embed/matchup/:pair", (req, res) => {
         res.status(304).end();
         return;
       }
+      setMatchupCacheHeaders(res, result.cache, false);
       res
-        .set("Cache-Control", "public, max-age=60")
         .set("X-Robots-Tag", "noindex, indexifembedded")
         // The plugin reads these to write the title for the state the page is in.
         .set("X-Matchup-State", result.state)

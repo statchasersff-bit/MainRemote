@@ -377,7 +377,7 @@ describe("schedule routes, Week 11 with ESPN reachable", () => {
     assert.match(res.headers.get("cache-control") ?? "", /max-age=300\b/);
   });
 
-  test("warm cache: live to final replaces the clock on both routes; the week settles", async () => {
+  test("warm cache: live to final replaces the clock on both routes; the week is recent, then settles", async () => {
     const warm = {};
     for (const p of [PAGE, FRAGMENT]) {
       const res = await app.get(p);
@@ -393,7 +393,9 @@ describe("schedule routes, Week 11 with ESPN reachable", () => {
       const res = await app.get(p, { "If-None-Match": warm[p] });
       assert.equal(res.status, 200, `${p}: the old ETag must not revalidate the live render`);
       assert.notEqual(res.headers.get("etag"), warm[p]);
-      assert.equal(res.headers.get("x-sc-schedule-state"), "settled", p);
+      // "recent" while a final is in its first 48 hours (WEB-040, matchup
+      // pages): an hour at the edge, then "settled". Both are five minutes here.
+      assert.equal(res.headers.get("x-sc-schedule-state"), "recent", p);
       assert.match(res.headers.get("cache-control") ?? "", /max-age=300\b/);
       const body = await res.text();
       const game = rowStatus(body, "2026_11_CIN_WAS");

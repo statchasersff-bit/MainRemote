@@ -464,7 +464,7 @@ function statchasers_schedule_fetch( array $args ): ?array {
 		'html'         => $body,
 		'version'      => trim( (string) wp_remote_retrieve_header( $response, 'etag' ) ),
 		// An API too old to say is treated as live: short-lived, never stored.
-		'state'        => in_array( $state, array( 'live', 'pregame', 'settled' ), true ) ? $state : 'live',
+		'state'        => in_array( $state, array( 'live', 'pregame', 'recent', 'settled' ), true ) ? $state : 'live',
 		'next_kickoff' => (int) wp_remote_retrieve_header( $response, 'x-sc-schedule-next-kickoff' ),
 	);
 
@@ -748,6 +748,13 @@ const STATCHASERS_SCHEDULE_LIVE_EDGE_TTL = MINUTE_IN_SECONDS;
 const STATCHASERS_SCHEDULE_PREGAME_EDGE_CAP = 6 * HOUR_IN_SECONDS;
 
 /**
+ * A completed board in the first 48 hours after its last final ("recent",
+ * WEB-040 matchup pages, 2026-11-24): an hour at the edge, so a stat
+ * correction or a corrected final reaches readers the same day.
+ */
+const STATCHASERS_SCHEDULE_RECENT_EDGE_TTL = HOUR_IN_SECONDS;
+
+/**
  * How long the page in front of this board may be kept (WEB-040).
  *
  * The page cache in front of this site keeps a page for 30 days
@@ -774,6 +781,11 @@ function statchasers_schedule_page_cache_policy( ?array $data, int $now ): array
 
 	if ( 'settled' === $state ) {
 		return array( 'state' => $state, 'edge_ttl' => null, 'page_cache' => true );
+	}
+
+	if ( 'recent' === $state ) {
+		// Not in WP Rocket either: its own lifespan is a day.
+		return array( 'state' => $state, 'edge_ttl' => STATCHASERS_SCHEDULE_RECENT_EDGE_TTL, 'page_cache' => false );
 	}
 
 	if ( 'pregame' === $state ) {

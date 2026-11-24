@@ -24,6 +24,7 @@ import path from "node:path";
 import { dataPath } from "../data-dir";
 import { createKeyedCache, fetchJson, TEAM_USER_AGENT } from "../team/cache";
 import { getTeamByAbbreviation, type NflTeam } from "../team/teams";
+import { ESPN_SITE } from "../team/upstream";
 import type { BoxPlayer, PlayerGameStats } from "./game-players";
 import { parseEspnScoringPlay, type EspnScoringPlay, type ScoringPlay } from "./scoring-plays";
 
@@ -584,7 +585,9 @@ const cache = createKeyedCache<GameBoxscore>({
   errorBackoffMs: 10 * 60 * 1000,
   load: async (eventId, signal) => {
     const url =
-      `https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary` +
+      // Through the same base as the scoreboard, so a replay's fake ESPN
+      // answers for both (WEB-040); the default is ESPN's own host.
+      `${ESPN_SITE}/apis/site/v2/sports/football/nfl/summary` +
       `?event=${encodeURIComponent(eventId)}`;
     return parse(eventId, await fetchJson<EspnSummary>(url, signal, TEAM_USER_AGENT));
   },

@@ -19,7 +19,7 @@ import { getTeamPostseason, getTeamSchedule, type ScheduleGame } from "../team/s
 import { getTeamPageData, dataVersion, type TeamPageData } from "../team/team-data";
 import type { NflTeam } from "../team/teams";
 import type { NflState } from "../team/nfl-state";
-import { isUpcomingFixture, pairInPreviewMode, type MatchupGameRef, type MatchupPair, type MeetingFacts } from "./pair";
+import { isUpcomingFixture, pairInPreviewMode, PREVIEW_WINDOW_MS, type MatchupGameRef, type MatchupPair, type MeetingFacts } from "./pair";
 import { getFpaTable, type FpaRow } from "../fpa/fpa-data";
 import { getGameBoxscore, type GameBoxscore } from "./boxscore";
 import { loadGamePbp } from "./play-by-play";
@@ -28,7 +28,8 @@ import { findGameStoryEntry } from "./recap-overview";
 import { buildGameStats, type GameStats } from "./game-stats";
 import { logger } from "../logger";
 import { getKickoffForecast, getWeekLines } from "./game-lines";
-import { getSeasonSlate } from "../schedule/schedule-data";
+import { getPostseason, getSeasonSlate } from "../schedule/schedule-data";
+import { gameStateRecord, matchupCachePolicy, type GameStateRecord, type MatchupCachePolicy } from "./game-state";
 import { buildPreview, type Preview } from "./preview";
 
 export type MatchupState = "upcoming" | "recently_completed" | "historical";
@@ -46,6 +47,8 @@ export interface Meeting {
   weekLabel: string;
   /** ESPN's id for the game, which the box score is keyed by. Often null. */
   espnEventId: string | null;
+  /** The slate's id ("2026_11_IND_HOU"): how the game's live state is looked up. */
+  gameId: string;
   kickoffMs: number | null;
   timeConfirmed: boolean;
   home: NflTeam;
@@ -196,6 +199,15 @@ export interface MatchupData {
    * Null on every other state, and when the inputs are not there to build it.
    */
   preview: Preview | null;
+  /**
+   * The state of the game this page is about, from the slate row the
+   * schedule prints (game-state.ts, WEB-040): the dated page's own game, or
+   * the game the pair's page leads with. Null for a game from an earlier
+   * season or a page with no current game.
+   */
+  gameState: GameStateRecord | null;
+  /** How long a shared cache may keep this page (game-state.ts). */
+  cachePolicy: MatchupCachePolicy;
 }
 
 /** Prior seasons searched for meetings, in both halves of each - see schedule.ts. */
@@ -227,6 +239,7 @@ function meetingFrom(game: ScheduleGame, season: number, a: NflTeam, b: NflTeam)
     seasonType: game.seasonType,
     weekLabel: game.weekLabel,
     espnEventId: game.espnEventId,
+    gameId: game.gameId,
     kickoffMs: game.kickoffMs,
     timeConfirmed: game.timeConfirmed,
     home,
@@ -272,12 +285,12 @@ function meetingsIn(
 }
 
 function isUpcoming(meeting: Meeting, now: number): boolean {
-  return isUpcomingFixture(meeting.status === "final", meeting.kickoffMs, now);
+  return isUpcomingFixture(meeting.status === "final", meeting.kickoffMs, now, meeting.status === "live");
 }
 
 /** A meeting as the ownership rule in pair.ts reads it. */
 function facts(meeting: Meeting): MeetingFacts {
-  return { kickoffMs: meeting.kickoffMs, isFinal: meeting.status === "final" };
+  return { kickoffMs: meeting.kickoffMs, isFinal: meeting.status === "final", inPlay: meeting.status === "live" };
 }
 
 /**
@@ -530,7 +543,18 @@ export async function getMatchupData(
       .flat()
       .reduce((max, schedule) => Math.max(max, schedule?.fetchedAt ?? 0), 0),
     preview: null,
+    gameState: null,
+    cachePolicy: { state: "settled", changeAtMs: null },
   };
+
+  // The game's state, from the same slate row the schedule prints. Only for
+  // the current season: an earlier season's game is history, and its page
+  // has nothing live to say.
+  const subject = featured && featured.season === state.season ? featured : null;
+  if (subject) {
+    data.gameState = await loadGameState(subject, isFinal ? boxscore !== null : null).catch(() => null);
+  }
+  data.cachePolicy = matchupCachePolicy(data.gameState, now, pageChangeAt(thisSeason, data, now));
 
   // The decision layer, upcoming pair pages only. Lines and the forecast are
   // each allowed to fail; buildPreview leaves out what they would have fed.
@@ -550,6 +574,39 @@ export async function getMatchupData(
     }
   }
   return data;
+}
+
+/** The slate row for one meeting, as a GameStateRecord, or null when the slate has none. */
+async function loadGameState(meeting: Meeting, detailsReady: boolean | null): Promise<GameStateRecord | null> {
+  if (meeting.seasonType === "post") {
+    const rounds = await getPostseason(meeting.season);
+    const row = rounds.find((g) => g.id === meeting.gameId);
+    return row ? gameStateRecord(row, { season: meeting.season, seasonType: "post", detailsReady }) : null;
+  }
+  const slate = await getSeasonSlate(meeting.season);
+  const row = slate?.games.find((g) => g.id === meeting.gameId);
+  return row
+    ? gameStateRecord(row, {
+        season: meeting.season,
+        seasonType: "regular",
+        sourceUpdatedAtMs: slate?.updatedAtMs ?? null,
+        detailsReady,
+      })
+    : null;
+}
+
+/**
+ * When the page changes on its own clock with no data change: the pair's
+ * page turns into the preview six days before the next meeting
+ * (PREVIEW_WINDOW_MS). Only the pair's own address leads by that rule; a
+ * dated page is always its own game. Null when nothing is scheduled to flip.
+ */
+function pageChangeAt(thisSeason: Meeting[], data: MatchupData, now: number): number | null {
+  if (data.pinnedRequested || data.matchupState === "upcoming") return null;
+  const next = thisSeason
+    .filter((m) => m.status !== "final" && m.status !== "canceled" && m.kickoffMs !== null && m.kickoffMs > now)
+    .sort((x, y) => (x.kickoffMs ?? 0) - (y.kickoffMs ?? 0))[0];
+  return next?.kickoffMs != null ? next.kickoffMs - PREVIEW_WINDOW_MS : null;
 }
 
 /** Fingerprint of everything rendered, for the fragment cache. */
@@ -579,6 +636,10 @@ export function matchupVersion(data: MatchupData, contentVersion: string): strin
     data.winnerPostseason ? `post${data.winnerPostseason.length}` : "",
     data.gameStats ? "stats" : "",
     data.preview ? `pv${data.preview.updatedMs}` : "",
+    // The game's live state, which the strip under the hero prints
+    // (WEB-040). Mostly covered by the slate fingerprint above; this also
+    // catches the box score arriving for a final.
+    data.gameState ? `gs${data.gameState.version}` : "",
     // The preview's "Last meeting" block: which game, and whether its box
     // score was there to draw the scorers from.
     data.lastMeeting

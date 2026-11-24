@@ -53,10 +53,12 @@ describe("the shared game-link rule", () => {
     assert.equal(href(g1, [g1, g2], now), `${PAIR}2026-week-5/`);
   });
 
-  test("the transition: inside six days the pair page previews the rematch and the earlier game moves out", () => {
+  test("the transition: inside six days the pair page previews the rematch; the rematch link stays its own page (WEB-040)", () => {
     const g1 = m(5, now - 40 * DAY, true);
     const g2 = m(12, now + 5 * DAY, false);
-    assert.equal(href(g2, [g1, g2], now), PAIR, "the rematch link is the pair page");
+    // One stable URL per game (WEB-040, 2026-11-24): the dated address serves
+    // the preview, the live score and the box score, so links never move.
+    assert.equal(href(g2, [g1, g2], now), `${PAIR}2026-week-12/`, "the rematch link is its own dated page");
     assert.equal(href(g1, [g1, g2], now), `${PAIR}2026-week-5/`, "the earlier recap has its own address, as before");
   });
 
@@ -67,9 +69,9 @@ describe("the shared game-link rule", () => {
     assert.equal(href(g1, [g1, g2], now), `${PAIR}2026-week-5/`);
   });
 
-  test("a matchup with only one scheduled meeting links the pair page before, its dated page after", () => {
+  test("a matchup with only one scheduled meeting links its dated page before and after (WEB-040)", () => {
     const upcoming = m(14, now + 20 * DAY, false);
-    assert.equal(href(upcoming, [upcoming], now), PAIR, "upcoming: the pair page previews it");
+    assert.equal(href(upcoming, [upcoming], now), `${PAIR}2026-week-14/`, "upcoming: its own dated page, the one URL for the game");
     const played = m(3, now - 50 * DAY, true);
     assert.equal(href(played, [played], now), `${PAIR}2026-week-3/`, "played: its own dated page (WEB-001)");
   });
@@ -84,7 +86,7 @@ describe("the shared game-link rule", () => {
   test("two undated fixtures are told apart by identity, not by their (equal) kickoffs", () => {
     const a = m(16, null, false);
     const b = m(18, null, false);
-    assert.equal(href(a, [a, b], now), PAIR, "the first is the one the pair page previews");
+    assert.equal(href(a, [a, b], now), `${PAIR}2026-week-16/`, "each its own week, never confused");
     assert.equal(href(b, [a, b], now), `${PAIR}2026-week-18/`);
   });
 
@@ -93,7 +95,7 @@ describe("the shared game-link rule", () => {
     const moved = m(12, now + 9 * DAY, false); // postponed to a later date
     assert.equal(href(moved, [g1, moved], now), `${PAIR}2026-week-12/`, "more than six days out: its preview");
     const soon = m(12, now + 2 * DAY, false);
-    assert.equal(href(soon, [g1, soon], now), PAIR, "rescheduled into the window: the pair page");
+    assert.equal(href(soon, [g1, soon], now), `${PAIR}2026-week-12/`, "rescheduled into the window: still its own page (WEB-040)");
   });
 
   test("a canceled game, or an unplayed game of another season, links the pair page", () => {
@@ -213,7 +215,7 @@ describe("the dated preview around the six-day switch (real data, real HTTP)", (
     const pairPage = await get(late, `/nfl/${PAIR_SLUG}/`);
     assert.match(titleOf(pairPage.body), /Preview.*Week 12, 2026/);
     const team = await get(late, "/team/seattle-seahawks/schedule/");
-    assert.ok(!team.body.includes(`${PAIR_SLUG}/2026-week-12/`), "the rematch row now links the pair page");
+    assert.ok(team.body.includes(`${PAIR_SLUG}/2026-week-12/`), "the rematch row keeps linking its own dated page (WEB-040: one URL per game)");
     assert.ok(team.body.includes(`${PAIR_SLUG}/2026-week-5/`), "and the Week 5 row its own recap, as before");
   });
 

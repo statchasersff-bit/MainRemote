@@ -151,6 +151,8 @@ import {
   type RecapBodyInput,
 } from "./recap-body";
 import { renderMatchupPreviewBody, renderMatchupPreviewTop } from "./preview-premium";
+import { renderGameStateStrip } from "./game-state-render";
+import { assetUrl } from "../asset-origin";
 import { addBarIcons, previewBarColors, previewHeroFills, previewSideColors, recapBarColors, renderRecapPremiumTop } from "./recap-premium";
 import { findGameStory, findGameStoryEntry, renderRecapOverviewParts } from "./recap-overview";
 import { loadGamePbp, renderPlayByPlayParts } from "./play-by-play";
@@ -446,7 +448,12 @@ export function matchupScoreboardGame(data: MatchupData): ScoreboardGame | null 
         line && line.periods.length > 4
           ? line.periods.slice(4).reduce((sum, n) => sum + n, 0)
           : null,
-      score: line ? null : (meeting.score?.[side] ?? null),
+      // While the game is being played the score is the live one, from the
+      // same record the strip and the schedule print (WEB-040).
+      score: line
+        ? null
+        : (meeting.score?.[side] ??
+          (status === "in_progress" && data.gameState ? data.gameState[side].score : null)),
       logoUrl: club.logo,
       url: getTeamHubUrl(club),
     };
@@ -469,6 +476,7 @@ export function matchupScoreboardGame(data: MatchupData): ScoreboardGame | null 
       : null,
     away: team(meeting.away, "away"),
     home: team(meeting.home, "home"),
+    ...(meeting.status === "postponed" || meeting.status === "canceled" ? { calledOff: meeting.status } : {}),
   };
 }
 
@@ -4292,6 +4300,7 @@ export function renderMatchupPage(data: MatchupData, options: MatchupRenderOptio
     ` data-postgame="${isPostgame(data) ? "1" : "0"}"` +
     ` data-season="${escapeHtml(String(data.state.season))}"${rootStyle}>` +
     (tabs ? tabs.top : pv && data.preview ? renderMatchupPreviewTop(data.preview, pv) : renderHero(data, options)) +
+    renderStateStrip(data, options) +
     `<div class="sct-section is-default is-active" data-sct-panel id="matchup">` +
     body +
     `</div>` +
@@ -4306,6 +4315,27 @@ export function renderMatchupPage(data: MatchupData, options: MatchupRenderOptio
     (options.embed && recapInput ? matchupVideoIsland(data) : "") +
     `</div>`
   );
+}
+
+/**
+ * The live strip under the hero (WEB-040): the state of the game the page is
+ * about, from the record the schedule row shares. See game-state-render.ts.
+ */
+function renderStateStrip(data: MatchupData, options: MatchupRenderOptions): string {
+  const record = data.gameState;
+  if (!record) return "";
+  const prefix = (options.matchupPathPrefix ?? "/nfl/").trim() || "/nfl/";
+  const gameHref = `${gamePath(prefix, data.pair.slug, {
+    season: record.season,
+    week: record.week,
+    seasonType: record.seasonType,
+  })}${options.linkQuery ?? ""}`;
+  return renderGameStateStrip(record, {
+    endpoint: assetUrl(`/api/game-state/${encodeURIComponent(record.gameId)}`),
+    gameHref,
+    onGamePage: data.pinnedRequested,
+    now: options.now ?? Date.now(),
+  });
 }
 
 /* ------------------------------------------------------------ sharing */

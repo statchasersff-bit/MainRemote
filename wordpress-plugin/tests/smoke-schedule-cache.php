@@ -51,6 +51,9 @@ if ( $live ) {
 	$nothing = statchasers_schedule_page_cache_policy( null, $kick );
 	is( array( $nothing['edge_ttl'], $nothing['page_cache'] ), array( MINUTE_IN_SECONDS, false ), 'nothing to show: short, never stored' );
 
+	$recent = $p( array( 'state' => 'recent' ), $kick + DAY_IN_SECONDS );
+	is( array( $recent['edge_ttl'], $recent['page_cache'] ), array( HOUR_IN_SECONDS, false ), 'recent (first 48 h after a final): an hour, never in WP Rocket' );
+
 	$done = $p( array( 'state' => 'settled' ), $kick + DAY_IN_SECONDS );
 	is( array( $done['edge_ttl'], $done['page_cache'] ), array( null, true ), 'settled: the long default stands, WP Rocket may keep it' );
 }

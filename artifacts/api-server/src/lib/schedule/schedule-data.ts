@@ -39,6 +39,7 @@
  * confidently wrong about the one thing a schedule is for.
  */
 
+import { observeGames } from "./game-events";
 import fs from "node:fs";
 import { createKeyedCache } from "../team/cache";
 import { seasonYear } from "../seo";
@@ -168,6 +169,14 @@ export interface ScheduleGame {
   statusConfirmed?: boolean;
   /** When a confirmed in-progress game's clock was read from ESPN; else null. */
   statusObservedAtMs?: number | null;
+  /**
+   * The last in-progress reading that is no longer current: the score and
+   * clock ESPN gave, and when this host read them. Set only while the status
+   * is unconfirmed (a stale live entry), so a matchup page can say "last
+   * verified 3-26 at 9:41 PM" instead of showing nothing. Never printed as
+   * the score (WEB-040, matchup pages).
+   */
+  liveLastSeen?: { awayScore: number; homeScore: number; detail: string | null; seenAtMs: number } | null;
   /** Normalized broadcaster name(s): "FOX", "NFL Network", "ESPN / ABC". */
   network: string | null;
   stadium: string | null;
@@ -546,7 +555,7 @@ const ESPN_FULL_TTL_MS = 6 * 60 * 60 * 1000;
 /**
  * Test seam: `SC_SCHEDULE_TEST_TIMING` is JSON that shortens the schedule's
  * clocks so a replay can walk a game from pregame to final in seconds -
- * {"liveTtlMs","idleTtlMs","staleMs","graceMs","slateTtlMs"}, each optional,
+ * {"liveTtlMs","idleTtlMs","staleMs","graceMs","slateTtlMs","failBackoffLiveMs"}, each optional,
  * each only ever SHORTER than the real value. Read by
  * tests/schedule-game-status.test.mjs and scripts/schedule/web040-cache-replay.mjs.
  * Never set in a deployment.
@@ -575,6 +584,13 @@ const ESPN_IDLE_TTL_MS = timing("idleTtlMs", 15 * 60 * 1000);
  * about 1,700 doomed requests a day, which is also how a refusal becomes a ban.
  */
 const ESPN_FAILURE_BACKOFF_MS = 60 * 60 * 1000;
+/**
+ * The same, while a game is being played (WEB-040, 2026-11-24). An hour of
+ * silence mid-game left every page on "Status pending" until nflverse posted
+ * the final, often hours later. Five minutes is twelve tries an hour for the
+ * one or two weeks in play, against 120 sweeps an hour when ESPN answers.
+ */
+const ESPN_FAILURE_BACKOFF_LIVE_MS = timing("failBackoffLiveMs", 5 * 60 * 1000);
 /**
  * A season that is over. Its scores and networks cannot change, so one full
  * sweep a week is plenty - anyone can ask for ?season=2019, and each season
@@ -643,13 +659,33 @@ async function fetchEspnWeek(
     const seenAtMs = Date.now();
     for (const event of payload.events ?? []) {
       const parsed = readEspnEvent(event);
-      if (parsed && event.id) into.set(event.id, { ...parsed, seenAtMs });
+      if (!parsed || !event.id) continue;
+      // An older response arriving after the final (a lagging CDN copy of the
+      // scoreboard) must not put a finished game back in play: a completed
+      // entry is only ever replaced by another completed one, which is how a
+      // corrected final score lands (WEB-040, matchup pages).
+      if (regressesFinal(into.get(event.id), parsed)) continue;
+      into.set(event.id, { ...parsed, seenAtMs });
     }
     return true;
   } catch {
     // Best-effort by contract: the caller keeps whatever it already had.
     return false;
   }
+}
+
+/** Would `next` move a game ESPN already called final back to pregame or in progress? */
+export function regressesFinal(
+  previous: Pick<EspnGame, "completed" | "statusName"> | undefined,
+  next: Pick<EspnGame, "completed" | "statusName" | "state">,
+): boolean {
+  if (!previous) return false;
+  const wasFinal = previous.completed || previous.statusName === "STATUS_FINAL";
+  if (!wasFinal) return false;
+  const isFinal = next.completed || next.statusName === "STATUS_FINAL";
+  // A postponement or cancellation is a real change of state, not a regression.
+  const calledOff = next.statusName === "STATUS_POSTPONED" || next.statusName === "STATUS_CANCELED";
+  return !isFinal && !calledOff;
 }
 
 /**
@@ -775,14 +811,21 @@ async function refreshEspn(
   // a file behind in the repo's data directory.
   if (reached && weeks.length && season === scheduleSeason()) saveLayer(season, games, reachedAt);
 
-  const live = [...games.values()].some((game) => game.state === "in");
+  // Live clock as well while a kickoff is due or just past with no word yet:
+  // on the idle clock (15 minutes) a game could sit at its kickoff time that
+  // long after it started, and every matchup page with it (WEB-040).
+  const live = [...games.values()].some(
+    (game) => game.state === "in" || kickoffDue(game, nowMs),
+  );
   const past = season < scheduleSeason();
   espnCache.set(season, {
     games,
     expiresAt:
       nowMs +
       (!reached
-        ? ESPN_FAILURE_BACKOFF_MS
+        ? live
+          ? ESPN_FAILURE_BACKOFF_LIVE_MS
+          : ESPN_FAILURE_BACKOFF_MS
         : live
           ? ESPN_LIVE_TTL_MS
           : past
@@ -794,6 +837,15 @@ async function refreshEspn(
   });
 
   return games;
+}
+
+/**
+ * A "pre" entry whose kickoff is within two minutes, or passed less than four
+ * hours ago: the next read may say it started.
+ */
+function kickoffDue(game: EspnGame, nowMs: number): boolean {
+  if (game.state !== "pre" || game.kickoffMs === null || game.timeValid === false) return false;
+  return game.kickoffMs - nowMs <= 2 * 60 * 1000 && nowMs - game.kickoffMs < 4 * 60 * 60 * 1000;
 }
 
 /** When the live layer last reached ESPN for a season, or 0. */
@@ -1261,6 +1313,13 @@ function normalize(
     statusDetail: resolved.detail,
     statusConfirmed: resolved.confirmed,
     statusObservedAtMs: resolved.observedAtMs,
+    liveLastSeen:
+      hideScore &&
+      typeof live?.awayScore === "number" &&
+      typeof live?.homeScore === "number" &&
+      typeof live?.seenAtMs === "number"
+        ? { awayScore: live.awayScore, homeScore: live.homeScore, detail: live.detail, seenAtMs: live.seenAtMs }
+        : null,
     network: normalizeNetwork(live?.network),
     stadium,
     location,
@@ -1311,6 +1370,7 @@ function fingerprint(season: number, games: ScheduleGame[]): string {
       game.statusDetail ?? "",
       game.statusConfirmed === false ? "u" : "",
       game.statusObservedAtMs ?? "",
+      game.liveLastSeen ? `${game.liveLastSeen.awayScore}-${game.liveLastSeen.homeScore}@${game.liveLastSeen.seenAtMs}` : "",
       game.spreadLine ?? "",
       game.totalLine ?? "",
     ].join("\u0001"),
@@ -1423,6 +1483,9 @@ async function build(
         (a.time ?? "￿").localeCompare(b.time ?? "￿") ||
         a.id.localeCompare(b.id),
     );
+
+  // Status changes name the pages they make stale (WEB-040, game-events.ts).
+  if (season === scheduleSeason()) observeGames(season, games, nowMs);
 
   const fetchedAt = slateCache.peek(String(season)).fetchedAt;
   return {
