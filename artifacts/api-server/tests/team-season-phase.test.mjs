@@ -282,9 +282,9 @@ describe("a designation the player then played through has expired", () => {
  *
  * WEB-039 follow-up (2026-11-24): reported is not designated. Only the
  * official report for the game's week gives a game status, so an Out or
- * Doubtful reported since the last game reads Pending, a Questionable is a
- * note, and once this week's report has the club it alone decides. An Out
- * reported since stands as Out (mak, 2026-11-24), sourced to Sleeper. Luther Burden III's Questionable, filed after
+ * Questionable reported since the last game is a note, and once this week's
+ * report has the club it alone decides. An Out or Doubtful reported since
+ * stands as itself (mak, 2026-11-24), sourced to Sleeper. Luther Burden III's Questionable, filed after
  * Week 9 and carried across the Bears' Week 10 bye, was this case.
  */
 describe("a designation reported after the last game is not an official game status", () => {
@@ -343,11 +343,13 @@ describe("a designation reported after the last game is not an official game sta
     assert.equal(s.stale.availability.label, "No designation", "final report, not listed");
   });
 
-  test("a Doubtful reported since the last game reads Pending", () => {
+  test("a Doubtful reported since the last game reads Doubtful (mak, 2026-11-24)", () => {
     const r = [{ id: "d", name: "Doubt Now", position: "WR", injuryStatus: "Doubtful", injuryBodyPart: null }];
     const a = availability.gameAvailability(team("det"), 2026, 11, r, { logs: { ...logs, d: played() }, practice: { weeks: week10() } }).get("d");
-    assert.equal(a.status, "Pending");
-    assert.equal(a.designated, false);
+    assert.equal(a.status, "Doubtful");
+    assert.equal(a.designated, true);
+    assert.equal(a.source, "sleeper");
+    assert.match(a.note, /Reported Doubtful after Week 10; not an official Week 11 game status/);
   });
 
   test("no previous report to date it against: expires, as before", () => {
