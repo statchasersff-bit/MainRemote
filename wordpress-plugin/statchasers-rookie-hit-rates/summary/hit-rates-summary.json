@@ -1,0 +1,236 @@
+{
+  "settings": {
+    "format": "sf",
+    "scoring": "ppr",
+    "outcome": "elite",
+    "threshold": 12,
+    "year_start": 2017,
+    "year_end": 2025,
+    "latest_season": 2025,
+    "min_games": 8,
+    "rounds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  "classes": [
+    {
+      "year": 2017,
+      "rookies": 60,
+      "seasons_observed": 9
+    },
+    {
+      "year": 2018,
+      "rookies": 60,
+      "seasons_observed": 8
+    },
+    {
+      "year": 2019,
+      "rookies": 60,
+      "seasons_observed": 7
+    },
+    {
+      "year": 2020,
+      "rookies": 60,
+      "seasons_observed": 6
+    },
+    {
+      "year": 2021,
+      "rookies": 50,
+      "seasons_observed": 5
+    },
+    {
+      "year": 2022,
+      "rookies": 60,
+      "seasons_observed": 4
+    },
+    {
+      "year": 2023,
+      "rookies": 60,
+      "seasons_observed": 3
+    },
+    {
+      "year": 2024,
+      "rookies": 60,
+      "seasons_observed": 2
+    },
+    {
+      "year": 2025,
+      "rookies": 60,
+      "seasons_observed": 1
+    }
+  ],
+  "rookies_without_seasons": 50,
+  "rows": [
+    {
+      "group": "QB",
+      "hits": 20,
+      "total": 77,
+      "rate": 0.2597402597402597,
+      "rate_display": "26.0%"
+    },
+    {
+      "group": "RB",
+      "hits": 29,
+      "total": 182,
+      "rate": 0.15934065934065933,
+      "rate_display": "15.9%"
+    },
+    {
+      "group": "WR",
+      "hits": 32,
+      "total": 199,
+      "rate": 0.16080402010050251,
+      "rate_display": "16.1%"
+    },
+    {
+      "group": "TE",
+      "hits": 23,
+      "total": 72,
+      "rate": 0.3194444444444444,
+      "rate_display": "31.9%"
+    }
+  ],
+  "total": {
+    "group": "All positions",
+    "hits": 104,
+    "total": 530,
+    "rate": 0.19622641509433963,
+    "rate_display": "19.6%"
+  },
+  "cells": [
+    {
+      "pos": "QB",
+      "round": 1,
+      "hits": 14,
+      "total": 24
+    },
+    {
+      "pos": "QB",
+      "round": 2,
+      "hits": 5,
+      "total": 15
+    },
+    {
+      "pos": "QB",
+      "round": 3,
+      "hits": 1,
+      "total": 15
+    },
+    {
+      "pos": "QB",
+      "round": 4,
+      "hits": 0,
+      "total": 10
+    },
+    {
+      "pos": "QB",
+      "round": 5,
+      "hits": 0,
+      "total": 13
+    },
+    {
+      "pos": "RB",
+      "round": 1,
+      "hits": 18,
+      "total": 39
+    },
+    {
+      "pos": "RB",
+      "round": 2,
+      "hits": 4,
+      "total": 32
+    },
+    {
+      "pos": "RB",
+      "round": 3,
+      "hits": 4,
+      "total": 31
+    },
+    {
+      "pos": "RB",
+      "round": 4,
+      "hits": 2,
+      "total": 41
+    },
+    {
+      "pos": "RB",
+      "round": 5,
+      "hits": 1,
+      "total": 39
+    },
+    {
+      "pos": "WR",
+      "round": 1,
+      "hits": 18,
+      "total": 35
+    },
+    {
+      "pos": "WR",
+      "round": 2,
+      "hits": 5,
+      "total": 51
+    },
+    {
+      "pos": "WR",
+      "round": 3,
+      "hits": 7,
+      "total": 44
+    },
+    {
+      "pos": "WR",
+      "round": 4,
+      "hits": 1,
+      "total": 33
+    },
+    {
+      "pos": "WR",
+      "round": 5,
+      "hits": 1,
+      "total": 36
+    },
+    {
+      "pos": "TE",
+      "round": 1,
+      "hits": 8,
+      "total": 9
+    },
+    {
+      "pos": "TE",
+      "round": 2,
+      "hits": 5,
+      "total": 8
+    },
+    {
+      "pos": "TE",
+      "round": 3,
+      "hits": 5,
+      "total": 16
+    },
+    {
+      "pos": "TE",
+      "round": 4,
+      "hits": 4,
+      "total": 19
+    },
+    {
+      "pos": "TE",
+      "round": 5,
+      "hits": 1,
+      "total": 20
+    }
+  ],
+  "sources": {
+    "rookie_drafts.csv": {
+      "sha256": "a39bb50715ba34ecb8fbadfd693fc13e9963aaf812d5a5f749f64ffb05003fe5",
+      "bytes": 140076
+    },
+    "season_finishes.csv": {
+      "sha256": "5eaf244345fd29349e31cd1778a33b21109465bac4cd1c52d57b9f75678b156f",
+      "bytes": 327769
+    }
+  }
+}
