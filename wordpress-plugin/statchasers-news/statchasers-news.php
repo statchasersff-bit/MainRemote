@@ -90,6 +90,8 @@ require_once __DIR__ . '/statchasers-bdp-assets.php';
 require_once __DIR__ . '/statchasers-host-css.php';
 // Every tool bundle kept out of WP Rocket's Delay JS (INP audit, 2026-11-15).
 require_once __DIR__ . '/statchasers-perf.php';
+// Divi's late-CSS loader, one <link> per file on the matchup template (WEB-024).
+require_once __DIR__ . '/statchasers-divi-late-css.php';
 
 /**
  * The NFL Depth Charts tool (depth-charts/): the former standalone

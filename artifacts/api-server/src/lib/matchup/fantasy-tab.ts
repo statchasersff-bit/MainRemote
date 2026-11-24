@@ -1,11 +1,12 @@
 /**
  * The completed game's Fantasy tab (mak, 2026-11-08; reordered 2026-11-11):
  *
- *   01 Fantasy Highlights     three cards: Top Scorer, Biggest Overperformer,
- *                             Biggest Underperformer (bare, no heading or box)
- *   02 Fantasy Box Score      every QB/RB/WR/TE line: points, weekly finish, a
+ *   01 Fantasy Box Score      every QB/RB/WR/TE line: points, weekly finish, a
  *                             short production summary (the Box Score tab has the
- *                             full stat lines)
+ *                             full stat lines). The top scorer and the biggest
+ *                             over- and underperformer are tagged in their rows
+ *                             (WEB-041, 2026-11-24: they were three cards above
+ *                             the table repeating its first rows).
  *   03 Usage & Opportunity    one snap / target / carry table per team
  *   04 Actual vs Expected     actual and expected points on one scale, a short
  *                             reason per player, the full xFP table behind
@@ -86,11 +87,6 @@ function per<T>(fn: (f: Format) => T): Record<Format, T> {
   return { ppr: fn("ppr"), half: fn("half"), std: fn("std") };
 }
 
-function lastName(name: string): string {
-  const parts = name.replace(/\s+(Jr\.?|Sr\.?|II|III|IV|V)$/i, "").trim().split(/\s+/);
-  return parts.length > 1 ? parts.slice(1).join(" ") : name;
-}
-
 function touchdowns(line: FantasyLine): number {
   return n(line.stats, "rushTd") + n(line.stats, "recTd");
 }
@@ -139,37 +135,6 @@ function production(line: FantasyLine): string {
   if (n(st, "fumblesLost")) parts.push(`${n(st, "fumblesLost")} FUM LOST`);
   if (n(st, "twoPtScored") + n(st, "twoPtPassed")) parts.push(`${n(st, "twoPtScored") + n(st, "twoPtPassed")} 2PT`);
   return parts.join(", ");
-}
-
-/** "Eight catches"-style line, in digits: what the player did. */
-function gameLine(line: FantasyLine): string {
-  const st = line.stats;
-  if (n(st, "passAtt") > 0) {
-    let text = `${n(st, "passCmp")} of ${n(st, "passAtt")} for ${plural(n(st, "passYds"), "yard")}`;
-    if (n(st, "passTd")) text += `, ${plural(n(st, "passTd"), "touchdown")}`;
-    if (n(st, "passInt")) text += `, ${plural(n(st, "passInt"), "interception")}`;
-    if (n(st, "rushAtt") && (Math.abs(n(st, "rushYds")) >= 10 || n(st, "rushTd"))) {
-      text += `; ${plural(n(st, "rushYds"), "rushing yard")}`;
-      if (n(st, "rushTd")) text += ` and ${plural(n(st, "rushTd"), "rushing touchdown")}`;
-    }
-    return `${text}.`;
-  }
-  const parts: string[] = [];
-  if (n(st, "rushAtt") > 0) {
-    parts.push(
-      `${plural(n(st, "rushAtt"), "carry", "carries")} for ${plural(n(st, "rushYds"), "yard")}` +
-        (n(st, "rushTd") ? ` and ${plural(n(st, "rushTd"), "touchdown")}` : ""),
-    );
-  }
-  if (n(st, "recTgt") > 0 || n(st, "rec") > 0) {
-    parts.push(
-      `${plural(n(st, "rec"), "catch", "catches")} for ${plural(n(st, "recYds"), "yard")}` +
-        (n(st, "recTd") ? ` and ${plural(n(st, "recTd"), "touchdown")}` : "") +
-        ` on ${plural(n(st, "recTgt"), "target")}`,
-    );
-  }
-  const text = parts.join("; ");
-  return text ? `${text.charAt(0).toUpperCase()}${text.slice(1)}.` : "";
 }
 
 /* ----------------------------------------------------------- shared atoms */
@@ -223,15 +188,9 @@ function section(id: string, title: string, body: string, opts: { slot?: boolean
   );
 }
 
-/* ------------------------------------------------------- 01 standouts */
+/* ------------------------------------------- highlights (box score tags) */
 
 type StoryKind = "top" | "over" | "under";
-
-const STORY_LABEL: Record<StoryKind, string> = {
-  top: "Top Scorer",
-  over: "Biggest Overperformer",
-  under: "Biggest Underperformer",
-};
 
 interface Story {
   line: FantasyLine;
@@ -239,81 +198,35 @@ interface Story {
 }
 
 /**
- * The three highlight cards (mak, 2026-11-11), in PPR (the page's default):
- * the top scorer, then the biggest result above expectation and the biggest
- * below it on a real workload (5+ expected points), each a different player.
- * A card with no candidate is left out.
+ * The three highlights (mak, 2026-11-11; row tags in the Fantasy Box Score
+ * since WEB-041), in one scoring: the top scorer, then the biggest result
+ * above expectation and the biggest below it on a real workload (5+ expected
+ * points), each a different player. One with no candidate is left out.
  */
-export function pickStandouts(lines: FantasyLine[]): Story[] {
+export function pickStandouts(lines: FantasyLine[], f: Format = "ppr"): Story[] {
   const picked: Story[] = [];
   const has = (line: FantasyLine): boolean => picked.some((s) => s.line === line);
   const judged = lines.filter((l) => l.over !== null && l.x !== null);
 
-  const top = lines[0];
-  if (top && top.pts.ppr > 0) picked.push({ line: top, kind: "top" });
+  const top = [...lines].sort((a, b) => b.pts[f] - a.pts[f])[0];
+  if (top && top.pts[f] > 0) picked.push({ line: top, kind: "top" });
 
-  const over = judged.filter((l) => l.over!.ppr > 0.5 && !has(l)).sort((a, b) => b.over!.ppr - a.over!.ppr)[0];
+  const over = judged.filter((l) => l.over![f] > 0.5 && !has(l)).sort((a, b) => b.over![f] - a.over![f])[0];
   if (over) picked.push({ line: over, kind: "over" });
 
   const under = judged
-    .filter((l) => l.over!.ppr < -0.5 && l.x!.ppr >= 5 && !has(l))
-    .sort((a, b) => a.over!.ppr - b.over!.ppr)[0];
+    .filter((l) => l.over![f] < -0.5 && l.x![f] >= 5 && !has(l))
+    .sort((a, b) => a.over![f] - b.over![f])[0];
   if (under) picked.push({ line: under, kind: "under" });
   return picked;
 }
 
-function storyText(ctx: Ctx, story: Story): string {
-  const { line } = story;
-  const name = lastName(line.name);
-  const team = ctx.input.section.game[sideOf(ctx.input, line.team)].short;
-  // No xFP figures here (mak, 2026-11-10): Actual vs Expected carries them;
-  // a highlight says what happened in a line.
-  switch (story.kind) {
-    case "top": {
-      let text = gameLine(line);
-      if (!line.qb && (line.tgtShare ?? 0) >= 0.25) text += ` Commanded ${pct(line.tgtShare)} of the ${team}' targets.`;
-      else if (!line.qb && (line.carShare ?? 0) >= 0.5) text += ` Handled ${pct(line.carShare)} of the ${team}' carries.`;
-      return text;
-    }
-    case "over": {
-      const tds = touchdowns(line) + n(line.stats, "passTd");
-      return touchdownPoints(line) >= line.over!.ppr && tds > 0
-        ? `${plural(tds, "touchdown")} on ${opportunities(line)} lifted the day past the workload.`
-        : `${gameLine(line)} ${name} got more out of the workload than it usually returns.`;
-    }
-    case "under":
-      return `Despite ${opportunities(line)}, ${name} came up well short of what that workload is usually worth.`;
-  }
-}
-
-function renderStandouts(ctx: Ctx, lines: FantasyLine[]): string {
-  const stories = pickStandouts(lines);
-  if (stories.length === 0) return "";
-  const cards = stories
-    .map((story) => {
-      const { line } = story;
-      const finish = per((f) => ctx.finish(line, f));
-      const meta = per((f) => [line.pos ?? "", line.team, finish[f] ? `${finish[f]} weekly finish` : ""].filter(Boolean).join(" · "));
-      return (
-        `<article class="sct-fz-card is-${story.kind}" style="--fz-team:${ink(ctx.input, line.team)}">` +
-        `<div class="sct-fz-card-head">` +
-        face(line, "sct-fz-card-face", 56) +
-        `<div class="sct-fz-card-who">` +
-        `<p class="sct-fz-card-tag">${e(STORY_LABEL[story.kind])}</p>` +
-        `<h3 class="sct-fz-card-name">${nameLink(ctx, line)}</h3>` +
-        `<p class="sct-fz-card-meta">${swap(meta)}</p>` +
-        `</div></div>` +
-        `<p class="sct-fz-card-pts">${swap(per((f) => line.pts[f].toFixed(1)), "sct-fz-card-num")}<span class="sct-fz-card-unit">fantasy points</span></p>` +
-        `<p class="sct-fz-card-text">${swap(per(() => storyText(ctx, story)))}</p>` +
-        `</article>`
-      );
-    })
-    .join("");
-  // Bare cards, no section box, heading or scoring switch (mak, 2026-11-09).
-  // data-pv-fmt keeps them on the page's scoring switch; .sct-fz keeps the gap
-  // to the next section.
-  return `<div class="sct-fz sct-fz-cards" data-pv-fmt>${cards}</div>`;
-}
+/** The short row tags in the Fantasy Box Score (WEB-041). */
+const TAG_LABEL: Record<StoryKind, string> = {
+  top: "Top scorer",
+  over: "Overperformer",
+  under: "Underperformer",
+};
 
 /* ------------------------------------------------------ 02 box score */
 
@@ -326,12 +239,25 @@ function moreButton(total: number, more: string, less: string): string {
 
 function renderBoxScore(ctx: Ctx, lines: FantasyLine[]): string {
   if (lines.length === 0) return "";
+  // The highlights, per scoring, as a tag in the player's row: the text and
+  // the row tint (data-tier) follow the page's scoring switch.
+  const kinds = per((f) => new Map(pickStandouts(lines, f).map((s) => [s.line, s.kind] as const)));
+  const tag = (line: FantasyLine): string => {
+    const kind = per((f) => kinds[f].get(line) ?? "");
+    if (!kind.ppr && !kind.half && !kind.std) return "";
+    const label = per((f) => (kind[f] ? TAG_LABEL[kind[f] as StoryKind] : ""));
+    return (
+      `<span class="sct-fz-tag" data-tier="${kind.ppr}"` +
+      FORMATS.map((f) => ` data-tier-${f}="${kind[f]}"`).join("") +
+      `${fmtAttrs(label)}>${e(label.ppr)}</span>`
+    );
+  };
   const rows = lines
     .map((line, at) => {
       const finish = per((f) => ctx.finish(line, f) ?? "-");
       return (
         `<tr${at >= BOX_SHOWN ? ` class="is-extra"` : ""}>` +
-        `<th scope="row" class="sct-fz-player">${who(ctx, line)}</th>` +
+        `<th scope="row" class="sct-fz-player">${who(ctx, line)}${tag(line)}</th>` +
         `<td class="sct-fz-pts"${fmtAttrs(per((f) => line.pts[f].toFixed(1)))}>${line.pts.ppr.toFixed(1)}</td>` +
         `<td class="sct-fz-fin"${fmtAttrs(finish)}>${e(finish.ppr)}</td>` +
         `<td class="sct-fz-prod">${e(production(line))}</td>` +
@@ -528,7 +454,6 @@ export function renderFantasyTab(input: FantasyTabInput, lines: FantasyLine[]): 
     (input.section.countsInSeasonLong
       ? ""
       : `<p class="sct-fp-playoff">Playoff game: these points don't count in most season-long fantasy leagues.</p>`) +
-    renderStandouts(ctx, lines) +
     renderBoxScore(ctx, lines) +
     renderUsage(ctx, lines) +
     renderExpected(ctx, lines) +

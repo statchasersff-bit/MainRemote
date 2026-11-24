@@ -11247,13 +11247,19 @@ a.sct-ex-game:hover .sct-ex-line {
   }
 }
 
+/* Phones keep one row per score too (WEB-041, 2026-11-24): the clock in a
+ * narrow first column instead of a line of its own. */
 @media (max-width: 600px) {
   .sct .sct-pbp-score {
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: 62px minmax(0, 1fr) auto;
+    gap: 2px 8px;
+    padding: 7px 0 !important;
+    font-size: 13px;
+    line-height: 1.35;
   }
 
   .sct .sct-pbp-when {
-    grid-column: 1 / -1;
+    font-size: 11px;
   }
 
 }
@@ -11278,116 +11284,42 @@ a.sct-ex-game:hover .sct-ex-line {
   color: var(--rb-slate);
 }
 
-/* 01 standouts */
+/* Highlights as row tags in the Fantasy Box Score (WEB-041, 2026-11-24):
+ * the top scorer and the biggest over- and underperformer were three cards
+ * above the table; now a tag under the player's name and a tinted row. Tag
+ * text and kind (data-tier) follow the scoring switch; an empty tag hides. */
 
-.sct .sct-fz-cards {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 14px;
-}
-
-@media (min-width: 820px) {
-  .sct .sct-fz-cards {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
-.sct .sct-fz-card {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  min-width: 0;
-  padding: 14px 16px 16px;
-  border: 1px solid var(--rb-line);
-  border-top: 4px solid var(--fz-team, var(--rb-ink));
-  border-radius: 10px;
-  background: var(--rb-card, #fff);
-}
-
-.sct .sct-fz-card-head {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.sct .sct-fz-card-face {
-  flex: 0 0 56px;
-  width: 56px;
-  height: 56px;
-  overflow: hidden;
-  border-radius: 50%;
-  background: var(--sc-surface-soft, #eef2f7);
-}
-
-.sct .sct-fz-card-face img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.sct .sct-fz-card-who {
-  min-width: 0;
-}
-
-.sct .sct-fz-card-who > p,
-.sct .sct-fz-card-who > h3 {
-  margin: 0 !important;
-  padding: 0 !important;
-}
-
-.sct p.sct-fz-card-tag {
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--fz-team, var(--rb-slate));
-}
-
-.sct h3.sct-fz-card-name {
-  border: 0 !important;
-  background: none !important;
-  font-size: 17px !important;
-  font-weight: 800 !important;
-  line-height: 1.25 !important;
-  color: var(--tp-ink, var(--rb-ink)) !important;
-}
-
-.sct p.sct-fz-card-meta {
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--rb-slate);
-}
-
-.sct p.sct-fz-card-pts {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  margin: 0 !important;
-}
-
-.sct .sct-fz-card-num {
-  font-family: "Barlow Condensed", "Archivo", system-ui, sans-serif;
-  font-size: 38px;
+.sct .sct-fz-tag {
+  display: inline-block;
+  margin: 3px 0 0 40px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 10.5px;
   font-weight: 700;
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-  color: var(--tp-ink, var(--rb-ink));
-}
-
-.sct .sct-fz-card-unit {
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--rb-slate);
-}
-
-.sct p.sct-fz-card-text {
-  margin: 0 !important;
-  font-size: 14px;
   line-height: 1.5;
-  color: var(--tp-ink, var(--rb-ink));
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: #6b4c00;
+  background: #fdf1cf;
+}
+
+.sct .sct-fz-tag:empty {
+  display: none;
+}
+
+.sct .sct-fz-tag[data-tier="over"] {
+  color: #1d6b3a;
+  background: #e2f3e8;
+}
+
+.sct .sct-fz-tag[data-tier="under"] {
+  color: #a1291f;
+  background: #fbe5e2;
+}
+
+:is(.sct, #sct-table-armour) .sct-fz-table.is-box tbody tr:has(.sct-fz-tag[data-tier="top"]) > * {
+  background: #fffaeb;
 }
 
 /* Tables (box score, usage, full xFP) */
@@ -12363,6 +12295,69 @@ a.sct-ex-game:hover .sct-ex-line {
   font-size: 13.5px;
   font-weight: 500;
   line-height: 1.45;
+}
+
+/* Supporting Game Flow sections fold their chart (WEB-041, 2026-11-24):
+ * title and read stay in the head row, the chart opens from a small toggle
+ * styled as Play-by-Play's Expand all. */
+
+.sct-mu details.sct-gfp-more {
+  margin: 12px 0 0;
+  padding: 0;
+  border: 0;
+}
+
+.sct-mu summary.sct-gfp-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 4px 11px;
+  border: 1px solid var(--rb-line);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--tp-ink, var(--rb-ink));
+  font-family: "Inter", system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.4;
+  list-style: none;
+  cursor: pointer;
+}
+
+.sct-mu summary.sct-gfp-toggle::-webkit-details-marker {
+  display: none;
+}
+
+.sct-mu summary.sct-gfp-toggle::after {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: translateY(-2px) rotate(45deg);
+}
+
+.sct-mu details.sct-gfp-more[open] > summary.sct-gfp-toggle::after {
+  transform: translateY(1px) rotate(-135deg);
+}
+
+.sct-mu summary.sct-gfp-toggle:hover {
+  border-color: var(--rb-slate);
+}
+
+.sct-mu summary.sct-gfp-toggle:focus-visible {
+  outline: 2px solid var(--rb-navy, #0b2447);
+  outline-offset: 2px;
+}
+
+.sct-mu details.sct-gfp-more[open] > summary.sct-gfp-toggle {
+  margin-bottom: 14px;
+}
+
+.sct-mu details.sct-gfp-more:not([open]) .sct-gfp-toggle-hide,
+.sct-mu details.sct-gfp-more[open] .sct-gfp-toggle-show {
+  display: none;
 }
 
 .sct-mu .sct-gfp-chip {

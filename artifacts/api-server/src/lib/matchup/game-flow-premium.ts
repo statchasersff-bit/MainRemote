@@ -222,14 +222,22 @@ function teamMark(game: ScoreboardGame, side: Side, end = false): string {
   );
 }
 
-function section(id: string, title: string, read: string, body: string): string {
+function section(id: string, title: string, read: string, body: string, collapse = false): string {
   return (
-    `<section class="sct-rb-section sct-gfp-sec" aria-labelledby="${id}">` +
+    `<section class="sct-rb-section sct-gfp-sec${collapse ? " is-collapsible" : ""}" aria-labelledby="${id}">` +
     // The read sits in the header bar under the title (mak, 2026-11-11).
     `<div class="sct-fp-head sct-gfp-head"><h2 class="sct-rb-h2" id="${id}">${e(title)}</h2>` +
     (read ? `<p class="sct-gfp-read">${e(read)}</p>` : "") +
     `</div>` +
-    body +
+    // The supporting sections keep their title and read in view and fold the
+    // chart behind a toggle, closed (WEB-041, 2026-11-24): the Drive Timeline
+    // stays open, and the halves, third downs and red zone trips are in the
+    // line score and the Box Score tab's Team Stats as well.
+    (collapse
+      ? `<details class="sct-gfp-more"><summary class="sct-gfp-toggle">` +
+        `<span class="sct-gfp-toggle-show">Show breakdown</span><span class="sct-gfp-toggle-hide">Hide breakdown</span>` +
+        `<span class="sct-rb-sr"> for ${e(title)}</span></summary>${body}</details>`
+      : body) +
     `</section>`
   );
 }
@@ -355,7 +363,7 @@ function fieldPosition(game: ScoreboardGame, m: Model): string {
       avgs.map(([s, v]) => `${game[s].short} ${spotText(Math.round(v)).replace(/^at /, "")}`).join(", ") +
       `. Bars show offensive points per drive from each starting zone.`
     : "";
-  return section("gf-field", "Field Position and Points", read, `<ol class="sct-gfp-zones">${body}</ol>`);
+  return section("gf-field", "Field Position and Points", read, `<ol class="sct-gfp-zones">${body}</ol>`, true);
 }
 
 /* --------------------------------------------------------- 3. by half */
@@ -433,7 +441,7 @@ function byHalf(game: ScoreboardGame, m: Model): string {
       ? `Neither offense changed its scoring after halftime. ${sense}`
       : `The biggest shift: the ${game[swing[0]].short}' offense scored ${Math.abs(swing[1])} ${swing[1] > 0 ? "more" : "fewer"} points after halftime` +
         `${extra(swing[0])}. ${sense}`;
-  return section("gf-halves", "Offense by Half", read, `<div class="sct-gfp-halves">${card("away")}${card("home")}</div>`);
+  return section("gf-halves", "Offense by Half", read, `<div class="sct-gfp-halves">${card("away")}${card("home")}</div>`, true);
 }
 
 /* ------------------------------------------------- 4. drive efficiency */
@@ -493,6 +501,7 @@ function efficiency(game: ScoreboardGame, m: Model): string {
     read,
     `<div class="sct-gfp-vs-head">${teamMark(game, "away")}${teamMark(game, "home", true)}</div>` +
       `<ol class="sct-gfp-vs-list">${rows.map(bar).join("")}</ol>`,
+    true,
   );
 }
 
@@ -562,6 +571,7 @@ function calling(game: ScoreboardGame, m: Model): string {
     "Play Calling by Score",
     read,
     `<div class="sct-gfp-calls">${card("away")}${card("home")}</div>`,
+    true,
   );
 }
 
