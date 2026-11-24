@@ -63,7 +63,8 @@
  * kneels / kneelYards = the kneel-downs the box score counts as rushing
  * attempts and `carries` here does not (NE 2026 wk 1-8: Maye 46 official =
  * 35 carries + 11 kneels); the page prints the reconciliation.
- * recYards = receiving yards on completions. passAttempts = a passer's
+ * recYards = official receiving yards: yards on completions plus yards
+ * after a lateral to the player (receivingCredits). passAttempts = a passer's
  * attempts, charted or not, so the pass map can say how many it mapped.
  * snaps / weekly[].snapN / team snapsByWeek = raw offensive snap counts
  * (2026-11-05), for the snap-count table and its week selector. A skill
@@ -211,6 +212,35 @@ function percentile(pool, value) {
 function rankOf(values, value, asc = false) {
   if (value == null) return null;
   return 1 + values.filter((v) => v != null && (asc ? v < value : v > value)).length;
+}
+
+/**
+ * The receiving yards one play credits, as the official box score does: the
+ * catcher's receiving_yards on a completed pass (no sack), and the yards after
+ * a lateral to whoever took it. nflverse keeps lateral yards out of
+ * receiving_yards (they sit in lateral_receiving_yards); the box score, and so
+ * the player pages' Sleeper game logs, credit them to the lateral's receiver
+ * with no extra target or catch. Before 2026-11-19 the builder skipped them
+ * and Usage ran short of the player pages (DET 2026 wk 4, 2026_04_DET_CAR play
+ * 4069: St. Brown 4-yd catch, lateral to Gibbs for 9; Usage 375 season rec
+ * yds vs 384 on his profile).
+ *
+ * Call it only for plays the report counts: regular season, the offense's
+ * club, a pass or run play_type (no_play penalties, kneels and spikes out),
+ * not a two-point try. scripts/team/reconcileUsageReceiving.mjs uses this same
+ * function to rebuild per-game Usage receiving yards from play-by-play.
+ * Returns [{ id: gsis, yards, lateral }].
+ */
+export function receivingCredits(r) {
+  const out = [];
+  const has = (id) => id && id !== "NA";
+  if (r.pass_attempt === "1" && r.sack !== "1" && r.complete_pass === "1" && has(r.receiver_player_id)) {
+    out.push({ id: r.receiver_player_id, yards: num(r.receiving_yards) ?? 0, lateral: false });
+  }
+  if (has(r.lateral_receiver_player_id)) {
+    out.push({ id: r.lateral_receiver_player_id, yards: num(r.lateral_receiving_yards) ?? 0, lateral: true });
+  }
+  return out;
 }
 
 /* ------------------------------------------------------------------ build */
@@ -477,10 +507,7 @@ export async function buildUsage(season) {
         teamWeekTargets.set(`${c}|${week}`, (teamWeekTargets.get(`${c}|${week}`) ?? 0) + 1);
         const p = playerAcc(c, rec);
         p.targets += 1;
-        if (r.complete_pass === "1") {
-          p.receptions += 1;
-          p.recYards += num(r.receiving_yards) ?? 0;
-        }
+        if (r.complete_pass === "1") p.receptions += 1;
         if (air != null) p.airYards += air;
         if (air != null && yl != null && air >= yl) p.ezTargets += 1;
         if (air != null && air >= 20) p.deepTargets += 1;
@@ -503,15 +530,9 @@ export async function buildUsage(season) {
       }
     }
 
-    // Laterals (2026-11-19): the official box score credits the yards after a
-    // lateral to the player who took it - receiving yards on a pass play,
-    // rushing yards on a run - with no extra target, catch or carry. nflverse
-    // keeps those yards out of receiving_yards / rushing_yards (they sit in
-    // lateral_*_yards), so without this the table ran short of the player
-    // pages' Sleeper box score (DET 2026 wk 4: St. Brown 4-yd catch, lateral to
-    // Gibbs for 9; Usage 375 rec yds vs 384 on his profile).
-    const latRec = r.lateral_receiver_player_id;
-    if (latRec && latRec !== "NA") playerAcc(c, latRec).recYards += num(r.lateral_receiving_yards) ?? 0;
+    // Receiving yards, catches and laterals alike (receivingCredits).
+    for (const cr of receivingCredits(r)) playerAcc(c, cr.id).recYards += cr.yards;
+    // Rushing laterals: see receivingCredits for why nflverse keeps them apart.
     const latRush = r.lateral_rusher_player_id;
     if (latRush && latRush !== "NA") playerAcc(c, latRush).rushYards += num(r.lateral_rushing_yards) ?? 0;
 

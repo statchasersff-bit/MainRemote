@@ -55,7 +55,12 @@ export interface UsagePlayer {
   games: number;
   targets: number;
   receptions: number;
-  /** Receiving yards on completions (files built from 2026-11-05). */
+  /**
+   * Official receiving yards: yards on completions plus yards after a lateral
+   * to him (files built from 2026-11-05; laterals from 2026-11-19). Equals the
+   * player pages' game-log sum over the club's games
+   * (scripts/team/reconcileUsageReceiving.mjs).
+   */
   recYards?: number;
   carries: number;
   /**
