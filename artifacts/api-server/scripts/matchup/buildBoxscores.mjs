@@ -63,6 +63,20 @@ function readSeason(file) {
   }
 }
 
+/**
+ * When this game's stored content last changed: kept from the stored record
+ * when the re-pull brought an identical summary, `now` when it differs (a stat
+ * correction) or the game is new. The sitemap's lastmod reads it (WEB-001,
+ * src/lib/matchup/boxscore.ts contentStamp), so an unchanged re-pull inside
+ * the settle window must not move it. A record stored before this field keeps
+ * its old `fetchedAt` as the stamp, the time that content was pulled.
+ */
+export function modifiedAt(stored, summary, now) {
+  if (!stored?.summary) return now;
+  if (JSON.stringify(stored.summary) !== JSON.stringify(summary)) return now;
+  return stored.modifiedAt ?? stored.fetchedAt ?? now;
+}
+
 function settled(game) {
   return Date.parse(game.fetchedAt) - Date.parse(game.date) > SETTLE_DAYS * DAY_MS;
 }
@@ -97,13 +111,15 @@ async function buildSeason(season) {
       try {
         const summary = trimEspnSummary(await getJson(`${BASE}/summary?event=${id}`));
         if (summary.header?.competitions?.[0]?.status?.type?.completed !== true) continue;
+        const now = new Date().toISOString();
         games[id] = {
           season,
           seasonType: slot.seasonType,
           week: slot.week,
           name: event.shortName ?? event.name ?? "",
           date: event.date,
-          fetchedAt: new Date().toISOString(),
+          fetchedAt: now,
+          modifiedAt: modifiedAt(stored[id], summary, now),
           summary,
         };
         fetched++;

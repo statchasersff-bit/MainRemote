@@ -5,7 +5,8 @@
  * dated address (meetingHasOwnAddress), so the list is every completed game
  * the page serves - the current season and the HISTORY_SEASONS before it -
  * each once. Each listed path must answer 200 and name itself as its
- * canonical. No lastmod: no stored stamp moves only on a real data change.
+ * canonical. lastmod (`modified`) is the newer of the stored box score's
+ * content stamp and the written recap's writtenAt; never the kickoff.
  */
 
 import test, { before, after } from "node:test";
@@ -14,6 +15,8 @@ import { startServer } from "./helpers/server.mjs";
 import { cleanupBundles, importModule } from "./helpers/bundle.mjs";
 
 const pair = await importModule("lib/matchup/pair");
+const boxscore = await importModule("lib/matchup/boxscore");
+const { modifiedAt } = await import("../scripts/matchup/buildBoxscores.mjs");
 
 let server;
 before(async () => {
@@ -86,10 +89,15 @@ test("the index lists dated game pages, each of which answers at its own address
     assert.equal(game.path, `/nfl/${game.pair}/${game.game}/`);
     assert.match(game.kickoff, /^\d{4}-\d{2}-\d{2}T/);
     assert.ok(Date.parse(game.kickoff) < Date.now(), "a played game");
-    // No lastmod: the box score's fetch stamp moves on an unchanged refresh,
-    // and nothing else records when a game's data changed. Never the kickoff.
-    assert.ok("modified" in game, "the key is sent, so the plugin omits lastmod rather than falling back");
-    assert.equal(game.modified, null);
+    // lastmod: a stored content stamp or null (the plugin then omits it),
+    // never the kickoff. The 2021-2025 archive, pulled in one bulk run long
+    // after those games, has none.
+    assert.ok("modified" in game, "the key is sent, so the plugin never falls back to the kickoff");
+    if (game.modified !== null) {
+      assert.match(game.modified, /^\d{4}-\d{2}-\d{2}T/);
+      assert.ok(game.modified >= game.kickoff, `${game.path}: modified after kickoff`);
+    }
+    if (game.season <= 2025) assert.equal(game.modified, null, `${game.path}: archive has no stamp`);
   }
   const keys = body.games.map((g) => g.path);
   assert.equal(new Set(keys).size, keys.length, "each game once");
@@ -115,3 +123,36 @@ test("the index lists dated game pages, each of which answers at its own address
     assert.match(html, /"@type":"SportsEvent"/, "a page canonical at its own address carries the event");
   }
 });
+
+test("two generations with no data change list the same games with the same lastmod", async () => {
+  const one = await (await fetch(`${server.origin}/embed/matchup-games.json`)).json();
+  const two = await (await fetch(`${server.origin}/embed/matchup-games.json`)).json();
+  assert.deepEqual(two.games, one.games);
+  const current = one.games.filter((g) => g.season === one.season);
+  if (current.length > 0) {
+    assert.ok(current.some((g) => g.modified !== null), "this season's stored games carry a lastmod");
+  }
+});
+
+test("the box score stamp moves on a stat correction and holds on an identical re-pull", () => {
+  const summary = { header: { id: "1" }, boxscore: { teams: [{ yards: 300 }] } };
+  const stored = { date: "2026-11-09T18:00Z", fetchedAt: "2026-11-10T08:00:00.000Z", modifiedAt: "2026-11-10T08:00:00.000Z", summary };
+  // Identical re-pull inside the settle window: the stamp holds.
+  assert.equal(modifiedAt(stored, structuredClone(summary), "2026-11-12T08:00:00.000Z"), "2026-11-10T08:00:00.000Z");
+  // A stat correction: the stamp moves to the pull that brought it.
+  const corrected = { header: { id: "1" }, boxscore: { teams: [{ yards: 301 }] } };
+  assert.equal(modifiedAt(stored, corrected, "2026-11-12T08:00:00.000Z"), "2026-11-12T08:00:00.000Z");
+  // A record from before the field: an identical re-pull keeps its fetchedAt.
+  const legacy = { date: stored.date, fetchedAt: stored.fetchedAt, summary };
+  assert.equal(modifiedAt(legacy, summary, "2026-11-12T08:00:00.000Z"), "2026-11-10T08:00:00.000Z");
+  // A new game: now.
+  assert.equal(modifiedAt(undefined, summary, "2026-11-12T08:00:00.000Z"), "2026-11-12T08:00:00.000Z");
+
+  // What the page reads back: modifiedAt first, an in-season fetchedAt for a
+  // legacy record, nothing for a bulk archive pull or a bad stamp.
+  assert.equal(boxscore.contentStamp(stored), "2026-11-10T08:00:00.000Z");
+  assert.equal(boxscore.contentStamp(legacy), "2026-11-10T08:00:00.000Z");
+  assert.equal(boxscore.contentStamp({ date: "2021-09-12T17:00Z", fetchedAt: "2026-09-30T00:00:00.000Z" }), null);
+  assert.equal(boxscore.contentStamp({ date: "2026-11-09T18:00Z", fetchedAt: "nope" }), null);
+});
+

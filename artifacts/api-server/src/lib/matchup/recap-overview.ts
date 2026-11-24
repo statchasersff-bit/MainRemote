@@ -176,6 +176,18 @@ function storedRecap(season: number, gameId: string, hash: string): WrittenRecap
   return hit && hit.hash === hash && hit.paragraphs?.length ? hit : null;
 }
 
+/**
+ * When the game's written recap was stored, ISO, or null when it has none.
+ * The sitemap's lastmod reads it (game-index.ts): a rewritten recap is a
+ * change to the page. writeRecaps.mjs keeps the old stamp when an import
+ * brings back the same text.
+ */
+export function writtenRecapAt(season: number, gameId: string): string | null {
+  const doc = readDataJson<{ games: Record<string, WrittenRecap> }>(dataPath("matchup", `recap_prose_${season}.json`));
+  const at = doc?.games?.[gameId]?.writtenAt;
+  return typeof at === "string" && Number.isFinite(Date.parse(at)) ? at : null;
+}
+
 /* --------------------------------------------------------------- input */
 
 export interface OverviewInput {
