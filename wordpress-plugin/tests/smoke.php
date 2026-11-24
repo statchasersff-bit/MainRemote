@@ -32,8 +32,11 @@ $GLOBALS['hooks']   = array();
 $GLOBALS['options'] = array();
 $GLOBALS['query']   = array();
 
-function add_action( $hook, $fn, $priority = 10, $args = 1 ) { $GLOBALS['hooks'][ $hook ][] = $fn; }
-function add_filter( $hook, $fn, $priority = 10, $args = 1 ) { $GLOBALS['hooks'][ $hook ][] = $fn; }
+// Priorities are recorded beside the callbacks (same index) for the tests that
+// replay a request in WordPress's order; apply_filters below still runs in
+// registration order, as it always has.
+function add_action( $hook, $fn, $priority = 10, $args = 1 ) { $GLOBALS['hooks'][ $hook ][] = $fn; $GLOBALS['hook_priority'][ $hook ][] = (int) $priority; }
+function add_filter( $hook, $fn, $priority = 10, $args = 1 ) { $GLOBALS['hooks'][ $hook ][] = $fn; $GLOBALS['hook_priority'][ $hook ][] = (int) $priority; }
 
 /**
  * Really runs the callbacks, in registration order.
@@ -332,7 +335,7 @@ function _n( $s, $p, $n ) { return 1 === $n ? $s : $p; }
 function __( $s, $d = '' ) { return $s; }
 function esc_html__( $s, $d = '' ) { return $s; }
 function wp_kses( $s, $a ) { return $s; }
-function status_header() {}
+function status_header( $code = 200 ) { $GLOBALS['status_code'] = (int) $code; }
 function nocache_headers() {}
 function is_page() { return false; }
 function get_children() { return array(); }
@@ -600,6 +603,12 @@ if ( 'playerbuilder' === $group ) {
 
 if ( 'schedtitles' === $group || 'schedtitle' === $group ) {
 	require __DIR__ . '/smoke-schedule-titles.php';
+	echo "\n" . ( $fail ? "$fail FAILED\n" : "all passed\n" );
+	exit( $fail ? 1 : 0 );
+}
+
+if ( 'sched404s' === $group || 'sched404' === $group ) {
+	require __DIR__ . '/smoke-schedule-404.php';
 	echo "\n" . ( $fail ? "$fail FAILED\n" : "all passed\n" );
 	exit( $fail ? 1 : 0 );
 }
@@ -2379,7 +2388,7 @@ is( statchasers_player_lazyload_exclusions( null ), array( 'class="scp-pwell-img
  * The other groups. Their failures are this run's failures - a split that only
  * reported the half it felt like running would be worse than not splitting.
  */
-foreach ( array( 'containers', 'week', 'weekstray', 'schedtitles', 'leak', 'headings', 'playersection', 'rules', 'playerlinks', 'playerbuilder', 'sos', 'sosleak', 'sospage', 'sosfallback', 'fpa', 'fpaleak', 'fpaarchive', 'rhr', 'rhrleak', 'rds', 'rdsleak', 'scin', 'scindb', 'scinleak', 'bdp', 'hostcss', 'newsrail' ) as $child_group ) {
+foreach ( array( 'containers', 'week', 'weekstray', 'schedtitles', 'sched404s', 'leak', 'headings', 'playersection', 'rules', 'playerlinks', 'playerbuilder', 'sos', 'sosleak', 'sospage', 'sosfallback', 'fpa', 'fpaleak', 'fpaarchive', 'rhr', 'rhrleak', 'rds', 'rdsleak', 'scin', 'scindb', 'scinleak', 'bdp', 'hostcss', 'newsrail' ) as $child_group ) {
 	$child = array();
 	$code  = 0;
 	exec(
