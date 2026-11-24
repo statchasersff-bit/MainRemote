@@ -27500,3 +27500,84 @@ ul.sct-faq-list li {
     content: ".";
   }
 }
+
+/* team-audit T2: Coaching metric labels (2026-11-24). The period line under
+   the Offensive Tendencies head, and the rank's direction at every width:
+   "3rd-highest of 32", "T-10th-fastest of 32" (the 11-19 rules hid the
+   direction word at 900px and under, leaving a bare "3rd"). On phones the
+   rank wraps under the average inside its column, at its own break points. */
+:is(.sct, #sct-table-armour) .sct-cp-period {
+  margin: 12px 0 0;
+  color: var(--sct-m-muted, #5b6b80);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+:is(.sct, #sct-table-armour) .sct-cp-table.is-tendencies .sct-cp-nfl-dir,
+:is(.sct, #sct-table-armour) .sct-cp-table.is-tendencies .sct-cp-nfl-of {
+  display: inline;
+}
+
+/* The scope line under the target and backfield cards: which seasons the
+   NFL figures cover and how far the running season has got. */
+:is(.sct, #sct-table-armour) .sct-cpt-scope {
+  margin: 8px 0 0;
+  color: var(--sct-m-muted, #5b6b80);
+  font-size: 0.74rem;
+  line-height: 1.35;
+}
+
+@container premium (max-width: 900px) {
+  :is(.sct, #sct-table-armour) .sct-cp-table.is-tendencies .sct-cp-nfl-rank {
+    line-height: 1.2;
+  }
+}
+
+/* Phones: "25th" / "highest" / "of 32", one word group per line in the
+   narrow NFL column; the hyphen joins them only where they share a line. */
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-cp-period {
+    margin: 8px 0 0;
+    font-size: 0.78rem;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cp-table.is-tendencies .sct-cp-nfl-dir {
+    display: block;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cp-table.is-tendencies .sct-cp-nfl-hy,
+  :is(.sct, #sct-table-armour) .sct-cp-table.is-tendencies .sct-cp-th-yr {
+    display: none;
+  }
+
+  /* "of 32" reads once in the column head here; each cell keeps it for
+     screen readers. */
+  :is(.sct, #sct-table-armour) .sct-cp-table.is-tendencies .sct-cp-nfl-of {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cp-table.is-tendencies thead .sct-cp-th-of {
+    display: block;
+    margin-top: 1px;
+    font-size: 0.62rem;
+    font-weight: 600;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+}
+
+:is(.sct, #sct-table-armour) .sct-cp-table thead .sct-cp-th-of {
+  display: none;
+}
+
+/* team-audit T2: the in-progress season's tag in Season by Season names its
+   games ("In progress · 10 games"), so it wraps inside the Season column
+   instead of running under the Team column. */
+:is(.sct, #sct-table-armour) .sct-cc-body .sct-cs-live {
+  white-space: normal;
+}

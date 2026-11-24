@@ -103,6 +103,10 @@ describe("the page since mak kept the premium designs (2026-11-05)", () => {
     assert.equal(cpt.querySelectorAll(".sct-cpt-section .sct-cpt-h4").length, 4);
     // No subtitles in any coaching bar since 2026-11-21 (mak: the phone version everywhere).
     assert.equal(panel.querySelector(".sct-us-prm-sub, .sct-cpt-card-sub, .sct-cf-sub, .sct-cpt-note, .sct-cs-note, .sct-cs-hint, .sct-cc-note"), null);
+    // The one exception (team audit, 2026-11-24): a one-line data scope under
+    // the target and backfield cards, naming the NFL figures' seasons and the
+    // running season's reach, never a note or explainer.
+    for (const sc of panel.querySelectorAll(".sct-cpt-scope")) assert.match(sc.textContent, /^(NFL: same (seasons|weeks)|'\d\d [A-Z]{2,3}: through Week)/);
     // The original header, identity block, tendency tables and sections 3-5 are off the page (deleted 2026-11-10).
     for (const sel of [".sct-co-head", ".sct-co-grid.is-overview", ".sct-co-tend", ".sct-co-form", ".sct-co-situational", ".sct-co-targets", ".sct-co-table", ".sct-co-panel", ".sct-co-card", ".sct-co-dossier", ".sct-co-fptable", ".sct-co-fantasy", ".sct-co-bottom", "table.sct-co-finishes"]) {
       assert.equal(panel.querySelector(sel), null, `${sel} is gone`);
@@ -158,7 +162,7 @@ describe("the page since mak kept the premium designs (2026-11-05)", () => {
 });
 
 describe("the tendencies tables", () => {
-  test("one Offensive Tendencies table: two group rows, pts changes, NFL average and a directional rank on every row (Phase 2, 2026-11-19)", async () => {
+  test("one Offensive Tendencies table: two group rows, pp changes, NFL average and a directional rank on every row (Phase 2, 2026-11-19; team audit 2026-11-24)", async () => {
     const { doc } = await page("/team/buffalo-bills/coaching/");
     const cp = doc.querySelector("#coaching-premium");
     const tables = [...cp.querySelectorAll("table.sct-cp-table")];
@@ -167,18 +171,19 @@ describe("the tendencies tables", () => {
     assert.deepEqual([...t.querySelectorAll("tr.sct-cp-group-row th")].map((th) => th.textContent), ["Play Calling", "Formations & Tempo"]);
     const labels = [...t.querySelectorAll("tbody th .sct-co-tlabel")].map((x) => x.textContent);
     assert.deepEqual(labels, ["Pass rate (all downs)", "Pass rate over expected", "Early-down pass rate", "Red-zone pass rate", "Play-action rate", "Pre-snap motion", "Shotgun rate", "No-huddle rate", "Neutral pace"]);
-    const wk = coaching.teams.buf.tendencies.samples.throughWeek;
-    assert.deepEqual([...t.querySelectorAll("thead th")].map((th) => th.textContent), ["Metric", "2025Brady", `2026Thru Wk ${wk}`, "Changepts vs 2025", "NFLAvg · rank"]);
+    const wk = coaching.snapshot.throughWeek;
+    assert.deepEqual([...t.querySelectorAll("thead th")].map((th) => th.textContent), ["Metric", "2025Brady", `2026Thru Wk ${wk}`, "Changepp vs 2025", "NFL 2026Avg · rankof 32"]);
     for (const el of t.querySelectorAll(".sct-cp-change")) {
       const long = el.querySelector(".sct-cp-chg-long");
-      // Percentage points as "pts" (mak, 2026-11-19), never a bare "%"; pace in seconds.
-      assert.match(long ? long.textContent : el.textContent, /^(steady|-|[+−]\d+(\.\d)? pts?|\d+\.\d seconds? (faster|slower))$/);
+      // Percentage points as "pp", one decimal (team audit 2026-11-24; was
+      // "pts", mak 2026-11-19), never a bare "%"; pace in seconds.
+      assert.match(long ? long.textContent : el.textContent, /^(steady|-|[+−]\d+\.\d pp|\d+\.\d seconds? (faster|slower))$/);
       const short = el.querySelector(".sct-cp-chg-short");
       if (short) assert.equal(short.querySelector(".sct-visually-hidden").textContent, long.textContent);
     }
     for (const r of t.querySelectorAll("tbody tr:not(.sct-cp-group-row)")) {
-      assert.match(r.querySelector(".sct-cp-nfl-avg").textContent, /^-?\d+(\.\d)?(%|s)$/);
-      assert.match(r.querySelector(".sct-cp-nfl-rank").textContent, /^(T-)?\d+(st|nd|rd|th) (highest|fastest) of \d+$/);
+      assert.match(r.querySelector(".sct-cp-nfl-avg").textContent, /^[+−-]?\d+\.\d(%|s)$/);
+      assert.match(r.querySelector(".sct-cp-nfl-rank").textContent, /^(T-)?\d+(st|nd|rd|th)-(highest|fastest) of \d+$/);
     }
     for (const g of ["Play Calling", "Formations & Tempo"]) assert.ok(t.querySelectorAll("tr.is-notable").length <= 2, `${g}: at most one gold row`);
     // No identity tiles or donut: their figures are the table's rows now.
@@ -195,14 +200,16 @@ describe("the tendencies tables", () => {
     for (const row of coaching.teams.ne.tendencies.rows.filter((r) => r.key !== "fourthGoRate")) {
       const tr = rows.find((r) => r.querySelector("th .sct-co-tlabel").textContent === row.label);
       assert.ok(tr, row.label);
-      assert.equal(tr.querySelector(".is-now").textContent, row.current, `${row.label}: the file's 2026 value`);
-      assert.equal(tr.querySelector(".is-prior").textContent, row.prior, `${row.label}: the file's 2025 value`);
+      // The file's values at the row's one precision ("57%" prints "57.0%", team audit 2026-11-24).
+      const fixed = (x) => x.replace(/^([+−-]?)(\d+(?:\.\d+)?)(%|s)$/, (_m, sg, n, u) => `${sg}${Number(n).toFixed(1)}${u}`);
+      assert.equal(tr.querySelector(".is-now").textContent, fixed(row.current), `${row.label}: the file's 2026 value`);
+      assert.equal(tr.querySelector(".is-prior").textContent, fixed(row.prior), `${row.label}: the file's 2025 value`);
       // The rank recomputed by hand over every club's value in the same file.
       const v = (x) => Number(x.replace("−", "-").match(/-?\d+(\.\d+)?/)[0]);
       const all = Object.values(coaching.teams).map((t) => t.tendencies.rows.find((r) => r.key === row.key)).filter(Boolean).map((r) => v(r.current));
       const mine = v(row.current);
       const rank = all.filter((x) => (row.invert ? x < mine : x > mine)).length + 1;
-      assert.match(tr.querySelector(".sct-cp-nfl-rank").textContent, new RegExp(`^(T-)?${rank}(st|nd|rd|th) `), `${row.label}: rank`);
+      assert.match(tr.querySelector(".sct-cp-nfl-rank").textContent, new RegExp(`^(T-)?${rank}(st|nd|rd|th)-`), `${row.label}: rank`);
     }
     // NE pass rate: 60.8% vs 60.5% is steady (it printed "61%" and "+0.5" from the usage file's whole number).
     const pass = rows.find((r) => /Pass rate \(all downs\)/.test(r.textContent));
@@ -214,7 +221,7 @@ describe("the tendencies tables", () => {
     const { doc } = await page("/team/detroit-lions/coaching/");
     const heads = [...doc.querySelectorAll("table.sct-cp-table thead th")].map((th) => th.textContent);
     assert.equal(heads[1], "2025Previous staff");
-    assert.equal(heads[3], "Changevs previous staff");
+    assert.equal(heads[3], "Changepp vs previous staff");
     assert.match(doc.querySelector("#coaching-premium .sct-cp-id-line").textContent, /^(Compared with the 2025 staff|Detroit runs much like the 2025 staff's offense)/);
     assert.match(doc.querySelector(".sct-cp-how").textContent, /called by the previous staff/);
   });
@@ -226,8 +233,10 @@ describe("the tendencies tables", () => {
     const how = doc.querySelector("#coaching-premium details.sct-cp-how");
     assert.ok(how && !how.open, "closed");
     assert.match(how.textContent, /personnel groupings \(11, 12, 21 personnel\)/);
-    assert.match(how.textContent, /percentage points \(pts\)/);
-    assert.match(how.textContent, /NFL rank is among all 32 offenses/);
+    // "Percentage points" is explained once, in the period line above the table (team audit, 2026-11-24).
+    assert.doesNotMatch(how.textContent, /percentage points/);
+    assert.match(doc.querySelector("#coaching-premium .sct-cp-period").textContent, /percentage points \(pp\)/);
+    assert.match(how.textContent, /The NFL average and rank cover all 32 offenses/);
     assert.equal(doc.querySelector("#coaching-premium .sct-cp-foot"), null, "no open footnotes");
   });
 
@@ -269,7 +278,8 @@ describe("career and fantasy", () => {
     const rows = [...block.querySelectorAll("tbody tr.sct-cs-row")];
     // Newest first since 2026-11-08.
     assert.ok(rows[0].classList.contains("is-current"));
-    assert.equal(rows[0].querySelector(".sct-cs-live").textContent, "In-season");
+    // The in-progress season names its games (team audit, 2026-11-24).
+    assert.equal(rows[0].querySelector(".sct-cs-live").textContent, `In progress · ${coaching.teams.buf.tendencies.samples.games} games`);
     assert.equal(block.querySelector("table.sct-co-finishes"), null, "no finishes in the NFL block");
     assert.ok(doc.querySelector("#coaching-fantasy-premium .sct-cf-table"), "finishes in Fantasy Impact");
   });
@@ -301,7 +311,7 @@ describe("Fantasy Impact is the premium design (mak, 2026-11-06)", () => {
     for (const r of rows) assert.ok(r.querySelector("img.sct-cf-crest[src*='/team-logos/']"), "a crest on every stop");
     const live = rows.find((r) => r.classList.contains("is-current"));
     assert.ok(live, "the in-season row");
-    assert.match(live.querySelector(".sct-cf-stop-role").textContent, /^Through Week \d+ · In-season$/);
+    assert.match(live.querySelector(".sct-cf-stop-role").textContent, new RegExp(`^Through Week ${coaching.snapshot.throughWeek}, \\d+ games$`));
     assert.ok([...live.querySelectorAll(".sct-cf-pill")].every((p) => p.classList.contains("is-current")));
     for (const r of rows.filter((r) => r !== live)) {
       assert.ok([...r.querySelectorAll(".sct-cf-pill")].every((p) => /is-(elite|strong|mid|low)/.test(p.className)));
@@ -344,8 +354,8 @@ describe("signals and the career block", () => {
     const text = (el) => el.textContent.replace(/\s+/g, " ").trim();
     const seasons = coaching.teams.ne.dossier.flatMap((r) => r.seasons);
     assert.equal(text(block.querySelector(".sct-cs-title")), "Season by Season, 2005-26");
-    const heads = [...block.querySelectorAll("thead th")].map((th) => text(th).replace(/pts vs lg|carries \+ 2×tgt/, "").trim());
-    assert.deepEqual(heads, ["Season", "Team", "PPG", "NFL rank", "WR target %", "RB target %", "TE target %", "Lead RB %"]);
+    const heads = [...block.querySelectorAll("thead th")].map((th) => text(th).replace(/pp vs league|of 32, 1st = most|carries \+ 2×tgt/, "").trim());
+    assert.deepEqual(heads, ["Season", "Team", "PPG", "PPG rank", "WR target %", "RB target %", "TE target %", "Lead RB %"]);
     const all = [...block.querySelectorAll("tbody tr")];
     assert.deepEqual(all.filter((tr) => tr.classList.contains("sct-cs-gap")).map(text), ["2024 · Not calling plays"]);
     const rows = all.filter((tr) => tr.classList.contains("sct-cs-row"));
@@ -375,7 +385,7 @@ describe("signals and the career block", () => {
     for (const td of byYear(2006).querySelectorAll("td.is-share")) { assert.equal(text(td), "–"); assert.equal(td.querySelector(".sct-cs-track"), null); }
     const live = rows[0];
     assert.ok(live.classList.contains("is-current"));
-    assert.equal(text(live.querySelector(".sct-cs-live")), "In-season");
+    assert.equal(text(live.querySelector(".sct-cs-live")), `In progress · ${coaching.teams.ne.tendencies.samples.games} games`);
     assert.equal(text(live.querySelector(".sct-cs-year")), "2026");
     assert.equal(block.querySelectorAll("tbody tr.is-current").length, 1);
     assert.equal(block.querySelectorAll(".sct-cs-lb.is-peak").length, 1);
@@ -445,13 +455,17 @@ describe("panels", () => {
   test("distribution rows carry league-average markers and the gold lean, with the numbers in text", async () => {
     const { doc } = await page("/team/buffalo-bills/coaching/");
     const panel = doc.querySelector(".sct-cpt-card.is-dist");
-    // The title names the seasons averaged (the review of 2026-11-15): Brady's calls from 2020 on, through 2026.
-    assert.match(panel.querySelector(".sct-cpt-h4").textContent, /^Target Distribution Under Brady, 2020-2026$/);
+    // The title names the seasons averaged, as runs, from the per-season
+    // prints (team audit, 2026-11-24): Brady did not call plays in 2022.
+    assert.match(panel.querySelector(".sct-cpt-h4").textContent, /^Target Distribution Under Brady, 2020-2021, 2023-2026$/);
     assert.equal(panel.querySelector(".sct-cpt-take"), null, "no takeaway under the bars");
-    const rows = coaching.teams.buf.distribution.rows;
-    assert.equal(panel.querySelectorAll(".sct-cpt-row").length, rows.length);
-    assert.equal(panel.querySelectorAll(".sct-cpt-mark").length, rows.length);
-    assert.match(panel.textContent, new RegExp(`${rows[0].pct}%NFL ${rows[0].nfl}%`));
+    const prints = coaching.teams.buf.dossier.flatMap((d) => d.prints ?? []);
+    const mean = (f) => prints.reduce((t, p) => t + f(p), 0) / prints.length;
+    assert.equal(panel.querySelectorAll(".sct-cpt-row").length, 3);
+    assert.equal(panel.querySelectorAll(".sct-cpt-mark").length, 3);
+    // WR first: the team's and the league's shares averaged over the same seasons.
+    assert.match(panel.textContent, new RegExp(`${Math.round(mean((p) => p.shares.WR))}%NFL ${Math.round(mean((p) => p.league.WR))}%`));
+    assert.match(panel.querySelector(".sct-cpt-scope").textContent, /^NFL: same seasons · 2026 through Week \d+, \d+ games$/);
   });
 
   test("the backfield chart's current bar is live from the usage file, in gold, on a 0-100% scale", async () => {
@@ -475,9 +489,9 @@ describe("panels", () => {
     const rows = [...scoreState.querySelectorAll(".sct-cpt-row")];
     assert.equal(rows.length, data.length);
     const vals = rows.map((r) => r.querySelector(".sct-cpt-row-val").textContent);
-    // Points against leading by 7+, "pts" (Phase 2, 2026-11-19).
+    // Percentage points against leading by 7+, "pp" at the rates' own whole-number precision (team audit, 2026-11-24).
     assert.match(vals[0], /^\d+% passReference$/);
-    for (const r of vals.slice(1)) assert.match(r, /^\d+% pass[+−]?\d+ pts?$/, r);
+    for (const r of vals.slice(1)) assert.match(r, /^\d+% pass[+−]?\d+ pp$/, r);
     for (const r of rows) assert.match(r.querySelector(".sct-cpt-row-n").textContent, /^\d+ plays$/);
     assert.equal(scoreState.querySelector(".sct-cpt-take"), null, "no takeaway: the rows show the gap");
     const bottom = doc.querySelector("#coaching-fantasy-premium");
@@ -487,10 +501,12 @@ describe("panels", () => {
   test("NE: the deviating position is the only gold bar, with its gap as a pill", async () => {
     const { doc } = await page("/team/new-england-patriots/coaching/");
     const panel = doc.querySelector(".sct-cpt-card.is-dist");
-    const rows = coaching.teams.ne.distribution.rows;
+    // The gap is taken before rounding, from the same per-season prints as the season table (team audit, 2026-11-24).
+    const prints = coaching.teams.ne.dossier.flatMap((d) => d.prints ?? []).filter((p) => ["WR", "RB", "TE"].every((k) => p.shares[k] != null && p.league[k] != null));
+    const gap = (k) => Math.round(prints.reduce((t, p) => t + p.shares[k] - p.league[k], 0) / prints.length) || 0;
     const diffs = [...panel.querySelectorAll(".sct-cpt-badge")].map((d) => d.textContent);
-    const pts = (d) => `${d === 0 ? "" : d > 0 ? "+" : "−"}${Math.abs(d)} ${Math.abs(d) === 1 ? "pt" : "pts"}`;
-    assert.deepEqual(diffs, rows.map((r) => pts(r.pct - r.nfl)));
+    const pp = (d) => `${d === 0 ? "" : d > 0 ? "+" : "−"}${Math.abs(d)} pp`;
+    assert.deepEqual(diffs, ["WR", "TE", "RB"].map((k) => pp(gap(k))));
     assert.equal(panel.querySelectorAll(".sct-cpt-fill.is-gold").length, 1);
     assert.ok(doc.querySelector(".sct-cpt-card.is-back .sct-cpt-col.is-current"));
   });
@@ -528,15 +544,16 @@ describe("FAQ", () => {
     assert.ok(/^Only with care\./.test(baseline.querySelector(".sct-faq-a").textContent));
   });
 
-  test("the answers quote the tendencies table's own numbers", async () => {
+  test("the answers interpret the table rather than repeat its numbers (team audit, 2026-11-24)", async () => {
     const { doc } = await page("/team/new-england-patriots/coaching/");
     const tail = doc.querySelector('[data-sct-faq-for="coaching"]');
-    const changed = [...tail.querySelectorAll(".sct-faq-item")].find((d) => /offense changed in/.test(d.querySelector(".sct-faq-q").textContent));
-    assert.ok(changed);
-    const figures = [...changed.querySelectorAll(".sct-faq-a")].map((p) => p.textContent).join(" ").match(/\d+(?:\.\d+)?%/g) ?? [];
-    assert.ok(figures.length > 0, "the answer quotes rates");
-    const table = doc.querySelector("#coaching-premium table.sct-cp-table").textContent;
-    for (const f of figures) assert.ok(table.includes(f), `${f} is in the table`);
+    // Until 2026-11-24 the "changed" and scheme answers re-quoted the table's
+    // rates and NFL averages; the table carries them, the answers the reading.
+    for (const re of [/offense changed in/, /offensive scheme/]) {
+      const item = [...tail.querySelectorAll(".sct-faq-item")].find((d) => re.test(d.querySelector(".sct-faq-q").textContent));
+      assert.ok(item, String(re));
+      assert.doesNotMatch([...item.querySelectorAll(".sct-faq-a")].map((p) => p.textContent).join(" "), /\d+(?:\.\d+)?%/);
+    }
   });
 
   test("…and every question is in the page's FAQPage with the answer the page shows", async () => {
@@ -755,7 +772,9 @@ describe("reliability caveat", () => {
     const item = [...doc.querySelectorAll('[data-sct-faq-for="coaching"] .sct-faq-item')].find((d) => /fourth down/.test(d.querySelector(".sct-faq-q").textContent));
     assert.ok(item);
     const a = [...item.querySelectorAll(".sct-faq-a")].map((p) => p.textContent).join(" ");
-    assert.match(a, new RegExp(`\\(${s.fourthShortGo} of ${s.fourthShortAll}\\)`));
+    // The rates are on the card; a small sample is named in the answer (team audit, 2026-11-24).
+    if (s.fourthShortAll < 15) assert.match(a, new RegExp(`rests on ${s.fourthShortGo} of ${s.fourthShortAll} such opportunit`));
+    assert.doesNotMatch(a, /\d+(\.\d+)?%/);
     if (s.fourthShortAll < 15) assert.match(a, /a small sample that can swing with one decision; fourth-down calls are game management shared with the head coach/);
   });
 
@@ -786,7 +805,7 @@ describe("design polish (mak, 2026-10-05)", () => {
     assert.equal(doc.querySelectorAll("#coaching-premium .sct-cp-rank").length, 0);
     const ranks = [...doc.querySelectorAll("#coaching-premium .sct-cp-nfl-rank")];
     assert.equal(ranks.length, 9);
-    for (const b of ranks) assert.match(b.getAttribute("title"), /^(T-)?\d+(st|nd|rd|th) (highest|fastest) of \d+ offenses, \d{4}/);
+    for (const b of ranks) assert.match(b.getAttribute("title"), /^(tied )?\d+(st|nd|rd|th)-(highest|fastest) [a-z-]+(?: [a-z-]+)* of \d+ offenses, \d{4}/);
     assert.equal(doc.querySelectorAll(".sct-co-idchip").length, 0);
     assert.doesNotMatch(doc.querySelector("#coaching-premium").textContent, /Biggest YoY move/);
   });
@@ -810,7 +829,7 @@ describe("cross-tab: Coaching, Usage and Stats (Team Pages Phase 2B, 2026-11-19)
         const env = usage.teams[club].env[key];
         const shown = Number(tr.querySelector(".is-now").textContent.replace("−", "-").replace(/[%s]/g, ""));
         assert.equal(shown, env.value, `${slug} ${key} value`);
-        assert.match(tr.querySelector(".sct-cp-nfl-rank").textContent, new RegExp(`^${env.tied ? "T-" : ""}${env.rank}(st|nd|rd|th) `), `${slug} ${key} rank`);
+        assert.match(tr.querySelector(".sct-cp-nfl-rank").textContent, new RegExp(`^${env.tied ? "T-" : ""}${env.rank}(st|nd|rd|th)-`), `${slug} ${key} rank`);
       }
     }
   });

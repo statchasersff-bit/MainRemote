@@ -19,7 +19,7 @@
 
 import { escapeHtml } from "../render";
 import { getLeaguePpg, type TeamCoaching } from "./coaching";
-import { readStops, seasonOf, stepLogo, stopColors, surnameOf, timelineStepModel, type Stop, type TimelineStep } from "./coaching-render";
+import { readStops, seasonOf, seasonPeriod, stepLogo, stopColors, surnameOf, timelineStepModel, type Stop, type TimelineStep } from "./coaching-render";
 import { usageStyleHead } from "./coaching-premium-tendencies";
 
 const e = escapeHtml;
@@ -103,7 +103,10 @@ function box(r: Rect, cls: string, inner: string): string {
  * and the container query shows one, so the type holds its size on a
  * narrow column instead of scaling down with the viewBox.
  */
-function chartSvg(stops: Stop[], colors: Map<string, string>, league: Record<string, number>, W: number, H: number, narrow: boolean, phone: "" | "s" | "m" = ""): string {
+// `partial`: "through Week 11, 10 games" while the current season runs, else
+// "" (team audit, 2026-11-24): an unfinished season is labeled as one and is
+// never the "peak" a nine-game sample would win against full seasons.
+function chartSvg(stops: Stop[], colors: Map<string, string>, league: Record<string, number>, W: number, H: number, narrow: boolean, phone: "" | "s" | "m" = "", partial = ""): string {
   // Phones (mak, 2026-11-15): drawn to the screen's width, so nothing
   // scrolls or clips; the NFL AVG end pill gives way to the legend.
   const padL = phone ? 26 : 38;
@@ -171,7 +174,7 @@ function chartSvg(stops: Stop[], colors: Map<string, string>, league: Record<str
     avg += box(r, "sct-cc-pill is-avg", `<text x="${f1(r.x + r.w / 2)}" y="${f1(r.y + r.h / 2)}" text-anchor="middle" dominant-baseline="middle">NFL AVG</text>`);
   }
 
-  type Dot = { year: number; ppg: number; rank: string; px: number; py: number };
+  type Dot = { year: number; ppg: number; rank: string; games?: number | null; px: number; py: number };
   const segs = stops.map((s) => {
     const dots: Dot[] = s.points.map((p) => ({ ...p, px: x(p.year + 0.5), py: y(p.ppg) }));
     return { s, xa: x(s.start) + 2, xb: x(s.end + 1) - 2, dots, yFirst: dots[0]!.py, yLast: dots[dots.length - 1]!.py, color: colors.get(s.code) as string };
@@ -193,8 +196,9 @@ function chartSvg(stops: Stop[], colors: Map<string, string>, league: Record<str
   let live: Dot | null = null;
   for (const g of segs) {
     for (const d of g.dots) {
-      if (g.s.caller && (!peak || d.ppg > peak.ppg)) peak = d;
-      if (g.s.current && d.year === g.s.end) live = d;
+      const isLive = g.s.current && d.year === g.s.end;
+      if (isLive) live = d;
+      if (g.s.caller && !(isLive && partial) && (!peak || d.ppg > peak.ppg)) peak = d;
     }
   }
 
@@ -209,8 +213,8 @@ function chartSvg(stops: Stop[], colors: Map<string, string>, league: Record<str
     for (const d of dots) {
       const isLive = d === live;
       const label =
-        `${d.year}${s.window ? ` (${s.window})` : ""} · ${s.code} · ${s.role}${s.caller ? "" : " · not the caller"} · ${d.ppg.toFixed(1)} PPG` +
-        (d.rank ? ` · ${d.rank}` : "") +
+        `${d.year}${s.window ? ` (${s.window})` : ""}${isLive && partial ? ` (in progress, ${partial})` : ""} · ${s.code} · ${s.role}${s.caller ? "" : " · not the caller"} · ${d.ppg.toFixed(1)} PPG` +
+        (d.rank ? ` · ${d.rank.replace(/^(T-)?(\d+(?:st|nd|rd|th))(?! in window)/, "$1$2 of 32 in PPG")}` : "") +
         (league[String(d.year)] != null ? ` · NFL avg ${league[String(d.year)]!.toFixed(1)} (${d.ppg - league[String(d.year)]! >= 0 ? "+" : "−"}${Math.abs(d.ppg - league[String(d.year)]!).toFixed(1)})` : "");
       let pt = `<title>${e(label)}</title>`;
       const rr = phone ? 3.2 : 4.5;
@@ -249,8 +253,9 @@ function chartSvg(stops: Stop[], colors: Map<string, string>, league: Record<str
         `<text x="${f1(r.x + (phone ? 6 : 8))}" y="${f1(r.y + r.h / 2)}" dominant-baseline="middle"><tspan class="v">${peak.ppg.toFixed(1)}</tspan><tspan class="k" dx="${phone ? 4 : 5}">PEAK</tspan></text>`,
       );
   }
+  const liveKey = partial ? `THRU WK ${partial.match(/Week (\d+)/)?.[1] ?? ""}`.trim() : "CURRENT";
   if (live && live !== peak) {
-    const w = phone ? 84 : 104;
+    const w = phone ? (partial ? 100 : 84) : partial ? 124 : 104;
     const h = phone ? 20 : 24;
     const r = place(
       [
@@ -266,7 +271,7 @@ function chartSvg(stops: Stop[], colors: Map<string, string>, league: Record<str
     notes += box(
       r,
       "sct-cc-callout is-current",
-      `<text x="${f1(r.x + (phone ? 6 : 8))}" y="${f1(r.y + r.h / 2)}" dominant-baseline="middle"><tspan class="v">${live.ppg.toFixed(1)}</tspan><tspan class="k" dx="${phone ? 4 : 5}">CURRENT</tspan></text>`,
+      `<text x="${f1(r.x + (phone ? 6 : 8))}" y="${f1(r.y + r.h / 2)}" dominant-baseline="middle"><tspan class="v">${live.ppg.toFixed(1)}</tspan><tspan class="k" dx="${phone ? 4 : 5}">${e(liveKey)}</tspan></text>`,
     );
   } else if (live && live === peak) {
     // One point is both: the peak box carries it, so say so in its own label.
@@ -313,10 +318,13 @@ function chartSvg(stops: Stop[], colors: Map<string, string>, league: Record<str
 }
 
 interface SumData {
-  peak: { ppg: number; year: number; code: string; rank: string } | null;
-  live: { ppg: number; year: number; rank: string; window: string | null } | null;
+  /** The best season he called that is over: a season still running is never the peak (team audit, 2026-11-24). */
+  peak: { ppg: number; year: number; code: string; rank: string; window: string } | null;
+  live: { ppg: number; year: number; rank: string; window: string | null; games: number | null } | null;
   called: number;
   now: TimelineStep | null;
+  /** "through Week 11, 10 games" while the season runs. */
+  partial: string;
 }
 
 /** The career figures, once, for the stat stack and the phones' KPI row. */
@@ -324,17 +332,19 @@ function sumData(c: TeamCoaching, stops: Stop[]): SumData {
   let peak: SumData["peak"] = null;
   let live: SumData["live"] = null;
   let called = 0;
+  const partial = seasonPeriod(c).partial;
   for (const s of stops) {
     for (const p of s.points) {
+      const isLive = s.current && p.year === s.end;
       if (s.caller) {
         called++;
-        if (!peak || p.ppg > peak.ppg) peak = { ppg: p.ppg, year: p.year, code: s.code, rank: p.rank };
+        if (!(isLive && partial) && (!peak || p.ppg > peak.ppg)) peak = { ppg: p.ppg, year: p.year, code: s.code, rank: p.rank, window: s.window };
       }
-      if (s.current && p.year === s.end) live = { ppg: p.ppg, year: p.year, rank: p.rank, window: s.window ?? null };
+      if (isLive) live = { ppg: p.ppg, year: p.year, rank: p.rank, window: s.window ?? null, games: p.games ?? null };
     }
   }
   const steps = c.playCaller.careerPath.map(timelineStepModel);
-  return { peak, live, called, now: currentStep(steps, seasonOf(c)) };
+  return { peak, live, called, now: currentStep(steps, seasonOf(c)), partial };
 }
 
 // The live rank text can carry its window ("16th · 2026 thru Wk 8"): the ordinal is the figure, the window its note.
@@ -342,15 +352,17 @@ const ordOf = (t: string) => t.match(/^\d+(?:st|nd|rd|th)/)?.[0] ?? "";
 
 /** The figures the chart used to carry in big callouts, as a short stat stack beside it. */
 function summary(c: TeamCoaching, stops: Stop[]): string {
-  const { peak, live, called, now } = sumData(c, stops);
+  const { peak, live, called, now, partial } = sumData(c, stops);
   const item = (k: string, v: string, sub: string, cls = "") =>
     `<div class="sct-cc-kv${cls ? ` ${cls}` : ""}"><dt>${e(k)}</dt><dd><b>${e(v)}</b>${sub ? `<span>${e(sub)}</span>` : ""}</dd></div>`;
   const thru = live?.rank.match(/thru Wk \d+/i)?.[0] ?? "";
+  const games = live?.games != null ? `${live.games} game${live.games === 1 ? "" : "s"}` : "";
+  const peakRank = peak && ordOf(peak.rank) ? `${ordOf(peak.rank)} of 32` : "";
   const items = [
-    peak ? item("Peak PPG", peak.ppg.toFixed(1), [`${peak.year} ${peak.code}`, ordOf(peak.rank)].filter(Boolean).join(" · "), "is-peak") : "",
-    live ? item("Current PPG", live.ppg.toFixed(1), `${live.year} · ${live.window || thru || "in-season"}`, "is-current") : "",
-    live && ordOf(live.rank) ? item(`${live.year} NFL rank`, ordOf(live.rank), /in window/.test(live.rank) ? "in his window" : "of 32") : "",
-    called ? item("Seasons calling", String(called), "plays, all stops") : "",
+    peak ? item("Peak PPG", peak.ppg.toFixed(1), [`${peak.year} ${peak.code}`, peak.window || (partial ? "full season" : ""), peakRank].filter(Boolean).join(" · "), "is-peak") : "",
+    live ? item("Current PPG", live.ppg.toFixed(1), [`${live.year}`, live.window || thru || (partial ? "in progress" : ""), partial ? games : ""].filter(Boolean).join(" · "), "is-current") : "",
+    live && ordOf(live.rank) ? item(`${live.year} NFL rank`, ordOf(live.rank), /in window/.test(live.rank) ? "in his window" : "of 32 in points per game") : "",
+    called ? item("Seasons calling", String(called), `plays, all stops${partial && live ? `, incl. ${live.year} in progress` : ""}`) : "",
     now ? item("Current stop", now.codes.join(" / "), now.years) : "",
   ].join("");
   return items ? `<dl class="sct-cc-sum" aria-label="Scoring summary">${items}</dl>` : "";
@@ -362,21 +374,25 @@ function summary(c: TeamCoaching, stops: Stop[]): string {
  * Same numbers as the stat stack, which phones hide.
  */
 function phoneKpis(c: TeamCoaching, stops: Stop[]): string {
-  const { peak, live, called, now } = sumData(c, stops);
+  const { peak, live, called, now, partial } = sumData(c, stops);
   const thru = live?.rank.match(/thru Wk \d+/i)?.[0] ?? "";
   const tile = (k: string, v: string, sub: string, cls: string) =>
     `<div class="sct-cc-kpi ${cls}"><dt>${e(k)}</dt><dd><b>${e(v)}</b>${sub ? `<span>${e(sub)}</span>` : ""}</dd></div>`;
+  // Short enough for a phone tile: "10 gms · Wk 11" (the stack above says it in full).
+  const games = partial && live?.games != null ? `${live.games} gm${live.games === 1 ? "" : "s"}` : "";
+  const wk = thru.match(/\d+/)?.[0];
   const tiles = [
     peak ? tile("Peak PPG", peak.ppg.toFixed(1), `${peak.year} ${peak.code}`, "is-peak") : "",
-    live ? tile("Current PPG", live.ppg.toFixed(1), live.window || thru.replace(/^thru/i, "Thru") || `${live.year}`, "is-current") : "",
-    live && ordOf(live.rank) ? tile("NFL rank", ordOf(live.rank), /in window/.test(live.rank) ? "in his window" : `${live.year}, of 32`, "is-rank") : "",
+    live ? tile("Current PPG", live.ppg.toFixed(1), live.window || (games && wk ? `${games} · Wk ${wk}` : thru.replace(/^thru/i, "Thru") || `${live.year}`), "is-current") : "",
+    live && ordOf(live.rank) ? tile("NFL rank", ordOf(live.rank), /in window/.test(live.rank) ? "in his window" : "of 32 in PPG", "is-rank") : "",
   ].join("");
   if (!tiles) return "";
-  const meta = [called ? `${called} season${called === 1 ? "" : "s"} calling plays` : "", now ? `Current stop ${now.codes.join(" / ")} (${now.years})` : ""].filter(Boolean).join(" · ");
+  const meta = [called ? `${called} season${called === 1 ? "" : "s"} calling plays${partial && live ? ` (${live.year} in progress)` : ""}` : "", now ? `Current stop ${now.codes.join(" / ")} (${now.years})` : ""].filter(Boolean).join(" · ");
   return `<div class="sct-cc-kpis"><dl class="sct-cc-kpi-row" aria-label="Scoring summary">${tiles}</dl>${meta ? `<p class="sct-cc-meta">${e(meta)}</p>` : ""}</div>`;
 }
 
 function chart(c: TeamCoaching, stops: Stop[]): string {
+  const partial = seasonPeriod(c).partial;
   const colors = stopColors(stops);
   const league = getLeaguePpg();
   const x0 = Math.min(...stops.map((s) => s.start));
@@ -404,9 +420,9 @@ function chart(c: TeamCoaching, stops: Stop[]): string {
     // 1.05x). It keeps the is-wide hook. The two phone drawings stay: SVG
     // text scales with the drawing, and one phone drawing cannot keep 12px
     // labels legible from a 320px screen to a 560px one.
-    chartSvg(stops, colors, league, 720, 240, true).replace('class="sct-cc-svg is-narrow"', 'class="sct-cc-svg is-wide"') +
-    chartSvg(stops, colors, league, 320, 168, true, "s") +
-    chartSvg(stops, colors, league, 440, 190, true, "m") +
+    chartSvg(stops, colors, league, 720, 240, true, "", partial).replace('class="sct-cc-svg is-narrow"', 'class="sct-cc-svg is-wide"') +
+    chartSvg(stops, colors, league, 320, 168, true, "s", partial) +
+    chartSvg(stops, colors, league, 440, 190, true, "m", partial) +
     `</div>` +
     // Touchscreens never show an SVG <title>: a tapped or focused point's
     // season reads here instead (client team.ts wireCareerChart; phones).

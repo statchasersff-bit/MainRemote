@@ -33,6 +33,14 @@ export interface TendencyRow {
   prior: string;
   /** Numeric prior, present on feed-backed rows so the delta can be computed. */
   priorNum?: number;
+  /**
+   * The unrounded values behind `prior` and `current` (buildCoaching.mjs,
+   * team audit 2026-11-24): the change is taken from these and rounded
+   * after, so a printed "+3.0 pp" is never the gap between two rounded
+   * figures. Absent on a file built before then; the printed values stand in.
+   */
+  priorRaw?: number | null;
+  currentRaw?: number | null;
   /** Read the current value from the usage file's env block instead. */
   feed?: "passRate" | "proe" | "pace" | "rzPassRate";
   /** Lower is "up": pace, where fewer seconds is faster. */

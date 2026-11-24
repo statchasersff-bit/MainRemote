@@ -18,14 +18,13 @@ import { escapeHtml } from "../render";
 import {
   backfieldModel,
   distributionModel,
-  finishRows,
-  finishStop,
   formationsModel,
   rzFourthModel,
   scoreStateModel,
   seasonOf,
+  seasonPeriod,
   signedPts,
-  ptsLabel,
+  ppLabel,
   surnameOf,
   type FormationTile,
   type RzFourthModel,
@@ -128,7 +127,7 @@ function formationTile(t: FormationTile): string {
     `<span class="sct-cpt-kpi-label">${e(t.label)}</span>` +
     `<span class="sct-cpt-kpi-value">${e(t.value)}</span>` +
     // A difference from the league, not a grade: neutral ink whichever way it points.
-    (t.gap != null ? `<span class="sct-cpt-kpi-line">${e(`${ptsLabel(t.gap)} vs NFL avg ${t.avg}`)}</span>` : "") +
+    (t.gap != null ? `<span class="sct-cpt-kpi-line">${e(`${ppLabel(t.gap, 0)} vs NFL avg ${t.avg}`)}</span>` : "") +
     `</div></li>`
   );
 }
@@ -229,7 +228,7 @@ function fourthTiles(f: NonNullable<RzFourthModel["fourth"]>, priorYear: string,
     `<ul class="sct-cpt-4d-tiles">` +
     tile(" is-now", `${season} go rate`, f.rate, nowN) +
     (f.prior && f.prior !== "-" ? tile("", `${priorYear} go rate`, f.prior, priorN) : "") +
-    (f.nflAvg ? tile("", "NFL average", f.nflAvg, "") : "") +
+    (f.nflAvg ? tile("", `NFL avg ${season}`, f.nflAvg, "") : "") +
     `</ul>` +
     `<p class="sct-cpt-4d-def" title="${e(full)}"><span aria-hidden="true">4th-and-2 or less · Opponent territory</span><span class="sct-visually-hidden">${e(full)}</span></p>` +
     `</div>`
@@ -284,34 +283,33 @@ function distributionCard(c: TeamCoaching): string {
       return (
         `<div class="sct-cpt-row is-dist${lean ? " is-flag" : ""}">` +
         `<span class="sct-cpt-row-label">${e(row.label)}</span>` +
-        `<span class="sct-cpt-track" role="img" aria-label="${e(`${row.label}: ${row.pct}% of targets, league average ${row.nfl}%`)}">` +
+        `<span class="sct-cpt-track" role="img" aria-label="${e(`${row.label}: ${row.pct}% of targets, league average ${row.nfl}% over the same seasons`)}">` +
         `<span class="sct-cpt-fill${lean ? " is-gold" : ""}" style="width:${pct(share)}"></span>` +
         (row.nfl != null ? `<span class="sct-cpt-mark" style="left:${pct(row.nfl)}"></span>` : "") +
         `</span>` +
         `<span class="sct-cpt-row-val"><b>${e(`${row.pct}%`)}</b><span class="sct-cpt-row-avg">${e(`NFL ${row.nfl}%`)}</span></span>` +
-        `<span class="sct-cpt-row-n"><span class="sct-cpt-badge ${lean ? "is-gold" : d === 0 ? "is-zero" : "is-base"}">${e(ptsLabel(d))}</span></span>` +
+        `<span class="sct-cpt-row-n"><span class="sct-cpt-badge ${lean ? "is-gold" : d === 0 ? "is-zero" : "is-base"}">${e(ppLabel(d, 0))}</span></span>` +
         `</div>`
       );
     })
     .join("");
-  // No takeaway since the review of 2026-11-15: it repeated the gold row. The
-  // title carries the window, since the split is an average of every season
-  // he called from 2016 on (the builder's distSeasons: the finishes history
-  // plus this season) while the season table under Coaching Career prints
-  // one season per row; phones hide the subtitle that says so.
-  const years = [...finishRows(c).map((r) => Number(finishStop(r).year)).filter((y) => y > 0), seasonOf(c)];
-  const first = Math.min(...years);
-  const title = /seasons since/.test(m.sub) && first < seasonOf(c) ? `${m.title}, ${first}-${seasonOf(c)}` : m.title;
-  // Each season counts once in the average, the current one included while
-  // it is still being played (the builder's unweighted mean of season
-  // shares); the league line is averaged over the same seasons.
-  const weighting = years.length > 1 ? ` Each season counts equally, ${seasonOf(c)} included${c.tendencies.samples?.throughWeek ? ` through Week ${c.tendencies.samples.throughWeek}` : ""}; differences are percentage points.` : " Differences are percentage points.";
-  return card("dist", title, m.sub + weighting, "target", `<div class="sct-cpt-rows">${rows}</div>`);
+  // The title, this note and the FAQ name the same seasons, read off the
+  // per-season prints the Season by Season table lists (team audit,
+  // 2026-11-24: the title said 2023-2026 while the copy said "since 2016").
+  // The NFL figure is the league average over exactly those seasons.
+  const p = seasonPeriod(c);
+  // One scope line, not a note (no notes since 2026-11-21): which league
+  // figure the "NFL" values are, and the in-progress season's reach.
+  const live = m.includesCurrent && p.partial ? ` · ${p.season} ${p.partial}` : "";
+  const scope = m.n ? `NFL: ${m.n > 1 ? "same seasons" : "same weeks"}${live}${m.pre2016 ? " · tracked from 2016" : ""}` : "";
+  return card("dist", m.title, m.sub, "target", `<div class="sct-cpt-rows">${rows}</div>` + (scope ? `<p class="sct-cpt-scope">${e(scope)}</p>` : ""));
 }
 
 function backfieldCard(c: TeamCoaching, view: UsageView | null): string {
   const m = backfieldModel(c, view);
   if (!m.bars.length) return "";
+  const period = seasonPeriod(c);
+  const live = period.partial && m.bars.length > 1 ? m.bars.find((b) => b.current) : undefined;
   // A true 0-100% scale: the plot is the whole track, so a 27% bar is a third of an 80% one.
   const cols = m.bars
     .map(
@@ -334,7 +332,9 @@ function backfieldCard(c: TeamCoaching, view: UsageView | null): string {
     `<div class="sct-cpt-chart" role="img" aria-label="${e(`Lead back share by season: ${m.caption}`)}">` +
       `<div class="sct-cpt-chart-plot">${cols}</div>` +
       `<div class="sct-cpt-chart-labels">${labels}</div>` +
-      `</div>`,
+      `</div>` +
+      // The in-progress bar stands beside completed seasons, so it says so (team audit, 2026-11-24).
+      (live ? `<p class="sct-cpt-scope">${e(`${live.label}: ${period.partial}`)}</p>` : ""),
   );
 }
 

@@ -26,8 +26,12 @@ import {
   changeText,
   cityOf,
   num,
+  periodLine,
+  rankDir,
+  rankSentence,
   rankWords,
   relNote,
+  seasonPeriod,
   rowLabel,
   rowViews,
   schemeChip,
@@ -153,11 +157,11 @@ function dumbbell(row: TendencyRow, v: RowView, priorYear: string, season: numbe
   };
   const a = x(prior);
   const b = x(now);
-  const label = `${priorYear} ${row.prior}, ${season} ${v.current}${avg == null ? "" : `, NFL avg ${row.nflAvg}`}`;
+  const label = `${priorYear} ${v.prior}, ${season} ${v.current}${avg == null ? "" : `, NFL avg ${v.nflAvg}`}`;
   return (
     `<span class="sct-cp-db" role="img" aria-label="${e(label)}" title="${e(label)}">` +
     `<span class="sct-cp-db-bar is-${v.change.dir}" style="left:${Math.min(a, b).toFixed(1)}%;width:${Math.abs(b - a).toFixed(1)}%"></span>` +
-    (avg == null ? "" : `<span class="sct-cp-db-avg" style="left:${x(avg).toFixed(1)}%" title="${e(`NFL avg ${row.nflAvg}`)}"></span>`) +
+    (avg == null ? "" : `<span class="sct-cp-db-avg" style="left:${x(avg).toFixed(1)}%" title="${e(`NFL avg ${v.nflAvg}`)}"></span>`) +
     `<span class="sct-cp-db-prior" style="left:${a.toFixed(1)}%"></span>` +
     `<span class="sct-cp-db-now" style="left:${b.toFixed(1)}%"></span>` +
     `</span>`
@@ -185,7 +189,9 @@ function table(
 ): string {
   const callerLast = c.tendencies.priorLabel.match(/\((.+)\)$/)?.[1] ?? "";
   const newCaller = /prev/i.test(callerLast);
-  const through = c.tendencies.samples?.throughWeek;
+  // The snapshot's cutoff, the week every rate and rank on the tab runs to
+  // (a club on bye that week has played through the week before).
+  const through = seasonPeriod(c).throughWeek;
   const groupRows = GROUPS.map((g) => ({
     title: g.title,
     rows: g.keys.map((k) => views.find((x) => x.row.key === k)).filter((x): x is NonNullable<typeof x> => !!x),
@@ -211,17 +217,21 @@ function table(
           const chgHtml = pace
             ? `<span class="sct-cp-chg-long">${e(chg)}</span><span class="sct-cp-chg-short" title="${e(chg)}"><span aria-hidden="true">${e(`${pace[2] === "faster" ? "−" : "+"}${pace[1]}s`)}</span><span class="sct-visually-hidden">${e(chg)}</span></span>`
             : e(chg);
+          // Rank, direction and group in the cell itself at every width
+          // (team audit, 2026-11-24): "3rd-highest of 32", "T-10th-fastest
+          // of 32"; the title spells the metric and the period out.
           const words = rankWords(row, v);
-          const rankTitle = words && v.of ? `${words} of ${v.of} offenses, ${season}${through ? ` through Week ${through}` : ""}` : "";
+          const sentence = rankSentence(row, v);
+          const rankTitle = sentence ? `${sentence}, ${season}${through ? ` through Week ${through}` : ""}` : "";
           const nfl =
-            `<span class="sct-cp-nfl-avg">${e(row.nflAvg)}</span>` +
+            `<span class="sct-cp-nfl-avg">${e(v.nflAvg)}</span>` +
             (words
-              ? `<span class="sct-cp-nfl-rank" title="${e(rankTitle)}">${e(`${v.tied ? "T-" : ""}${ordinal(v.rank as number)}`)}<span class="sct-cp-nfl-dir"> ${row.invert ? "fastest" : "highest"}</span><span class="sct-visually-hidden">${e(` of ${v.of}`)}</span></span>`
+              ? `<span class="sct-cp-nfl-rank" title="${e(rankTitle)}">${e(`${v.tied ? "T-" : ""}${ordinal(v.rank as number)}`)}<span class="sct-cp-nfl-dir"><span class="sct-cp-nfl-hy">-</span>${e(rankDir(row))}</span>${v.of ? `<span class="sct-cp-nfl-of">${e(` of ${v.of}`)}</span>` : ""}</span>`
               : "");
           return (
             `<tr${row === notable?.row ? ` class="is-notable"` : ""}>` +
             `<th scope="row" class="sct-cp-td is-metric">${rowLabel(row, `sct-cp-def-${i}`, row.key ? SHORT_LABEL[row.key] : undefined)}${sub}</th>` +
-            `<td class="sct-cp-td is-prior">${e(row.prior)}</td>` +
+            `<td class="sct-cp-td is-prior">${e(v.prior)}</td>` +
             `<td class="sct-cp-td is-now">${e(v.current)}</td>` +
             `<td class="sct-cp-td is-change"><span class="sct-cp-chg">${dumbbell(row, v, priorYear, season)}` +
             `<span class="sct-cp-chg-v"><span class="sct-cp-change is-${v.change.dir}">${chgHtml}</span></span></span></td>` +
@@ -242,8 +252,12 @@ function table(
     `<th scope="col">Metric</th>` +
     `<th scope="col" class="is-prior">${e(priorYear)}<span class="sct-cp-th-sub">${e(newCaller ? "Previous staff" : callerLast || "Prior season")}</span></th>` +
     `<th scope="col" class="is-now">${season}<span class="sct-cp-th-sub">${e(through ? `Thru Wk ${through}` : "Current")}</span></th>` +
-    `<th scope="col">Change<span class="sct-cp-th-sub">${e(newCaller ? "vs previous staff" : `pts vs ${priorYear}`)}</span></th>` +
-    `<th scope="col" class="is-nfl">NFL<span class="sct-cp-th-sub">Avg · rank</span></th>` +
+    `<th scope="col">Change<span class="sct-cp-th-sub">${e(newCaller ? "pp vs previous staff" : `pp vs ${priorYear}`)}</span></th>` +
+    // Phones print the rank's group once here ("of 32") and keep each
+    // cell's rank and direction; wider screens print all three per cell.
+    `<th scope="col" class="is-nfl">NFL<span class="sct-cp-th-yr"> ${season}</span><span class="sct-cp-th-sub">Avg · rank</span>` +
+    (views[0]?.v.of ? `<span class="sct-cp-th-of" aria-hidden="true">${e(`of ${views[0].v.of}`)}</span>` : "") +
+    `</th>` +
     `</tr></thead><tbody>${body}</tbody></table></div>`
   );
 }
@@ -278,8 +292,8 @@ function identitySentence(all: Array<{ row: TendencyRow; v: RowView }>, team: Nf
   const city = cityOf(team);
   if (!moved.length)
     return /^the /.test(priorYear)
-      ? `${city} runs much like ${priorYear.replace(/ staff$/, " staff's")} offense: no tendency has moved 3 points or more.`
-      : `${city} looks much like its ${priorYear} offense: no tendency has moved 3 points or more.`;
+      ? `${city} runs much like ${priorYear.replace(/ staff$/, " staff's")} offense: no tendency has moved 3 pp or more.`
+      : `${city} looks much like its ${priorYear} offense: no tendency has moved 3 pp or more.`;
   const words = moved.map(({ key, d }) => MOVE_WORDS[key]![d > 0 ? 0 : 1]);
   const list = words.length < 2 ? words[0] : `${words.slice(0, -1).join(", ")} and ${words[words.length - 1]}`;
   return `Compared with ${priorYear}, ${city} is ${list}.`;
@@ -295,7 +309,9 @@ export function renderCoachingPremium(c: TeamCoaching, team: NflTeam, view: Usag
   const last = surnameOf(c);
   const possessive = /s$/.test(last) ? `${last}'` : `${last}'s`;
   const newCaller = /prev/i.test(c.tendencies.priorLabel);
-  const through = c.tendencies.samples?.throughWeek;
+  // The snapshot's cutoff, the week every rate and rank on the tab runs to
+  // (a club on bye that week has played through the week before).
+  const through = seasonPeriod(c).throughWeek;
   const window = `${season}${through ? ` through Week ${through}` : ""} vs ${priorYear}${newCaller ? ", when the previous staff called plays" : ""}`;
   const section = (title: string, icon: string, sub: string, body: string) =>
     `<section class="sct-cp-section">${usageStyleHead(title, icon, sub)}<div class="sct-cp-section-body">${body}</div></section>`;
@@ -307,9 +323,9 @@ export function renderCoachingPremium(c: TeamCoaching, team: NflTeam, view: Usag
   const stamp = coachingStamp(season);
   const how =
     `<details class="sct-cp-how"><summary>How these are measured</summary>` +
-    `<p>Select a metric for its definition. Changes are percentage points (pts) between the two seasons; pace is seconds between snaps, and fewer is faster. ` +
-    `NFL rank is among all ${views[0]?.v.of ?? 32} offenses in ${season}${through ? ` through Week ${through}` : ""}, from the same play-by-play and definitions: 1st is the highest rate, or the fastest pace; equal values share a rank (T-). ` +
-    `In the bar, the hollow dot is ${e(priorYear)}, the filled dot ${season}, the tick the NFL average; the gold row is each group's biggest change of 3 pts or a second of pace.` +
+    `<p>Select a metric for its definition. Pace changes are in seconds between snaps, and fewer is faster. ` +
+    `The NFL average and rank cover all ${views[0]?.v.of ?? 32} offenses over the same ${season} weeks${through ? ` (through Week ${through})` : ""}, from the same play-by-play and definitions: 1st is the highest rate, or the fastest pace; equal values share a rank (T-), and an offense without a value is left out of the count. ` +
+    `In the bar, the hollow dot is ${e(priorYear)}, the filled dot ${season}, the tick the NFL average; the gold row is each group's biggest change of 3 pp or a second of pace.` +
     (newCaller ? ` ${e(priorYear)} was called by the previous staff, so a change here is a change of play-caller as much as a trend.` : "") +
     `</p>` +
     (stamp.throughWeek != null
@@ -332,6 +348,8 @@ export function renderCoachingPremium(c: TeamCoaching, team: NflTeam, view: Usag
           "Offensive Tendencies",
           ICON["play"]!,
           `How ${possessive} offense calls and lines up, ${window}`,
+          // The period, once, above everything it governs (team audit, 2026-11-24).
+          `<p class="sct-cp-period">${e(periodLine(c, getCoachingStaff(team.abbreviation, season)?.prevCaller ?? null))}</p>` +
           `<p class="sct-cp-id-line">${e(identitySentence(inTable, team, newCaller ? `the ${priorYear} staff` : priorYear))}</p>` +
             table(inTable, c, team, priorYear, season) +
             how,

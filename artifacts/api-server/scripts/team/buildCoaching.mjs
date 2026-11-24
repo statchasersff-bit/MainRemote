@@ -44,6 +44,7 @@ import {
   newRateAcc,
   publishRates,
   rankPublished,
+  rawRates,
   TEAM_RATE_METRICS,
 } from "./team-rate-metrics.mjs";
 
@@ -363,7 +364,21 @@ async function seasonTendencies(season) {
   for (const [c, t] of teams) {
     for (const k of Object.keys(tot)) tot[k] += t[k];
     const pub = publishRates(rateAcc(c));
+    const rr = rawRates(rateAcc(c));
     out[c] = {
+      // The same rates before rounding (team audit, 2026-11-24): the page's
+      // change column subtracts these and rounds once.
+      raw: {
+        passRate: rr.passRate,
+        rzPassRate: rr.rzPassRate,
+        proe: rr.proe,
+        pace: rr.pace,
+        earlyDownPassRate: pct(t.earlyPass, t.earlyPlays),
+        noHuddleRate: pct(t.noHuddle, t.plays),
+        shotgunRate: pct(t.shotgun, t.plays),
+        paRate: t.ftnPlays ? pct(t.paDropbacks, Math.min(t.dropbacks, t.ftnPlays)) : null,
+        motionRate: t.ftnPlays ? pct(t.motionPlays, t.ftnPlays) : null,
+      },
       games: t.games.size,
       lastWeek: t.lastWeek || null,
       playsPerGame: round(t.plays / Math.max(1, t.games.size), 1),
@@ -632,10 +647,30 @@ const METRics_SPEC = [
 
 const fmt = (spec, v) => {
   if (v == null) return "-";
-  const n = spec.places === 0 ? Math.round(v) : round(v, spec.places ?? 1);
-  if (spec.unit === "s") return `${n}s`;
-  return spec.signed ? `${signed(n, 1)}%` : `${n}%`;
+  // Every figure at its row's one precision, trailing zero kept ("57.0%",
+  // not "57%"; team audit, 2026-11-24): a row reads at one precision.
+  const places = spec.places ?? 1;
+  const n = round(v, places);
+  const text = Math.abs(n).toFixed(places);
+  if (spec.unit === "s") return `${n.toFixed(places)}s`;
+  return spec.signed ? `${n >= 0 ? "+" : "−"}${text}%` : `${n.toFixed(places)}%`;
 };
+
+/** Unrounded value for the page's change column (rounded once, after subtracting); 4 places keeps the file small. */
+const rawOf = (v) => (v == null || !Number.isFinite(v) ? null : Math.round(v * 1e4) / 1e4);
+
+/** "2016-2023, 2025-2026": seasons as runs, so a gap shows (coaching-render.ts yearsText). */
+function yearsText(years) {
+  const ys = [...new Set(years)].sort((a, b) => a - b);
+  const runs = [];
+  for (let i = 0; i < ys.length; ) {
+    let j = i;
+    while (j + 1 < ys.length && ys[j + 1] === ys[j] + 1) j++;
+    runs.push(i === j ? String(ys[i]) : `${ys[i]}-${ys[j]}`);
+    i = j + 1;
+  }
+  return runs.join(", ");
+}
 
 /** The fantasy read for each tendency, by direction - the shift-card library. */
 // Each signal card shows its own "54% -> 80% YoY" line, so the body skips the
@@ -778,7 +813,8 @@ function composeEntry({
       change: { dir, text },
       // At the row's own precision (Phase 2B, 2026-11-19): a whole-number
       // average beside one-decimal club values hid the gap ranks are taken on.
-      nflAvg: avg == null ? "-" : spec.signed ? "0%" : fmt(spec, avg),
+      nflAvg: avg == null ? "-" : spec.signed ? fmt(spec, 0) : fmt(spec, avg),
+      ...(spec.places === 1 ? { priorRaw: rawOf(prior?.raw?.[spec.key]), currentRaw: rawOf(cur.raw?.[spec.key]) } : {}),
     };
     if (spec.feed && priorV != null) {
       row.priorNum = priorV;
@@ -1138,15 +1174,21 @@ function composeEntry({
   const distLean = distRows
     .map((r) => ({ ...r, d: r.pct - r.nfl }))
     .sort((a, b) => Math.abs(b.d) - Math.abs(a.d))[0];
+  // The seasons actually averaged, as runs (team audit, 2026-11-24: "since
+  // 2016" was the tracking window, not his seasons, under a 2023-2026 title).
+  const distSpan = yearsText(distSeasons.filter(({ yr, c, stop }) => {
+    const data = stop ? layerFor(stop, yr) : (playersBySeason.get(yr) ?? (yr === season ? players : null));
+    return data?.teams[c]?.targetShare?.WR != null;
+  }).map(({ yr }) => yr));
   const distSub =
     agg.n > 1
-      ? `Target split by position across ${callerLast}'s play-calling seasons since 2016, vs. league average.`
+      ? `Target split by position across ${callerLast}'s play-calling seasons (${distSpan}), vs. league average over the same seasons.`
       : `Target split by position this season - ${callerLast} has no earlier NFL play-calling seasons to average in.`;
   const distNote =
     distLean && Math.abs(distLean.d) >= 3
       // A split is scheme and roster together, so it is a tendency to watch,
       // not proof of what the scheme will do with this roster.
-      ? `${agg.n > 1 ? `Across his play-calling seasons since 2016, ${callerLast}'s offenses have` : `This season ${callerLast}'s offense has`} directed a ${distLean.d > 0 ? "larger" : "smaller"} share of targets to ${distLean.label.toLowerCase()} than the league baseline (${distLean.pct}% vs ${distLean.nfl}%). That ${agg.n > 1 ? "historical " : ""}tendency is worth monitoring alongside the current roster and weekly usage.`
+      ? `${agg.n > 1 ? `Across his play-calling seasons (${distSpan}), ${callerLast}'s offenses have` : `This season ${callerLast}'s offense has`} directed a ${distLean.d > 0 ? "larger" : "smaller"} share of targets to ${distLean.label.toLowerCase()} than the league baseline (${distLean.pct}% vs ${distLean.nfl}%). That ${agg.n > 1 ? "historical " : ""}tendency is worth monitoring alongside the current roster and weekly usage.`
       : `No position runs more than a few points from league average under ${callerLast} - the target tree follows the talent here, so depth-chart changes move this split more than scheme does.`;
 
   /* -- backfield ---------------------------------------------------------- */

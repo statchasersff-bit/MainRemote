@@ -18,7 +18,7 @@ import { escapeHtml } from "../render";
 import type { TeamCoaching } from "./coaching";
 import type { UsageView } from "./usage";
 import { TEAMS, type NflTeam } from "./teams";
-import { finishRows, finishStop, finishTier, readFinish, rowViews, seasonOf, surnameOf, type FinishRow } from "./coaching-render";
+import { distributionModel, finishRows, finishStop, finishTier, readFinish, rowViews, seasonOf, seasonPeriod, surnameOf, type FinishRow } from "./coaching-render";
 import { reliabilityRating, type FinishCell } from "./coaching";
 import { ICON, usageStyleHead } from "./coaching-premium-tendencies";
 import { playerProfileUrl } from "./links";
@@ -117,10 +117,13 @@ function finishWho(cell: FinishCell, f: { pos: string; player: string }, club: s
  * every position still in view with no sideways scroll: the crest and the
  * first names step aside there, the pills and surnames stay.
  */
-function finishRow(row: FinishRow, clashes: Map<string, NameForm>): string {
+function finishRow(row: FinishRow, clashes: Map<string, NameForm>, games: number | null = null, week: number | null = null): string {
   const { club, year } = finishStop(row);
   const pace = row.context.match(/^pace through (Week \d+)$/i);
-  const context = row.current ? `${pace ? `Through ${pace[1]}` : row.context} · In-season` : row.context;
+  // The in-progress row names its reach, games included (team audit, 2026-11-24).
+  const context = row.current
+    ? `${pace ? `Through ${week != null ? `Week ${week}` : pace[1]}` : row.context}${games != null ? `, ${games} game${games === 1 ? "" : "s"}` : " · In-season"}`
+    : row.context;
   return (
     `<tr class="sct-cf-row${row.current ? " is-current" : ""}">` +
     `<th scope="row" class="sct-cf-td is-stop">` +
@@ -150,8 +153,10 @@ function finishes(c: TeamCoaching, team: NflTeam): string {
   const recent = newest.slice(0, 5);
   const older = newest.slice(5);
   const clashes = finishClashes(rows);
-  const row = (r: FinishRow): string => finishRow(r, clashes);
   const allId = `sct-cfp-all-${c.playCaller.name.toLowerCase().replace(/[^a-z]+/g, "-")}`;
+  const period = seasonPeriod(c);
+  const games = period.partial ? period.games : null;
+  const row = (r: FinishRow): string => finishRow(r, clashes, games, period.throughWeek);
   return (
     `<section class="sct-cf-panel" aria-labelledby="sct-cf-fin-h">` +
     // The intro rides in the title bar as its subtitle, like Coaching Career's (mak, 2026-11-08).
@@ -214,9 +219,10 @@ export function fantasyImplications(c: TeamCoaching, view: UsageView | null): st
         : "Less pre-snap motion takes away one of the easier ways to scheme receivers open.",
     );
   // The target lean is career-wide (the card's window), so it reads as history.
-  const lean = c.distribution.rows
-    .filter((r) => r.pct != null && r.nfl != null && (r.pct as number) - (r.nfl as number) >= 3)
-    .sort((a, b) => ((b.pct as number) - (b.nfl as number)) - ((a.pct as number) - (a.nfl as number)))[0];
+  // The card's own model (distributionModel: the per-season prints), so this line and the card agree.
+  const lean = distributionModel(c)
+    .rows.filter(({ d }) => d >= 3)
+    .sort((a, b) => b.d - a.d)[0]?.row;
   if (lean) {
     const who = lean.label === "Running backs" ? "backs involved in the receiving game" : lean.label === "Tight ends" ? "the starting tight end" : "the lead receivers";
     parts.push(`His offenses have historically sent an above-average share of targets to ${lean.label.toLowerCase()}, which favors ${who}.`);

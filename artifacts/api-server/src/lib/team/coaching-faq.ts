@@ -21,7 +21,7 @@ import type { CoachingStaffEntry, TeamCoaching, TendencyRow } from "./coaching";
 import { getTeamByAbbreviation, type NflTeam } from "./teams";
 import { surname, type UsageView } from "./usage";
 import { possessive } from "../player/title-case";
-import { rowView } from "./coaching-render";
+import { distributionModel, distributionPrints, rowView, seasonPeriod, yearsText } from "./coaching-render";
 import type { FaqItem } from "./faq-block";
 
 /* ---------------------------------------------------------------- helpers */
@@ -143,7 +143,9 @@ export function coachingFaq(
   const sur = surname(caller);
   const surPoss = possessive(sur);
   const wkMatch = c.scoreState.sub.match(/Week (\d+)/);
-  const wk = view?.throughWeek ?? (wkMatch ? Number(wkMatch[1]) : c.reliability.ledgerStats?.called ?? null);
+  // The snapshot's cutoff, as in the period line and the table (team audit,
+  // 2026-11-24): a club on bye that week used to read one week earlier here.
+  const wk = seasonPeriod(c).throughWeek ?? view?.throughWeek ?? (wkMatch ? Number(wkMatch[1]) : c.reliability.ledgerStats?.called ?? null);
   const through = wk ? `Through Week ${wk} of ${season}` : `In ${season}`;
   const returning = c.reliability.priorSeasonsAsCaller > 0;
   const priorSeasons = c.reliability.priorSeasonsAsCaller;
@@ -237,18 +239,12 @@ export function coachingFaq(
     const pa = nums("paRate");
     const field: string[] = [];
     const leans: Array<{ name: string; d: number }> = [];
-    if (shotgun.current != null) {
-      field.push(`lined up in shotgun on ${f1(shotgun.current)}% of snaps${shotgun.nflAvg != null ? ` (NFL average ${f1(shotgun.nflAvg)}%)` : ""}`);
-      if (shotgun.nflAvg != null) leans.push({ name: "shotgun", d: shotgun.current - shotgun.nflAvg });
-    }
-    if (motion.current != null) {
-      field.push(`used pre-snap motion on ${f1(motion.current)}%${motion.nflAvg != null ? ` (${f1(motion.nflAvg)}%)` : ""}`);
-      if (motion.nflAvg != null) leans.push({ name: "motion", d: motion.current - motion.nflAvg });
-    }
-    if (pa.current != null) {
-      field.push(`play action on ${f1(pa.current)}% of dropbacks${pa.nflAvg != null ? ` (${f1(pa.nflAvg)}%)` : ""}`);
-      if (pa.nflAvg != null) leans.push({ name: "play action", d: pa.current - pa.nflAvg });
-    }
+    // No figures (team audit, 2026-11-24): the tendencies table prints the
+    // three rates and their NFL averages; the answer keeps the comparison.
+    void field;
+    if (shotgun.current != null && shotgun.nflAvg != null) leans.push({ name: "shotgun", d: shotgun.current - shotgun.nflAvg });
+    if (motion.current != null && motion.nflAvg != null) leans.push({ name: "pre-snap motion", d: motion.current - motion.nflAvg });
+    if (pa.current != null && pa.nflAvg != null) leans.push({ name: "play action", d: pa.current - pa.nflAvg });
     // One sentence of comparison after the figures (Team Pages Phase 2B,
     // 2026-11-19): it used to trail the list as ", below it on motion",
     // which read as broken. 2 points either way counts as above or below.
@@ -262,11 +258,10 @@ export function coachingFaq(
       close.length ? `close to it on ${close.length === leans.length ? all : list(close)}` : "",
     ].filter(Boolean);
     if (parts.length && /^close/.test(parts[0])) parts[0] = parts[0].replace("close to it", "close to the league average");
-    const compareLine = parts.length ? `That is ${list(parts)}.` : null;
+    const compareLine = parts.length ? `${through}, the ${nick} have been ${list(parts)}.` : null;
     ask(
       `What offensive scheme do the ${nick} run under ${caller}?`,
       `${surPoss} ${nick} offense comes out of the ${tree}.`,
-      field.length ? `On the field in ${season}, the ${nick} have ${list(field)}.` : null,
       compareLine,
     );
   }
@@ -289,8 +284,9 @@ export function coachingFaq(
     shiftPhrases.length
       ? `${through}, ${city} has been ${list(shiftPhrases)} ${than}.`
       : `${through}, nothing in the ${nick}' tendency profile has moved far enough from ${prior} to count as a headline change${returning ? `: ${sur} is running the offense much as he did last season` : ""}.`,
-    ratesLine,
   );
+  // The pass-rate figures that followed repeated the table's first row (team audit, 2026-11-24).
+  void ratesLine;
 
   /* 5. Pass-heavy? */
   const proe = nums("proe");
@@ -344,7 +340,7 @@ export function coachingFaq(
     const went = smp?.fourthShortGo ?? null;
     const sample =
       count != null && count < 15
-        ? ` That is ${went != null ? `${went} of ${count}` : count} such ${count === 1 ? "opportunity" : "opportunities"} so far, a small sample that can swing with one decision; fourth-down calls are game management shared with the head coach.`
+        ? ` The ${season} rate rests on ${went != null ? `${went} of ${count}` : count} such ${count === 1 ? "opportunity" : "opportunities"} so far, a small sample that can swing with one decision; fourth-down calls are game management shared with the head coach.`
         : "";
     if (fourth.current == null) {
       ask(
@@ -361,16 +357,23 @@ export function coachingFaq(
             : fourth.current >= 50
               ? "about average"
               : "conservative";
+      // The rates are on the Fourth-Down Decisions card; the answer keeps
+      // the reading, the league comparison and the sample (team audit, 2026-11-24).
+      const vsLeague =
+        fourth.nflAvg == null
+          ? ""
+          : fourth.current - fourth.nflAvg >= 5
+            ? `, more often than the league as a whole in ${season}`
+            : fourth.current - fourth.nflAvg <= -5
+              ? `, less often than the league as a whole in ${season}`
+              : `, about as often as the league as a whole in ${season}`;
+      const vsPrior =
+        fourth.prior == null
+          ? ""
+          : ` ${returning ? `In ${prior} he` : `The ${prior} staff`} went for it ${fourth.prior - fourth.current >= 5 ? "more" : fourth.current - fourth.prior >= 5 ? "less" : "about as"} often${fourth.prior - fourth.current >= 5 || fourth.current - fourth.prior >= 5 ? "" : " as this offense"}.`;
       ask(
         `How aggressive are the ${nick} on fourth down?`,
-        `The ${nick} have been ${level} in short-yardage situations in opponent territory.`,
-        `${through}, ${city} has gone for it on ${f1(fourth.current)}% of tracked fourth downs with two yards or fewer to gain in opponent territory` +
-          (went != null && count ? ` (${went} of ${count})` : "") +
-          (fourth.prior != null
-            ? `, compared with ${f1(fourth.prior)}%${smp?.priorFourthShortAll && smp.priorFourthShortGo != null ? ` (${smp.priorFourthShortGo} of ${smp.priorFourthShortAll})` : ""} ${returning ? `in ${prior}` : `for the ${prior} staff`}`
-            : "") +
-          (fourth.nflAvg != null ? ` and a league average near ${f1(fourth.nflAvg)}%` : "") +
-          `.${sample}`,
+        `The ${nick} have been ${level} on fourth-and-2 or less in opponent territory${vsLeague}.${vsPrior}${sample}`,
       );
     }
   }
@@ -396,13 +399,17 @@ export function coachingFaq(
   }
 
   /* Distribution: the historical target tree. */
-  const dist = (label: string) => c.distribution.rows.find((r) => r.label === label);
+  // The card's model: the per-season prints, so the span here is the card's
+  // title span, gaps included (team audit, 2026-11-24: the copy said "since
+  // 2016" under a 2023-2026 title).
+  const dm = distributionModel(c);
+  const dist = (label: string) => dm.rows.find((r) => r.row.label === label)?.row;
   const rbRow = dist("Running backs");
   const wrRow = dist("Wide receivers");
   const teRow = dist("Tight ends");
-  const trackedSeasons = c.dossier.reduce((n, s) => n + (s.prints?.filter((p) => p.year < season).length ?? 0), 0);
+  const trackedSeasons = dm.years.filter((y) => y < season).length;
   const hist = trackedSeasons >= 1;
-  const scope = hist ? `Across ${surPoss} play-calling seasons since 2016` : `In ${season} so far`;
+  const scope = hist ? `Across ${surPoss} tracked play-calling seasons (${dm.span})` : `In ${season} so far`;
   const leans = [rbRow, wrRow, teRow]
     .filter((r): r is NonNullable<typeof r> => r != null && r.pct != null && r.nfl != null)
     .map((r) => ({ r, d: (r.pct ?? 0) - (r.nfl ?? 0) }))
@@ -442,12 +449,24 @@ export function coachingFaq(
 
   /* 10. Wide receivers or tight ends. */
   if (wrRow?.pct != null && wrRow.nfl != null && teRow?.pct != null && teRow.nfl != null) {
+    // What the card's averages cannot show (team audit, 2026-11-24): how
+    // many of his seasons lean the same way, each against that season's
+    // league. The averages themselves are on the card above.
+    const prints = distributionPrints(c);
+    const pos = strongest ? (strongest.r === wrRow ? "WR" : strongest.r === teRow ? "TE" : "RB") : null;
+    const same = pos && strongest
+      ? prints.filter((p) => ((p.shares[pos] as number) - (p.league[pos] as number)) * Math.sign(strongest.d) >= 3)
+      : [];
+    const p = seasonPeriod(c);
+    const live = dm.includesCurrent && p.partial ? ` ${season} is in progress (${p.partial}).` : "";
     ask(
       `Does ${caller} favor wide receivers or tight ends?`,
-      `${scope}, his offenses have sent about ${wrRow.pct}% of targets to wide receivers and ${teRow.pct}% to tight ends, compared with league averages of approximately ${wrRow.nfl}% and ${teRow.nfl}%.`,
       strongest
-        ? `The strongest ${hist ? "historical " : ""}positional tendency ${strongest.r === rbRow ? "has instead been" : "has been"} ${leanPhrase}${hist ? "" : ", on one partial season"}.`
-        : "No position runs more than a few points from league average, so the target tree follows the talent on the roster.",
+        ? `${scope}, the strongest ${hist ? "historical " : ""}positional tendency ${strongest.r === rbRow ? "has instead been" : "has been"} ${leanPhrase}${hist ? "" : ", on one partial season"}.`
+        : `${scope}, no position has run more than a few points from the league average, so the target tree follows the talent on the roster.`,
+      strongest && prints.length > 1
+        ? `${same.length} of his ${prints.length} tracked seasons (${yearsText(same.map((x) => x.year)) || "none"}) ran 3 pp or more ${strongest.d > 0 ? "above" : "below"} that season's league average at the position.${live}`
+        : null,
     );
   }
 
@@ -466,22 +485,27 @@ export function coachingFaq(
       : /The trend is a spread/.test(note)
         ? `Less and less. His lead back's share has drifted down over his seasons, so committee risk is real.`
         : `There is no consistent workhorse pattern across ${surPoss} career.`;
-    const lo = priorBars.length ? priorBars.reduce((a, b) => (b.value < a.value ? b : a)) : null;
-    const hi = priorBars.length ? priorBars.reduce((a, b) => (b.value > a.value ? b : a)) : null;
-    const range =
-      lo && hi && lo !== hi
-        ? `His lead backs have ranged from only ${lo.value}% of backfield weighted opportunities in ${barName(lo.label)} to roughly ${hi.value}% in ${barName(hi.label)}. `
-        : lo
-          ? `His lead back handled ${lo.value}% of backfield weighted opportunities in ${barName(lo.label)}. `
-          : "";
-    const prevRange =
-      !priorBars.length && prevStaffBars.length
-        ? ` The previous staff's lead back held ${Math.min(...prevStaffBars.map((b) => b.value))}% to ${Math.max(...prevStaffBars.map((b) => b.value))}% over the seasons before him.`
-        : "";
+    // The shares are on the backfield chart and in the season table; the
+    // answer places this season against his range instead (team audit,
+    // 2026-11-24: Detroit's lead-back share printed five times).
+    void prevStaffBars;
+    const lo = priorBars.length ? Math.min(...priorBars.map((b) => b.value)) : null;
+    const hi = priorBars.length ? Math.max(...priorBars.map((b) => b.value)) : null;
+    const bp = seasonPeriod(c);
+    const when = bp.partial ? `in ${season} (${bp.partial})` : `in ${season}`;
+    const vsRange =
+      lo == null || hi == null
+        ? null
+        : curShare > hi
+          ? `${place} lead back ${when} has a larger share than any of his previous lead backs.`
+          : curShare < lo
+            ? `${place} lead back ${when} has a smaller share than any of his previous lead backs.`
+            : `${place} lead back ${when} sits inside the range of his previous seasons.`;
+    void barName;
     ask(
       `Does ${caller} use a workhorse running back?`,
       priorBars.length ? trend : `${sur} has no prior tracked seasons as a play-caller, so the ${season} split is the only read on him.`,
-      `${range}${place} lead back has handled approximately ${curShare}% of weighted backfield opportunities in ${season}.${prevRange}`,
+      vsRange,
       "Weighted opportunities count carries plus twice the number of targets.",
     );
   }
@@ -581,16 +605,29 @@ export function coachingFaq(
     const detail = firsts.length
       ? `His ${list(firstClubs)} offenses finished first in scoring in ${list(firsts.map((y) => String(y.year)))}` +
         (topFive.length > firsts.length ? `, and ${topFive.length - firsts.length === 1 ? "one other season" : `${topFive.length - firsts.length} other seasons`} ranked inside the NFL's top five in points per game.` : ".")
-      : `His best finish was ${best.rank != null ? ordinal(best.rank) : "unranked"} in scoring with the ${best.year} ${best.club} (${f1(best.ppg)} points per game).`;
+      : `His best finish was ${best.rank != null ? `${ordinal(best.rank)} of 32 in points per game` : "unranked in scoring"}, with the ${best.year} ${best.club}.`;
     const caveat = lowClubs.length
       ? ` His results have varied significantly by team and personnel, however, including lower-scoring seasons with the ${list(lowClubs)}.`
       : "";
+    // This season against his past, not its figure again (team audit,
+    // 2026-11-24: Detroit's points per game printed seven times), with its
+    // partial status and games named.
     const current = c.dossier.find((s) => s.current)?.seasons?.find((y) => y.year === season);
+    const cp = seasonPeriod(c);
+    const bestPast = Math.max(...past.map((y) => y.ppg));
+    const worstPast = Math.min(...past.map((y) => y.ppg));
+    const where = current
+      ? current.ppg > bestPast
+        ? "more points per game than any of his previous offenses"
+        : current.ppg < worstPast
+          ? "fewer points per game than any of his previous offenses"
+          : "within the range of his previous offenses in points per game"
+      : "";
     ask(
       `How successful have ${surPoss} offenses been historically?`,
       lead,
       `${detail}${caveat}`,
-      current && wk ? `In ${season}, the ${nick} are averaging ${f1(current.ppg)} points per game through Week ${wk}${current.rank != null ? `, ${ordinal(current.rank)} in the NFL` : ""}.` : null,
+      current && where ? `${cp.partial ? `Through Week ${cp.throughWeek} of ${season} (${cp.games ?? current.games} games, a season still in progress)` : `In ${season}`}, the ${nick} are scoring ${where}.` : null,
     );
   }
 

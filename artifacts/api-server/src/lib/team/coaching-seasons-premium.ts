@@ -17,7 +17,7 @@
 
 import { escapeHtml } from "../render";
 import type { TeamCoaching } from "./coaching";
-import { historyModel, POS, readStops, stepLogo, stopColors, type HistoryRow, type Pos, type Print } from "./coaching-render";
+import { historyModel, POS, readStops, seasonPeriod, stepLogo, stopColors, type HistoryRow, type Pos, type Print } from "./coaching-render";
 
 const e = escapeHtml;
 
@@ -28,13 +28,16 @@ const POS_LABEL: Record<Pos, string> = { WR: "WR share", RB: "RB share", TE: "TE
 /** The rank pill's grade: a top-ten offense green, the middle of the league neutral, the bottom third red; a windowed rank stays in words, ungraded. */
 function rankPill(text: string): string {
   if (!text) return `<span class="sct-cs-none">–</span>`;
+  // The pill keeps the ordinal; its title names the direction and the group (team audit, 2026-11-24).
+  const n0 = text.match(/^(\d+)(?:st|nd|rd|th)/)?.[0];
+  const title = n0 ? ` title="${e(`${n0} of 32 in points per game (1st = most)${/in window/.test(text) ? ", over the weeks he called" : ""}`)}"` : "";
   const m = text.match(/^(\d+)(st|nd|rd|th)$/);
   // Phones drop " in window" (the season cell says "Wks 1-8 only"; mak, 2026-11-15).
   const w = text.match(/^(\d+(?:st|nd|rd|th))( in window)$/);
-  if (!m) return `<span class="sct-cs-rank is-window">${w ? `${e(w[1]!)}<span class="sct-cs-rank-w">${e(w[2]!)}</span>` : e(text)}</span>`;
+  if (!m) return `<span class="sct-cs-rank is-window"${title}>${w ? `${e(w[1]!)}<span class="sct-cs-rank-w">${e(w[2]!)}</span>` : e(text)}</span>`;
   const n = Number(m[1]);
   const grade = n <= 10 ? "is-good" : n <= 18 ? "is-mid" : "is-poor";
-  return `<span class="sct-cs-rank ${grade}">${e(text)}</span>`;
+  return `<span class="sct-cs-rank ${grade}"${title}>${e(text)}</span>`;
 }
 
 function shareCell(p: Print | null, pos: Pos, lean: Pos | null, year: number): string {
@@ -47,7 +50,7 @@ function shareCell(p: Print | null, pos: Pos, lean: Pos | null, year: number): s
       ? ""
       : d === 0
         ? `<span class="sct-cs-delta is-flat" title="Level with the league average">0</span>`
-        : `<span class="sct-cs-delta ${d > 0 ? "is-up" : "is-down"}" title="${e(`${Math.abs(d)} points ${d > 0 ? "above" : "below"} the league average of ${lg}%`)}"><span aria-hidden="true">${d > 0 ? "↑" : "↓"}</span><span class="sct-visually-hidden">${d > 0 ? "up" : "down"}</span> ${Math.abs(d)}</span>`;
+        : `<span class="sct-cs-delta ${d > 0 ? "is-up" : "is-down"}" title="${e(`${Math.abs(d)} pp ${d > 0 ? "above" : "below"} the league average of ${lg}% that season`)}"><span aria-hidden="true">${d > 0 ? "↑" : "↓"}</span><span class="sct-visually-hidden">${d > 0 ? "up" : "down"}</span> ${Math.abs(d)}</span>`;
   return (
     `<td class="sct-cs-td is-share">` +
     `<span class="sct-cs-share"><span class="sct-cs-pct${lean === pos ? " is-lean" : ""}">${v}%</span>${delta}</span>` +
@@ -81,7 +84,12 @@ export function renderSeasonHistoryTable(c: TeamCoaching): string {
   if (!m) return "";
   const colors = stopColors(stops);
   const peakLb = Math.max(-1, ...m.rows.map((r) => r.p?.leadBack ?? -1));
-  const peakPpg = Math.max(...m.rows.filter((r) => r.s.caller).map((r) => r.pt.ppg));
+  // The peak is a finished season's: a season still running is labeled, never crowned (team audit, 2026-11-24).
+  const period = seasonPeriod(c);
+  const peakPpg = Math.max(...m.rows.filter((r) => r.s.caller && !(r.live && period.partial)).map((r) => r.pt.ppg));
+  const liveTag = period.partial
+    ? `In progress${period.games != null ? ` · ${period.games} game${period.games === 1 ? "" : "s"}` : ""}`
+    : "In-season";
 
   const row = (r: HistoryRow): string => {
     const { s, pt, p } = r;
@@ -92,7 +100,7 @@ export function renderSeasonHistoryTable(c: TeamCoaching): string {
       `<th scope="row" class="sct-cs-td is-season"><span class="sct-cs-year">${pt.year}</span>` +
       (r.win ? `<span class="sct-cs-win" title="Partial season: only the weeks he called">${e(`${r.win} only`)}</span>` : "") +
       (s.caller ? "" : `<span class="sct-cs-win">${e(`${s.role} · not calling`)}</span>`) +
-      (r.live ? `<span class="sct-cs-live">In-season</span>` : "") +
+      (r.live ? `<span class="sct-cs-live">${e(liveTag)}</span>` : "") +
       `</th>` +
       `<td class="sct-cs-td is-team"><span class="sct-cs-club">` +
       (logo ? `<img class="sct-cs-crest" src="${e(logo)}" alt="" width="22" height="22" loading="lazy" decoding="async">` : "") +
@@ -125,8 +133,8 @@ export function renderSeasonHistoryTable(c: TeamCoaching): string {
     `<th scope="col" class="sct-cs-th is-season">Season</th>` +
     `<th scope="col" class="sct-cs-th is-team">Team</th>` +
     `<th scope="col" class="sct-cs-th is-ppg"><abbr title="Team offensive points per game over the weeks he called">PPG</abbr></th>` +
-    `<th scope="col" class="sct-cs-th is-rank"><abbr title="The offense's scoring rank among the 32 clubs; a windowed rank covers the weeks he called only">NFL rank</abbr></th>` +
-    `<th scope="col" class="sct-cs-th is-share">WR target %<span class="sct-cs-th-sub" title="Percentage points above or below the league average that season">pts vs lg</span></th>` +
+    `<th scope="col" class="sct-cs-th is-rank"><abbr title="The offense's scoring rank among the 32 clubs, 1st = most points per game; a windowed rank covers the weeks he called only">PPG rank</abbr><span class="sct-cs-th-sub">of 32, 1st = most</span></th>` +
+    `<th scope="col" class="sct-cs-th is-share">WR target %<span class="sct-cs-th-sub" title="Percentage points above or below the league average that season">pp vs league</span></th>` +
     `<th scope="col" class="sct-cs-th is-share">RB target %</th>` +
     `<th scope="col" class="sct-cs-th is-share">TE target %</th>` +
     `<th scope="col" class="sct-cs-th is-lb">Lead RB %<span class="sct-cs-th-sub" title="The lead back's share of the backfield's carries + 2 × targets">carries + 2×tgt</span></th>` +

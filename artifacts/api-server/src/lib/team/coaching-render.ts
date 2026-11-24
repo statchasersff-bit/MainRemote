@@ -22,7 +22,7 @@
  * chain while everything editorial stays put (see coaching.ts).
  */
 
-import { leagueTendencyValues } from "./coaching";
+import { coachingStamp, leagueTendencyValues } from "./coaching";
 import { escapeHtml, TEAM_ACCENTS, TEAM_COLORS } from "../render";
 import { getTeamByAbbreviation, type NflTeam } from "./teams";
 import {
@@ -34,7 +34,6 @@ import {
   type TendencyRow,
 } from "./coaching";
 import type { UsageView } from "./usage";
-import { signed } from "./usage-copy";
 import { coachingFaq } from "./coaching-faq";
 import { renderCoachingPremium } from "./coaching-premium";
 import { renderCoachingPremiumTendencies } from "./coaching-premium-tendencies";
@@ -235,9 +234,14 @@ export function schemeChip(note: string): string | null {
 /* -------------------------------------------------------------- tendencies */
 
 export interface RowView {
+  /** The row's current figure at the row's one precision ("57.0%", "32.6s"). */
   current: string;
+  /** The prior season's figure, same precision. */
+  prior: string;
+  /** The NFL average for the current season, same precision. */
+  nflAvg: string;
   change: { dir: "up" | "down" | "flat"; text: string };
-  /** The move in the row's unit: percentage points, or seconds for pace (+ = faster). */
+  /** The move in the row's unit: percentage points, or seconds for pace (+ = faster). Rounded to one place after subtracting. */
   delta: number | null;
   /** League rank of the current value among the clubs in the coaching file (1 = highest, or fastest for pace). */
   rank: number | null;
@@ -252,6 +256,33 @@ function placesOf(text: string): number {
   return text.match(/\.(\d+)/)?.[1]?.length ?? 0;
 }
 
+/** Every tendency row prints at one decimal (team-rate-metrics.mjs RATE_PLACES), fourth down at whole percents. */
+export const ROW_PLACES = 1;
+
+/**
+ * A stored cell at a fixed precision: "57%" -> "57.0%", "33s" -> "33.0s",
+ * "+0.1%" unchanged. The builder dropped a trailing ".0" (fmt() through
+ * round()), so a row read "59.4% / 57% / 60.5%" and the eye took 57 for a
+ * coarser figure (team audit, 2026-11-24: consistent precision per row).
+ */
+export function fixedCell(text: string, places = ROW_PLACES): string {
+  const m = text.match(/^([+\u2212-]?)(\d+(?:\.\d+)?)(%|s)$/);
+  if (!m) return text;
+  return `${m[1]}${Number(m[2]).toFixed(places)}${m[3]}`;
+}
+
+/**
+ * A change between two rates, in percentage points: "+3.0 pp", "−2.4 pp",
+ * "0.0 pp" (team audit, 2026-11-24: supersedes the 2026-11-19 "pts", which
+ * itself replaced "%", read as a relative change). `places` is the
+ * precision of the two rates it compares, so a row reads at one precision.
+ */
+export const ppLabel = (d: number, places = ROW_PLACES): string => {
+  const r = Number(d.toFixed(places));
+  const size = Math.abs(r).toFixed(places);
+  return `${r === 0 ? "" : r > 0 ? "+" : "\u2212"}${size} pp`;
+};
+
 /**
  * A row's current cell, change and league rank, all from the coaching file
  * (Team Pages Phase 2, 2026-11-19).
@@ -265,8 +296,10 @@ function placesOf(text: string): number {
  * both seasons and the rank come from one builder and one definition. `view`
  * is kept in the signature for the callers; nothing is read from it.
  *
- * The change is in percentage points ("pts") for rates and seconds for pace,
- * where fewer seconds is "up" (faster).
+ * The change is in percentage points ("pp") for rates and seconds for pace,
+ * where fewer seconds is "up" (faster). It is taken from the unrounded
+ * values where the file carries them (priorRaw / currentRaw) and rounded
+ * once, after subtracting.
  */
 export function rowView(row: TendencyRow, view: UsageView | null, season?: number): RowView {
   void view;
@@ -276,28 +309,49 @@ export function rowView(row: TendencyRow, view: UsageView | null, season?: numbe
   let rank: number | null = null;
   let tied = false;
   if (now != null && values.length >= 2) {
+    // The project's ranking rule (team-rate-metrics.mjs rankPublished): over
+    // the published values of every club that has one, ties share the
+    // better rank, a club with no value is left out of the count.
     const better = (v: number) => (row.invert ? v < now : v > now);
     rank = values.filter(better).length + 1;
     tied = values.filter((v) => v === now).length > 1;
   }
-  const base = { current: row.current, rank, tied, of: values.length || undefined };
+  // One precision per row: the finest any of its three figures was stored
+  // at (the builder trimmed a trailing ".0"; fourth down is whole percents).
+  const places = Math.max(placesOf(row.current), placesOf(row.prior), placesOf(row.nflAvg), row.key && row.key !== "fourthGoRate" ? ROW_PLACES : 0);
+  const base = { current: fixedCell(row.current, places), prior: fixedCell(row.prior, places), nflAvg: fixedCell(row.nflAvg, places), rank, tied, of: values.length || undefined };
   if (now == null || prior == null) return { ...base, change: row.change, delta: null };
-  const places = Math.max(placesOf(row.current), placesOf(row.prior));
-  const raw = row.invert ? prior - now : now - prior;
-  const delta = Math.round(raw * 10 ** places) / 10 ** places;
+  const a = row.priorRaw ?? prior;
+  const b = row.currentRaw ?? now;
+  const raw = row.invert ? a - b : b - a;
+  const delta = Number(raw.toFixed(places)) || 0;
   const flat = Math.abs(delta) < (row.invert ? 0.3 : 0.5);
   const dir = flat ? "flat" : delta > 0 ? "up" : "down";
   return {
     ...base,
-    change: { dir, text: flat ? "steady" : ptsLabel(delta, places) },
+    change: { dir, text: flat ? "steady" : ppLabel(delta, places) },
     delta,
   };
 }
 
-/** "3rd highest", "T-14th fastest": a rank with the direction it is counted in. */
+/** The rank's direction word: pace ranks fastest first, every rate highest first. */
+export const rankDir = (row: TendencyRow): string => (row.invert ? "fastest" : "highest");
+
+/**
+ * "3rd-highest of 32", "T-10th-fastest of 32": the rank, the direction it is
+ * counted in and the group it is counted over (team audit, 2026-11-24: a
+ * bare "3rd" did not say which end was first or of how many).
+ */
 export function rankWords(row: TendencyRow, v: RowView): string | null {
   if (v.rank == null) return null;
-  return `${v.tied ? "T-" : ""}${ordinal(v.rank)} ${row.invert ? "fastest" : "highest"}`;
+  return `${v.tied ? "T-" : ""}${ordinal(v.rank)}-${rankDir(row)}${v.of ? ` of ${v.of}` : ""}`;
+}
+
+/** "3rd-highest play-action rate of 32 offenses": the rank in a sentence, for titles and screen readers. */
+export function rankSentence(row: TendencyRow, v: RowView): string | null {
+  if (v.rank == null) return null;
+  const name = (row.key && LEAGUE_NAME[row.key]) || row.label.toLowerCase();
+  return `${v.tied ? "tied " : ""}${ordinal(v.rank)}-${rankDir(row)} ${name}${v.of ? ` of ${v.of} offenses` : ""}`;
 }
 
 /** A league standing, only at the edges: top ten, or bottom five. */
@@ -360,9 +414,9 @@ export function changeText(row: TendencyRow, v: RowView): string {
   // A rate's change prints with "%" (60.5% to 58% is -2.5%; mak, 2026-11-15:
   // no "pp" on the coaching page), and pace is written out with no arrow beside the seconds (mak's
   // review, 2026-11-08: an up arrow next to "faster" read as ambiguous).
-  // Rates move in percentage points, printed "pts" (mak, 2026-11-19: Team
-  // Pages Phase 2 supersedes the 2026-11-15 "%" here, which read as a
-  // relative change; "+11.0%" for 54% -> 65% is really +11 points, +20%).
+  // Rates move in percentage points, printed "pp" since the team audit of
+  // 2026-11-24 ("+3.0 pp" for 53% -> 56%, explained once at the top of the
+  // tab); the 2026-11-19 "pts" and the 2026-11-15 "%" are superseded here.
   const size = Math.abs(v.delta).toFixed(1);
   if (row.key === "pace" || row.invert) return `${size} ${size === "1.0" ? "second" : "seconds"} ${v.delta > 0 ? "faster" : "slower"}`;
   return v.change.text;
@@ -424,7 +478,7 @@ export function groupSentence(
     .sort((a, b) => Math.abs(b.v.delta as number) - Math.abs(a.v.delta as number))
     .map(({ row, v }) => {
       const d = v.delta as number;
-      const pts = row.key === "pace" ? `${Math.abs(d).toFixed(1)}s per play` : `${signed(d)}%`;
+      const pts = row.key === "pace" ? `${Math.abs(d).toFixed(1)}s per play` : ppLabel(d);
       const phrase = MOVE_PHRASE[row.key as string]!(d > 0, pts);
       return numbers ? phrase : phrase.replace(/ \([^)]*\)$/, "");
     });
@@ -440,11 +494,11 @@ export function groupSentence(
     .sort((a, b) => Math.abs(b.gap) - Math.abs(a.gap))[0];
   const first = moves.length
     ? `Compared with ${returning ? priorYear : `the ${priorYear} staff`}, ${city} is ${list(moves)}.`
-    : `No tendency in this group has moved 3% (or a second of pace) from ${priorYear}.`;
+    : `No tendency in this group has moved 3 pp (or a second of pace) from ${priorYear}.`;
   const second = vs
     ? ` Against the league, its ${LEAGUE_NAME[vs.row.key as string]} (${vs.v.current}) is ${
         vs.row.key === "pace" ? (vs.gap > 0 ? "faster" : "slower") : vs.gap > 0 ? "above" : "below"
-      } the NFL average of ${vs.row.nflAvg}${vs.v.rank != null && atEdge(vs.v.rank) ? ` (${ordinal(vs.v.rank)} in the NFL)` : ""}.`
+      } the NFL average of ${vs.row.nflAvg}${vs.v.rank != null && atEdge(vs.v.rank) ? ` (${rankWords(vs.row, vs.v)})` : ""}.`
     : "";
   return first + second;
 }
@@ -477,7 +531,7 @@ function identityParagraph(
       .slice(0, n)
       .map(({ row, v }) => {
         const d = v.delta as number;
-        const pts = row.key === "pace" ? `${Math.abs(d).toFixed(1)}s per play` : `${signed(d)}%`;
+        const pts = row.key === "pace" ? `${Math.abs(d).toFixed(1)}s per play` : ppLabel(d);
         return MOVE_PHRASE[row.key as string]!(d > 0, pts);
       });
   const calling = pick(GROUPS[0]!.keys, 2);
@@ -799,7 +853,7 @@ export interface Stop {
   /** One per tracked season of the stop, oldest first; empty before 2016. */
   prints: Print[];
   /** The chart's points: each season's own PPG and rank text, oldest first. */
-  points: Array<{ year: number; ppg: number; rank: string }>;
+  points: Array<{ year: number; ppg: number; rank: string; games?: number | null }>;
 }
 
 export function readStops(c: TeamCoaching): Stop[] {
@@ -818,12 +872,16 @@ export function readStops(c: TeamCoaching): Stop[] {
           .map(readFingerprint)
           .filter((fp): fp is Fingerprint => fp !== null && fp !== "pre")
           .map(printFromProse);
-      const rank = scoreParts(row, end > start).rank;
+      // The live season's "thru Wk N" is the snapshot's cutoff, as everywhere
+      // else on the tab (a club on bye that week stored the week before).
+      const cutoff = row.current ? coachingStamp(seasonOf(c)).throughWeek : null;
+      const rank = scoreParts(row, end > start).rank.replace(/thru Wk \d+/, (m) => (cutoff != null ? `thru Wk ${cutoff}` : m));
       // A season's rank text: the window's for a windowed stop, the stop's
       // own "16th · 2026 thru Wk 8" for the live season, else the plain ordinal.
-      const points = (row.seasons ?? []).map((pt) => ({
+      const points: Stop["points"] = (row.seasons ?? []).map((pt) => ({
         year: pt.year,
         ppg: pt.ppg,
+        games: pt.games ?? null,
         rank: p.window
           ? rank
           : row.current && pt.year === end
@@ -1134,14 +1192,63 @@ export const ptsLabel = (d: number, places = 0): string => {
   return `${d === 0 ? "" : d > 0 ? "+" : "−"}${size} ${size === "1" ? "pt" : "pts"}`;
 };
 
-/** The position furthest from league, if it is 3+ points off (the builder's bar). */
-function distLean(c: TeamCoaching): BarRow | null {
-  const rows = c.distribution.rows.filter((r) => r.pct != null && r.nfl != null);
-  const top = [...rows].sort((a, b) => Math.abs((b.pct as number) - (b.nfl as number)) - Math.abs((a.pct as number) - (a.nfl as number)))[0];
-  return top && Math.abs((top.pct as number) - (top.nfl as number)) >= 3 ? top : null;
+export const surnameOf = (c: TeamCoaching): string => c.playCaller.name.split(" ").pop() ?? c.playCaller.name;
+
+/* ------------------------------------------------------------- the period */
+
+/** The current season's reach: the cutoff week and games played, from the same snapshot as every rate on the tab. */
+export interface SeasonPeriod {
+  season: number;
+  prior: number;
+  throughWeek: number | null;
+  /** The club's games in the sample (a bye week is not a game). */
+  games: number | null;
+  /** The regular season is over (all 18 weeks in). */
+  complete: boolean;
+  /** "through Week 11, 10 games" while the season runs; "" once it is complete. */
+  partial: string;
 }
 
-export const surnameOf = (c: TeamCoaching): string => c.playCaller.name.split(" ").pop() ?? c.playCaller.name;
+export function seasonPeriod(c: TeamCoaching): SeasonPeriod {
+  const season = seasonOf(c);
+  const wk = coachingStamp(season).throughWeek ?? c.tendencies.samples?.throughWeek ?? null;
+  const live = c.dossier.find((d) => d.current)?.seasons?.find((y) => y.year === season);
+  const games = c.tendencies.samples?.games ?? live?.games ?? null;
+  const complete = wk != null && wk >= 18;
+  const partial = complete || wk == null ? "" : `through Week ${wk}${games != null ? `, ${games} game${games === 1 ? "" : "s"}` : ""}`;
+  return { season, prior: season - 1, throughWeek: wk, games, complete, partial };
+}
+
+/**
+ * The one period line near the top of the tab (team audit, 2026-11-24): what
+ * the two columns compare, from the data's own cutoff, plus the one place
+ * "percentage points" is explained. Where a new play-caller makes last
+ * season another coach's offense, it says so, as the continuity card does.
+ */
+export function periodLine(c: TeamCoaching, prevCaller: string | null): string {
+  const p = seasonPeriod(c);
+  const now = p.complete
+    ? `The full ${p.season} regular season`
+    : `${p.season} regular season${p.throughWeek != null ? ` through Week ${p.throughWeek}` : " to date"}${p.games != null ? ` (${p.games} game${p.games === 1 ? "" : "s"})` : ""}`;
+  // A new caller: the prior column is another coach's offense (the
+  // continuity card and "Previous staff" head say the same; the FAQ names him).
+  void prevCaller;
+  const newCaller = /prev/i.test(c.tendencies.priorLabel);
+  return `${now} compared with the full ${p.prior} regular season${newCaller ? ", when the previous staff called plays" : ""}. Rate changes are in percentage points (pp): 53.0% to 56.0% is +3.0 pp.`;
+}
+
+/** "2016-2023, 2025-2026": seasons as runs, so a gap shows. */
+export function yearsText(years: number[]): string {
+  const ys = [...new Set(years)].sort((x, y) => x - y);
+  const runs: string[] = [];
+  for (let i = 0; i < ys.length; ) {
+    let j = i;
+    while (j + 1 < ys.length && ys[j + 1] === ys[j]! + 1) j++;
+    runs.push(i === j ? String(ys[i]) : `${ys[i]}-${ys[j]}`);
+    i = j + 1;
+  }
+  return runs.join(", ");
+}
 
 /** The target-distribution model: each position against the league, the one lean, and the panel's read. */
 export interface DistributionModel {
@@ -1150,20 +1257,68 @@ export interface DistributionModel {
   rows: Array<{ row: BarRow; d: number; lean: boolean }>;
   line: string;
   context: string;
+  /** The seasons averaged, as runs ("2023-2026"); "" on an entry with no per-season prints. */
+  span: string;
+  years: number[];
+  /** Season samples averaged (a split season counts once per window). */
+  n: number;
+  /** The in-progress season is one of them. */
+  includesCurrent: boolean;
+  /** He called plays before 2016, where target tracking starts. */
+  pre2016: boolean;
 }
 
+/** The seasons that carry all three target shares and the league's: the card's, the table's and the FAQ's one source. */
+export function distributionPrints(c: TeamCoaching): Print[] {
+  return c.dossier
+    .flatMap((d) => d.prints ?? [])
+    .filter((p) => POS.every((k) => p.shares[k] != null && p.league[k] != null));
+}
+
+/**
+ * The split averaged from the per-season prints (team audit, 2026-11-24):
+ * the same seasons the Season by Season table lists, each counted once, and
+ * the league line averaged over exactly those seasons, so the card's "NFL"
+ * figure and the table's season-by-season league values come from one
+ * source. The heading, the note and the FAQ all name the span from the
+ * same prints, gaps included; the builder's "since 2016" sentence described
+ * the tracking window, not his seasons. The gap is taken before rounding.
+ */
 export function distributionModel(c: TeamCoaching): DistributionModel {
-  const lean = distLean(c);
-  const many = /^Across his/.test(c.distribution.note);
+  const season = seasonOf(c);
+  const prints = distributionPrints(c);
+  const pre2016 = c.dossier.some((d) => parseInt(d.years, 10) < 2016);
+  const LABEL: Record<Pos, string> = { WR: "Wide receivers", TE: "Tight ends", RB: "Running backs" };
+  let rows: Array<{ row: BarRow; d: number; raw: number }>;
+  if (prints.length) {
+    const mean = (f: (p: Print) => number) => prints.reduce((t, p) => t + f(p), 0) / prints.length;
+    rows = (["WR", "TE", "RB"] as Pos[]).map((pos) => {
+      const t = mean((p) => p.shares[pos] as number);
+      const l = mean((p) => p.league[pos] as number);
+      return { row: { label: LABEL[pos], pct: Math.round(t), nfl: Math.round(l) }, d: Math.round(t - l) || 0, raw: t - l };
+    });
+  } else {
+    rows = c.distribution.rows.map((row) => ({ row, d: (row.pct ?? 0) - (row.nfl ?? 0), raw: (row.pct ?? 0) - (row.nfl ?? 0) }));
+  }
+  const top = [...rows].sort((x, y) => Math.abs(y.raw) - Math.abs(x.raw))[0];
+  const lean = top && Math.abs(top.d) >= 3 ? top : null;
+  const years = prints.map((p) => p.year);
+  const span = yearsText(years);
+  const many = new Set(years).size > 1;
   return {
-    title: `Target distribution under ${surnameOf(c)}`,
+    title: `Target distribution under ${surnameOf(c)}${span ? `, ${span}` : ""}`,
     sub: c.distribution.sub,
     // Gold marks the one position that materially deviates, not a position.
-    rows: c.distribution.rows.map((row) => ({ row, d: (row.pct ?? 0) - (row.nfl ?? 0), lean: row === lean })),
+    rows: rows.map(({ row, d }) => ({ row, d, lean: row === lean?.row })),
     line: lean
-      ? `${lean.label} have drawn ${lean.pct}% of targets vs ${lean.nfl}% league average.`
+      ? `${lean.row.label} have drawn ${lean.row.pct}% of targets vs ${lean.row.nfl}% league average.`
       : "Every position sits within a few points of league average: the target tree follows the talent.",
     context: many ? "Across the offenses he has called: a historical tendency, read alongside the current roster." : "One season of data, read alongside the current roster.",
+    span,
+    years,
+    n: prints.length,
+    includesCurrent: years.includes(season),
+    pre2016,
   };
 }
 
@@ -1245,7 +1400,7 @@ export function scoreStateModel(c: TeamCoaching): ScoreStateModel {
       const d = base != null ? (row.share ?? 0) - base : 0;
       // Each row is read against leading by 7+; only a real gap gets gold.
       const flag = i > 0 && Math.abs(d) >= 3;
-      return { row, pass: m ? m[1]! : (row.result ?? `${row.share}%`), plays: m ? m[2]! : null, d, diff: i === 0 ? "Reference" : ptsLabel(d), baseline: i === 0, flag };
+      return { row, pass: m ? m[1]! : (row.result ?? `${row.share}%`), plays: m ? m[2]! : null, d, diff: i === 0 ? "Reference" : ppLabel(d, 0), baseline: i === 0, flag };
     }),
     verdict,
     context: small ? "Early-season samples remain small." : "Play counts show each bucket's sample.",
@@ -1289,10 +1444,10 @@ export function bottomLineModel(c: TeamCoaching, view: UsageView | null): Bottom
     })
     .filter(Boolean);
   const SHORT: Record<string, string> = { "Wide receivers": "WR", "Tight ends": "TE", "Running backs": "RB" };
-  const leans = c.distribution.rows
-    .filter((r) => r.pct != null && r.nfl != null && Math.abs((r.pct as number) - (r.nfl as number)) >= 3)
-    .sort((a, b) => Math.abs((b.pct as number) - (b.nfl as number)) - Math.abs((a.pct as number) - (a.nfl as number)))
-    .map((r) => `${(r.pct as number) > (r.nfl as number) ? "↑" : "↓"} ${SHORT[r.label] ?? r.label} targets`);
+  const leans = distributionModel(c)
+    .rows.filter(({ d }) => Math.abs(d) >= 3)
+    .sort((a, b) => Math.abs(b.d) - Math.abs(a.d))
+    .map(({ row, d }) => `${d > 0 ? "↑" : "↓"} ${SHORT[row.label] ?? row.label} targets`);
   const games = c.reliability.ledgerStats?.games ?? null;
   return { season, carry, signals, leans, games, summary: c.bottomLine };
 }
