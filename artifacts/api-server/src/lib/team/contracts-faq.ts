@@ -65,8 +65,22 @@ const CONTRACT_REPEATS = [
   /^Where can I see every /,
 ];
 
+/**
+ * The Contracts tab's one question (team-page audit, Task 4, 2026-11-24): the
+ * cap space, the tab's search intent ("<club> cap space"), with its league
+ * rank. The rest restated the tab's own tables and tiles - the biggest cap
+ * hits (the ledger, largest cap number first), the release savings (Where a
+ * Release Frees Cap), the dead money (the 2026 Dead Money card), the value
+ * labels (the ledger's Worth column, and the answer was mostly method) and
+ * the contract count (the ledger's header) - so they are cut from the FAQ
+ * and the detail stays where it was.
+ */
+const CONTRACT_KEEP = [/^How much salary cap space do the /];
+
 export function contractsFaq(team: NflTeam, v: ContractsView): FaqItem[] {
-  return allContractsFaq(team, v).filter((q) => !CONTRACT_REPEATS.some((re) => re.test(q.question)));
+  return allContractsFaq(team, v)
+    .filter((q) => !CONTRACT_REPEATS.some((re) => re.test(q.question)))
+    .filter((q) => CONTRACT_KEEP.some((re) => re.test(q.question)));
 }
 
 function allContractsFaq(team: NflTeam, v: ContractsView): FaqItem[] {

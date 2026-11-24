@@ -1079,7 +1079,8 @@ describe("tab FAQs", () => {
   test("the outlook carries questions answered in full sentences", async () => {
     const { doc } = await dom("/team/new-england-patriots");
     const entries = faqEntries(doc, tailOf("outlook"));
-    assert.ok(entries.length >= 5, `expected an FAQ, got ${entries.length} items`);
+    // In season, the hub's 2-4 season questions (team-page audit, Task 4, 2026-11-24).
+    assert.ok(entries.length >= 2, `expected an FAQ, got ${entries.length} items`);
     for (const entry of entries) {
       assert.match(entry.question, /\?$/, `not a question: ${entry.question}`);
       // A one-word answer is the failure mode a derived FAQ has: a missing
@@ -2835,33 +2836,19 @@ describe("draft tab FAQ (mak, 2026-11-02)", () => {
     assert.equal(faq.querySelector("h2").textContent, "New England Patriots Draft Picks & History FAQ");
     const items = [...faq.querySelectorAll(".sct-faq-item")];
     const qs = items.map((d) => d.querySelector("h3.sct-faq-q").textContent);
-    // Trimmed to distinct questions 2026-11-19 (Team Pages Phase 1 finalization).
-    assert.ok(qs.length >= 5 && qs.length <= 9, `${qs.length} questions`);
+    // One question since the team-page audit (Task 4, 2026-11-24): the class
+    // lists, the Round 1 Picks table and the position bars carry the rest.
+    assert.deepEqual(qs, ["How many picks do the Patriots have in the 2027 NFL Draft?"]);
     const capital = JSON.parse(fs.readFileSync(path.join(APP_DIR, "data", "team", "draft_picks_2027.json"), "utf8")).teams.ne;
-    const history = JSON.parse(fs.readFileSync(path.join(APP_DIR, "data", "team", "draft_history.json"), "utf8")).teams.ne;
-    // The pick count and the pick-by-round list come from the capital file.
-    assert.equal(qs[0], "How many picks do the Patriots have in the 2027 NFL Draft?");
+    // The count comes from the capital file; the by-round list stays in the
+    // tab's 2027 NFL Draft Picks card, not in the answer.
     assert.ok(items[0].textContent.includes(`currently hold ${capital.holds.length} picks in the 2027 NFL Draft`));
-    // The pick list is the count's answer now, not a question of its own.
-    const byRound = [...items[0].querySelectorAll("ul.sct-faq-list li")].map((li) => li.textContent);
-    assert.equal(byRound.length, new Set(capital.holds.map((h) => h.round)).size);
-    assert.equal(byRound[0], "Round 1: Patriots' own pick");
-    // The first-round list is the last five classes' Round 1 picks, newest first.
-    const firsts = history.filter((p) => p.season >= 2022 && p.round === 1).sort((a, b) => b.season - a.season);
-    const r1 = items.find((d) => /last .* first-round draft picks/.test(d.textContent));
-    const lines = [...r1.querySelectorAll("ul.sct-faq-list li")].map((li) => li.textContent);
-    assert.deepEqual(lines, firsts.map((p) => `${p.season}: ${p.name}, ${{ OT: "offensive tackle", QB: "quarterback", DB: "defensive back", OL: "offensive lineman" }[p.position]}, Pick No. ${p.pick}`));
-    // The class count is the history file's.
-    // The class-count question was cut as a repeat of the class lists (2026-11-19).
-    const total = history.filter((p) => p.season >= 2022).length;
-    assert.ok(!faq.textContent.includes(`The Patriots selected ${total} players from the 2022 through 2026 NFL Drafts.`));
-    assert.ok(!qs.includes("When did the Patriots draft Drake Maye?"), "per-player draft dates repeat the class lists");
-    assert.ok(!qs.some((q) => /^What draft picks|^How many extra|^Where can I see/.test(q)), "repeats removed");
-    assert.ok(qs.includes("Do the Patriots have a first-round pick in the 2027 NFL Draft?"));
-    // In the FAQPage (mak approved 2026-11-02), list answers as lines.
+    assert.equal(items[0].querySelectorAll("ul.sct-faq-list li").length, 0);
+    assert.ok(/first-round pick/.test(items[0].textContent), "the first-round line is folded in");
+    // In the FAQPage (mak approved 2026-11-02).
     const ld = [...doc.querySelectorAll('script[type="application/ld+json"]')].map((s) => s.textContent).join("");
     assert.ok(ld.includes("How many picks do the Patriots have in the 2027 NFL Draft?"));
-    assert.ok(ld.includes("- Round 1: Patriots' own pick"));
+    assert.ok(!ld.includes("Who were the Patriots' last"), "cut questions are gone from the schema too");
   });
 });
 
@@ -3243,7 +3230,7 @@ describe("the Season Overview (Team Pages Phase 1, 2026-11-19)", () => {
     assert.equal(faq.length, 1, "one FAQPage");
     assert.deepEqual(faq[0].mainEntity.map((q) => q.name), visible, "schema = the tails' questions, in order");
     const season = [...doc.querySelectorAll('[data-sct-faq-for="outlook"] .sct-faq-q')].map((q) => q.textContent);
-    assert.ok(season.length >= 6 && season.length <= 8, `${season.length} season questions`);
+    assert.ok(season.length >= 2 && season.length <= 4, `${season.length} season questions`);
     assert.ok(!season.some((q) => /draft|worth drafting|sleeper|WR2 behind/i.test(q)), "no draft-season question");
     assert.equal(doc.querySelectorAll("#preseason-outlook .sct-faq-q, .sct-ovw-archive-faq").length, 0, "no preseason questions anywhere");
   });
@@ -3436,24 +3423,18 @@ describe("contracts tab", () => {
     assert.ok(faq, "the FAQ block is the Contracts tail");
     assert.equal(faq.querySelector("h2").textContent, "New England Patriots Contracts & Salary Cap FAQ");
     const qs = [...faq.querySelectorAll("h3.sct-faq-q")].map((h) => h.textContent);
-    // Trimmed to distinct, club-specific questions 2026-11-19.
-    assert.ok(qs.length >= 4 && qs.length <= 7, `${qs.length} questions`);
-    assert.equal(qs[0], "How much salary cap space do the Patriots have in 2026?");
-    assert.ok(qs.includes("How much dead money do the Patriots have in 2026?"));
-    assert.ok(!qs.includes("Who are the highest-paid Patriots in 2026?"), "repeats the biggest cap hit");
-    assert.ok(!qs.includes('What does "Net if cut" mean for a Patriots contract?'), "a glossary entry, the same on every hub");
-    // Every figure in the answers is the view's own: the cap-space answer
-    // carries the data attribute's number, and the largest cap hit opens
-    // the biggest-hit answer.
+    // One question since the team-page audit (Task 4, 2026-11-24): the
+    // ledger, the release card and the dead-money card carry the rest.
+    assert.deepEqual(qs, ["How much salary cap space do the Patriots have in 2026?"]);
+    // The figure is the view's own: the cap-space answer carries the data
+    // attribute's number.
     const capSpace = Number(panel.querySelector("[data-cap-space]").dataset.capSpace);
     const a1 = faq.querySelectorAll(".sct-faq-item")[0].querySelector(".sct-faq-a").textContent;
     assert.ok(a1.includes(`$${capSpace.toFixed(1)} million`), a1);
-    const topName = panel.querySelector(".sct-ctp-table tbody tr .is-player .sct-ct-name").textContent.trim();
-    const a2 = [...faq.querySelectorAll(".sct-faq-item")].find((d) => /biggest salary cap hit/.test(d.textContent)).querySelector(".sct-faq-a").textContent;
-    assert.ok(a2.startsWith(topName.split(" ").slice(0, 2).join(" ")), `${a2} starts with ${topName}`);
     // In the page's FAQPage too (mak approved 2026-11-02), with the answer the page shows.
     const ld = [...doc.querySelectorAll('script[type="application/ld+json"]')].map((s) => s.textContent).join("");
     assert.ok(ld.includes("How much salary cap space do the Patriots have in 2026?"));
+    assert.ok(!ld.includes("How much dead money do the Patriots have"), "cut questions are gone from the schema too");
     assert.ok(ld.includes(JSON.stringify(a1).slice(1, 40)));
   });
 

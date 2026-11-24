@@ -309,36 +309,40 @@ function historyFaq(team: NflTeam, h: DraftHistoryView, n: Names): FaqItem[] {
 }
 
 /**
- * Questions that restate another answer, cut 2026-11-19 (Team Pages Phase 1
- * finalization: "retain only distinct, useful information"). The pick
- * count, the pick list, the extras, the Day 2 extras and the trades were five
- * questions over one inventory; they are now one answer (the count, then the
- * picks by round, then what was sent away) plus the first-round question.
- * The class count, the first-round tally and the per-player "when did they
- * draft" lines repeat the class lists; the "where can I see" closer was
- * navigation, not an answer.
+ * The Draft tab's one question (team-page audit, Task 4, 2026-11-24).
+ *
+ * Every other question restated a table the tab already prints: the class
+ * lists ("Who did they draft in 2025?"), the Round 1 Picks table, the
+ * position-group bars, and a "how successful" answer that only described
+ * the tables. The 2027 inventory stays as the tab's search intent ("<club>
+ * draft picks 2027"), answered in prose rather than as the by-round list the
+ * 2027 NFL Draft Picks card shows: the count and what it is made of, the
+ * first-round pick, and what was traded away. historyFaq() is kept, unasked,
+ * for the record of what the cut questions said.
+ *
+ * Before this, 2026-11-19 trimmed 16 to 7 (the pick count, the pick list,
+ * the extras, the Day 2 extras and the trades were five questions over one
+ * inventory; the class count, the first-round tally and the per-player
+ * "when did they draft" lines repeated the class lists).
  */
-const DRAFT_REPEATS = [
-  /^What draft picks do the /,
-  /^How many extra draft picks /,
-  /^Do the .* have any extra Day 2 picks/,
-  /^Have the .* traded away any /,
-  /^How many players have the .* drafted over /,
-  /^How many first-round picks have the /,
-  /^When did the .* draft /,
-];
+const stripYesNo = (s: string) => s.replace(/^(?:Yes|No)(?:, but not their own)?\. /, "");
 
 export function draftFaq(team: NflTeam, view: DraftView): FaqItem[] {
+  if (!view.capital) return [];
   const n = names(team);
-  const out: FaqItem[] = [];
-  if (view.capital) out.push(...capitalFaq(team, view.capital, n));
-  if (view.history) out.push(...historyFaq(team, view.history, n));
-  // The inventory in one answer: the count's sentence, the by-round list and
-  // the traded-away line from the list question, then the compensatory note.
-  const howMany = out.find((q) => q.question.startsWith("How many picks do the "));
-  const which = out.find((q) => q.question.startsWith("What draft picks do the "));
-  if (howMany && which) {
-    howMany.answer = [howMany.answer[0], ...which.answer.slice(1), ...howMany.answer.slice(1)];
-  }
-  return out.filter((q) => !DRAFT_REPEATS.some((re) => re.test(q.question)));
+  const c = view.capital;
+  const all = capitalFaq(team, c, n);
+  const howMany = all.find((q) => q.question.startsWith("How many picks do the "));
+  if (!howMany || typeof howMany.answer[0] !== "string") return [];
+  const firstQ = all.find((q) => /have a first-round pick in the /.test(q.question));
+  const traded = all.find((q) => q.question.startsWith("Have the "));
+  const r1 = c.rounds[0];
+  const holdsR1 = (r1?.holds.length ?? 0) > 0;
+  const parts: string[] = [howMany.answer[0]];
+  // The first-round line when they hold one; a traded-away first is in the
+  // traded line, which names who holds it.
+  if (holdsR1 && firstQ && typeof firstQ.answer[0] === "string") parts.push(stripYesNo(firstQ.answer[0]));
+  if (c.sent.length && traded && typeof traded.answer[0] === "string") parts.push(stripYesNo(traded.answer[0]));
+  const note = howMany.answer.slice(1).filter((p): p is string => typeof p === "string");
+  return [{ question: howMany.question, answer: [parts.join(" "), ...note] }];
 }

@@ -1361,12 +1361,31 @@ function faqList(items: OutlookFaq[], sink: FaqSink, tag: "h3" | "h4"): string {
         `<summary class="sct-faq-q-row">` +
         `<${tag} class="sct-faq-q">${escapeHtml(entry.question)}</${tag}>` +
         `</summary>` +
-        `<p class="sct-faq-a">${escapeHtml(entry.answer)}</p>` +
+        `<p class="sct-faq-a">${faqAnswerHtml(entry)}</p>` +
         `</details>`,
     )
     .join("");
 
   return `<div class="sct-faq">${body}</div>`;
+}
+
+/**
+ * An answer's text with its link phrases wrapped, each searched for after
+ * the last, so a phrase never matches inside an anchor already written. The
+ * visible text is the answer exactly, which is what the FAQPage carries.
+ */
+function faqAnswerHtml(entry: OutlookFaq): string {
+  let html = escapeHtml(entry.answer);
+  let from = 0;
+  for (const link of entry.links ?? []) {
+    const phrase = escapeHtml(link.text);
+    const at = html.indexOf(phrase, from);
+    if (at < 0) continue;
+    const a = `<a class="sct-textlink" href="${escapeHtml(link.href)}" target="_top">${phrase}</a>`;
+    html = html.slice(0, at) + a + html.slice(at + phrase.length);
+    from = at + a.length;
+  }
+  return html;
 }
 
 /**
@@ -2559,7 +2578,11 @@ export function renderTeamPage(
       // questions a reader sees under the panel.
       hubHtml = overview;
       hubLabel = "Overview";
-      const current = seasonFaq(data, usageView, now);
+      const current = seasonFaq(data, usageView, now, {
+        usage: usage.html ? sectionPath(prefix, team.slug, "usage") : null,
+        depth: depth ? sectionPath(prefix, team.slug, "depth-chart") : null,
+        schedule: schedule ? sectionPath(prefix, team.slug, "schedule") : null,
+      });
       outlookFaq.length = 0;
       outlookTail.html = faqBlock(faqList(current, outlookFaq, "h3"));
     }

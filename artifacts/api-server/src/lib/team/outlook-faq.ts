@@ -34,6 +34,12 @@ import type { OutlookPlayer, TeamOutlook } from "./outlook";
 export interface OutlookFaq {
   question: string;
   answer: string;
+  /**
+   * Phrases of the answer that link to the tab with the detail (the hub's
+   * season questions, 2026-11-24). Markup only: the FAQPage carries the
+   * answer's text, which the links do not change.
+   */
+  links?: Array<{ text: string; href: string }>;
 }
 
 /**

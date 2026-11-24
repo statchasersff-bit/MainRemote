@@ -165,7 +165,10 @@ describe("season phases", () => {
     assert.equal(doc.querySelector("#outlook-premium, .sct-tfo"), null, "no preseason outlook block");
     assert.doesNotMatch(doc.body.textContent, /Preseason Fantasy Outlook|Preseason Questions|Written before Week 1/);
     const qs = [...doc.querySelectorAll('[data-sct-faq-for="outlook"] .sct-faq-q')].map((q) => q.textContent);
-    assert.ok(qs.some((q) => /play next/.test(q)), "a next-game question");
+    assert.ok(qs.some((q) => /next in line/.test(q)), "a season question (the backfield)");
+    // The next game is the overview's card and /schedule/'s question, not
+    // the hub's (team-page audit, Task 4, 2026-11-24).
+    assert.ok(!qs.some((q) => /play next/.test(q)), "no next-game question");
     assert.ok(!qs.some((q) => /draft|worth drafting|sleeper/i.test(q)), "no draft-season question in the active FAQ");
   });
 
