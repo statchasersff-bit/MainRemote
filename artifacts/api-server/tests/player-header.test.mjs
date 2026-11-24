@@ -354,7 +354,11 @@ describe("player header", () => {
     // An injury record behind the designation, so the player has an Injury page.
     const pill = (status) =>
       header(state({ designation: { injuryStatus: status }, injury: { summary: { totalMissed: 0 } }, bioPage: { status: "active" } })).querySelector(".scp-ptag-inj");
-    assert.equal(text(pill("Questionable")), "Questionable");
+    assert.equal(text(pill("Questionable").querySelector(".scp-ptag-long")), "Questionable");
+    // Phone width (560px and under) shows the short form instead.
+    assert.equal(text(pill("Questionable").querySelector(".scp-ptag-short")), "QUES");
+    assert.equal(text(pill("Doubtful").querySelector(".scp-ptag-short")), "DOUB");
+    assert.equal(text(pill("Out")), "Out", "already short: one label, no pair");
     assert.ok(pill("Questionable").classList.contains("is-mid"));
     assert.ok(pill("Out").classList.contains("is-bad"));
     assert.ok(pill("Doubtful").classList.contains("is-bad"));
@@ -399,7 +403,7 @@ describe("player header", () => {
   test("a designation with no injury record is a pill, not a link", () => {
     const h = header(state({ designation: { injuryStatus: "Questionable" }, injury: null }));
     const pill = h.querySelector(".scp-ptag-inj");
-    assert.equal(text(pill), "Questionable");
+    assert.equal(text(pill.querySelector(".scp-ptag-long")), "Questionable");
     assert.equal(pill.tagName, "SPAN");
     assert.equal(pill.getAttribute("href"), null);
     assert.equal(h.querySelector('a[href$="/injury/"]'), null, "nothing in the header links to the absent tab");

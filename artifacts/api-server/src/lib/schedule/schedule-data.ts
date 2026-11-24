@@ -746,7 +746,10 @@ async function refreshEspn(
         ...new Set([
           ...openWeeks(rows),
           ...activeWeeks(rows, nowMs),
-          ...unseenWeeks(rows, games),
+          // Only for the season whose layer is saved (readLayerFile and
+          // saveLayer), so "once" holds: any other season's layer is never
+          // kept, and every week of it would look unseen on every refresh.
+          ...(season === scheduleSeason() ? unseenWeeks(rows, games) : []),
         ]),
       ].sort((a, b) => a - b)
     : activeWeeks(rows, nowMs);

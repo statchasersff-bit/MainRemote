@@ -31,6 +31,7 @@ import {
   TIERS,
   tierOf,
   tint,
+  type AdvColumn,
   type Cell,
   type StatsPremiumModel,
 } from "./stats-tab";
@@ -153,27 +154,76 @@ function kpiCards(m: StatsPremiumModel): string {
  * current ladder's (a better rank fills more of it; the tint follows the
  * percentile on the metric's own direction, so a low raw value that is good
  * never reads red). Usage rows wear green, as the brief asks.
+ *
+ * `ranked` is the column's qualification (mak's mobile brief, 2026-11-23):
+ * a column below the qualifying line prints label and value only, and one
+ * notice above its cards says why, instead of an "Unranked" pill and an
+ * empty bar on every row. Inside a qualified column a single metric with no
+ * rank says "Not ranked" (its own reason in the title) and draws no bar.
  */
-function metricRow(m: AdvMetric, family: "eff" | "use" | "style" | "context"): string {
+function metricRow(m: AdvMetric, family: "eff" | "use" | "style" | "context", ranked = true): string {
+  const def = DEFS[keyOf(m)];
+  const label = `<span class="scp-stp-row-label"${def ? ` title="${escapeHtml(def)}"` : ""}>${escapeHtml(m.label)}</span>`;
+  const value = `<span class="scp-stp-row-value">${escapeHtml(m.value)}</span>`;
+  if (!ranked) return `<li class="scp-stp-row is-plain" data-family="${family}">${label}${value}</li>`;
   const t = tint(m);
   const tier = t === "bad" ? "poor" : t === "muted" ? "none" : t;
-  const ranked = m.rank != null && m.of != null && m.of > 0;
-  const fill = ranked ? ((m.of! - m.rank! + 1) / m.of!) * 100 : m.pctl ?? null;
-  const def = DEFS[keyOf(m)];
-  const pill = ranked
+  const hasRank = m.rank != null && m.of != null && m.of > 0;
+  const fill = hasRank ? ((m.of! - m.rank! + 1) / m.of!) * 100 : m.pctl ?? null;
+  const pill = hasRank
     ? `<span class="scp-stp-rank" data-tier="${tier}" title="${escapeHtml(m.read)}">${escapeHtml(`${ordinal(m.rank!)} of ${m.of}`)}</span>`
     : m.pctl == null
-      ? `<span class="scp-stp-rank" data-tier="none" title="${escapeHtml(m.read)}">Unranked</span>`
+      ? `<span class="scp-stp-rank" data-tier="none" title="${escapeHtml(m.read)}">Not ranked</span>`
       : `<span class="scp-stp-rank" data-tier="${tier}" title="${escapeHtml(m.read)}">${escapeHtml(ordinal(m.pctl))}<span class="scp-sr"> percentile</span></span>`;
   return (
-    `<li class="scp-stp-row" data-family="${family}">` +
-    `<span class="scp-stp-row-label"${def ? ` title="${escapeHtml(def)}"` : ""}>${escapeHtml(m.label)}</span>` +
+    `<li class="scp-stp-row${fill == null ? " is-nobar" : ""}" data-family="${family}">` +
+    label +
+    // No bar without a rank to draw: an unpainted spacer keeps the desktop
+    // grid's columns in place.
     (fill == null
-      ? `<span class="scp-stp-bar-track is-empty" aria-hidden="true"></span>`
+      ? `<span class="scp-stp-bar-gap" aria-hidden="true"></span>`
       : `<span class="scp-stp-bar-track" data-tier="${tier}" aria-hidden="true"><span class="scp-stp-bar-fill" style="width:${Math.max(3, Math.min(100, fill)).toFixed(1)}%"></span></span>`) +
-    `<span class="scp-stp-row-value">${escapeHtml(m.value)}</span>` +
+    value +
     pill +
     `</li>`
+  );
+}
+
+/** What a column's volume is counted in, by position, from the table row's own keys. */
+const VOLUME: Record<string, { key: string; one: string; many: string }> = {
+  QB: { key: "attempts", one: "pass attempt", many: "pass attempts" },
+  RB: { key: "rushAttempts", one: "carry", many: "carries" },
+  WR: { key: "targets", one: "target", many: "targets" },
+  TE: { key: "targets", one: "target", many: "targets" },
+};
+
+/**
+ * The one notice a column below the qualifying line carries (mak's mobile
+ * brief, 2026-11-23): what is missing, the thresholds the ranks use (the
+ * card's own qualifyNote, the same words the footnote printed) and, where
+ * the table row has them, his own volume and games. Ranks are never
+ * invented: the rows under it print values only.
+ */
+function qualifyNotice(col: AdvColumn, pos: string): string {
+  const card = col.card as AdvColumn["card"] & { pool?: string };
+  const need = card.qualifyNote
+    ? `Ranked ${pos}s need ${card.qualifyNote}.`
+    : card.pool
+      ? `Ranks are among ${card.pool}.`
+      : "";
+  const v = VOLUME[pos];
+  const n = v ? Number(card.row?.[v.key]) : NaN;
+  const games = Number(card.row?.["games"] ?? card.games);
+  const has =
+    v && Number.isFinite(n) && Number.isFinite(games) && games > 0
+      ? `He has ${n} ${n === 1 ? v.one : v.many} in ${games} ${games === 1 ? "game" : "games"}.`
+      : "";
+  return (
+    `<div class="scp-stp-qual" role="note">` +
+    `<span class="scp-stp-qual-icon" aria-hidden="true">${ICON.info}</span>` +
+    `<p class="scp-stp-qual-text"><strong>League rankings unavailable:</strong> minimum qualifying sample not met.` +
+    (need || has ? ` <span class="scp-stp-qual-need">${escapeHtml([need, has].filter(Boolean).join(" "))}</span>` : "") +
+    `</p></div>`
   );
 }
 
@@ -185,13 +235,17 @@ function metricCards(m: StatsPremiumModel): string {
       const ms = (col.card.all ?? col.card.metrics).filter((x) => x.value !== DASH);
       if (ms.length === 0) return "";
       const known = ms.some((x) => TIERS.some((t) => t.keys.includes(keyOf(x))));
-      const head = adv.cols.length > 1 ? `<p class="scp-stp-colhead">${escapeHtml(col.title)}${col.sub ? ` <small>${escapeHtml(col.sub)}</small>` : ""}</p>` : "";
+      const ranked = col.card.qualified;
+      const head =
+        (adv.cols.length > 1 ? `<p class="scp-stp-colhead">${escapeHtml(col.title)}${col.sub ? ` <small>${escapeHtml(col.sub)}</small>` : ""}</p>` : "") +
+        (ranked ? "" : qualifyNotice(col, m.pos));
+      const row = (x: AdvMetric, family: "eff" | "use" | "style" | "context"): string => metricRow(x, family, ranked);
       if (!known) {
         return (
           head +
           `<div class="scp-stp-cards"><div class="scp-stp-card is-wide">` +
           `<h4 class="scp-stp-card-title"><span class="scp-stp-card-icon">${ICON.bars}</span>Metrics</h4>` +
-          `<ul class="scp-stp-rows">${ms.map((x) => metricRow(x, "eff")).join("")}</ul>` +
+          `<ul class="scp-stp-rows">${ms.map((x) => row(x, "eff")).join("")}</ul>` +
           `</div></div>`
         );
       }
@@ -203,7 +257,7 @@ function metricCards(m: StatsPremiumModel): string {
       const left = eff.length
         ? `<div class="scp-stp-card is-eff">` +
           `<h4 class="scp-stp-card-title"><span class="scp-stp-card-icon">${ICON.target}</span>Efficiency</h4>` +
-          `<ul class="scp-stp-rows">${eff.map((x) => metricRow(x, "eff")).join("")}</ul>` +
+          `<ul class="scp-stp-rows">${eff.map((x) => row(x, "eff")).join("")}</ul>` +
           `</div>`
         : "";
       const right =
@@ -212,18 +266,18 @@ function metricCards(m: StatsPremiumModel): string {
             // "Usage" heads the panel; Style is its own labelled subsection below,
             // so the title never reads "Usage & Style" (the reference).
             `<h4 class="scp-stp-card-title"><span class="scp-stp-card-icon">${use.length ? ICON.bars : style.length ? ICON.route : ICON.info}</span>${use.length ? "Usage" : style.length ? "Style" : "Context"}</h4>` +
-            (use.length ? `<ul class="scp-stp-rows">${use.map((x) => metricRow(x, "use")).join("")}</ul>` : "") +
+            (use.length ? `<ul class="scp-stp-rows">${use.map((x) => row(x, "use")).join("")}</ul>` : "") +
             (style.length
               ? (use.length ? `<h5 class="scp-stp-subhead"><span class="scp-stp-card-icon">${ICON.route}</span>Style</h5>` : "") +
-                `<ul class="scp-stp-rows">${style.map((x) => metricRow(x, "style")).join("")}</ul>`
+                `<ul class="scp-stp-rows">${style.map((x) => row(x, "style")).join("")}</ul>`
               : "") +
             (ctx.length
               ? `<h5 class="scp-stp-subhead"><span class="scp-stp-card-icon">${ICON.info}</span>Context</h5>` +
-                `<ul class="scp-stp-rows">${ctx.map((x) => metricRow(x, "context")).join("")}</ul>`
+                `<ul class="scp-stp-rows">${ctx.map((x) => row(x, "context")).join("")}</ul>`
               : "") +
             `</div>`
           : "";
-      return head + `<div class="scp-stp-cards">${left}${right}</div>`;
+      return head + `<div class="scp-stp-cards${ranked ? "" : " is-unranked"}">${left}${right}</div>`;
     })
     .join("");
   return groups;
@@ -262,8 +316,12 @@ export function renderPremiumStats(data: PlayerPageData, inserts: { careerTable?
     m.name,
   );
 
-  const note = m.advanced
-    ? `<p class="scp-stp-note"><span class="scp-stp-note-icon" aria-hidden="true">${ICON.info}</span>${escapeHtml(`Ranks: ${m.advanced.notes.join(" · ")}.`)}</p>`
+  // The ranks footnote keeps the lines of the columns that ARE ranked; a
+  // column below the line already said so in its notice above the cards
+  // (notes are pushed in the columns' order, stats-tab.ts advancedModel).
+  const rankedNotes = m.advanced ? m.advanced.notes.filter((_, i) => m.advanced!.cols[i]?.card.qualified !== false) : [];
+  const note = rankedNotes.length
+    ? `<p class="scp-stp-note"><span class="scp-stp-note-icon" aria-hidden="true">${ICON.info}</span>${escapeHtml(`Ranks: ${rankedNotes.join(" · ")}.`)}</p>`
     : "";
   const seasonBody = kpiMode ? kpiCards(m) : metricCards(m) + note;
 

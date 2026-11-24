@@ -29,6 +29,7 @@ import test, { before, after, describe } from "node:test";
 import assert from "node:assert/strict";
 import http from "node:http";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { JSDOM } from "jsdom";
@@ -127,6 +128,10 @@ describe("the slate", () => {
     // bundle is imported rather than before the call.
     process.env.SC_SCHEDULE_CSV_URL = feed.url;
     process.env.SC_SCHEDULE_ESPN = "0";
+    // The live layer reads and writes a scratch directory, never the repo's
+    // data/schedule (an older run left an unused espn-layer-2024.json there,
+    // deleted 2026-11-21).
+    process.env.SC_SCHEDULE_LAYER_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "sc-layer-"));
     mod = await importModule("lib/schedule/schedule-data");
   });
 

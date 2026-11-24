@@ -53,13 +53,6 @@ const ICON_INSIGHT =
   `<path d="M10 20h4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>` +
   `</svg>`;
 
-/** The laurel on the best gap: two leaf arcs around the "#1 YPC" mark. */
-const ICON_LAUREL =
-  `<svg viewBox="0 0 48 40" width="48" height="40" aria-hidden="true" focusable="false">` +
-  `<path d="M12 6c-6 4-9 12-6 20 2 5 6 8 10 10M36 6c6 4 9 12 6 20-2 5-6 8-10 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>` +
-  `<path d="M8 12l-4 1M7 18l-4 2M8 24l-4 3M11 30l-3 4M40 12l4 1M41 18l4 2M40 24l4 3M37 30l3 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>` +
-  `</svg>`;
-
 const ICON_FOOT_YPC =
   `<svg viewBox="0 0 16 16" width="11" height="11" aria-hidden="true" focusable="false">` +
   `<path d="M2 12L7 7l3 3 4-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>` +
@@ -69,7 +62,7 @@ const ICON_FOOT_ATT =
   `<rect x="2" y="7" width="3" height="7" rx="1" fill="currentColor"/><rect x="6.5" y="4" width="3" height="10" rx="1" fill="currentColor"/><rect x="11" y="9" width="3" height="5" rx="1" fill="currentColor"/>` +
   `</svg>`;
 
-function head(id: string, icon: string, title: string, sub: string, yards = false): string {
+function head(id: string, icon: string, title: string, yards = false): string {
   // No "Preview" tag and, on the passing bar, faint yard numbers in the
   // stripes (attached_assets/usagedesign.png, 2026-11-05).
   return (
@@ -77,7 +70,7 @@ function head(id: string, icon: string, title: string, sub: string, yards = fals
     `<span class="sct-us-prm-icon" aria-hidden="true">${icon}</span>` +
     `<div class="sct-us-prm-titles">` +
     `<h3 class="sct-us-prm-title" id="${e(id)}">${e(title)}</h3>` +
-    `<p class="sct-us-prm-sub">${e(sub)}</p>` +
+    // No explainer under the title since 2026-11-21 (mak: the phone version everywhere).
     `</div>` +
     `<span class="sct-us-prm-stripes${yards ? " is-yards" : ""}" aria-hidden="true">${yards ? `<i>10</i><i>20</i><i>30</i>` : ""}</span>` +
     `</header>`
@@ -104,14 +97,6 @@ function insight(html: string, icon: string = ICON_INSIGHT): string {
   );
 }
 
-/** "#2": the 1-based place of a value among the others, descending. */
-function rankOf(values: Array<number | null>, mine: number | null): number | null {
-  if (mine == null) return null;
-  const sorted = values.filter((v): v is number => v != null).sort((a, b) => b - a);
-  const i = sorted.findIndex((v) => v <= mine);
-  return i === -1 ? sorted.length : i + 1;
-}
-
 /* ------------------------------------------------- A. rushing direction */
 
 export function premiumRunDirection(view: UsageView): string {
@@ -120,23 +105,20 @@ export function premiumRunDirection(view: UsageView): string {
   if (total < 10) return "";
   const best = bestGap(view);
   const most = Math.max(1, ...GAPS.map((g) => runs[g].att));
-  const ypcs = GAPS.map((g) => runs[g].ypc);
 
   const cards = GAPS.map((g) => {
     const r = runs[g];
     const share = Math.round((100 * r.att) / total);
-    const rank = rankOf(ypcs, r.ypc);
     const isBest = g === best;
     return (
       `<li class="sct-us-prm-card sct-us-prm-gap${isBest ? " is-best" : ""}" data-gap="${g}">` +
       `<div class="sct-us-prm-card-top">` +
       `<span class="sct-us-prm-pill">${e(GAP_LABEL[g])}</span>` +
       `</div>` +
-      // The mockup's card: the big YPC, "24 att · 12%" under it, the best
-      // gap's laurel "#1 YPC" at the number's right; no "#N" on the others.
-      `<div class="sct-us-prm-big"><span class="sct-us-num">${e(r.ypc != null ? r.ypc.toFixed(1) : "–")}</span>` +
-      (isBest && rank ? `<span class="sct-us-prm-laurel" title="Most efficient gap with at least 8% of the attempts">${ICON_LAUREL}<b>${e(`#${rank}`)}</b><i>YPC</i></span>` : "") +
-      `</div>` +
+      // The big YPC, "24 att · 12%" under it. The "#1 YPC" laurel came off
+      // 2026-11-21 (mak: the phone version everywhere); the gold card marks
+      // the best gap.
+      `<div class="sct-us-prm-big"><span class="sct-us-num">${e(r.ypc != null ? r.ypc.toFixed(1) : "–")}</span></div>` +
       `<p class="sct-us-prm-line">${e(`${r.att} att · ${share}%`)}</p>` +
       `<span class="sct-us-prm-bar" role="img" aria-label="${e(`${share}% of designed runs`)}"><span class="sct-us-prm-bar-track"><span style="width:${Math.round((100 * r.att) / most)}%"></span></span><b>${e(`${share}%`)}</b></span>` +
       `<div class="sct-us-prm-meta">` +
@@ -155,7 +137,6 @@ export function premiumRunDirection(view: UsageView): string {
       "prm-run-h",
       ICON_RUN,
       "Rushing Direction",
-      `Yards per carry and attempts by gap, designed runs only, through Week ${view.throughWeek}. "Middle" includes runs behind either guard. The bar is each gap's share of the ${total} attempts; the gold card is the most efficient gap with at least 8% of them.`,
     ) +
     `<div class="sct-us-prm-body">` +
     `<ul class="sct-us-prm-gaps">${cards}</ul>` +
@@ -246,17 +227,10 @@ export function premiumPassMap(view: UsageView): string {
   };
 
   const notes = passNote(view, qbName);
-  const mapped = view.team.passerZoneAttempts ?? all;
-  const attempts = qb?.passAttempts ?? null;
-  const coverage =
-    attempts != null && attempts > mapped
-      ? `${mapped} of ${qbName}'s ${attempts} pass attempts carry a charted location and depth; ${attempts - mapped} ${attempts - mapped === 1 ? "does" : "do"} not and ${attempts - mapped === 1 ? "is" : "are"} not mapped.`
-      : `All ${mapped} of ${qbName}'s pass attempts carry a charted location and depth. Attempts are as charted in the play-by-play; spikes and plays wiped out by penalty are not counted.`;
-
   return (
     // id="passing": the section's anchor, carried over from the retired card (2026-11-05).
     `<section class="sct-us-prm sct-us-prm-pass" id="passing" aria-labelledby="prm-pass-h" data-sct-premium="passing">` +
-    head("prm-pass-h", ICON_PASS, "Passing Distribution", `Share of ${qbName}'s ${mapped} pass attempts and yards per attempt by field zone through Week ${view.throughWeek}.`, true) +
+    head("prm-pass-h", ICON_PASS, "Passing Distribution", true) +
     `<div class="sct-us-prm-body">` +
     `<div class="sct-us-prm-board">` +
     `<div class="sct-us-prm-rail" aria-hidden="true">` +
@@ -270,7 +244,7 @@ export function premiumPassMap(view: UsageView): string {
     `</div>` +
     `</div>` +
     notes.map((n) => insight(md(n), ICON_TARGET)).join("") +
-    `<p class="sct-us-prm-fine">${e(coverage)}</p>` +
+    // The coverage fine print came off 2026-11-21 (mak: the phone version everywhere).
     `</div>` +
     `</section>`
   );

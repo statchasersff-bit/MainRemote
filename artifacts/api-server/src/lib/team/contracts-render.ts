@@ -162,7 +162,10 @@ export function signedCell(p: ContractLine): string {
   const last = p.finalYear ?? (p.years ? p.yearSigned + p.years - 1 : null);
   const span = last !== null && last !== p.yearSigned ? `${p.yearSigned}-${last}` : String(p.yearSigned);
   const years = p.years ? `${p.years} ${p.years === 1 ? "year" : "years"}` : "";
-  return years ? `<abbr title="${e(years)}">${e(span)}</abbr>` : e(span);
+  // A break opportunity after the hyphen: where the sheet is squeezed (the
+  // middle widths, team.css) "2025-2028" wraps to two lines, not sideways.
+  const html = e(span).replace("-", "-<wbr>");
+  return years ? `<abbr title="${e(years)}">${html}</abbr>` : html;
 }
 
 /** Rows shown before "Show all": the top of the cap sheet (mak, 2026-10-23). */

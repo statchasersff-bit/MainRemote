@@ -157,6 +157,11 @@ describe("the depth-chart document", () => {
 
   test("every club has offense, defense and special teams slots", () => {
     assert.equal(doc.teams.length, 32);
+    // ESPN can leave a club's kicker spot empty between signings (Miami on
+    // 2026-11-18 and still on 11-21: P and LS listed, no PK). The snapshot
+    // copies the source, so a missing PK is allowed for a club or two; more
+    // than that is a broken fetch.
+    const noKicker = [];
     for (const team of doc.teams) {
       const sides = new Set((team.slots ?? []).map((s) => s.side));
       assert.deepEqual([...sides].sort(), ["defense", "offense", "specialTeams"], team.team.abbr);
@@ -166,8 +171,10 @@ describe("the depth-chart document", () => {
       }
       assert.ok(offense.filter((s) => s === "WR").length >= 2, `${team.team.abbr}: WR slots collapsed`);
       const special = team.slots.filter((s) => s.side === "specialTeams").map((s) => s.slot);
-      for (const pos of ["PK", "P", "LS"]) assert.ok(special.includes(pos), `${team.team.abbr}: no ${pos} slot`);
+      for (const pos of ["P", "LS"]) assert.ok(special.includes(pos), `${team.team.abbr}: no ${pos} slot`);
+      if (!special.includes("PK")) noKicker.push(team.team.abbr);
     }
+    assert.ok(noKicker.length <= 2, `no PK slot for ${noKicker.join(", ")}`);
   });
 
   test("ranks are contiguous and no slot or column lists a name twice", () => {

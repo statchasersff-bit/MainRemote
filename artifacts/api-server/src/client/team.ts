@@ -74,6 +74,22 @@ function prefetchOnIntent(link: HTMLAnchorElement): void {
  * user than the plain list of links the server sends, which behaves exactly as
  * announced.
  */
+/**
+ * Where the strip scrolls sideways (phones, narrow columns), center the
+ * current tab in it on load, so Schedule or Depth Chart does not open with
+ * its own tab off the right edge (mak, 2026-11-21: phones wear the desktop
+ * strip, whose pills are wider). Only the strip scrolls, never the page.
+ */
+function revealActiveTab(list: HTMLElement | null): void {
+  if (!list || list.scrollWidth <= list.clientWidth) return;
+  const active = list.querySelector<HTMLElement>(".sct-nav-link.is-active");
+  if (!active) return;
+  const box = list.getBoundingClientRect();
+  const r = active.getBoundingClientRect();
+  if (r.left >= box.left && r.right <= box.right) return;
+  list.scrollLeft += r.left - box.left - (box.width - r.width) / 2;
+}
+
 function wireTabs(root: HTMLElement): void {
   const nav = root.querySelector<HTMLElement>("[data-sct-nav]");
   if (!nav) return;
@@ -83,6 +99,8 @@ function wireTabs(root: HTMLElement): void {
     nav.querySelectorAll<HTMLAnchorElement>(".sct-nav-link"),
   );
   if (links.length === 0) return;
+  revealActiveTab(list);
+  void document.fonts?.ready.then(() => revealActiveTab(list));
 
   const tabs: Array<{ id: string; link: HTMLAnchorElement; panel: HTMLElement }> =
     [];
@@ -778,6 +796,45 @@ function fitSnapNames(root: HTMLElement): void {
   for (const body of Array.from(root.querySelectorAll<HTMLElement>(".sct-up-snaps tbody"))) {
     new MutationObserver(schedule).observe(body, { childList: true });
   }
+}
+
+/**
+ * A copied short name keeps its period (WEB-044 review, 2026-11-24).
+ *
+ * The Usage tables print each name once ("Jared Goff", name-forms.ts) and
+ * team.css paints the short form from it: the rest of the first name hidden
+ * and the "." drawn with ::after. Generated content is not copied, so a
+ * selection of the painted "J. Goff" would paste as "J Goff". On copy, each
+ * painted short name inside the selection gets its "." back in the plain
+ * text; nothing else in the copied text changes, and the page text (what a
+ * crawler or a screen reader reads) stays the plain full name.
+ */
+function wireNameCopy(root: HTMLElement): void {
+  root.addEventListener("copy", (event: ClipboardEvent) => {
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0 || !event.clipboardData) return;
+    const range = selection.getRangeAt(0);
+    const painted = Array.from(root.querySelectorAll<HTMLElement>(".sct-up-name")).filter((n) => {
+      if (!range.intersectsNode(n)) return false;
+      const rest = n.querySelector<HTMLElement>(".sct-nm-r");
+      return !!rest && getComputedStyle(rest).display === "none";
+    });
+    if (painted.length === 0) return;
+    let text = selection.toString();
+    let from = 0;
+    for (const n of painted) {
+      const initial = n.querySelector(".sct-nm-i")?.textContent ?? "";
+      const last = n.querySelector(".sct-nm-last")?.textContent ?? "";
+      if (!initial || !last) continue;
+      const shown = `${initial} ${last}`;
+      const at = text.indexOf(shown, from);
+      if (at < 0) continue;
+      text = `${text.slice(0, at)}${initial}. ${last}${text.slice(at + shown.length)}`;
+      from = at + shown.length + 1;
+    }
+    event.clipboardData.setData("text/plain", text);
+    event.preventDefault();
+  });
 }
 
 /**
@@ -2035,6 +2092,7 @@ function boot(): void {
     wireUsageProfiles(root);
     wireSnapTables(root);
     fitSnapNames(root);
+    wireNameCopy(root);
     fitDraftNames(root);
     wireDepthViews(root);
     wireCutScenario(root);

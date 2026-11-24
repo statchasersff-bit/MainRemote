@@ -872,9 +872,9 @@ describe("embedded mode", () => {
       assert.equal(doc.getElementById("resources"), null, `${path}: block rendered`);
       assert.equal(doc.querySelectorAll(".sct-resource-link").length, 0, `${path}: cards rendered`);
     }
-    // The /usage/ page keeps its own conversion block.
+    // The /usage/ page's own close cards went too (mak, 2026-11-21).
     const usage = await dom("/team/new-england-patriots/usage/");
-    assert.ok(usage.doc.querySelector(".sct-us-convert"));
+    assert.equal(usage.doc.querySelector(".sct-us-convert"), null);
   });
 });
 
@@ -1488,13 +1488,17 @@ describe("shortcode preview harness", () => {
    * <link> or executable <script>, WordPress would enqueue the assets a second
    * time and the harness above would stop representing what the plugin does.
    *
-   * Two inert payloads are allowed through, neither of which carries code:
+   * Three kinds of inert payload are allowed through, neither of which carries code:
    *
    *   an FAQ's questions - `scp-faq-data` on the player mount, `sct-faq-data`
    *   on the team hub, `scf-faq-data` on the FPA table - which the plugin that
    *   owns that mount lifts into Rank Math's graph and strips before any of the
    *   markup is printed, so it never reaches the rendered page at all - and on
    *   the same terms, the team Schedule page's games, `sct-schedule-data`;
+   *
+   *   a page's title, description and image - `scp-page-data` on the player
+   *   mount (player-ssr.ts), `scf-page-data` on the FPA table - which the
+   *   plugin reads for the head and Rank Math, and which is JSON, not code;
    *
    *   the player search's roster, `data-scp-roster`, which does reach the page
    *   and is meant to: it is the list the search above the header filters, and
@@ -1509,6 +1513,7 @@ describe("shortcode preview harness", () => {
       /<script type="application\/json" class="sc[fpt]-faq-data">.*?<\/script>/gs,
       /<script type="application\/json" class="sct-schedule-data">.*?<\/script>/gs,
       /<script type="application\/json" data-scp-roster>.*?<\/script>/gs,
+      /<script type="application\/json" class="sc[fp]-page-data">.*?<\/script>/gs,
     ];
 
     for (const route of [
@@ -2903,23 +2908,23 @@ describe("draft tab", () => {
       assert.equal(row.querySelectorAll(".sct-drp-dot.is-own, .sct-drp-dot.is-from").length, inRound, `Round ${i + 1}: a marker per pick held`);
       assert.equal(row.querySelectorAll(".sct-drp-dot.is-sent").length, picks.teams.ne.sent.filter((h) => h.round === i + 1).length, `Round ${i + 1}: a marker per pick sent`);
     }
-    const strip = [...premium.querySelectorAll(".sct-drp-card.is-capital .sct-drp-strip .sct-drp-num")].map((n) => n.textContent);
-    assert.deepEqual(strip, [String(held), String(picks.teams.ne.holds.filter((h) => h.from).length), String(picks.teams.ne.sent.length)]);
+    // The count sits in the head row at every width since 2026-11-21 (mak:
+    // the phone version); no strip, kicker or footnote under it.
+    assert.equal(premium.querySelector(".sct-drp-card.is-capital .sct-drp-head-sum").textContent, `${held} ${held === 1 ? "pick" : "picks"}`);
+    assert.equal(premium.querySelector(".sct-drp-card.is-capital :is(.sct-drp-strip, .sct-drp-kicker, .sct-drp-foot)"), null);
     assert.ok(premium.querySelector(".sct-drp-ledger .sct-drp-dot.is-own"), "an own pick is a filled dot");
     assert.ok([...premium.querySelectorAll(".sct-drp-ledger .sct-drp-dot-club")].some((c) => c.querySelector("img.sct-drp-dot-crest")), "a club mark beside a moved pick");
     assert.equal(premium.querySelectorAll(".sct-drp-legend > span").length, 3, "a three-item legend");
-    assert.ok(premium.querySelector(".sct-drp-card.is-capital .sct-drp-kicker")?.textContent?.length, "a kicker line");
-    assert.match(premium.querySelector(".sct-drp-card.is-capital .sct-drp-foot").textContent, /^Compensatory picks are awarded in March/);
 
-    // Last 5 Drafts: the strip, the takeaway, the bars with the count leading
+    // Last 5 Drafts: the count in the head row, the bars with the count leading
     // and a gold dot on a group that drew a Round 1 pick; then the Round 1 list.
     const history = JSON.parse(
       fs.readFileSync(path.join(APP_DIR, "data", "team", "draft_history.json"), "utf8"),
     );
     const window5 = history.teams.ne.filter((p) => p.season > history.latestSeason - 5);
     const hist = premium.querySelector(".sct-drp-card.is-history");
-    assert.equal(hist.querySelector(".sct-drp-strip .sct-drp-num").textContent, String(window5.length));
-    assert.match(hist.querySelector(".sct-drp-takeaway").textContent, /^\d+% of picks spent on /);
+    assert.match(hist.querySelector(".sct-drp-head-sum").textContent, new RegExp(`^${window5.length} picks · \\d+ in Round 1$`));
+    assert.equal(hist.querySelector(":is(.sct-drp-strip, .sct-drp-takeaway, .sct-drp-shares-title)"), null);
     const shares = [...hist.querySelectorAll(".sct-drp-share")];
     assert.equal(shares.reduce((n, li) => n + Number(li.querySelector(".sct-drp-share-n").textContent), 0), window5.length, "the bars sum to the window");
     assert.ok(shares[0].querySelector(".sct-drp-r1dot"), "the biggest group drew a Round 1 pick");
@@ -2934,7 +2939,7 @@ describe("draft tab", () => {
     const seasons = [...premium.querySelectorAll(".sct-drp-year .sct-drp-h3")].map((h) => h.textContent);
     assert.equal(seasons.length, 5, "five draft classes");
     assert.deepEqual(seasons, [...seasons].sort().reverse(), "newest first");
-    assert.match(premium.querySelector(".sct-drp-year-sum").textContent, /^\d+ picks · \d+ in Round 1$/);
+    assert.match(premium.querySelector(".sct-drp-year-sum").textContent, /^\d+ picks?$/);
     const latest = history.teams.ne.filter((p) => p.season === history.latestSeason);
     const firstTable = premium.querySelector(".sct-drp-table tbody");
     assert.equal(firstTable.querySelectorAll("tr").length, latest.length, "every pick of the latest draft");
@@ -3006,7 +3011,9 @@ describe("draft tab", () => {
       if (!entry) continue;
       if (entry.left) {
         assert.equal(cell.querySelector(".sct-drp-badge").getAttribute("data-status"), entry.left.kind, `${p.name} shows how they left`);
-        if (entry.now.kind !== "none" && entry.left.kind !== "retired") assert.match(cell.querySelector(".sct-drp-status-sub")?.textContent ?? "", /^now /, `${p.name} says where they are now`);
+        // The short wording at every width since 2026-11-21 (mak): "with
+        // ATL", "free agent", not "now on ATL practice squad".
+        if (entry.now.kind !== "none" && entry.left.kind !== "retired") assert.match(cell.querySelector(".sct-drp-status-sub")?.textContent ?? "", /^(with [A-Z]{2,4}|free agent|retired|IR|PS)\b/, `${p.name} says where they are now`);
       } else {
         assert.equal(cell.querySelector(".sct-drp-badge").getAttribute("data-status"), entry.now.kind, `${p.name} shows their standing`);
       }
@@ -3014,6 +3021,13 @@ describe("draft tab", () => {
       assert.ok(!row.classList.contains("is-gone"), `${p.name} reads like every other row`);
     }
     assert.equal(premium.querySelector(".sct-drp-main .sct-drp-foot"), null, "no footnote under the tables");
+    // A player now with another club reads "Left", never "Active" over
+    // "with MIA" (mak, 2026-11-21).
+    for (const c of statusCells) {
+      if (/^with [A-Z]{2,4}$/.test(c.querySelector(".sct-drp-status-sub")?.textContent ?? "")) {
+        assert.notEqual(c.querySelector(".sct-drp-badge")?.textContent, "Active", c.textContent);
+      }
+    }
 
     // No outside source is named in the page.
     assert.doesNotMatch(panel.innerHTML, /nflverse|tankathon|pro-football-reference|espn/i);
@@ -3182,7 +3196,7 @@ describe("the team pages on phones, compact pass (mak's brief, 2026-11-14)", () 
     }
   });
 
-  test("the stylesheet's compact pass: theme gap, header grid, 44px tabs, phones only", async () => {
+  test("the stylesheet's compact pass: theme gap, header grid, phones only", async () => {
     const css = (await get("/team.css")).body;
     const at = css.indexOf("PHONES, compact pass");
     assert.ok(at > 0, "the block is there");
@@ -3190,7 +3204,9 @@ describe("the team pages on phones, compact pass (mak's brief, 2026-11-14)", () 
     assert.match(block, /@media \(max-width: 560px\) \{\s*#main-content \.container:has\(\.sct-tpb\) \{\s*padding-top: 0 !important;/, "the theme's 58px goes, only over the team header");
     assert.match(block, /"badge identity actions"/, "crest, name and switcher share one row");
     assert.match(block, /\.sct-tpb-season \{\s*display: none !important;/, "no season bar");
-    assert.match(block, /\.sct-nav-link\.is-active:hover \{\s*min-height: 44px !important;/, "44px tabs");
+    // The phones' own 44px underline strip was deleted (mak, 2026-11-21):
+    // phones wear the desktop tab strip, so no phone block restyles the links.
+    assert.doesNotMatch(block, /\.sct-nav-link\.is-active:hover \{\s*min-height: 44px !important;/, "no phone-only tab strip");
     assert.match(block, /\.sct-tfo-stamp \{\s*display: none !important;/, "no stamp on phones (mak, 2026-11-14)");
   });
 });
