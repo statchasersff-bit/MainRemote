@@ -1,6 +1,6 @@
 <?php
 /**
- * WEB-021: page identity on the schedule and SOS routes - share image,
+ * WEB-021: page identity on the schedule, SOS and player stats routes - share image,
  * canonical, title and the schema graph, checked together per route. The team
  * directory, hubs and tabs joined as the 'team' family in the team audit
  * (2026-11-24).
@@ -36,9 +36,15 @@ if ( ! function_exists( 'statchasers_page_identity_family' ) ) {
 const SC_PID_SCHED_TITLE = '2026 NFL Schedule – Weekly Games, Teams & Matchups';
 const SC_PID_SOS_TITLE   = '2026 Fantasy Football Strength of Schedule (SOS) Rankings';
 const SC_PID_HOME        = 'https://example.com';
+const SC_PID_STATS_NAMES = array(
+	'hub' => 'Player',
+	'rb'  => 'Running Back',
+	'wr'  => 'Wide Receiver',
+	'te'  => 'Tight End',
+);
 
 if ( 'pageids' === $group ) {
-	echo "\npage identity on the schedule and SOS routes (WEB-021)\n";
+	echo "\npage identity on the schedule, SOS and player stats routes (WEB-021)\n";
 
 	$routes = array( 'sched:hub' );
 	for ( $w = 1; $w <= STATCHASERS_SCHEDULE_WEEKS; $w++ ) {
@@ -59,7 +65,8 @@ if ( 'pageids' === $group ) {
 			},
 			array( 'usage', 'coaching', 'stats', 'schedule', 'depth-chart', 'matchups', 'news' )
 		),
-		array( 'team:washington-commanders/schedule', 'team:not-a-team' )
+		array( 'team:washington-commanders/schedule', 'team:not-a-team' ),
+		array( 'stats:hub', 'stats:rb', 'stats:wr', 'stats:te', 'stats:qb' )
 	);
 
 	foreach ( $routes as $route ) {
@@ -281,6 +288,52 @@ if ( 'sched' === $family ) {
 		$GLOBALS['hooks']['rank_math/opengraph/facebook/add_images'][] = $featured;
 		$GLOBALS['hooks']['rank_math/opengraph/twitter/add_images'][]  = $featured;
 	}
+} elseif ( 'stats' === $family ) {
+	// Page 1736 on the live site. The bare page is the quarterbacks; /rb/,
+	// /wr/ and /te/ are the rewrite's sc_stats_pos on the same post, and /qb/
+	// is the 301 to the bare page.
+	$post->ID           = 1736;
+	$post->post_title   = 'NFL Player Stats';
+	$post->post_content = '[statchasers_player_stats]';
+	$base_canonical     = SC_PID_HOME . '/nfl/nfl-player-stats/';
+	$crumbs             = array( array( 'Home', SC_PID_HOME ), array( 'NFL', SC_PID_HOME . '/nfl/' ), array( 'NFL Player Stats', $base_canonical ) );
+	if ( 'hub' !== $which ) {
+		$GLOBALS['query']['sc_stats_pos'] = $which;
+	}
+	$stats_name = SC_PID_STATS_NAMES[ $which ] ?? 'Player';
+	$copy       = array(
+		'title'       => "2026 NFL $stats_name Stats & Fantasy Football Stats",
+		'h1'          => "2026 NFL $stats_name Stats & Fantasy Football Stats",
+		'description' => "2026 NFL $stats_name stats.",
+		'lead'        => 'Compare players.',
+	);
+	$faq = array();
+	for ( $i = 1; $i <= 3; $i++ ) {
+		$faq[] = array( 'q' => "Stats question $i?", 'a' => "Answer $i." );
+	}
+	$GLOBALS['http_body'] = '<div class="sca"><div class="sca-intro"><p>intro</p></div><p>table</p>' .
+		'<script type="application/json" class="sca-faq-data">' . json_encode( $faq ) . '</script>' .
+		'<script type="application/json" class="sca-page-data">' . json_encode( $copy ) . '</script></div>';
+	if ( 'qb' === $which ) {
+		// /qb/ exits inside template_redirect (the 301). Reaching the head
+		// would mean it rendered; the checks run as the process ends.
+		register_shutdown_function(
+			static function () {
+				global $fail;
+				if ( ! empty( $GLOBALS['sc_pid_head_reached'] ) ) {
+					return;
+				}
+				is( true, true, 'stats:qb: /qb/ ends in template_redirect (the 301), no head of its own' );
+				is( statchasers_page_identity_family(), '', 'stats:qb: not a route of its own' );
+				is( apply_filters( 'rank_math/schema/add_global_entities', false ), false, 'stats:qb: the plugin does not opt it in' );
+				is( count( rank_math_images( 'facebook' ) ) + count( rank_math_images( 'twitter' ) ), 0, 'stats:qb: no share image' );
+				echo "\n" . ( $fail ? "$fail FAILED\n" : "all passed\n" );
+				if ( $fail ) {
+					exit( 1 );
+				}
+			}
+		);
+	}
 } else {
 	// An ordinary article carrying the tools' query words.
 	$post->ID           = 92;
@@ -288,7 +341,7 @@ if ( 'sched' === $family ) {
 	$post->post_content = '<p>Pick up these players.</p>';
 	$base_canonical     = SC_PID_HOME . '/waiver-wire-week-5/';
 	$crumbs             = array( array( 'Home', SC_PID_HOME ), array( 'Waiver Wire Week 5', $base_canonical ) );
-	$GLOBALS['query']   = array( 'sc_sched_week' => '12', 'sc_sos_page' => 'rb' );
+	$GLOBALS['query']   = array( 'sc_sched_week' => '12', 'sc_sos_page' => 'rb', 'sc_stats_pos' => 'wr' );
 	$_GET               = array( 'tab' => 'player', 'scoring' => 'std' );
 }
 
@@ -316,6 +369,11 @@ $label = $route;
 
 if ( 'team' === $family && isset( $GLOBALS['page_post_for_title'] ) ) {
 	$crumbs[] = array( apply_filters( 'the_title', $post->post_title, $post->ID ), $base_canonical );
+}
+if ( 'stats' === $family && 'qb' === $which ) {
+	$GLOBALS['sc_pid_head_reached'] = true;
+	is( 'rendered', 'a 301', "$label: /qb/ reached the head instead of redirecting" );
+	return;
 }
 
 // The head, through Rank Math's filters.
@@ -361,7 +419,8 @@ $typed = static function ( string $type ) use ( $nodes ): array {
 /* --- the 404 and the article: nothing of this --- */
 
 if ( 'article' === $family ) {
-	is( statchasers_page_identity_family(), '', "$label: not a schedule or SOS route" );
+	is( statchasers_page_identity_family(), '', "$label: not a schedule, SOS or stats route" );
+	is( statchasers_player_stats_canonical(), '', "$label: sc_stats_pos does not opt it in" );
 	is( apply_filters( 'rank_math/schema/add_global_entities', false ), false, "$label: Rank Math's answer for it passes through" );
 	is( count( $fb ) + count( $tw ), 0, "$label: no share image added" );
 	is( $canonical, $base_canonical, "$label: canonical untouched" );
@@ -477,10 +536,15 @@ if ( 'sched' === $family ) {
 	$want_canonical = 'hub' === $which ? $base_canonical : SC_PID_HOME . "/nfl/nfl-schedule/week-$which/";
 	$want_title     = 'hub' === $which ? '2026 NFL Schedule | StatChasers' : "NFL Week $which Schedule 2026 | StatChasers";
 	$want_faq       = $faq_count;
-} else {
+} elseif ( 'sos' === $family ) {
 	$want_canonical = 'hub' === $which ? $base_canonical : SC_PID_HOME . "/nfl/fantasy-football-strength-of-schedule/$which/";
 	$want_title     = $copy['title'];
 	$want_faq       = 0;
+} else {
+	$want_canonical = 'hub' === $which ? $base_canonical : SC_PID_HOME . "/nfl/nfl-player-stats/$which/";
+	$want_title     = $copy['title'] . ' | StatChasers';
+	$want_faq       = 3;
+	is( statchasers_page_identity_family(), 'stats', "$label: a player stats route" );
 }
 $want_id = $want_canonical . '#webpage';
 
@@ -517,6 +581,11 @@ is( $bcs[0]['@id'] ?? '', $want_canonical . '#breadcrumb', "$label: breadcrumb @
 $last = end( $bcs[0]['itemListElement'] );
 is( $last['item']['@id'] ?? '', $want_canonical, "$label: the trail ends at the route" );
 is( count( $bcs[0]['itemListElement'] ), 'hub' === $which ? 3 : 4, "$label: the trail keeps Home, NFL and the page" );
+if ( 'stats' === $family && 'hub' !== $which ) {
+	$want_crumb = 'NFL ' . SC_PID_STATS_NAMES[ $which ] . ' Stats';
+	is( $last['item']['name'] ?? '', $want_crumb, "$label: the last crumb is \"$want_crumb\"" );
+	is( $bcs[0]['itemListElement'][2]['item']['@id'] ?? '', $base_canonical, "$label: after the bare page" );
+}
 is( $page['primaryImageOfPage']['@id'] ?? '', STATCHASERS_PAGE_IDENTITY_IMAGE['url'], "$label: primaryImageOfPage is the share image" );
 is( isset( $by_id[ STATCHASERS_PAGE_IDENTITY_IMAGE['url'] ] ), true, "$label: and that ImageObject is in the graph" );
 

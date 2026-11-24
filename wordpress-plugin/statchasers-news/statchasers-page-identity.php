@@ -1,6 +1,7 @@
 <?php
 /**
- * Page identity for the NFL schedule and strength of schedule pages (WEB-021).
+ * Page identity for the NFL schedule, strength of schedule and player stats
+ * pages (WEB-021).
  *
  * ## What was missing, and why
  *
@@ -43,7 +44,7 @@
  *   the way a schedule week is.
  *
  * Titles, descriptions, canonicals and og:url are not touched here: WEB-022
- * and the two tool files own those. A route that is a 404 (/week-99/) gets
+ * and the tool files own those. A route that is a 404 (/week-99/) gets
  * none of this.
  *
  * ## The team pages (team audit, 2026-11-24)
@@ -68,6 +69,17 @@
  * crumb is the team's name on every team route
  * (statchasers_team_identity_breadcrumbs).
  *
+ * The player stats leaderboards (2026-11-24) are another family on the same
+ * terms: the bare page (/nfl/nfl-player-stats/, the quarterbacks) and /rb/,
+ * /wr/ and /te/, which the rewrite resolves to that same page. Rank Math's
+ * WebPage takes its @id, url and name from the canonical and title it settled
+ * on, and statchasers-player-stats.php already filters both per position (the
+ * same way the schedule's weeks and SOS sub-pages get their own WebPage, live
+ * since 1.10.63), so each position is its own WebPage. Its FAQPage folds into
+ * that node like the schedule's. A position's breadcrumb ended at the bare
+ * page, so the position is appended as the last crumb, as an SOS sub-page is.
+ * /qb/ is a 301 to the bare page before anything prints and is not a route.
+ *
  * @package StatChasers\News
  */
 
@@ -77,9 +89,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /**
  * The share image for every family: the StatChasers brand card. There is no
- * schedule, SOS or team graphic in the media library; this one names the site
- * and what it does, which is true of all of them. A team hub with a featured
- * image (its crest) keeps it: this is only ever the fallback. Real pixels (checked 2026-11-24:
+ * schedule, SOS, team or player stats graphic in the media library; this one
+ * names the site and what it does, which is true of all of them. A team hub
+ * with a featured image (its crest) keeps it: this is only ever the fallback. Real pixels (checked 2026-11-24:
  * 200, image/png, 1200 x 630).
  */
 const STATCHASERS_PAGE_IDENTITY_IMAGE = array(
@@ -91,7 +103,7 @@ const STATCHASERS_PAGE_IDENTITY_IMAGE = array(
 );
 
 /**
- * Which family this request is a valid route of: 'schedule', 'sos', 'team'
+ * Which family this request is a valid route of: 'schedule', 'sos', 'stats', 'team'
  * or ''.
  *
  * Valid means the page that mounts the tool, rendered as a page: a week the
@@ -112,6 +124,11 @@ function statchasers_page_identity_family(): string {
 	}
 	if ( function_exists( 'statchasers_sos_post_has_shortcode' ) && statchasers_sos_post_has_shortcode() ) {
 		return 'sos';
+	}
+	if ( function_exists( 'statchasers_player_stats_post_has_shortcode' ) && statchasers_player_stats_post_has_shortcode() ) {
+		// /qb/ redirects to the bare page on template_redirect; it never
+		// renders, so it is not a route of its own.
+		return 'qb' === strtolower( trim( (string) get_query_var( 'sc_stats_pos' ) ) ) ? '' : 'stats';
 	}
 	if ( statchasers_page_identity_is_team() ) {
 		return 'team';
@@ -152,11 +169,11 @@ function statchasers_page_identity_image(): ?array {
 		return null;
 	}
 	/**
-	 * Filters the share image of a schedule, SOS or team route. Return null
-	 * for none.
+	 * Filters the share image of a schedule, SOS, team or player stats route.
+	 * Return null for none.
 	 *
 	 * @param array  $image  url, width, height, alt, type.
-	 * @param string $family 'schedule', 'sos' or 'team'.
+	 * @param string $family 'schedule', 'sos', 'team' or 'stats'.
 	 */
 	$image = apply_filters( 'statchasers_page_identity_image', STATCHASERS_PAGE_IDENTITY_IMAGE, $family );
 	if ( ! is_array( $image ) || empty( $image['url'] ) || 0 !== strpos( (string) $image['url'], 'https://' ) ) {
@@ -304,3 +321,34 @@ function statchasers_team_identity_breadcrumbs( $crumbs ) {
 	return $crumbs;
 }
 add_filter( 'rank_math/frontend/breadcrumb/items', 'statchasers_team_identity_breadcrumbs', 15 );
+
+/**
+ * A player stats position as the last breadcrumb, at its own address.
+ *
+ * /rb/, /wr/ and /te/ resolve to the bare page, so Rank Math's trail ended at
+ * "NFL Player Stats" while the page's canonical and title said wide receivers.
+ * Same fix as statchasers_sos_breadcrumbs(), scoped by
+ * statchasers_player_stats_request_position(): the stats page only, a
+ * position address only. The bare page keeps its trail as it is. The crumb is
+ * the short "NFL Wide Receiver Stats", the same shape as its parent crumb,
+ * rather than the season-dated H1.
+ *
+ * @param array<int,array<int|string,mixed>> $crumbs Rank Math's crumbs.
+ * @return array<int,array<int|string,mixed>>
+ */
+function statchasers_player_stats_breadcrumbs( $crumbs ) {
+	if ( ! is_array( $crumbs ) || is_404() || ! function_exists( 'statchasers_player_stats_request_position' ) ) {
+		return $crumbs;
+	}
+	$pos = statchasers_player_stats_request_position();
+	if ( '' === $pos || ! isset( STATCHASERS_PLAYER_STATS_NAMES[ $pos ] ) ) {
+		return $crumbs;
+	}
+	$crumbs[] = array(
+		sprintf( 'NFL %s Stats', STATCHASERS_PLAYER_STATS_NAMES[ $pos ] ),
+		statchasers_player_stats_position_url( $pos ),
+		'hide_in_schema' => false,
+	);
+	return $crumbs;
+}
+add_filter( 'rank_math/frontend/breadcrumb/items', 'statchasers_player_stats_breadcrumbs', 20 );
