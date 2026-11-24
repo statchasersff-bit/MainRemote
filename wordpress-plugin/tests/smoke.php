@@ -716,7 +716,7 @@ $sc_holder->post_content  = '[statchasers_matchup]';
 $GLOBALS['pages_by_path'] = array_merge( $GLOBALS['pages_by_path'] ?? array(), array( STATCHASERS_MATCHUP_HOLDER => $sc_holder ) );
 $GLOBALS['page']['post']  = $sc_holder;
 $GLOBALS['query']['sc_matchup'] = 'new-england-patriots-vs-philadelphia-eagles';
-is( statchasers_matchup_heading(), 'New England Patriots vs Philadelphia Eagles Head-to-Head Series', 'pair: the series page (WEB-001)' );
+is( statchasers_matchup_heading(), 'New England Patriots vs Philadelphia Eagles Head-to-Head History', 'pair: the series page (WEB-001), no game stats to name without the API' );
 
 echo "\nmatchup recap: description, share image and video from the API\n";
 $GLOBALS['query']['sc_matchup']      = 'arizona-cardinals-vs-los-angeles-rams';
@@ -1892,17 +1892,23 @@ is(
 	'head-to-head: nicknames when the full names leave no room'
 );
 // WEB-001 (2026-11-24): the pair's address is the series page in every
-// postgame state; a week header (from an API before WEB-001) no longer
-// retitles it with a game. The game's player-stats title is the dated page's.
+// postgame state. mak 2026-11-24: while it prints its latest game's player
+// stats (X-Matchup-Week set) it keeps "Player Stats" and adds "Head-to-Head
+// History"; without a week header it is the head-to-head wording alone.
 is(
 	statchasers_matchup_meta( 'cleveland-browns', 'tampa-bay-buccaneers', 'historical', '2026', 'Buccaneers won 24-17.', 'Week 2' )['title'],
-	statchasers_matchup_meta( 'cleveland-browns', 'tampa-bay-buccaneers', 'historical', '2026' )['title'],
-	'series page: a week header from an old API does not turn it into a game page'
+	'Browns vs Buccaneers Player Stats & Head-to-Head History',
+	'series page with player stats: nicknames when the full names leave no room'
 );
 is(
 	statchasers_matchup_meta( 'new-york-jets', 'los-angeles-rams', 'recently_completed', '2026', '', 'Week 2' )['title'],
+	'Jets vs Rams Player Stats & Head-to-Head History',
+	'series page with player stats, just after a game'
+);
+is(
+	statchasers_matchup_meta( 'new-york-jets', 'los-angeles-rams', 'recently_completed', '2026' )['title'],
 	'New York Jets vs Los Angeles Rams: Head-to-Head History',
-	'series page: just after a game it is still the series'
+	'series page without player stats: the head-to-head wording'
 );
 is(
 	statchasers_matchup_meta( 'new-york-jets', 'los-angeles-rams', 'recently_completed', '2026', 'Rams won 24-17.' )['description'],

@@ -232,7 +232,21 @@ export function gamePath(prefix: string, slug: string, ref: MatchupGameRef): str
  * score.
  */
 export function seriesPageHeading(data: MatchupData): string {
-  return `${matchupTitle(data)} Head-to-Head Series`;
+  return seriesShowsPlayerStats(data)
+    ? `${matchupTitle(data)} Player Stats & Head-to-Head History`
+    : `${matchupTitle(data)} Head-to-Head History`;
+}
+
+/**
+ * Whether the pair's address prints a game's player stats: it leads with a
+ * final meeting whose box score is stored. mak, 2026-11-24: such a series page
+ * keeps "Player Stats" in its title and H1 and adds "Head-to-Head History";
+ * one without a box score to show is the head-to-head history alone.
+ */
+export function seriesShowsPlayerStats(data: MatchupData): boolean {
+  if (data.pinned || data.pinnedFixture || data.matchupState === "upcoming") return false;
+  const lead = data.featured;
+  return Boolean(lead && lead.status === "final" && lead.score !== null && data.boxscore);
 }
 
 /**

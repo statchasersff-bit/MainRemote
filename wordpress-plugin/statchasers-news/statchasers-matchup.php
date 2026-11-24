@@ -948,10 +948,13 @@ function statchasers_matchup_heading(): string {
 
 	if ( null === $parsed ) {
 		// The pair's address is the series page (WEB-001, 2026-11-24),
-		// MIRRORING seriesPageHeading() in the API's matchup-render.ts. Only
-		// reached when the API sent no heading (the preview's own heading
-		// comes from the API).
-		return "$names Head-to-Head Series";
+		// MIRRORING seriesPageHeading() in the API's matchup-render.ts: "Player
+		// Stats & Head-to-Head History" while it prints its latest game's
+		// player stats (X-Matchup-Week set), "Head-to-Head History" otherwise
+		// (mak, 2026-11-24). Only reached when the API sent no heading.
+		$data = '' !== statchasers_news_origin() ? statchasers_matchup_fetch( $pair['slug'], '' ) : null;
+		$week = is_array( $data ) ? (string) ( $data['week'] ?? '' ) : '';
+		return '' !== $week ? "$names Player Stats & Head-to-Head History" : "$names Head-to-Head History";
 	}
 
 	// A game page's H1 (the Search Console brief of 2026-10-30): "{Away} vs
@@ -1099,12 +1102,12 @@ function statchasers_matchup_meta( string $a, string $b, string $state, string $
 	$season = '' === $season ? STATCHASERS_TEAM_SEASON : $season;
 
 	// The pair's address is the head-to-head series page (WEB-001,
-	// 2026-11-24): every finished game is self-canonical at its dated page,
-	// which carries the player-stats title the pair page wore for this
-	// season's games from 2026-10-09. MIRRORS matchupPageMeta(): only the
-	// upcoming state keeps its own wording. $score and $week are kept in the
-	// signature for callers; an API from before WEB-001 may still send a week.
-	unset( $score, $week );
+	// 2026-11-24): every finished game is self-canonical at its dated page.
+	// MIRRORS matchupPageMeta(): the upcoming state keeps its own wording; a
+	// series page printing its latest game's player stats (X-Matchup-Week
+	// set) keeps "Player Stats" and adds "Head-to-Head History" (mak,
+	// 2026-11-24); otherwise the head-to-head wording alone.
+	unset( $score );
 
 	switch ( $state ) {
 		case 'upcoming':
@@ -1119,6 +1122,18 @@ function statchasers_matchup_meta( string $a, string $b, string $state, string $
 				),
 				'description' => sprintf( '%1$s vs %2$s in %3$s: kickoff time, TV, venue, team stats side by side, injury designations and the head-to-head record.', $nick_a, $nick_b, $season ),
 			);
+	}
+	if ( '' !== $week && ( 'recently_completed' === $state || 'historical' === $state ) ) {
+		return array(
+			'title'       => statchasers_matchup_fit_title(
+				array(
+					"$names Player Stats & Head-to-Head History",
+					"$short Player Stats & Head-to-Head History",
+					"$short Player Stats & H2H History",
+				)
+			),
+			'description' => sprintf( '%1$s vs %2$s player stats from their latest meeting, the head-to-head record and every meeting with its box score.', $nick_a, $nick_b ),
+		);
 	}
 	return array(
 		'title'       => statchasers_matchup_fit_title(
