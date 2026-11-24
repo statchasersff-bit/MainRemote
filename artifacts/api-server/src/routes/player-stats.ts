@@ -41,6 +41,7 @@ import {
 } from "../lib/player-stats-ssr";
 import {
   defaultSeason,
+  getStatsSeasons,
   parsePosition,
   parseSeason,
   type StatsPosition,
@@ -195,13 +196,94 @@ router.get("/player-stats/:pos", (req, res, next) => {
  * empty shell, so the shortcode leaves the host page intact instead of printing
  * a hole in it.
  */
-router.get(STATS_FRAGMENT_PATH, (req, res) => {
+/** The options the WordPress fragment is rendered with. One place, so the version below is the fragment's. */
+function fragmentOptions(req: Request) {
   const playerPrefix = (
     process.env["SC_PLAYER_PATH_PREFIX"] ?? PLAYER_PATH_PREFIX
   ).trim();
   const basePath = (
     process.env["SC_PLAYER_STATS_PATH"] ?? EMBED_BASE_PATH
   ).trim();
+  return {
+    embed: true,
+    basePath,
+    playerPathPrefix: playerPrefix,
+    linkQuery: fragmentLinkQuery(playerPrefix),
+    // Nothing on the season and position links: they are the WordPress
+    // page's own addresses.
+    pageQuery: "",
+    defaultSeason: defaultSeason(),
+    // Absolute, and it has to be: this markup is printed inside a
+    // statchasers.com page, where a relative path resolves against
+    // WordPress. Built from the request, so it is whatever origin the
+    // plugin actually reached us on.
+    endpoint: browserEndpoint(req, STATS_FRAGMENT_PATH),
+  };
+}
+
+/**
+ * What the four WordPress pages would print right now, as one fingerprint
+ * (audit WEB-003). The plugin polls this from WP-cron and, when it moves,
+ * refreshes its fragment copies, clears the page cache and purges the edge
+ * for exactly these four addresses (statchasers-player-stats.php). Each
+ * position's own version is the ETag its fragment answers with, so the plugin
+ * can tell that what it fetched is the snapshot announced here.
+ *
+ * Renders the default season of each position, which is what the pages open
+ * on: cached, so a poll costs a lookup unless the data has just changed.
+ */
+router.get(`${STATS_FRAGMENT_PATH}/version`, (req, res) => {
+  const chosen = defaultSeason();
+  if (chosen === null) {
+    res.status(404).set("Cache-Control", "no-store").json({ error: "No advanced stats have been published" });
+    return;
+  }
+  try {
+    const options = fragmentOptions(req);
+    const positions: Record<string, unknown> = {};
+    const parts: string[] = [];
+    for (const position of ["QB", "RB", "WR", "TE"] as const) {
+      const result = renderStatsFragment(position, chosen, options);
+      const table = result.table;
+      if (!table) {
+        res.status(503).set("Cache-Control", "no-store").json({ error: `No ${position} table for ${chosen}` });
+        return;
+      }
+      const etag = `W/"${result.version}"`;
+      parts.push(etag);
+      positions[position.toLowerCase()] = {
+        etag,
+        season: table.season,
+        weeks: table.weeks,
+        throughWeek: table.coverage?.throughWeek ?? table.week,
+        complete: table.coverage?.complete ?? null,
+        latestIncludedGame: table.coverage?.latestIncludedGame ?? null,
+        updatedAt: table.updatedAt,
+        players: table.rows.length,
+      };
+    }
+    res
+      .set("Cache-Control", "no-store")
+      .set("X-Robots-Tag", "noindex")
+      .json({
+        version: hashParts(parts.join("|")),
+        season: chosen,
+        seasons: getStatsSeasons().map(String),
+        positions,
+      });
+  } catch (err) {
+    logger.error({ err }, "Failed to build the advanced stats version");
+    res.status(503).set("Cache-Control", "no-store").json({ error: "unavailable" });
+  }
+});
+
+function hashParts(value: string): string {
+  let h = 5381;
+  for (let i = 0; i < value.length; i += 1) h = ((h << 5) + h + value.charCodeAt(i)) | 0;
+  return (h >>> 0).toString(36);
+}
+
+router.get(STATS_FRAGMENT_PATH, (req, res) => {
   const position = parsePosition(req.query["pos"]) ?? "QB";
   const chosen = season(req);
 
@@ -215,21 +297,7 @@ router.get(STATS_FRAGMENT_PATH, (req, res) => {
   }
 
   try {
-    const result = renderStatsFragment(position, chosen, {
-      embed: true,
-      basePath,
-      playerPathPrefix: playerPrefix,
-      linkQuery: fragmentLinkQuery(playerPrefix),
-      // Nothing on the season and position links: they are the WordPress
-      // page's own addresses.
-      pageQuery: "",
-      defaultSeason: defaultSeason(),
-      // Absolute, and it has to be: this markup is printed inside a
-      // statchasers.com page, where a relative path resolves against
-      // WordPress. Built from the request, so it is whatever origin the
-      // plugin actually reached us on.
-      endpoint: browserEndpoint(req, STATS_FRAGMENT_PATH),
-    });
+    const result = renderStatsFragment(position, chosen, fragmentOptions(req));
 
     if (!result.table) {
       res

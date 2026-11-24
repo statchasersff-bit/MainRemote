@@ -51,9 +51,10 @@ const STATCHASERS_PLAYER_STATS_HANDLE    = 'statchasers-player-stats';
 /**
  * How long a rendered fragment is reused before we ask the API again.
  *
- * An hour, like the rankings board, for the same reason: these are finished
- * seasons, and the tables move when somebody commits a new data file, not on
- * their own. `statchasers_news_flush()` clears this.
+ * An hour, like the rankings board. The current season's tables move every
+ * week, and a new snapshot does not wait for this: the publication check in
+ * statchasers-player-stats-cache.php replaces these copies when the API's
+ * version moves. `statchasers_news_flush()` clears this.
  */
 const STATCHASERS_PLAYER_STATS_CACHE_TTL = HOUR_IN_SECONDS;
 
@@ -276,25 +277,81 @@ function statchasers_player_stats_args( array $atts ): array {
 	);
 }
 
+/** The fresh and backup transient names of one argument set. */
+function statchasers_player_stats_cache_keys( array $args ): array {
+	$key = md5( statchasers_news_origin() . '|' . wp_json_encode( $args ) );
+	return array( 'sc_stats_ssr_' . $key, 'sc_stats_ssr_bak_' . $key );
+}
+
 /**
  * Fetch the server-rendered fragment, cached.
+ *
+ * On a miss one request fetches and any others arriving in the same moment
+ * serve the backup (statchasers_player_stats_claim_fetch()), so an expiry
+ * under load is one API call, not one per worker. The publication check
+ * (statchasers-player-stats-cache.php) replaces these copies when a new
+ * snapshot is published, so the hour below is a ceiling, not the delay.
  *
  * @param array{pos:string,season:string} $args Render arguments.
  * @return array{html:string,version:string}|null Null when nothing is available.
  */
 function statchasers_player_stats_fetch( array $args ): ?array {
-	$origin = statchasers_news_origin();
-	if ( '' === $origin ) {
+	if ( '' === statchasers_news_origin() ) {
 		return null;
 	}
 
-	$key        = md5( $origin . '|' . wp_json_encode( $args ) );
-	$cache_key  = 'sc_stats_ssr_' . $key;
-	$backup_key = 'sc_stats_ssr_bak_' . $key;
+	list( $cache_key, $backup_key ) = statchasers_player_stats_cache_keys( $args );
 
 	$cached = statchasers_cache_get( $cache_key );
 	if ( is_array( $cached ) && isset( $cached['html'] ) ) {
 		return $cached;
+	}
+
+	$claimed = statchasers_player_stats_claim_fetch( $cache_key );
+	if ( ! $claimed ) {
+		$backup = statchasers_cache_get( $backup_key );
+		if ( is_array( $backup ) && isset( $backup['html'] ) && '' !== $backup['html'] ) {
+			return $backup;
+		}
+		// No backup to stand in: fetch anyway rather than print nothing.
+	}
+
+	$payload = statchasers_player_stats_remote( $args );
+	if ( $claimed ) {
+		statchasers_player_stats_release_fetch( $cache_key );
+	}
+
+	// A 404 means the API has no table for this position and season - a real
+	// state, not a transient error. Cached as a failure for a minute so a
+	// deployment mid-setup costs one request a minute.
+	if ( null === $payload ) {
+		$backup = statchasers_cache_get( $backup_key );
+		if ( is_array( $backup ) && isset( $backup['html'] ) ) {
+			// Held under the fresh key for a minute too: otherwise every view,
+			// and every caller within a view, retries the origin and waits out
+			// the timeout for as long as it stays down.
+			set_transient( $cache_key, $backup, MINUTE_IN_SECONDS );
+			return $backup;
+		}
+		set_transient( $cache_key, array( 'html' => '', 'version' => '' ), MINUTE_IN_SECONDS );
+		return null;
+	}
+
+	statchasers_player_stats_store( $args, $payload );
+
+	return $payload;
+}
+
+/**
+ * One fragment from the API, uncached: the payload, or null on any failure.
+ *
+ * @param array{pos:string,season:string} $args Render arguments.
+ * @return array{html:string,version:string}|null
+ */
+function statchasers_player_stats_remote( array $args ): ?array {
+	$origin = statchasers_news_origin();
+	if ( '' === $origin ) {
+		return null;
 	}
 
 	$query = array( 'pos' => $args['pos'] );
@@ -313,31 +370,26 @@ function statchasers_player_stats_fetch( array $args ): ?array {
 	$code = is_wp_error( $response ) ? 0 : (int) wp_remote_retrieve_response_code( $response );
 	$body = is_wp_error( $response ) ? '' : (string) wp_remote_retrieve_body( $response );
 
-	// A 404 means the API has no table for this position and season - a real
-	// state, not a transient error. Cached as a failure for a minute so a
-	// deployment mid-setup costs one request a minute.
 	if ( 200 !== $code || '' === trim( $body ) ) {
-		$backup = statchasers_cache_get( $backup_key );
-		if ( is_array( $backup ) && isset( $backup['html'] ) ) {
-			// Held under the fresh key for a minute too: otherwise every view,
-			// and every caller within a view, retries the origin and waits out
-			// the timeout for as long as it stays down.
-			set_transient( $cache_key, $backup, MINUTE_IN_SECONDS );
-			return $backup;
-		}
-		set_transient( $cache_key, array( 'html' => '', 'version' => '' ), MINUTE_IN_SECONDS );
 		return null;
 	}
 
-	$payload = array(
+	return array(
 		'html'    => $body,
 		'version' => trim( (string) wp_remote_retrieve_header( $response, 'etag' ) ),
 	);
+}
 
+/**
+ * Keep a payload as the fresh copy and the outage backup.
+ *
+ * @param array{pos:string,season:string}   $args    Render arguments.
+ * @param array{html:string,version:string} $payload The fragment.
+ */
+function statchasers_player_stats_store( array $args, array $payload ): void {
+	list( $cache_key, $backup_key ) = statchasers_player_stats_cache_keys( $args );
 	set_transient( $cache_key, $payload, STATCHASERS_PLAYER_STATS_CACHE_TTL );
 	set_transient( $backup_key, $payload, STATCHASERS_PLAYER_STATS_BACKUP_TTL );
-
-	return $payload;
 }
 
 /* ---------------------------------------------------------------- assets */

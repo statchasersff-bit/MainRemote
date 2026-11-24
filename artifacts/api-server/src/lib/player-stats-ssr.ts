@@ -85,13 +85,18 @@ export function renderStatsFragment(
     return { html: renderStatsEmpty(options), version: "empty", table: null };
   }
 
-  const version = `${table.version}-${hash(key)}`;
   const hit = fragmentCache.get(key);
-  if (hit && hit.version === version) return hit;
+  if (hit && hit.table === table) return hit;
 
+  // The fingerprint is the markup's own (WEB-003): the table's version is the
+  // data file's mtime, but the FPTS column also reads the game logs and the
+  // player index, which move without touching that file. Hashing what is sent
+  // makes the ETag, and the publication version WordPress polls, change
+  // exactly when the page would.
+  const html = renderStatsPage(table, options);
   const result: StatsSsrResult = {
-    html: renderStatsPage(table, options),
-    version,
+    html,
+    version: `${table.version}-${hash(key)}-${hash(html)}`,
     table,
   };
   fragmentCache.set(key, result);

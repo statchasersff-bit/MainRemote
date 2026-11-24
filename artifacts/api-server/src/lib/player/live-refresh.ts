@@ -92,6 +92,7 @@ import { invalidateMatchupRenderCache } from "../matchup/matchup-ssr";
 import { resetLiveVideos } from "../matchup/game-notes";
 import { invalidateTeamRenderCache } from "../team-ssr";
 import { invalidateStatsCache } from "../player-stats/stats-data";
+import { invalidateStatsRenderCache } from "../player-stats-ssr";
 import { invalidateHandcuffCache } from "../rb-handcuffs/handcuffs-data";
 import { invalidateRankingsCache } from "../rankings/rankings-data";
 import { dataPath } from "../data-dir";
@@ -248,6 +249,11 @@ export function reloadPlayerStats(): void {
   resetAppearanceCaches();
   invalidatePlayerRenderCache();
   invalidateMatchupRenderCache();
+  // The NFL Player Stats tables re-score FPTS from the game logs
+  // (house-points.ts), so a stat correction moves them too (WEB-003). A
+  // rebuild is ~100 ms a table, on the next request that asks for it.
+  invalidateStatsCache();
+  invalidateStatsRenderCache();
 }
 
 /**

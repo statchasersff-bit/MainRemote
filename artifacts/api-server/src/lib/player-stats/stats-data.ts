@@ -922,6 +922,29 @@ export function housePoints(playerId: string | null, season: StatsSeason, lastWe
   return housePointsFor(playerId, tableSeasons(season), lastWeek);
 }
 
+/**
+ * The "Updated" date of the table being served.
+ *
+ * The last successful ingestion when the dataset metadata records one (Phase
+ * 1.1), else the builder's own stamp - never the file's mtime. With one
+ * exception (WEB-003): buildSeason.mjs still WRITES a table that is missing a
+ * final game (it is the newest data, and its coverage note says what is
+ * missing) but does not advance lastIngestedAt for it. Read alone, that put
+ * the previous complete build's date over the newer, partial numbers. When
+ * the metadata says the file on disk was aggregated after the last complete
+ * ingestion, the date is that aggregation, so the date always describes the
+ * numbers on the page.
+ */
+function servedStamp(season: StatsSeason, raw: RawTable): string | null {
+  const own = typeof raw.updated_at === "string" ? raw.updated_at : null;
+  if (typeof season !== "number") return own;
+  const meta = datasetMeta("player_stats", season);
+  const ingested = meta?.lastIngestedAt ?? null;
+  const aggregated = meta?.lastAggregatedAt ?? null;
+  if (ingested && aggregated && Date.parse(aggregated) > Date.parse(ingested)) return aggregated;
+  return ingested ?? own;
+}
+
 /** The identity columns, printed as the pinned cells rather than as metrics. */
 const PINNED = new Set(["rank", "playerName", "team", "playerId"]);
 
@@ -1114,11 +1137,7 @@ export function getStatsTable(
     week: typeof raw.week === "number" ? raw.week : null,
     weeks: typeof raw.weeks === "string" ? raw.weeks : null,
     coverage: readCoverage(raw.coverage),
-    // The last successful ingestion when the dataset metadata records one
-    // (Phase 1.1), else the builder's own stamp - never the file's mtime.
-    updatedAt:
-      (typeof season === "number" ? datasetMeta("player_stats", season)?.lastIngestedAt : null) ??
-      (typeof raw.updated_at === "string" ? raw.updated_at : null),
+    updatedAt: servedStamp(season, raw),
     groups,
     rows,
     cards,
