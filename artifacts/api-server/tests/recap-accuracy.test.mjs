@@ -553,6 +553,30 @@ describe("a score is called the final play only when ESPN's drive chart shows th
     assert.match(text, /Fitzgerald makes the go-ahead field goal\./);
   });
 
+  // mak, 2026-11-24: "for good" only when an independent, complete scoring
+  // sequence (the box score's scoring plays, not the play-by-play file) adds
+  // up to the final and shows no later score. The cut file above keeps
+  // ESPN's complete list (33-35, every quarter agrees), so "for good" is
+  // earned there. Without that list, or with a short one, it is only the
+  // lead taken: "to put Carolina ahead 35–33."
+  test("the cut file without a complete independent scoring list: ahead 35–33, never 'for good'", async () => {
+    const scoring = await importModule("lib/matchup/scoring-summary");
+    const pbp = facts.withGameEnding(cut, box.drives);
+    for (const list of [[], box.scoringPlays.slice(0, -1)]) {
+      const plays = facts.pbpScoringPlays(list, pbp, "BAL", "CAR");
+      if (plays.length) assert.ok(scoring.validateScoringPlays(game, plays).length > 0, "a short list does not add up, so the FAQ gets no winning play");
+      const players = gamePlayers.buildGamePlayers(box.players, null, box.scoringPlays);
+      const { main } = overview.renderRecapOverviewParts({
+        game, story, stats: { away: null, home: null }, players, leaders: [],
+        city: { away: "Baltimore", home: "Carolina" }, playerUrl: () => null, photo: () => "", highlights: "",
+        inks: { away: "#241773", home: "#0085ca" }, drives: pbp.drives, pbp, gameId: ID, scoring: plays,
+      });
+      const text = main.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").replace(/&#39;/g, "'");
+      assert.doesNotMatch(text, /for good|led the rest of the way|on the final play|walk-off/);
+      assert.match(text, /Fitzgerald made a 37-yard field goal with 1:47 left, to put Carolina ahead 35–33\./);
+    }
+  });
+
   test("Packers at Lions (stored), the genuine walk-off: the drive chart ends at 0:00 on Bates' kick, and every clock says 0:01", async () => {
     const st = Object.entries(read("boxscores", "2026.json").games).find(([, g]) => g.week === 7 && g.name === "GB @ DET");
     const gbBox = boxscore.parseEspnSummary(st[0], st[1].summary);

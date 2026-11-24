@@ -94,7 +94,9 @@ describe("one address per pair", () => {
     assert.equal(root.getAttribute("data-matchup"), "new-england-patriots-vs-philadelphia-eagles");
     const h1 = doc.querySelectorAll("h1");
     assert.equal(h1.length, 1);
-    assert.equal(h1[0].textContent.trim(), "New England Patriots vs Philadelphia Eagles Head-to-Head Series", "the series H1 (WEB-001)");
+    // mak 2026-11-24: "Player Stats" stays while the series page prints its
+    // latest game's box score; "Head-to-Head History" either way.
+    assert.match(h1[0].textContent.trim(), /^New England Patriots vs Philadelphia Eagles (Player Stats & )?Head-to-Head History$/, "the series H1");
   });
 
   test("every other spelling of the pair is a 301 to it", async () => {
@@ -315,7 +317,9 @@ describe("the page follows its state", () => {
     }[state];
     if (state !== "upcoming") {
       const h1 = [...doc.querySelectorAll("h1")].map((h) => h.textContent.trim());
-      assert.deepEqual(h1, ["New England Patriots vs Philadelphia Eagles Head-to-Head Series"], "the series H1");
+      assert.equal(h1.length, 1);
+      assert.match(h1[0], /^New England Patriots vs Philadelphia Eagles (Player Stats & )?Head-to-Head History$/, "the series H1");
+      assert.equal(/Player Stats/.test(h1[0]), /Player Stats/.test(title), "title and H1 agree about player stats");
       assert.equal(doc.querySelector(".sct-mu-intro"), null, "no single game's 'match player stats' sentence");
     }
     assert.match(title, phrase);

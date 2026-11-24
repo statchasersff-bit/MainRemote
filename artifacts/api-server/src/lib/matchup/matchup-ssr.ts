@@ -22,7 +22,7 @@ import {
   type MatchupRenderOptions,
 } from "./matchup-render";
 import { matchupPageMeta, matchupScoreLine } from "./matchup-seo";
-import { matchupPageHeading, matchupShare } from "./matchup-render";
+import { matchupPageHeading, matchupShare, seriesShowsPlayerStats } from "./matchup-render";
 import { gameSegment, type MatchupPair } from "./pair";
 import { LruCache } from "../lru";
 import type { MatchupCachePolicy } from "./game-state";
@@ -71,9 +71,10 @@ export interface MatchupSsrResult {
   /** The <title>, brand included when it fits. Same string the app page uses. */
   title: string;
   /**
-   * Always "" since WEB-001 (2026-11-24): the pair's page is the series page
-   * and never takes a game's title. Kept as X-Matchup-Week so an older
-   * plugin's title mirror falls through to the head-to-head wording.
+   * The led game's week label ("Week 10") while the pair's series page prints
+   * that game's player stats (seriesShowsPlayerStats), "" otherwise. The
+   * plugin's title/H1 mirror reads it to add "Player Stats" to the series
+   * wording (mak, 2026-11-24); the API's own X-Matchup-Title still wins.
    */
   week: string;
   /** The meta description, for the plugin to print as the API wrote it. */
@@ -153,7 +154,7 @@ async function renderWithData(
     pinnedPreview: data.pinnedPreview,
     heading: matchupPageHeading(data),
     title: meta.title,
-    week: "",
+    week: seriesShowsPlayerStats(data) && data.featured ? data.featured.weekLabel : "",
     description: meta.description,
     shareImage: share ? { path: share.path, alt: share.alt } : null,
     cache: data.cachePolicy,

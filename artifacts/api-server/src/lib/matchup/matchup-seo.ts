@@ -10,7 +10,7 @@
 
 import type { TeamPageMeta } from "../team-seo";
 import type { MatchupData } from "./matchup-data";
-import { matchupHasHighlights, matchupScoreboardGame, matchupShare, matchupTitle } from "./matchup-render";
+import { matchupHasHighlights, matchupScoreboardGame, matchupShare, matchupTitle, seriesShowsPlayerStats } from "./matchup-render";
 import { SHARE_HEIGHT, SHARE_WIDTH } from "./og-image";
 import { scoreboardPageDescription, scoreboardTitleCandidates } from "./scoreboard-hero";
 import { fitTitle, TITLE_MAX } from "../title-fit";
@@ -198,6 +198,20 @@ function baseMeta(data: MatchupData, canonical: string): TeamPageMeta {
         `team stats side by side, injury designations and the head-to-head record.`;
       break;
     default:
+      // A series page that prints its latest game's player stats keeps
+      // "Player Stats" and adds "Head-to-Head History" (mak, 2026-11-24);
+      // the box score's own week and year stay on the dated game page.
+      if (seriesShowsPlayerStats(data)) {
+        title = fitMatchupTitle([
+          `${names} Player Stats & Head-to-Head History`,
+          `${short} Player Stats & Head-to-Head History`,
+          `${short} Player Stats & H2H History`,
+        ]);
+        description =
+          `${a.nickname} vs ${b.nickname} player stats from their latest meeting, the head-to-head record ` +
+          `and every meeting with its box score.`;
+        break;
+      }
       title = fitMatchupTitle([
         `${names}: Head-to-Head Record & History`,
         `${names}: Head-to-Head History`,
