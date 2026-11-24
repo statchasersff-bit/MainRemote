@@ -7,7 +7,7 @@
  *   node scripts/team/scanTeamPages.mjs                          # live site
  *   node scripts/team/scanTeamPages.mjs https://statchasers.com --games
  *   node scripts/team/scanTeamPages.mjs --only=buffalo-bills,miami-dolphins --games
- *   node scripts/team/scanTeamPages.mjs --json=/tmp/team-scan.json
+ *   node scripts/team/scanTeamPages.mjs --json=/tmp/team-scan.json --timeout=90000
  *   node scripts/team/scanTeamPages.mjs http://localhost:8099 --prefix=/team/ --no-sitemap --no-head
  *
  * What it does, in order:
@@ -60,6 +60,7 @@ const SITEMAP = !flag("no-sitemap");
 const HEAD = !flag("no-head");
 const JSON_OUT = flagValue("json", "");
 const QUERY = String(flagValue("query", ""));
+const TIMEOUT = Number(flagValue("timeout", 90_000));
 const UA =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36";
 
@@ -74,7 +75,12 @@ async function get(url, { method = "GET", redirect = "manual" } = {}) {
   last = Date.now();
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
-      const res = await fetch(url, { method, redirect, headers: { "user-agent": UA, accept: "text/html,*/*" } });
+      const res = await fetch(url, {
+        method,
+        redirect,
+        headers: { "user-agent": UA, accept: "text/html,*/*" },
+        signal: AbortSignal.timeout(TIMEOUT),
+      });
       const body = method === "GET" && /text|xml|json|html/.test(res.headers.get("content-type") ?? "") ? await res.text() : "";
       if (method === "GET" && !body) await res.arrayBuffer().catch(() => null);
       if (res.status === 429 && attempt < 2) {
