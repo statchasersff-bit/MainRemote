@@ -22,6 +22,9 @@ import type { NflState } from "../team/nfl-state";
 import { isUpcomingFixture, pairInPreviewMode, type MatchupGameRef, type MatchupPair, type MeetingFacts } from "./pair";
 import { getFpaTable, type FpaRow } from "../fpa/fpa-data";
 import { getGameBoxscore, type GameBoxscore } from "./boxscore";
+import { loadGamePbp } from "./play-by-play";
+import { pbpScoringPlays, refineEspnDrives } from "./play-facts";
+import { findGameStoryEntry } from "./recap-overview";
 import { buildGameStats, type GameStats } from "./game-stats";
 import { logger } from "../logger";
 import { getKickoffForecast, getWeekLines } from "./game-lines";
@@ -464,7 +467,7 @@ export async function getMatchupData(
   // be built is a block the page does not draw, never a page that does not
   // render.
   const isFinal = featured?.status === "final";
-  const boxscore = isFinal ? await getGameBoxscore(featured.espnEventId) : null;
+  const boxscore = isFinal ? withPlayByPlay(await getGameBoxscore(featured.espnEventId), featured) : null;
 
   // The takeaways flag a player who is on the CURRENT injury report, which is
   // the one thing on a postgame page that is about next week. Keyed by the
@@ -582,4 +585,25 @@ export function matchupVersion(data: MatchupData, contentVersion: string): strin
       ? `last${data.lastMeeting.meeting.season}${data.lastMeeting.meeting.seasonType === "post" ? "p" : "w"}${data.lastMeeting.meeting.week}${data.lastMeeting.boxscore ? "box" : ""}`
       : "",
   ].join("|");
+}
+
+/**
+ * The featured game's box score checked against its play-by-play (WEB-037,
+ * play-facts.ts): each scoring play carries the snap's clock, the same one
+ * the drive log, the recap and the win-probability list print, and the score
+ * that ended the game says so; ESPN's "Missed FG" drives that were blocked
+ * kicks say "blocked". A copy; the cached box score is not changed. Without
+ * a stored play-by-play the box score is returned as it is.
+ */
+function withPlayByPlay(box: GameBoxscore | null, meeting: Meeting): GameBoxscore | null {
+  if (!box) return box;
+  const away = meeting.away.code.toUpperCase();
+  const home = meeting.home.code.toUpperCase();
+  const entry = findGameStoryEntry({ season: meeting.season, week: meeting.week, seasonType: meeting.seasonType, home, away });
+  const pbp = entry ? loadGamePbp(meeting.season, entry.id) : null;
+  return {
+    ...box,
+    scoringPlays: pbpScoringPlays(box.scoringPlays ?? [], pbp, away, home),
+    drives: box.drives ? refineEspnDrives(box.drives, pbp) : box.drives,
+  };
 }

@@ -30,6 +30,7 @@ import fs from "node:fs";
 import { escapeHtml } from "../render";
 import { dataPath } from "../data-dir";
 import type { ScoringPlay } from "./scoring-plays";
+import { refineDrives } from "./play-facts";
 import { playLineHtml, runningScore } from "./scoring-summary";
 import type { ScoreboardGame } from "./scoreboard-hero";
 import type { PlayerUrlFn } from "../team/links";
@@ -48,6 +49,8 @@ export type PbpDriveResult =
   | "turnover"
   | "downs"
   | "missed_fg"
+  /** A missed field goal the play text says was blocked (play-facts.ts refineDrives). */
+  | "blocked_fg"
   | "safety"
   | "end_half"
   | "end_game"
@@ -118,7 +121,8 @@ export function loadGamePbp(season: number, gameId: string): GamePbp | null {
     const { mtimeMs } = fs.statSync(file);
     const hit = recent.get(file);
     if (hit && hit.mtimeMs === mtimeMs) return hit.doc;
-    const doc = JSON.parse(fs.readFileSync(file, "utf8")) as GamePbp;
+    // A blocked kick is told as blocked everywhere a drive result is printed.
+    const doc = refineDrives(JSON.parse(fs.readFileSync(file, "utf8")) as GamePbp);
     recent.set(file, { mtimeMs, doc });
     while (recent.size > 12) recent.delete(recent.keys().next().value!);
     return doc;
@@ -138,6 +142,7 @@ const RESULT: Record<PbpDriveResult, { label: string }> = {
   turnover: { label: "Turnover" },
   downs: { label: "Turnover on downs" },
   missed_fg: { label: "Missed field goal" },
+  blocked_fg: { label: "Blocked field goal" },
   safety: { label: "Safety" },
   end_half: { label: "End of half" },
   end_game: { label: "End of game" },

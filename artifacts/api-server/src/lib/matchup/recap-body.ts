@@ -160,7 +160,16 @@ export interface FaqFacts {
   fantasy?: FaqFantasyPlayer[];
   xfp?: { over?: FaqXfpPlayer; under?: FaqXfpPlayer; volume?: FaqXfpPlayer };
   /** The score that put the winner ahead for good, fourth quarter or later. */
-  winningPlay?: { text: string; team: string; quarter: number; clock: string; away: number; home: number } | null;
+  winningPlay?: {
+    text: string;
+    team: string;
+    quarter: number;
+    clock: string;
+    away: number;
+    home: number;
+    /** Nothing was snapped or kicked off after it: it ended the game (WEB-037). */
+    endsGame?: boolean;
+  } | null;
   /** The winner's lowest win probability, when it came back. */
   comeback?: { low: number; lowPeriod: string } | null;
   /** The biggest single swing in the home side's win probability. */
@@ -805,14 +814,27 @@ export function renderFantasyOutlook(input: RecapBodyInput): string {
   const upcoming = series.upcoming;
   const n = upcoming.length;
   const next = upcoming[0] ?? null;
+  // A meeting later in this game's season that has already been played: an
+  // archived Week 5 page is read after the Week 10 rematch, so "they don't
+  // meet again" would be false there (WEB-037).
+  const self = series.games.find((g) => g.current) ?? null;
+  const kickoffMs = (iso: string | null) => (iso ? Date.parse(iso) : NaN);
+  const thisKickoff = kickoffMs(self?.kickoff ?? game.kickoff);
+  const later = self
+    ? series.games.filter((g) => !g.current && g.season === self.season && kickoffMs(g.kickoff) > thisKickoff)
+    : [];
+  const roster =
+    `If you roster a ${input.teams[game.away.abbr]?.singular ?? game.away.short} ` +
+    `or a ${input.teams[game.home.abbr]?.singular ?? game.home.short}, these answer the week-to-week question.`;
   // With no meeting left the section stays: the tools answer the same
   // week-to-week question for either side, just not about a game between them.
   const lead = next
     ? `${COUNT_WORDS[n] ?? String(n)} meeting${n === 1 ? " is" : "s are"} left on the ` +
       `${next.season} schedule: ${list(upcoming.map((g) => `${g.weekLabel}${whereUpcoming(input, g)}`))}. ` +
       `Here's how to decide who to play in your league.`
-    : `The two teams don't meet again this season. If you roster a ${input.teams[game.away.abbr]?.singular ?? game.away.short} ` +
-      `or a ${input.teams[game.home.abbr]?.singular ?? game.home.short}, these answer the week-to-week question.`;
+    : later.length
+      ? `The two teams met again later in the ${later[0]!.season} season, in ${list(later.map((g) => g.weekLabel))}. ${roster}`
+      : `The two teams don't meet again this season. ${roster}`;
 
   const card = (title: string, text: string, href: string | null | undefined, cta: string): string =>
     href
@@ -1032,10 +1054,15 @@ function faqPool(input: RecapBodyInput): FaqCandidate[] {
       group: "result",
       score: 78,
       question: `What was the game-winning score in ${pair}?`,
-      answer:
-        `${wp.text} with ${wp.clock} left in the ${ordinalQuarter(wp.quarter)} gave the ${game[w].short} a ` +
-        `${mine}${DASH}${theirs} lead they never gave up.` +
-        (mine === result[w] && theirs === (l ? result[l] : 0) ? ` It was the final score of the game.` : ""),
+      // A score that ended the game won it; it did not take a lead that then
+      // had to survive (WEB-037: a field goal snapped at 0:01 "gave them a
+      // lead they never gave up").
+      answer: wp.endsGame
+        ? `${wp.text} on the final play, with ${wp.clock} left in the ${ordinalQuarter(wp.quarter)}, was the game-winning score: ` +
+          `the ${game[w].short} won ${mine}${DASH}${theirs}.`
+        : `${wp.text} with ${wp.clock} left in the ${ordinalQuarter(wp.quarter)} gave the ${game[w].short} a ` +
+          `${mine}${DASH}${theirs} lead they never gave up.` +
+          (mine === result[w] && theirs === (l ? result[l] : 0) ? ` It was the final score of the game.` : ""),
     });
   }
 
@@ -1139,7 +1166,11 @@ function faqPool(input: RecapBodyInput): FaqCandidate[] {
         (sw && sw.team === game[w].abbr
           ? `${sw.text} in the ${ordinalQuarter(sw.quarter)} was the biggest swing of the game. `
           : "") +
-        (wp ? `${wp.text} then put them ahead for good.` : `They finished the comeback with a ${result[w]}${DASH}${result[l]} win.`),
+        (wp
+          ? wp.endsGame
+            ? `${wp.text} on the final play then won it.`
+            : `${wp.text} then put them ahead for good.`
+          : `They finished the comeback with a ${result[w]}${DASH}${result[l]} win.`),
     });
   } else if (w && l && input.stats[w] && input.stats[l]) {
     const ws = input.stats[w]!;
@@ -1158,7 +1189,11 @@ function faqPool(input: RecapBodyInput): FaqCandidate[] {
         question: `How did the ${game[w].short} beat the ${game[l].short}?`,
         answer:
           `The ${game[w].short} beat the ${game[l].short} ${result[w]}${DASH}${result[l]} because they ${list(reasons.slice(0, 3))}.` +
-          (facts.winningPlay ? ` ${facts.winningPlay.text} put them ahead for good.` : ""),
+          (facts.winningPlay
+            ? facts.winningPlay.endsGame
+              ? ` ${facts.winningPlay.text} on the final play won it.`
+              : ` ${facts.winningPlay.text} put them ahead for good.`
+            : ""),
       });
     }
   }
@@ -1186,7 +1221,8 @@ function faqPool(input: RecapBodyInput): FaqCandidate[] {
       answer:
         `The ${game[better].short} won the turnover battle ${to[worse]}${DASH}${to[better]}: the ${game[worse].short} gave the ball away ` +
         `${to[worse]} time${to[worse] === 1 ? "" : "s"} and the ${game[better].short} ${to[better] === 0 ? "not at all" : `${to[better]} time${to[better] === 1 ? "" : "s"}`}.` +
-        (w === better ? ` The ${game[better].short} won the game.` : ` The ${game[worse].short} won the game anyway.`),
+        // A tie has no winner to credit (WEB-037: "The Giants won the game anyway" on a 27-27 tie).
+        (!w ? " The game ended in a tie." : w === better ? ` The ${game[better].short} won the game.` : ` The ${game[worse].short} won the game anyway.`),
     });
   }
 
@@ -1485,7 +1521,7 @@ export function renderGameInfo(input: RecapBodyInput): string {
     ]);
   }
   if (result) {
-    rows.push(["Winner", escapeHtml(result.winner ? game[result.winner].name : "Tie")]);
+    rows.push(result.winner ? ["Winner", escapeHtml(game[result.winner].name)] : ["Result", "Tie"]);
     if (result.winner) {
       const margin = Math.abs(result.away - result.home);
       rows.push(["Margin", `${margin} point${margin === 1 ? "" : "s"}`]);

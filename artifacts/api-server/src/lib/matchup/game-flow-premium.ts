@@ -77,6 +77,7 @@ const RESULT_TEXT: Record<PbpDrive["result"], string> = {
   turnover: "Turnover",
   downs: "Turnover on downs",
   missed_fg: "Missed field goal",
+  blocked_fg: "Blocked field goal",
   safety: "Safety",
   end_half: "End of half",
   end_game: "End of game",

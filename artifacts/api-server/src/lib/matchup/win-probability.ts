@@ -370,7 +370,8 @@ function wpDescription(game: ScoreboardGame, model: WpModel): string {
   return (
     `${game.home.short} started at ${formatWp(model.kickoff)}` +
     (half ? `, stood at ${formatWp(half[1])} at halftime` : "") +
-    (final ? ` and finished at ${final[1] >= 0.5 ? "100%" : "0%"}` : "") +
+    // A tie ends level: 50%, not the 100% a ">= 0.5" read gave the home side (WEB-037).
+    (final ? ` and finished at ${final[1] > 0.5 ? "100%" : final[1] < 0.5 ? "0%" : "50% in a tie"}` : "") +
     `, across ${model.swings.length} scoring play${model.swings.length === 1 ? "" : "s"}.`
   );
 }
