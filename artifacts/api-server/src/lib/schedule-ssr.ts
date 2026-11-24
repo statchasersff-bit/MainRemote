@@ -32,6 +32,7 @@ import { getSchedule, type ScheduleSeason } from "./schedule/schedule-data";
 import { getLeagueStandings, type LeagueStandings } from "./team/profile";
 import { schedulePageMeta, renderScheduleHeadTags } from "./schedule-seo";
 import { LruCache } from "./lru";
+import { schedulePagePolicy, type CachePolicy } from "./schedule/game-status";
 
 export interface ScheduleSsrResult {
   html: string;
@@ -39,7 +40,18 @@ export interface ScheduleSsrResult {
   version: string;
   /** Null when the feed is unavailable; the caller decides what to do. */
   data: ScheduleSeason | null;
+  /**
+   * How long a shared cache may keep this rendering (WEB-040): live, pregame
+   * until the next kickoff on it, or settled. Computed per request from the
+   * games the view shows - a week's games, or the whole season for the grid -
+   * never taken from the fragment cache, because a kickoff passing changes it
+   * without changing the markup.
+   */
+  cache: CachePolicy;
 }
+
+/** A view whose feed is down: nothing is known, so nothing is long-lived. */
+const UNKNOWN_POLICY: CachePolicy = { state: "live", nextKickoffMs: null };
 
 const FRAGMENT_CACHE_MAX = 128;
 const fragmentCache = new LruCache<ScheduleSsrResult>(FRAGMENT_CACHE_MAX);
@@ -74,6 +86,7 @@ export async function renderScheduleFragment(
       html: renderScheduleEmpty(options),
       version: "empty",
       data: null,
+      cache: UNKNOWN_POLICY,
     };
   }
 
@@ -92,13 +105,20 @@ export async function renderScheduleFragment(
     resolved.view === "week" ? await getLeagueStandings(data.season) : null;
   const version = `${data.version}-${hash(key)}-${hash(standingsKey(standings))}`;
 
+  const now = options.now ?? Date.now();
+  const cache = schedulePagePolicy(
+    resolved.view === "week" ? data.games.filter((game) => game.week === resolved.week) : data.games,
+    now,
+  );
+
   const hit = fragmentCache.get(key);
-  if (hit && hit.version === version) return hit;
+  if (hit && hit.version === version) return { ...hit, cache };
 
   const result: ScheduleSsrResult = {
     html: renderSchedulePage(data, { ...options, standings }),
     version,
     data,
+    cache,
   };
   fragmentCache.set(key, result);
   return result;

@@ -70,7 +70,12 @@ const GAMES_CSV_URL =
  * and a host that cannot reach GitHub for an hour should not lose 32 team
  * pages' schedules over it.
  */
-import { resolveGameStatus, type GameStatus } from "./game-status";
+import {
+  KICKOFF_GRACE_MS,
+  LIVE_STALE_MS,
+  resolveGameStatus,
+  type GameStatus,
+} from "./game-status";
 
 const GAMES_CSV_FILE = (process.env["SC_SCHEDULE_CSV_FILE"] ?? "").trim();
 const GAMES_CSV_SNAPSHOT = dataPath("schedule", "games.csv");
@@ -182,12 +187,6 @@ export interface ScheduleSeason {
   games: ScheduleGame[];
   /** True while any game is in progress - the renderer says so, the cache shortens. */
   liveNow: boolean;
-  /**
-   * True while any game's printed status can change without the slate
-   * changing: in progress, or pending (unconfirmed). The route says so in a
-   * header and the WordPress plugin keeps such a page out of the page cache.
-   */
-  volatile: boolean;
   /** When the slate half was last fetched. */
   fetchedAt: number;
   /**
@@ -433,6 +432,7 @@ interface EspnGame {
 
 /** The status names kept on an entry: the ones game-status.ts acts on. */
 const KEPT_STATUS_NAMES = new Set([
+  "STATUS_FINAL",
   "STATUS_POSTPONED",
   "STATUS_CANCELED",
   "STATUS_DELAYED",
@@ -544,16 +544,31 @@ function upgradeEspnEntry(raw: Partial<EspnGame> & Pick<EspnGame, "state">): Esp
 
 const ESPN_FULL_TTL_MS = 6 * 60 * 60 * 1000;
 /**
- * While a game is in progress the score is the point of the page.
- * `SC_SCHEDULE_ESPN_LIVE_TTL_MS` shortens it for the test suite's warm-cache
- * live-to-final replay (tests/schedule-game-status.test.mjs); never set in a
- * deployment.
+ * Test seam: `SC_SCHEDULE_TEST_TIMING` is JSON that shortens the schedule's
+ * clocks so a replay can walk a game from pregame to final in seconds -
+ * {"liveTtlMs","idleTtlMs","staleMs","graceMs","slateTtlMs"}, each optional,
+ * each only ever SHORTER than the real value. Read by
+ * tests/schedule-game-status.test.mjs and scripts/schedule/web040-cache-replay.mjs.
+ * Never set in a deployment.
  */
-const ESPN_LIVE_TTL_MS = (() => {
-  const raw = Number.parseInt((process.env["SC_SCHEDULE_ESPN_LIVE_TTL_MS"] ?? "").trim(), 10);
-  return Number.isFinite(raw) && raw >= 100 && raw <= 30_000 ? raw : 30 * 1000;
+const TEST_TIMING: Record<string, number> = (() => {
+  try {
+    const parsed = JSON.parse((process.env["SC_SCHEDULE_TEST_TIMING"] ?? "").trim() || "{}") as Record<string, unknown>;
+    return Object.fromEntries(
+      Object.entries(parsed).filter(([, v]) => typeof v === "number" && Number.isFinite(v) && v >= 50),
+    ) as Record<string, number>;
+  } catch {
+    return {};
+  }
 })();
-const ESPN_IDLE_TTL_MS = 15 * 60 * 1000;
+function timing(key: string, real: number): number {
+  const v = TEST_TIMING[key];
+  return typeof v === "number" && v < real ? v : real;
+}
+
+/** While a game is in progress the score is the point of the page. */
+const ESPN_LIVE_TTL_MS = timing("liveTtlMs", 30 * 1000);
+const ESPN_IDLE_TTL_MS = timing("idleTtlMs", 15 * 60 * 1000);
 /**
  * After a sweep that reached nothing. ESPN refuses this host for hours at a
  * time, and on the idle clock every expiry repeated the whole 18-week sweep -
@@ -986,7 +1001,7 @@ let sharedCsv: { at: number; text: Promise<string> } | null = null;
 
 function gamesCsv(): Promise<string> {
   const now = Date.now();
-  if (sharedCsv && now - sharedCsv.at < CSV_SHARE_MS) return sharedCsv.text;
+  if (sharedCsv && now - sharedCsv.at < timing("slateTtlMs", CSV_SHARE_MS)) return sharedCsv.text;
   // Its own timeout, not a caller's signal: one caller giving up must not
   // abort the download every other season is waiting on.
   const text = GAMES_CSV_FILE
@@ -1024,7 +1039,7 @@ const slateCache = createKeyedCache<RawGame[]>({
   name: "nflverse-schedule",
   // The slate is stable for hours; every visitor after the first is served from
   // memory, and a flex change still lands well before kickoff.
-  ttlMs: 6 * 60 * 60 * 1000,
+  ttlMs: timing("slateTtlMs", 6 * 60 * 60 * 1000),
   timeoutMs: 20_000,
   // Longer than the shared default of a minute. The failure that lasts is a
   // season nflverse has not published yet - every March to mid-May - and at a
@@ -1211,6 +1226,8 @@ function normalize(
     // window's placeholder midnight is not a kickoff that can pass.
     kickoffMs: resolveKickoff(row, live, "scheduled").kickoffMs,
     nowMs,
+    liveStaleMs: timing("staleMs", LIVE_STALE_MS),
+    kickoffGraceMs: timing("graceMs", KICKOFF_GRACE_MS),
   });
   const status: GameStatus = resolved.status;
   const useLiveScore = live !== undefined && resolved.liveScoreUsable;
@@ -1409,7 +1426,6 @@ async function build(
     season,
     games,
     liveNow: games.some((game) => game.status === "live"),
-    volatile: games.some((game) => game.status === "live" || game.statusConfirmed === false),
     fetchedAt,
     updatedAtMs: Math.max(fetchedAt, espnReachedAt(season)),
     version: fingerprint(season, games),

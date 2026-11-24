@@ -15,15 +15,27 @@
  * neither is a clock: the status is decided here, and the detail printed is
  * only ever one that agrees with it.
  *
+ * What each source can prove. ESPN carries an explicit completion indicator
+ * (`status.type.completed`, `STATUS_FINAL`) and an explicit in-progress state
+ * with a read time. nflverse carries no status field at all: its data
+ * dictionary says only that `away_score` / `home_score` are "NA for games
+ * which haven't yet been played", and promises nothing about when during or
+ * after a game they fill in. So a feed score is evidence of a final only when
+ * no fresh ESPN read says the game is still going.
+ *
  * Rules, in order:
- *   1. Final, from either source, prints "Final" - or "Final/OT" when ESPN's
- *      own final word, its period (5+), or nflverse's overtime flag says so.
- *      Never a clock, whatever period and clock the payload still carries.
- *   2. Postponed and canceled are ESPN's status names and print as such.
- *   3. In progress prints ESPN's detail (clock, "Halftime", "Delayed") only
- *      while the observation is fresh. An "in" entry nobody has refreshed for
- *      LIVE_STALE_MS is not evidence the game is still on, nor of its clock.
- *   4. Not started prints the kickoff - until the kickoff is well past with
+ *   1. ESPN says completed: final. Prints ESPN's final word ("Final",
+ *      "Final/OT") or Final/OT by period 5+ or nflverse's overtime flag - never
+ *      a clock, whatever period and clock the payload still carries.
+ *   2. ESPN read the game in progress within LIVE_STALE_MS: live, with ESPN's
+ *      clock and ESPN's score - even if the feed already has scores, which may
+ *      be partial (the feed has no completion flag to say otherwise).
+ *   3. nflverse has both scores and nothing fresh contradicts it: final
+ *      ("Final" / "Final/OT" by its overtime column). This is the 2026-11-19
+ *      case: ESPN's last read was a 4th-quarter clock that had gone stale.
+ *   4. Postponed and canceled are ESPN's status names and print as such.
+ *   5. A stale in-progress read with no final anywhere: status pending.
+ *   6. Not started prints the kickoff - until the kickoff is well past with
  *      no source saying the game began, when the honest answer is neutral.
  *
  * Pure: no I/O, no clock of its own. Shared by the season grid, the weekly
@@ -83,6 +95,10 @@ export interface StatusEvidence {
   live: LiveObservation | undefined;
   kickoffMs: number | null;
   nowMs: number;
+  /** Test seam: how old an in-progress read may be. Defaults to LIVE_STALE_MS. */
+  liveStaleMs?: number;
+  /** Test seam: the kickoff grace. Defaults to KICKOFF_GRACE_MS. */
+  kickoffGraceMs?: number;
 }
 
 export interface ResolvedStatus {
@@ -100,10 +116,10 @@ export interface ResolvedStatus {
   liveScoreUsable: boolean;
 }
 
-/** A final ESPN entry: completed, or "post" with a score and no postponement. */
+/** A final ESPN entry: completed, STATUS_FINAL, or "post" with a score and no postponement. */
 function liveIsFinal(live: LiveObservation | undefined): boolean {
   if (!live) return false;
-  if (live.completed) return true;
+  if (live.completed || live.statusName === "STATUS_FINAL") return true;
   if (live.state !== "post") return false;
   if (live.statusName === POSTPONED || live.statusName === CANCELED) return false;
   return live.awayScore !== null && live.awayScore !== undefined;
@@ -126,14 +142,44 @@ export function finalDetail(live: LiveObservation | undefined, feedOvertime: boo
 
 export function resolveGameStatus(evidence: StatusEvidence): ResolvedStatus {
   const { feedFinal, feedOvertime, live, kickoffMs, nowMs } = evidence;
+  const staleMs = evidence.liveStaleMs ?? LIVE_STALE_MS;
+  const graceMs = evidence.kickoffGraceMs ?? KICKOFF_GRACE_MS;
 
-  if (feedFinal || liveIsFinal(live)) {
+  // 1. ESPN's explicit completion.
+  if (liveIsFinal(live)) {
     return {
       status: "final",
       detail: finalDetail(live, feedOvertime),
       confirmed: true,
       observedAtMs: null,
-      liveScoreUsable: liveIsFinal(live),
+      liveScoreUsable: true,
+    };
+  }
+
+  const seen = typeof live?.seenAtMs === "number" ? live.seenAtMs : null;
+  const freshLive = live?.state === "in" && seen !== null && nowMs - seen <= staleMs;
+
+  // 2. A fresh in-progress read outranks feed scores that may be partial.
+  if (freshLive) {
+    const detail = (live?.detail ?? "").trim();
+    return {
+      status: "live",
+      // A clock, "Halftime", "Delayed" - whatever ESPN says while it runs.
+      detail: detail || null,
+      confirmed: true,
+      observedAtMs: seen,
+      liveScoreUsable: true,
+    };
+  }
+
+  // 3. The feed's scores, with nothing fresh against them.
+  if (feedFinal) {
+    return {
+      status: "final",
+      detail: finalDetail(live, feedOvertime),
+      confirmed: true,
+      observedAtMs: null,
+      liveScoreUsable: false,
     };
   }
 
@@ -144,25 +190,14 @@ export function resolveGameStatus(evidence: StatusEvidence): ResolvedStatus {
     return { status: "canceled", detail: "Canceled", confirmed: true, observedAtMs: null, liveScoreUsable: false };
   }
 
+  // 5. In progress once, nobody has said anything since.
   if (live?.state === "in") {
-    const seen = typeof live.seenAtMs === "number" ? live.seenAtMs : null;
-    const fresh = seen !== null && nowMs - seen <= LIVE_STALE_MS;
-    const detail = (live.detail ?? "").trim();
-    return fresh
-      ? {
-          status: "live",
-          // A clock, "Halftime", "Delayed" - whatever ESPN says while it runs.
-          detail: detail || null,
-          confirmed: true,
-          observedAtMs: seen,
-          liveScoreUsable: true,
-        }
-      : { status: "live", detail: null, confirmed: false, observedAtMs: null, liveScoreUsable: false };
+    return { status: "live", detail: null, confirmed: false, observedAtMs: null, liveScoreUsable: false };
   }
 
-  // Not started, as far as anyone has said.
+  // 6. Not started, as far as anyone has said.
   const delayed = live?.state === "pre" && DELAYED.has(live.statusName ?? "");
-  const pastKickoff = kickoffMs !== null && nowMs >= kickoffMs + KICKOFF_GRACE_MS;
+  const pastKickoff = kickoffMs !== null && nowMs >= kickoffMs + graceMs;
   return {
     status: "scheduled",
     detail: delayed ? "Delayed" : null,
@@ -198,4 +233,50 @@ export function gameStatusLabel(game: StatusFields): string | null {
     default:
       return game.statusDetail;
   }
+}
+
+/* ------------------------------------------------------- cache policy */
+
+/** The status fields the cache policy reads. */
+export interface PolicyGame extends StatusFields {
+  kickoffMs: number | null;
+}
+
+/**
+ * How long a rendering of these games may sit in a shared cache (WEB-040).
+ *
+ * - "live": a game is in progress, pending, delayed, or past its kickoff with
+ *   no word yet. The words can change minute to minute.
+ * - "pregame": nothing is in play, but a game is still to come. The page is
+ *   good until `nextKickoffMs` - the earliest kickoff still ahead - and not a
+ *   moment after; null when the games ahead have no confirmed kickoff.
+ * - "settled": every game is final or canceled. A completed week's page.
+ *
+ * The caller decides the view: a week's games for the weekly board, the
+ * whole season for the season grid.
+ */
+export interface CachePolicy {
+  state: "live" | "pregame" | "settled";
+  nextKickoffMs: number | null;
+}
+
+export function schedulePagePolicy(games: readonly PolicyGame[], nowMs: number): CachePolicy {
+  let open = false;
+  let next: number | null = null;
+  for (const game of games) {
+    if (game.status === "final" || game.status === "canceled") {
+      if (game.statusConfirmed === false) return { state: "live", nextKickoffMs: null };
+      continue;
+    }
+    if (game.status === "live" || game.statusConfirmed === false || game.statusDetail === "Delayed") {
+      return { state: "live", nextKickoffMs: null };
+    }
+    open = true;
+    if (game.status === "scheduled" && game.kickoffMs !== null) {
+      // Kicked off, nobody has said so yet: the next read may say live.
+      if (game.kickoffMs <= nowMs) return { state: "live", nextKickoffMs: null };
+      if (next === null || game.kickoffMs < next) next = game.kickoffMs;
+    }
+  }
+  return open ? { state: "pregame", nextKickoffMs: next } : { state: "settled", nextKickoffMs: null };
 }
