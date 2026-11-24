@@ -361,3 +361,50 @@ describe("a play-by-play that ends at the go-ahead score while the box score has
     assert.doesNotMatch(main, /game-winning|on the final play/);
   });
 });
+
+/* ------------- the stored game cut short after a go-ahead touchdown */
+
+test("a play-by-play and story cut after Detroit's Q3 go-ahead touchdown never read it as a walk-off", async () => {
+  const scoring = await importModule("lib/matchup/scoring-summary");
+  const ID = "2026_07_GB_DET";
+  const full = facts.refineDrives(read("pbp", "2026", `${ID}.json`));
+  const fullStory = read("game_story_2026.json").games[ID];
+  // Cut both stores right after the try that followed Goff's 10-yard touchdown (Q3 6:40, DET 17-14).
+  const cut = full.plays.findIndex((p) => p.q === 3 && p.k === "extra_point" && p.away === 14 && p.home === 17);
+  assert.ok(cut > 0);
+  const pbp = { ...full, plays: full.plays.slice(0, cut + 1), drives: full.drives.filter((d) => d.n <= full.plays[cut].d) };
+  const story = { ...fullStory, plays: fullStory.plays.filter((p) => p.qtr < 3 || (p.qtr === 3 && p.elapsed <= 2300)) };
+  assert.ok(story.plays.at(-1).td && story.plays.at(-1).homeScore === 16, "the story ends on the go-ahead touchdown");
+
+  const stored = Object.entries(read("boxscores", "2026.json").games).find(([, g]) => g.week === 7 && g.name === "GB @ DET");
+  const box = boxscore.parseEspnSummary(stored[0], stored[1].summary);
+  const game = {
+    status: "final", seasonLabel: "2026", gameType: "regular", roundLabel: "Week 7", kickoff: "2026-10-25T20:25:00.000Z", venue: null,
+    away: { abbr: "GB", name: "Green Bay Packers", short: "Packers", quarters: [7, 0, 7, 3], ot: null },
+    home: { abbr: "DET", name: "Detroit Lions", short: "Lions", quarters: [7, 3, 7, 3], ot: null },
+  };
+
+  // Scoring summary / FAQ path: the box score still has the two fourth-quarter field goals.
+  const plays = facts.pbpScoringPlays(box.scoringPlays, pbp, "GB", "DET");
+  assert.equal(plays.some((p) => p.endsGame), false);
+  const td = plays.find((p) => p.quarter === 3 && p.team === "DET");
+  assert.equal(td.clock, "6:40", "still re-clocked from the rows it has");
+  const winner = scoring.runningScore(game, plays).find((s) => s.tag === "winner");
+  const faqInput = {
+    game, teams: {}, stats: { away: null, home: null }, series: { sinceSeason: 2021, games: [], upcoming: [] }, links: {},
+    faqFacts: { winningPlay: { text: "Jake Bates' 22-yard field goal", team: "DET", quarter: winner.play.quarter, clock: winner.play.clock, away: winner.away, home: winner.home, ...(winner.play.endsGame ? { endsGame: true } : {}) } },
+  };
+  const faq = body.recapFaq(faqInput).map((q) => q.answer).join(" ");
+  assert.doesNotMatch(faq, /on the final play/);
+
+  // Overview and recap engine: the story's last score is the go-ahead touchdown, the final is 17-20.
+  const players = gamePlayers.buildGamePlayers(box.players, null, box.scoringPlays);
+  const { main } = overview.renderRecapOverviewParts({
+    game, story, stats: { away: null, home: null }, players, leaders: [],
+    city: { away: "Green Bay", home: "Detroit" }, playerUrl: () => null, photo: () => "", highlights: "",
+    inks: { away: "#203731", home: "#0076b6" }, drives: pbp.drives, pbp, gameId: ID,
+  });
+  const text = main.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
+  assert.doesNotMatch(text, /game-winning|on the final play|final play of the game/);
+  globalThis.__truncatedRender = text;
+});
