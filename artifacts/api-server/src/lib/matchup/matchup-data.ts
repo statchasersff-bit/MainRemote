@@ -150,14 +150,14 @@ export interface MatchupData {
    */
   pinnedRequested: boolean;
   /**
-   * Whether the pinned game is the one the pair's own address owns
-   * (pairOwnsMeeting in pair.ts): this season's latest result, while the
-   * pair's page is not yet in preview mode for the rematch.
+   * Whether the pinned FIXTURE is the one the pair's own address is
+   * previewing (pairPreviewsMeeting in pair.ts): the dated preview then
+   * canonicalizes up to the pair's address and carries no SportsEvent.
    *
-   * The dated page still renders, but it canonicalizes up to the pair's
-   * address, carries no SportsEvent of its own and stays out of the game
-   * sitemap, so the recap has exactly one canonical address at any moment.
-   * Was a 301 until 2026-10-10.
+   * Never true for a finished game since WEB-001 (2026-11-24): every finished
+   * game is canonical at its own dated address. From 2026-10-10 until then
+   * this was also true for this season's latest result, which folded the
+   * dated recap onto the pair's URL.
    */
   pinnedIsCurrent: boolean;
   /**
@@ -286,8 +286,9 @@ function facts(meeting: Meeting): MeetingFacts {
  * is within six days, then turns into the preview, then goes back to being a
  * recap once the rematch is played. "recently_completed" is therefore the
  * state of every pair that has met this season and is not previewing a
- * rematch, however long ago the game was: it is the recap the dated URL
- * canonicalizes up to. A pair that has not met this season is "historical",
+ * rematch, however long ago the game was. The pair's page is the series page
+ * and self-canonical; the game it leads with is canonical at its own dated
+ * address (WEB-001), which the page links. A pair that has not met this season is "historical",
  * leading with the latest meeting of the seasons before.
  */
 function decide(
@@ -412,17 +413,14 @@ export async function getMatchupData(
   const featured = pinned ?? pinnedFixture ?? natural.featured;
   // The dated preview is a preview whatever the pair's page is doing.
   const matchupState: MatchupState = pinnedFixture ? "upcoming" : natural.matchupState;
-  // Owned by the pair's page: the same game the pair's own address is the
-  // recap of. Matched on the meeting itself rather than the event id, which
-  // a schedule row can lack.
+  // The pair's page is previewing this very fixture (pairPreviewsMeeting).
+  // Matched on the meeting itself rather than the event id, which a schedule
+  // row can lack. A finished game is never "current": it is canonical at its
+  // own dated address (WEB-001).
   const pinnedIsCurrent =
-    (pinned !== null &&
-      natural.matchupState === "recently_completed" &&
-      natural.featured === pinned) ||
-    // The pair's page is previewing this very fixture (pairPreviewsMeeting).
-    (pinnedFixture !== null &&
-      natural.matchupState === "upcoming" &&
-      natural.featured === pinnedFixture);
+    pinnedFixture !== null &&
+    natural.matchupState === "upcoming" &&
+    natural.featured === pinnedFixture;
   const pinnedPreview = pinnedFixture !== null && !pinnedIsCurrent;
 
   // What the preview summarizes: the latest meeting played, this season

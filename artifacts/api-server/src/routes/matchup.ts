@@ -6,12 +6,14 @@
  * not a pair of two different real teams is a 404. Nothing falls through to a
  * team hub: a URL under /nfl/ that is not a matchup is not a page.
  *
- * Beneath the pair, one address per meeting: /nfl/<a>-vs-<b>/2026-week-1/. It
- * is canonical at its own address only once the pair's own page has stopped
- * owning that game (pairOwnsMeeting in lib/matchup/pair.ts) - while the pair's
- * page owns it the dated URL renders with its canonical pointing up at the
- * pair, so the recap has exactly one canonical address at any moment and the
- * two never compete. (A 301 until 2026-10-10.)
+ * Beneath the pair, one address per meeting: /nfl/<a>-vs-<b>/2026-week-1/.
+ * Every finished game is canonical at its own dated address (WEB-001,
+ * 2026-11-24; meetingHasOwnAddress in lib/matchup/pair.ts), spelled from the
+ * resolved record: the pair's canonical slug and the game's one segment, so a
+ * reversed pair or an alternate spelling of a round 301s to it. From
+ * 2026-10-10 until then the pair's page owned this season's latest result and
+ * the dated URL canonicalized up to the pair. The pair's own address is the
+ * self-canonical series page.
  */
 
 import { Router, type IRouter, type Request, type Response } from "express";
@@ -30,6 +32,7 @@ import { archivedGames } from "../lib/matchup/game-index";
 import { renderShareImage } from "../lib/matchup/og-image";
 import { renderMatchupAppPage, renderMatchupFragment } from "../lib/matchup/matchup-ssr";
 import {
+  gameSegment,
   parseGameSegment,
   parseMatchupSlug,
   type MatchupGameRef,
@@ -125,7 +128,10 @@ router.get("/nfl/:pair/:game", (req, res) => {
       notFound(res);
       return;
     }
-    if (!parsed.canonical) {
+    // One spelling per game: `2025-postseason-week-5` parses to the Super
+    // Bowl, whose address is `2025-super-bowl`, so it 301s there like a
+    // reversed pair does rather than rendering a second self-canonical copy.
+    if (!parsed.canonical || gameSegment(game) !== String(req.params.game ?? "")) {
       res.redirect(
         301,
         `${gamePath(MATCHUP_PATH_PREFIX, parsed.pair.slug, game)}${isEmbed(req) ? "?embed=1" : ""}`,
@@ -150,6 +156,10 @@ async function sendMatchupPage(
       // The pair's address on this origin, spelled from the game's: the
       // owned dated page's canonical.
       pairCanonical: game ? canonical.replace(/\/[^/]+\/?$/, "/") : undefined,
+      // The canonical is spelled from the resolved record (WEB-001).
+      canonicalPrefix: process.env["PUBLIC_CANONICAL_URL"]?.trim()
+        ? undefined
+        : `${publicOrigin(req)}${MATCHUP_PATH_PREFIX}`,
       embed,
       linkQuery: embed ? "?embed=1" : "",
       game,
@@ -329,10 +339,11 @@ router.get("/embed/matchup/:pair", (req, res) => {
         .set("X-Matchup-Description", encodeURIComponent(result.description))
         .set("X-Matchup-Image", result.shareImage?.path ?? "")
         .set("X-Matchup-Image-Alt", encodeURIComponent(result.shareImage?.alt ?? ""))
-        // "current" tells the plugin the pair page owns this game, so the
-        // dated WordPress URL canonicalizes up to the pair's and prints no
-        // SportsEvent - the mirror of what this origin's own page does.
-        // "archived" is a page canonical at its own address. "preview" (Phase
+        // "current" tells the plugin the pair page is previewing this
+        // fixture, so the dated WordPress URL canonicalizes up to the pair's
+        // and prints no SportsEvent - the mirror of what this origin's own
+        // page does. "archived" is a page canonical at its own address: every
+        // finished game since WEB-001 (2026-11-24). "preview" (Phase
         // 7) is an unplayed meeting the pair's page is not previewing yet:
         // noindex, no canonical, no SportsEvent. Empty when the request was
         // not a game address at all.

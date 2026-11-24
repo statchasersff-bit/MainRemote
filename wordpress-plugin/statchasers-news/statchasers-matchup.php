@@ -252,6 +252,24 @@ function statchasers_matchup_game(): string {
 }
 
 /**
+ * The one spelling of a validated game segment: a postseason round the site
+ * names is its name (`2025-super-bowl`), never `2025-postseason-week-5`.
+ * MIRRORS gameSegment() in the API's src/lib/matchup/pair.ts. '' stays ''.
+ */
+function statchasers_matchup_game_segment( string $raw ): string {
+	$game = '' === $raw ? null : statchasers_matchup_parse_game( $raw );
+	if ( null === $game ) {
+		return $raw;
+	}
+	if ( ! $game['post'] ) {
+		return $game['season'] . '-week-' . $game['week'];
+	}
+	return array_key_exists( $game['week'], STATCHASERS_MATCHUP_ROUNDS )
+		? $game['season'] . '-' . STATCHASERS_MATCHUP_ROUNDS[ $game['week'] ][0]
+		: $game['season'] . '-postseason-week-' . $game['week'];
+}
+
+/**
  * The canonical public URL of a pair, or of one meeting under it.
  *
  * @param string $slug Pair slug.
@@ -286,9 +304,17 @@ add_action(
 		}
 		if ( ! $pair['canonical'] ) {
 			wp_safe_redirect(
-				statchasers_matchup_url( $pair['slug'], statchasers_matchup_game() ),
+				statchasers_matchup_url( $pair['slug'], statchasers_matchup_game_segment( statchasers_matchup_game() ) ),
 				301
 			);
+			exit;
+		}
+		// One spelling per game (WEB-001): `2025-postseason-week-5` is the
+		// Super Bowl, whose address is `2025-super-bowl`, so it 301s there
+		// rather than rendering a second self-canonical copy of the game.
+		$raw_game = statchasers_matchup_game();
+		if ( '' !== $raw_game && statchasers_matchup_game_segment( $raw_game ) !== $raw_game ) {
+			wp_safe_redirect( statchasers_matchup_url( $pair['slug'], statchasers_matchup_game_segment( $raw_game ) ), 301 );
 			exit;
 		}
 
@@ -327,12 +353,12 @@ add_action(
 		}
 
 		if ( 'current' === $data['game'] ) {
-			// The pair's own page owns this game (this season's latest result,
-			// until the rematch is within six days): the dated page renders,
-			// with its canonical pointing at the pair's address and no
-			// SportsEvent of its own (statchasers_matchup_canonical,
+			// The pair's own page is previewing this fixture: the dated page
+			// renders, with its canonical pointing at the pair's address and
+			// no SportsEvent of its own (statchasers_matchup_canonical,
 			// statchasers_matchup_event_node). Mirrors the API's own page.
-			// Was a 301 until 1.10.38 (the SEO brief of 2026-10-10).
+			// A finished game is never "current" since WEB-001 (2026-11-24):
+			// the API answers "archived" and the dated page is self-canonical.
 			return;
 		}
 	}
@@ -1412,16 +1438,15 @@ const STATCHASERS_MATCHUP_GAMES_TTL = HOUR_IN_SECONDS;
 const STATCHASERS_MATCHUP_GAMES_RETRY = 10 * MINUTE_IN_SECONDS;
 
 /**
- * Every dated game page canonical at its own address - this season by the
- * ownership rule, the whole of the season before as archives - from the
- * API's /embed/matchup-games.json (lib/matchup/game-index.ts), as
+ * Every dated game page - each finished game once, at its own canonical
+ * address (WEB-001: this season and the archives alike) - from the API's
+ * /embed/matchup-games.json (lib/matchup/game-index.ts), as
  * `[ [ 'pair-slug', '2026-week-2', '2026-09-30' ], ... ]`, the third value
  * the page's lastmod: the day the stored stats were last pulled (a stat
- * correction moves it), else the kickoff.
+ * correction moves it), '' when the API has no trustworthy stamp.
  *
- * The API applies the one rule that decides when a dated address is canonical
- * (the pair's page owns this season's latest result until the rematch is
- * within six days), so the plugin keeps no copy of it. Cached an hour with a
+ * The API decides which games have a page, so the plugin keeps no copy of
+ * the rule. Cached an hour with a
  * backup, like the roster: a sitemap request must never wait on the API, and
  * a failed fetch serves the last list.
  *
@@ -1502,8 +1527,13 @@ function statchasers_matchup_games_rows( array $body ): ?array {
 		}
 		$pair    = (string) ( $game['pair'] ?? '' );
 		$segment = (string) ( $game['game'] ?? '' );
-		// The last stat pull when the API sends one (1.10.38), the kickoff before.
-		$modified = (string) ( $game['modified'] ?? $game['kickoff'] ?? '' );
+		// The last stat pull. An API that sends `modified: null` has no
+		// trustworthy modification time for the game, and the sitemap then
+		// omits lastmod rather than print the kickoff (WEB-001). An API from
+		// before 1.10.38 sent no `modified` key at all: the kickoff, as then.
+		$modified = array_key_exists( 'modified', $game )
+			? (string) ( $game['modified'] ?? '' )
+			: (string) ( $game['kickoff'] ?? '' );
 		if ( ! preg_match( '/^[a-z0-9-]+-vs-[a-z0-9-]+$/', $pair ) || ! preg_match( '/^' . STATCHASERS_MATCHUP_GAME_SHAPE . '$/', $segment ) ) {
 			continue;
 		}

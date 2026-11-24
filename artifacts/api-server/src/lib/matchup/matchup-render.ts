@@ -39,7 +39,6 @@ import {
   gameSegment,
   meetingHasOwnAddress,
   type MatchupGameRef,
-  type MeetingFacts,
 } from "./pair";
 import { loadRosterPct } from "../player/data";
 import { type DefenseLine } from "./fantasy-points";
@@ -500,9 +499,8 @@ const HERO_HEADING_ID = "sct-mu-title";
  * A game address is headed by its game, in the scoreboard's own wording. The
  * pair's address is headed by the season game it leads with when it has one
  * (seasonGameLead, mak's 2026-10-09 wording), and by the pair's name
- * otherwise. Under the scoreboard, a line to the game's own page whenever
- * that page exists - on the recently-played layout the pair's address IS the
- * game's page and the dated URL 301s back here, so there is none to link.
+ * otherwise. Under the scoreboard on the pair's address, a line to the box
+ * score at the led game's own dated page (renderSeasonGameLink).
  *
  * Embedded, the heading is an H2 marked `data-sct-hero-heading`: the plugin
  * promotes it to the page's H1 when it is the one supplying the heading, and
@@ -571,13 +569,20 @@ function renderRecapHero(data: MatchupData, input: RecapBodyInput, options: Matc
 }
 
 /**
- * "Browns vs Buccaneers, Week 2 2026: box score & recap" under the hero, to
- * the game's own address, when the pair's page leads with a season game that
- * has one (the historical layout; see recapLink for the same rule per row).
+ * The line under the pair page's hero to the box score of the game it leads
+ * with, at that game's own dated address: "Full box score: Titans vs Colts
+ * Week 6 2026 player stats & box score".
+ *
+ * On every pair page that leads with a finished game, this season's or an
+ * earlier one's (WEB-001, 2026-11-24). Until then the pair's page owned this
+ * season's latest result and the dated URL canonicalized up to it, so there
+ * was no address to link; the link printed on the evergreen layout only.
+ * Never on a dated page, which IS the game's address.
  */
 function renderSeasonGameLink(data: MatchupData, options: MatchupRenderOptions): string {
-  const lead = seasonGameLead(data);
-  if (!lead || !isHistoricalRecap(data)) return "";
+  if (data.pinned || data.pinnedFixture || data.matchupState === "upcoming") return "";
+  const lead = data.featured;
+  if (!lead || lead.status !== "final" || lead.score === null) return "";
   const prefix = (options.matchupPathPrefix ?? "/nfl/").trim();
   const href = `${gamePath(prefix, data.pair.slug, {
     season: lead.season,
@@ -589,7 +594,7 @@ function renderSeasonGameLink(data: MatchupData, options: MatchupRenderOptions):
   // 2026-10-30); the Last meeting block and the schedule cells word theirs
   // differently on purpose, so the site's matchup anchors are not one string.
   return (
-    `<p class="sct-mu-gamelink"><a class="sct-textlink" href="${escapeHtml(href)}">` +
+    `<p class="sct-mu-gamelink">Full box score: <a class="sct-textlink" href="${escapeHtml(href)}">` +
     `${escapeHtml(`${lead.away.nickname} vs ${lead.home.nickname} ${lead.weekLabel} ${lead.season} player stats & box score`)} ${ARROW}</a></p>`
   );
 }
@@ -1210,30 +1215,21 @@ function playSentenceShort(play: ScoringPlay, teamShort: string): string {
 /* ------------------------------------------- the recap's added sections */
 
 /**
- * A club's schedule row as a link: its game page once it has one, the pair page
- * while the pair's page owns it. `games` is that club's season, which says
- * whether the two meet again and which meeting was the latest - see
- * meetingHasOwnAddress(); `currentSeason` is the league's, so a row from an
- * earlier season always links to its archive.
+ * A club's schedule row as a link: a finished game's own dated page
+ * (meetingHasOwnAddress, WEB-001), anything else the pair page.
  */
 function scheduleGameUrl(
   team: NflTeam,
   g: ScheduleGame,
   season: number,
   options: MatchupRenderOptions,
-  games: ScheduleGame[],
-  currentSeason: number,
 ): string | null {
   const pair = g.opponent ? canonicalizeMatchupPair(team, g.opponent) : null;
   if (!pair) return null;
   const prefix = (options.matchupPathPrefix ?? "/nfl/").trim();
   const query = options.linkQuery ?? "";
   const final = g.status === "final" && g.result !== null;
-  const now = options.now ?? Date.now();
-  const meetings: MeetingFacts[] = games
-    .filter((other) => other.opponent?.abbreviation === g.opponent?.abbreviation)
-    .map((other) => ({ kickoffMs: other.kickoffMs, isFinal: other.status === "final" && other.result !== null }));
-  return meetingHasOwnAddress({ kickoffMs: g.kickoffMs, isFinal: final, season }, meetings, currentSeason, now)
+  return meetingHasOwnAddress({ kickoffMs: g.kickoffMs, isFinal: final })
     ? `${gamePath(prefix, pair.slug, { season, week: g.week, seasonType: g.seasonType })}${query}`
     : `${matchupPath(prefix, pair.slug)}${query}`;
 }
@@ -1549,7 +1545,7 @@ function winnerPath(data: MatchupData, game: ScoreboardGame, options: MatchupRen
       home: home ? { short: team.nickname, score: mine, logo: team.logo || null } : { short: opp, score: theirs, logo: g.opponent?.logo || null },
       neutral: g.neutralSite,
       meta: `${g.weekLabel}${date}`,
-      url: scheduleGameUrl(team, g, meeting.season, options, side.games, data.state.season),
+      url: scheduleGameUrl(team, g, meeting.season, options),
     };
   });
   const teamPrefix = (options.teamPathPrefix ?? "/team/").trim();
@@ -1638,7 +1634,7 @@ function renderGameBeforeAfter(data: MatchupData, options: MatchupRenderOptions)
   if (!game || !meeting) return "";
   const teams = [meeting.away, meeting.home];
   const sides = seasonSides(data)
-    .map((side, i) => beforeAfter(side, game, (g) => scheduleGameUrl(teams[i]!, g, meeting.season, options, side.games, data.state.season)))
+    .map((side, i) => beforeAfter(side, game, (g) => scheduleGameUrl(teams[i]!, g, meeting.season, options)))
     .filter((s): s is NonNullable<typeof s> => s !== null);
   // A playoff game's path follows as its own card. A regular-season recap
   // keeps only the adjacent games (mak, 2026-11-11: the upcoming schedule
@@ -1913,8 +1909,8 @@ export function matchupFaqSchema(
  * from inside the fragment would compete with the host's graph, not join it.
  */
 export function matchupEventSchema(data: MatchupData, embed: boolean): string {
-  // A dated page the pair's page still owns canonicalizes up to it, and the
-  // pair's page carries the event; a second copy here would be a second
+  // A dated preview the pair's page is previewing canonicalizes up to it, and
+  // the pair's page carries the event; a second copy here would be a second
   // SportsEvent for one game.
   // A dated preview the pair's page has not taken over is noindex; the game's
   // event first appears where it will be indexed (Phase 7).
@@ -3660,10 +3656,10 @@ function recapLink(
 ): string {
   const empty = `<span class="sct-mu-recap"></span>`;
   if (meeting.status !== "final" || meeting.score === null) return empty;
+  // The page's own game has no link to itself. On the pair's page every
+  // finished meeting links its dated address, the one it leads with too
+  // (WEB-001): that address is the game's only canonical one.
   if (data.pinned === meeting) return empty;
-  if (data.matchupState === "recently_completed" && data.featured === meeting) {
-    return empty;
-  }
 
   const prefix = (options.matchupPathPrefix ?? "/nfl/").trim();
   const href = `${gamePath(prefix, data.pair.slug, {

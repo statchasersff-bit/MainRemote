@@ -1,35 +1,41 @@
 /**
- * Every dated game page that is canonical at its own address, for the sitemap.
+ * Every dated game page, for the sitemap: each finished game once, at its one
+ * canonical address (`/nfl/<a>-vs-<b>/2026-week-2/`).
  *
- * A finished meeting has an address of its own (`/nfl/<a>-vs-<b>/2026-week-2/`)
- * from the moment the pair's page stops owning it: the pair's page owns this
- * season's latest result until the rematch is within six days (see
- * pairOwnsMeeting in pair.ts, the one rule the route, the team hub and this
- * list all apply). While it is owned the dated URL canonicalizes up to the
- * pair's page, and a sitemap that listed it would be advertising a copy.
+ * Since WEB-001 (2026-11-24) every finished game is canonical at its own dated
+ * address (meetingHasOwnAddress in pair.ts) - the current season's as much as
+ * the archives - so the list is simply the completed games the page itself
+ * can serve. Until then the pair's page owned this season's latest result and
+ * the list carried only the earlier meeting of a pair that had met twice (13
+ * games of 2026 at week 12) plus the whole of the season before.
  *
- * Every game of the season before is an archive at its own address, so the
- * whole of it is listed too (the SEO brief of 2026-10-10: "add every 2025
- * game page"). `<lastmod>` is the stored box score's fetch stamp - the last
- * time the stats were pulled, which moves on a stat correction - and the
- * kickoff for a game whose stats are not stored.
+ * Built from the same records the page resolves a game address against
+ * (getMatchupData): the pair's alphabetically-first club's regular season and
+ * postseason, for the current season and the HISTORY_SEASONS before it, with
+ * the same test - final, with a result. So every row answers 200 and names
+ * itself as its canonical, and a game outside the window (a 404) is never
+ * listed. Each game is listed once, keyed on its pair and segment.
+ *
+ * `modified` (the sitemap's lastmod) is the stored box score's fetch stamp -
+ * the last time the game's stats were written, which moves on a stat
+ * correction until the game settles - and null when no box score is stored:
+ * a kickoff time is not a modification time, so the sitemap omits lastmod
+ * rather than inventing one.
  *
  * The WordPress plugin reads this at /embed/matchup-games.json and serves
- * each path from /game-sitemap.xml. Built from the 32 regular-season
- * schedules plus each club's postseason, deduplicated per game, so a game is
- * listed once however many clubs it belongs to.
+ * each path from /game-sitemap.xml (paginated by Rank Math's per-page limit).
  */
 
 import { TEAMS, type NflTeam } from "../team/teams";
 import { getTeamPostseason, getTeamSchedule, type ScheduleGame } from "../team/schedule";
 import { nflState } from "../team/nfl-state";
 import { storedBoxscoreFetchedAt } from "./boxscore";
+import { HISTORY_SEASONS } from "./matchup-data";
 import {
   canonicalizeMatchupPair,
   gameSegment,
   meetingHasOwnAddress,
   type MatchupGameRef,
-  type MeetingFacts,
 } from "./pair";
 
 export interface ArchivedGame {
@@ -44,8 +50,8 @@ export interface ArchivedGame {
   seasonType: "regular" | "post";
   /** Kickoff, ISO. */
   kickoff: string;
-  /** The sitemap's lastmod, ISO: the stored stats' fetch stamp, else the kickoff. */
-  modified: string;
+  /** The sitemap's lastmod, ISO: the stored stats' fetch stamp; null without one. */
+  modified: string | null;
 }
 
 interface Fixture {
@@ -62,50 +68,26 @@ async function fixturesOf(team: NflTeam, season: number): Promise<Fixture[]> {
   return [...(regular?.games ?? []), ...(post?.games ?? [])].map((game) => ({ team, game }));
 }
 
-function factsOf(game: ScheduleGame): MeetingFacts {
-  return { kickoffMs: game.kickoffMs, isFinal: game.status === "final" };
-}
-
-/** The dated pages of one season at `now`, unsorted. */
-async function seasonGames(
-  prefix: string,
-  season: number,
-  currentSeason: number,
-  now: number,
-): Promise<ArchivedGame[]> {
+/** The dated pages of one season, unsorted. */
+async function seasonGames(prefix: string, season: number): Promise<ArchivedGame[]> {
   const fixtures = (await Promise.all(TEAMS.map((team) => fixturesOf(team, season)))).flat();
-
-  // Every meeting of each pair this season, so the rule can see whether a
-  // game is the latest one played and whether a rematch is near.
-  const byPair = new Map<string, MeetingFacts[]>();
-  for (const { team, game } of fixtures) {
-    const pair = canonicalizeMatchupPair(team, game.opponent);
-    if (!pair) continue;
-    const list = byPair.get(pair.slug) ?? [];
-    // Both clubs' schedules carry the meeting; the rule is indifferent to a
-    // duplicate, and deduplicating by event id would drop rows without one.
-    list.push(factsOf(game));
-    byPair.set(pair.slug, list);
-  }
 
   const seen = new Set<string>();
   const games: ArchivedGame[] = [];
   for (const { team, game } of fixtures) {
     const pair = canonicalizeMatchupPair(team, game.opponent);
-    if (!pair || game.status !== "final" || game.kickoffMs === null) continue;
-    const own = meetingHasOwnAddress(
-      { ...factsOf(game), season },
-      byPair.get(pair.slug) ?? [],
-      currentSeason,
-      now,
-    );
-    if (!own) continue;
+    // Read from the pair's first club only: that is the schedule the page
+    // resolves a game address against (getMatchupData reads pair.a's), so a
+    // row the other club's schedule alone carries would be a 404.
+    if (!pair || pair.a.abbreviation !== team.abbreviation) continue;
+    // The page's own test for a game address: final, with a result.
+    const isFinal = game.status === "final" && game.result !== null;
+    if (!meetingHasOwnAddress({ kickoffMs: game.kickoffMs, isFinal })) continue;
     const ref: MatchupGameRef = { season, week: game.week, seasonType: game.seasonType };
     const segment = gameSegment(ref);
     const key = `${pair.slug}/${segment}`;
     if (seen.has(key)) continue;
     seen.add(key);
-    const kickoff = new Date(game.kickoffMs).toISOString();
     games.push({
       pair: pair.slug,
       game: segment,
@@ -113,20 +95,19 @@ async function seasonGames(
       season,
       week: game.week,
       seasonType: game.seasonType,
-      kickoff,
-      modified: storedBoxscoreFetchedAt(game.espnEventId) ?? kickoff,
+      kickoff: new Date(game.kickoffMs!).toISOString(),
+      modified: storedBoxscoreFetchedAt(game.espnEventId),
     });
   }
   return games;
 }
 
 /**
- * The dated pages that exist at `now`, sorted newest first: the current
- * season by the ownership rule, and the whole of the season before.
+ * Every dated game page, sorted newest first: the current season and the
+ * HISTORY_SEASONS before it, the window the page serves.
  *
- * `season` defaults to the league's current season. The regular schedules
- * are what the team hubs already hold, so this costs nothing new; the 32
- * postseason reads are empty for most clubs in most years.
+ * `season` defaults to the league's current season. `now` only picks that
+ * season: a finished game's address does not depend on the clock.
  */
 export async function archivedGames(
   prefix: string,
@@ -134,10 +115,8 @@ export async function archivedGames(
   season?: number,
 ): Promise<{ season: number; seasons: number[]; games: ArchivedGame[] }> {
   const year = season ?? (await nflState(new Date(now))).season;
-  const seasons = [year, year - 1];
-  const games = (
-    await Promise.all(seasons.map((s) => seasonGames(prefix, s, year, now)))
-  ).flat();
+  const seasons = Array.from({ length: HISTORY_SEASONS + 1 }, (_, i) => year - i);
+  const games = (await Promise.all(seasons.map((s) => seasonGames(prefix, s)))).flat();
   games.sort((x, y) => y.kickoff.localeCompare(x.kickoff) || x.pair.localeCompare(y.pair));
   return { season: year, seasons, games };
 }

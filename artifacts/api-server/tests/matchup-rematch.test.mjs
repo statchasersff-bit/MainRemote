@@ -47,10 +47,10 @@ describe("the shared game-link rule", () => {
     assert.equal(href(g2, [g1, g2], now), `${PAIR}2026-week-12/`);
   });
 
-  test("the earlier meeting keeps the pair page while it owns the recap (unchanged)", () => {
+  test("the earlier meeting links its own dated page while the pair page leads with it (WEB-001)", () => {
     const g1 = m(5, now - 40 * DAY, true);
     const g2 = m(12, now + 10 * DAY, false);
-    assert.equal(href(g1, [g1, g2], now), PAIR);
+    assert.equal(href(g1, [g1, g2], now), `${PAIR}2026-week-5/`);
   });
 
   test("the transition: inside six days the pair page previews the rematch and the earlier game moves out", () => {
@@ -60,25 +60,25 @@ describe("the shared game-link rule", () => {
     assert.equal(href(g1, [g1, g2], now), `${PAIR}2026-week-5/`, "the earlier recap has its own address, as before");
   });
 
-  test("once the rematch is played the pair page owns it and the first game keeps its address", () => {
+  test("once the rematch is played both games link their own addresses (WEB-001)", () => {
     const g1 = m(5, now - 60 * DAY, true);
     const g2 = m(12, now - 2 * DAY, true);
-    assert.equal(href(g2, [g1, g2], now), PAIR);
+    assert.equal(href(g2, [g1, g2], now), `${PAIR}2026-week-12/`);
     assert.equal(href(g1, [g1, g2], now), `${PAIR}2026-week-5/`);
   });
 
-  test("a matchup with only one scheduled meeting links the pair page, before and after", () => {
+  test("a matchup with only one scheduled meeting links the pair page before, its dated page after", () => {
     const upcoming = m(14, now + 20 * DAY, false);
     assert.equal(href(upcoming, [upcoming], now), PAIR, "upcoming: the pair page previews it");
     const played = m(3, now - 50 * DAY, true);
-    assert.equal(href(played, [played], now), PAIR, "played: the pair page is its recap");
+    assert.equal(href(played, [played], now), `${PAIR}2026-week-3/`, "played: its own dated page (WEB-001)");
   });
 
   test("an unknown kickoff (TBD) rematch opens its own preview", () => {
     const g1 = m(3, now - 60 * DAY, true);
     const g2 = m(18, null, false);
     assert.equal(href(g2, [g1, g2], now), `${PAIR}2026-week-18/`);
-    assert.equal(href(g1, [g1, g2], now), PAIR, "the pair page keeps the recap until the league dates the game");
+    assert.equal(href(g1, [g1, g2], now), `${PAIR}2026-week-3/`, "the played game is at its own address (WEB-001)");
   });
 
   test("two undated fixtures are told apart by identity, not by their (equal) kickoffs", () => {
@@ -173,12 +173,16 @@ describe("the dated preview around the six-day switch (real data, real HTTP)", (
     assert.equal(without.status, 404);
   });
 
-  test("before the switch: the pair page and the earlier meeting are as they were", async () => {
+  test("before the switch: the pair page is the series page, the earlier meeting its own (WEB-001)", async () => {
     const pairPage = await get(early, `/nfl/${PAIR_SLUG}/`);
     assert.equal(canonicalOf(pairPage.body), `/nfl/${PAIR_SLUG}/`);
     assert.match(titleOf(pairPage.body), /Box Score/);
+    assert.ok(pairPage.body.includes(`/nfl/${PAIR_SLUG}/2026-week-5/`), "the pair page links the Week 5 box score");
     const prior = await get(early, `/embed/matchup/${PAIR_SLUG}?game=2026-week-5`, { "x-sc-matchup-preview": "1" });
-    assert.equal(prior.headers.get("x-matchup-game"), "current", "the Week 5 recap still belongs to the pair page");
+    assert.equal(prior.headers.get("x-matchup-game"), "archived", "the Week 5 recap is canonical at its own address");
+    const page = await get(early, `/nfl/${PAIR_SLUG}/2026-week-5/`);
+    assert.equal(canonicalOf(page.body), `/nfl/${PAIR_SLUG}/2026-week-5/`);
+    assert.match(page.body, /"@type":"SportsEvent"/);
   });
 
   test("before the switch: Seattle's Schedule, Matchups and Overview open the Week 12 preview", async () => {

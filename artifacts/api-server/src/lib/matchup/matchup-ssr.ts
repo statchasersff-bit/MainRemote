@@ -23,7 +23,7 @@ import {
 } from "./matchup-render";
 import { matchupPageMeta, matchupScoreLine } from "./matchup-seo";
 import { matchupPageHeading, matchupShare, seasonGameLead } from "./matchup-render";
-import type { MatchupPair } from "./pair";
+import { gameSegment, type MatchupPair } from "./pair";
 import { LruCache } from "../lru";
 
 export interface MatchupSsrResult {
@@ -49,10 +49,10 @@ export interface MatchupSsrResult {
    */
   pinnedMissing: boolean;
   /**
-   * A game address asked for the meeting the pair's own address owns. The
+   * A dated preview of the fixture the pair's own address is previewing: the
    * page renders, but its canonical is the pair's address and it carries no
-   * SportsEvent, so the recap has exactly one canonical URL. (A 301 until
-   * 2026-10-10.)
+   * SportsEvent. Never a finished game since WEB-001 (2026-11-24): those are
+   * canonical at their own dated address.
    */
   pinnedIsCurrent: boolean;
   /**
@@ -172,6 +172,28 @@ export interface RenderMatchupAppPageOptions extends MatchupRenderOptions {
    * its canonical then points here rather than at itself.
    */
   pairCanonical?: string;
+  /**
+   * The absolute matchup prefix on this origin ("https://host/nfl/"). When
+   * set, the canonical is spelled from the resolved record - the pair's
+   * canonical slug and the pinned game's own segment - rather than from the
+   * request, so no URL variant can name itself (WEB-001).
+   */
+  canonicalPrefix?: string;
+}
+
+/**
+ * The page's canonical, from what the data layer resolved: the pinned game's
+ * own dated address, the pair's address for the pair's page (and for a dated
+ * preview the pair's page is previewing), else `fallback`.
+ */
+export function recordCanonical(data: MatchupData, prefix: string, fallback: string): string {
+  const pairUrl = `${prefix}${data.pair.slug}/`;
+  if (data.pinned) {
+    const { season, week, seasonType } = data.pinned;
+    return `${pairUrl}${gameSegment({ season, week, seasonType })}/`;
+  }
+  if (!data.pinnedRequested || data.pinnedIsCurrent) return pairUrl;
+  return fallback;
 }
 
 export async function renderMatchupAppPage(
@@ -183,10 +205,12 @@ export async function renderMatchupAppPage(
   // The meta reads the same data the fragment was drawn from, so the title
   // and the page cannot disagree about the state.
   const { result: fragment, data } = await renderWithData(pair, options);
-  const meta = matchupPageMeta(
-    data,
-    data.pinnedIsCurrent && options.pairCanonical ? options.pairCanonical : options.canonical,
-  );
+  const canonical = options.canonicalPrefix
+    ? recordCanonical(data, options.canonicalPrefix, options.canonical)
+    : data.pinnedIsCurrent && options.pairCanonical
+      ? options.pairCanonical
+      : options.canonical;
+  const meta = matchupPageMeta(data, canonical);
 
   for (const marker of [HEAD_MARKER, BODY_MARKER, CLASS_MARKER]) {
     if (!template.includes(marker)) logger.warn({ marker }, "matchup.html is missing an SSR marker");
@@ -206,7 +230,7 @@ export async function renderMatchupAppPage(
           matchupFaqSchema(data, options, false) +
           "\n  " +
           // Breadcrumbs and the highlights video, on a recap only.
-          matchupRecapSchema(data, options, options.canonical),
+          matchupRecapSchema(data, options, canonical),
     )
     .replace(CLASS_MARKER, options.embed ? " is-embed" : "")
     .replace(BODY_MARKER, () => fragment.html);

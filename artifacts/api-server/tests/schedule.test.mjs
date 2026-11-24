@@ -473,14 +473,14 @@ describe("a divisional rematch still to come", () => {
   }
 
   /**
-   * The rule since 2026-10-10 (pairOwnsMeeting in matchup/pair.ts): the
-   * pair's page owns this season's latest result until the rematch is within
-   * six days, so a Week 2 result links to the pair's page in September
-   * whether or not the two meet again in January - and to its own dated
-   * page once the rematch is a week away, when the pair's page is the
-   * preview. The board's season is the one the server is pinned to.
+   * The rule since WEB-001 (2026-11-24, meetingHasOwnAddress in
+   * matchup/pair.ts): a finished game links to its own dated page, whether
+   * or not the two meet again and however near the rematch is. From
+   * 2026-10-10 until then the latest result linked the pair's page until the
+   * rematch was within six days. The board's season is the one the server is
+   * pinned to.
    */
-  test("the latest result links to the pair until the rematch is near, then to its dated recap", () => {
+  test("a finished game links to its dated page, before and after the rematch nears", () => {
     const board = (now) =>
       render.renderSchedulePage(
         {
@@ -499,13 +499,12 @@ describe("a divisional rematch still to come", () => {
     const previous = process.env.SC_SCHEDULE_SEASON;
     process.env.SC_SCHEDULE_SEASON = "2024";
     try {
-      const september = hrefsAt(WEEK_2 + 5 * DAY);
-      assert.ok(september.includes("/nfl/dallas-cowboys-vs-washington-commanders/"), september.join(" "));
-      assert.ok(september.includes("/nfl/new-england-patriots-vs-pittsburgh-steelers/"), september.join(" "));
-
-      const january = hrefsAt(WEEK_2 + 112 * DAY - 5 * DAY);
-      assert.ok(january.includes("/nfl/dallas-cowboys-vs-washington-commanders/2024-week-2/"), january.join(" "));
-      assert.ok(january.includes("/nfl/new-england-patriots-vs-pittsburgh-steelers/"), january.join(" "));
+      for (const now of [WEEK_2 + 5 * DAY, WEEK_2 + 112 * DAY - 5 * DAY]) {
+        const hrefs = hrefsAt(now);
+        assert.ok(hrefs.includes("/nfl/dallas-cowboys-vs-washington-commanders/2024-week-2/"), hrefs.join(" "));
+        assert.ok(hrefs.includes("/nfl/new-england-patriots-vs-pittsburgh-steelers/2024-week-2/"), hrefs.join(" "));
+        assert.ok(!hrefs.includes("/nfl/dallas-cowboys-vs-washington-commanders/"), "no finished game links the pair page");
+      }
     } finally {
       if (previous === undefined) delete process.env.SC_SCHEDULE_SEASON;
       else process.env.SC_SCHEDULE_SEASON = previous;
@@ -559,8 +558,9 @@ describe("the schedule page", () => {
       );
       if (/2024-week-3\/$/.test(href)) dated += 1;
     }
-    assert.ok(dated > 0, "the divisional games of Week 3 were played again, so they have their own pages");
-    assert.ok(dated < rows.length, "a one-off game is the pair page's own recap");
+    // WEB-001: every finished game opens its own dated page, a one-off game
+    // as much as a divisional one played twice (the 2024 board is all finals).
+    assert.equal(dated, rows.length, "every finished game links its own dated page");
   });
 
   /**

@@ -38,20 +38,13 @@ const SEPARATOR = "-vs-";
  * preview the Tuesday after a divisional game was answering them with a game
  * thirteen weeks away. So the pair's page keeps the latest result - the full
  * recap and box score - until the rematch is within six days, and goes back
- * to it once the rematch has been played.
+ * to it once the rematch has been played. matchup-data.ts applies it when it
+ * decides what the pair's page leads with.
  *
- * It lives here, beside the two functions that spell an address, because it is
- * the rule that decides WHICH address a finished game is canonical at: while
- * the pair's page owns a game, the dated URL canonicalizes up to it and stays
- * out of the sitemap; once the pair's page has moved on, the dated URL is the
- * page. matchup-data.ts applies it when it decides what to lead with, and
- * anything building a link to a past meeting - the schedule board's row
- * links, for one - has to ask the same question or it links to a page that
- * declares itself a copy.
- *
- * Was a fourteen-day window ("RECENT_WINDOW_MS") until 2026-10-10, after which
- * the pair's page let the game go whatever came next; a pair with no rematch
- * now keeps its latest game for the rest of the season.
+ * It no longer decides where a finished game is canonical (WEB-001,
+ * 2026-11-24): every finished game is canonical at its own dated address,
+ * whatever the pair's page is leading with, so two meetings of one pair never
+ * collapse onto one URL. See meetingHasOwnAddress().
  */
 export const PREVIEW_WINDOW_MS = 6 * 24 * 60 * 60 * 1000;
 
@@ -102,43 +95,22 @@ function nextMeeting(meetings: readonly MeetingFacts[], now: number): MeetingFac
 }
 
 /**
- * Is this finished meeting the one the pair's own address owns right now?
- *
- * The latest played meeting of the current season, while the pair's page is
- * not in preview mode. Only one game is ever owned, and a game from an
- * earlier season never is: those are archives at their own addresses.
- */
-export function pairOwnsMeeting(
-  game: MeetingFacts & { season: number },
-  meetings: readonly MeetingFacts[],
-  currentSeason: number,
-  now: number,
-): boolean {
-  if (!game.isFinal || game.kickoffMs === null || game.season !== currentSeason) return false;
-  const later = meetings.some((m) => m.isFinal && m.kickoffMs !== null && m.kickoffMs > game.kickoffMs!);
-  if (later) return false;
-  return !pairInPreviewMode(meetings, now);
-}
-
-/**
  * Is this finished meeting canonical at a dated address of its own?
  *
- * False while the pair's page owns it (pairOwnsMeeting), and false for
- * anything that is not a finished game with a kickoff behind it - there is no
- * recap of a fixture, so there is no dated page for one either.
+ * Every finished game with a kickoff is (WEB-001, 2026-11-24). From 2026-10-10
+ * until then the pair's page "owned" this season's latest result - the dated
+ * URL rendered but canonicalized up to `/nfl/<a>-vs-<b>/` and stayed out of the
+ * game sitemap - which folded 46 of 49 audited 2026 games onto their
+ * head-to-head URL. The pair's page is now the series page, self-canonical,
+ * and links each meeting; the dated page is the one permanent address of the
+ * game.
  *
- * `meetings` is every meeting between the two in the game's season,
- * including this one; `currentSeason` is the league's. A game from a season
- * before it always has its own address.
+ * Nothing that is not a finished game has a dated page to be canonical at:
+ * there is no recap of a fixture (an unplayed meeting's dated preview is
+ * meetingLinkTarget's business, and it is noindex).
  */
-export function meetingHasOwnAddress(
-  game: MeetingFacts & { season: number },
-  meetings: readonly MeetingFacts[],
-  currentSeason: number,
-  now: number,
-): boolean {
-  if (!game.isFinal || game.kickoffMs === null) return false;
-  return !pairOwnsMeeting(game, meetings, currentSeason, now);
+export function meetingHasOwnAddress(game: MeetingFacts): boolean {
+  return game.isFinal && game.kickoffMs !== null;
 }
 
 /**
@@ -172,9 +144,9 @@ export interface LinkedMeeting extends MeetingFacts {
  * the Schedule and Matchups tabs, the Overview, the Usage tab, the league
  * schedule and the player pages all ask it, so they cannot disagree.
  *
- * - A finished game: its own address exactly when meetingHasOwnAddress()
- *   says so, which is unchanged - the pair's page still owns this season's
- *   latest result until the rematch is within six days.
+ * - A finished game: its own dated address (meetingHasOwnAddress), always,
+ *   since WEB-001 (2026-11-24). Until then the pair's page owned this
+ *   season's latest result and its links went there.
  * - An unplayed game this season: the pair's page while that page is
  *   previewing it (pairPreviewsMeeting), otherwise its own dated preview.
  *   Before this rule an upcoming rematch more than six days out linked the
@@ -192,7 +164,7 @@ export function meetingLinkTarget(
   currentSeason: number,
   now: number,
 ): "own" | "pair" {
-  if (game.isFinal) return meetingHasOwnAddress(game, meetings, currentSeason, now) ? "own" : "pair";
+  if (game.isFinal) return meetingHasOwnAddress(game) ? "own" : "pair";
   if (game.canceled || game.season !== currentSeason) return "pair";
   return pairPreviewsMeeting(game, meetings, now) ? "pair" : "own";
 }

@@ -2118,15 +2118,16 @@ describe("the Cardinals–Rams games", () => {
 });
 
 /*
- * One owner per game (the SEO brief of 2026-10-10).
+ * One permanent address per game (WEB-001, 2026-11-24).
  *
- * The pair's page owns this season's latest result until the rematch is
- * within six days; the dated page of an owned game renders, canonicalizes up
- * to the pair and carries no SportsEvent. In preview mode the pair's page
- * summarizes the last meeting above the preview. Each test finds a pair in
- * the state it needs among a few candidates and skips cleanly when none is.
+ * Every finished game is canonical at its own dated address and carries its
+ * own SportsEvent; the pair's page is the self-canonical series page and
+ * links the game it leads with. Until WEB-001 the pair's page owned this
+ * season's latest result and the dated page canonicalized up to it. Each test
+ * finds a pair in the state it needs among a few candidates and skips cleanly
+ * when none is.
  */
-describe("one owner per game", () => {
+describe("one address per game", () => {
   const PAIRS = [
     "/nfl/new-england-patriots-vs-seattle-seahawks/",
     "/nfl/atlanta-falcons-vs-new-orleans-saints/",
@@ -2134,34 +2135,38 @@ describe("one owner per game", () => {
     CANON,
   ];
 
-  test("an owned dated page canonicalizes to the pair and prints no SportsEvent", async () => {
+  test("the pair page's latest game is self-canonical at its dated address, and the pair page links it", async () => {
     for (const path of PAIRS) {
       const { doc } = await dom(path);
       const root = doc.querySelector("[data-sct-root]");
       if (root.getAttribute("data-matchup-state") !== "recently_completed") continue;
-      const season = root.getAttribute("data-season");
-      const h1 = doc.querySelector("h1").textContent;
-      const week = /\(Week (\d+), \d{4}\)$/.exec(h1)?.[1];
-      if (!week) continue;
-      const dated = `${path}${season}-week-${week}/`;
+      const link = doc.querySelector(".sct-mu-gamelink a");
+      assert.ok(link, "the pair page links its game's box score");
+      const dated = link.getAttribute("href").replace(/\?.*$/, "");
+      assert.match(dated, new RegExp(`^${path}\\d{4}-[a-z0-9-]+/$`));
       const res = await get(dated);
       assert.equal(res.status, 200, `${dated} renders rather than redirecting`);
       const page = await dom(dated);
       const canonical = page.doc.querySelector('link[rel="canonical"]').getAttribute("href");
-      assert.ok(canonical.endsWith(path), `${canonical} is the pair's address`);
+      assert.ok(canonical.endsWith(dated), `${canonical} is the game's own address`);
       const types = [...page.doc.head.querySelectorAll('script[type="application/ld+json"]')]
         .map((s) => JSON.parse(s.textContent)["@type"]);
-      assert.ok(!types.includes("SportsEvent"), "the pair's page carries the event");
-      // The pair's page, by contrast, is self-canonical and carries it.
-      const pairTypes = [...doc.head.querySelectorAll('script[type="application/ld+json"]')]
-        .map((s) => JSON.parse(s.textContent)["@type"]);
-      assert.ok(pairTypes.includes("SportsEvent"));
+      assert.ok(types.includes("SportsEvent"), "the game's page carries its event");
+      // The pair's page stays self-canonical.
+      assert.ok(doc.querySelector('link[rel="canonical"]').getAttribute("href").endsWith(path));
+      const segment = dated.split("/")[3];
       assert.equal(
-        (await fetch(`${server.origin}/embed/matchup/${path.split("/")[2]}?game=${season}-week-${week}`)).headers.get("x-matchup-game"),
-        "current",
+        (await fetch(`${server.origin}/embed/matchup/${path.split("/")[2]}?game=${segment}`)).headers.get("x-matchup-game"),
+        "archived",
       );
       return;
     }
+  });
+
+  test("a numbered spelling of a named round 301s to the named address", async () => {
+    const res = await fetch(`${server.origin}/nfl/new-england-patriots-vs-seattle-seahawks/2025-postseason-week-5/`, { redirect: "manual" });
+    assert.equal(res.status, 301);
+    assert.equal(res.headers.get("location"), "/nfl/new-england-patriots-vs-seattle-seahawks/2025-super-bowl/");
   });
 
   // The "Last meeting" block under the old injury report left the upcoming

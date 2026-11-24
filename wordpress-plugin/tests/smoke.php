@@ -1911,6 +1911,26 @@ $links = statchasers_matchup_games_links( $rows );
 is( count( $links ), 2, 'one link per game' );
 is( $links[0], array( 'loc' => statchasers_matchup_url( 'cleveland-browns-vs-tampa-bay-buccaneers', '2026-week-2' ), 'mod' => '2026-09-20' ), 'at the dated address, the kickoff date as lastmod' );
 is( statchasers_matchup_games_links( array( array( 'a-vs-b', '2026-week-1', '' ) ) ), array( array( 'loc' => statchasers_matchup_url( 'a-vs-b', '2026-week-1' ) ) ), 'no date, no lastmod' );
+// WEB-001: an API that sends `modified: null` has no trustworthy stamp, and
+// the kickoff is not one; the stat pull wins whenever it is sent.
+$rows = statchasers_matchup_games_rows( array(
+	'ok'    => true,
+	'games' => array(
+		array( 'pair' => 'a-vs-b', 'game' => '2026-week-3', 'kickoff' => '2026-09-21T17:00:00.000Z', 'modified' => null ),
+		array( 'pair' => 'a-vs-b', 'game' => '2026-week-9', 'kickoff' => '2026-11-02T17:00:00.000Z', 'modified' => '2026-11-04T09:00:00.000Z' ),
+	),
+) );
+is( $rows[0], array( 'a-vs-b', '2026-week-3', '' ), 'modified null: no lastmod, not the kickoff' );
+is( $rows[1], array( 'a-vs-b', '2026-week-9', '2026-11-04' ), 'modified sent: the stat pull is the lastmod' );
+is( statchasers_matchup_games_links( array( $rows[0] ) ), array( array( 'loc' => statchasers_matchup_url( 'a-vs-b', '2026-week-3' ) ) ), 'and the link carries none' );
+
+echo "\nmatchup game segments have one spelling\n";
+is( statchasers_matchup_game_segment( '2025-postseason-week-5' ), '2025-super-bowl', 'a named round by number is the named round' );
+is( statchasers_matchup_game_segment( '2025-postseason-week-1' ), '2025-wild-card', 'the wild card too' );
+is( statchasers_matchup_game_segment( '2025-super-bowl' ), '2025-super-bowl', 'the named spelling is already the one' );
+is( statchasers_matchup_game_segment( '2025-postseason-week-4' ), '2025-postseason-week-4', 'a round with no name keeps its number' );
+is( statchasers_matchup_game_segment( '2026-week-12' ), '2026-week-12', 'a regular week is unchanged' );
+is( statchasers_matchup_game_segment( '' ), '', 'no game, no segment' );
 
 echo "\n/game-sitemap.xml, the game pages' own sitemap\n";
 is( statchasers_matchup_games_sitemap_url(), 'https://example.com/game-sitemap.xml', 'named by Rank Math\'s router' );

@@ -1,11 +1,11 @@
 /**
  * The dated game pages the sitemap lists: /embed/matchup-games.json.
  *
- * Every row is a game that is canonical at its own address by the one rule
- * the pages apply (meetingHasOwnAddress): final, and not the game the pair's
- * page owns - this season's latest result, until the rematch is within six
- * days. The whole of the season before is listed as archives. Each listed
- * path must answer 200 and name itself as its canonical.
+ * Since WEB-001 (2026-11-24) every finished game is canonical at its own
+ * dated address (meetingHasOwnAddress), so the list is every completed game
+ * the page serves - the current season and the HISTORY_SEASONS before it -
+ * each once. Each listed path must answer 200 and name itself as its
+ * canonical; lastmod is the stored stats' fetch stamp, or absent.
  */
 
 import test, { before, after } from "node:test";
@@ -24,50 +24,44 @@ after(async () => {
   await cleanupBundles();
 });
 
-test("the ownership rule: the pair page keeps this season's latest game until the rematch is within six days", () => {
+test("every finished game has its own address, whatever the pair page leads with", () => {
   const now = Date.parse("2026-10-09T12:00:00Z");
   const day = 86_400_000;
   const played = (daysAgo) => ({ kickoffMs: now - daysAgo * day, isFinal: true });
   const ahead = (daysOn) => ({ kickoffMs: now + daysOn * day, isFinal: false });
-  const season = 2026;
 
-  // One game played, nothing ahead: the pair page owns it for the rest of
-  // the season, however long ago it was.
+  // The pair page still keeps the latest result until the rematch is within
+  // six days - that decides what the pair page LEADS with, not where the
+  // game is canonical.
   assert.equal(pair.pairInPreviewMode([played(3)], now), false);
-  assert.equal(pair.pairOwnsMeeting({ ...played(3), season }, [played(3)], season, now), true, "three days old");
-  assert.equal(pair.pairOwnsMeeting({ ...played(40), season }, [played(40)], season, now), true, "forty days old");
-  assert.equal(pair.meetingHasOwnAddress({ ...played(40), season }, [played(40)], season, now), false);
-
-  // A rematch thirteen weeks out does not take the page away from the result.
-  let meetings = [played(4), ahead(91)];
-  assert.equal(pair.pairInPreviewMode(meetings, now), false, "preview waits for the rematch");
-  assert.equal(pair.meetingHasOwnAddress({ ...played(4), season }, meetings, season, now), false, "still owned");
-
-  // Six days out (or less) and the page is the preview; the dated page is its own.
-  meetings = [played(60), ahead(6)];
-  assert.equal(pair.pairInPreviewMode(meetings, now), true, "six days: preview");
-  assert.equal(pair.meetingHasOwnAddress({ ...played(60), season }, meetings, season, now), true, "let go");
-  meetings = [played(60), ahead(6.5)];
-  assert.equal(pair.pairInPreviewMode(meetings, now), false, "six and a half days: not yet");
-
-  // Nothing played yet: the page previews the first meeting whenever it is.
+  assert.equal(pair.pairInPreviewMode([played(4), ahead(91)], now), false, "preview waits for the rematch");
+  assert.equal(pair.pairInPreviewMode([played(60), ahead(6)], now), true, "six days: preview");
+  assert.equal(pair.pairInPreviewMode([played(60), ahead(6.5)], now), false, "six and a half days: not yet");
   assert.equal(pair.pairInPreviewMode([ahead(100)], now), true);
-  assert.equal(pair.pairInPreviewMode([ahead(100), { kickoffMs: null, isFinal: false }], now), true);
-  // An undated rematch is not within six days of anything.
   assert.equal(pair.pairInPreviewMode([played(10), { kickoffMs: null, isFinal: false }], now), false);
 
-  // Only the latest result is owned: the earlier meeting of a pair that has
-  // met twice has its own address at once.
-  meetings = [played(50), played(8)];
-  assert.equal(pair.meetingHasOwnAddress({ ...played(50), season }, meetings, season, now), true, "the earlier game");
-  assert.equal(pair.meetingHasOwnAddress({ ...played(8), season }, meetings, season, now), false, "the latest is owned");
+  // The latest game, an earlier one, and last season's: all their own.
+  assert.equal(pair.meetingHasOwnAddress(played(3)), true, "three days old");
+  assert.equal(pair.meetingHasOwnAddress(played(40)), true, "forty days old, no rematch");
+  assert.equal(pair.meetingHasOwnAddress(played(300)), true, "last season");
+  assert.equal("pairOwnsMeeting" in pair, false, "the ownership rule is gone");
 
-  // A game from the season before is an archive at its own address.
-  assert.equal(pair.meetingHasOwnAddress({ ...played(300), season: season - 1 }, [played(300)], season, now), true);
+  // Links follow: a finished game opens its dated page in every state.
+  // (meetingLinkTarget compares `game` to `meetings` by identity.)
+  const season = 2026;
+  const at = (m) => ({ ...m, season });
+  for (const meetings of [[at(played(4)), at(ahead(91))], [at(played(60)), at(ahead(6))], [at(played(50)), at(played(8))]]) {
+    for (const game of meetings.filter((x) => x.isFinal)) {
+      assert.equal(pair.meetingLinkTarget(game, meetings, season, now), "own");
+    }
+  }
+  // An unplayed game the pair page is previewing still links the pair page.
+  const previewing = [at(played(60)), at(ahead(6))];
+  assert.equal(pair.meetingLinkTarget(previewing[1], previewing, season, now), "pair");
 
   // Never for a fixture, never without a kickoff.
-  assert.equal(pair.meetingHasOwnAddress({ kickoffMs: now - 20 * day, isFinal: false, season }, [], season, now), false);
-  assert.equal(pair.meetingHasOwnAddress({ kickoffMs: null, isFinal: true, season }, [], season, now), false);
+  assert.equal(pair.meetingHasOwnAddress({ kickoffMs: now - 20 * day, isFinal: false }), false);
+  assert.equal(pair.meetingHasOwnAddress({ kickoffMs: null, isFinal: true }), false);
 });
 
 test("the index lists dated game pages, each of which answers at its own address", async () => {
@@ -76,26 +70,42 @@ test("the index lists dated game pages, each of which answers at its own address
   const body = await res.json();
   assert.equal(body.ok, true);
   assert.match(String(body.season), /^\d{4}$/);
-  assert.deepEqual(body.seasons, [body.season, body.season - 1], "this season and the one before");
+  assert.deepEqual(
+    body.seasons,
+    Array.from({ length: 6 }, (_, i) => body.season - i),
+    "this season and the five before it, the window the page serves",
+  );
   assert.ok(Array.isArray(body.games));
   assert.ok(
     body.games.some((g) => g.season === body.season - 1),
     "last season's games are archives in the sitemap",
   );
-  for (const game of body.games.slice(0, 50)) {
+  for (const game of body.games) {
     assert.match(game.pair, /^[a-z0-9-]+-vs-[a-z0-9-]+$/);
     assert.match(game.game, /^\d{4}-(?:week-\d{1,2}|wild-card|divisional|conference-championship|super-bowl|postseason-week-\d{1,2})$/);
     assert.equal(game.path, `/nfl/${game.pair}/${game.game}/`);
     assert.match(game.kickoff, /^\d{4}-\d{2}-\d{2}T/);
     assert.ok(Date.parse(game.kickoff) < Date.now(), "a played game");
-    assert.match(game.modified, /^\d{4}-\d{2}-\d{2}T/, "a lastmod for the sitemap");
-    assert.ok(Date.parse(game.modified) >= Date.parse(game.kickoff), "stats are pulled after kickoff");
+    // The stored stats' fetch stamp, or null: never the kickoff stood in.
+    if (game.modified !== null) {
+      assert.match(game.modified, /^\d{4}-\d{2}-\d{2}T/, "a lastmod for the sitemap");
+      assert.ok(Date.parse(game.modified) >= Date.parse(game.kickoff), "stats are pulled after kickoff");
+    }
   }
   const keys = body.games.map((g) => g.path);
   assert.equal(new Set(keys).size, keys.length, "each game once");
   // Sorted newest first.
   for (let i = 1; i < body.games.length; i++) {
     assert.ok(body.games[i - 1].kickoff >= body.games[i].kickoff, "newest first");
+  }
+  // This season's latest meetings are there too (the pair page "owned" them
+  // before WEB-001): a pair listed once this season is its only, and so its
+  // latest, game.
+  const thisSeason = body.games.filter((g) => g.season === body.season);
+  if (thisSeason.length > 0) {
+    const perPair = new Map();
+    for (const g of thisSeason) perPair.set(g.pair, (perPair.get(g.pair) ?? 0) + 1);
+    assert.ok([...perPair.values()].some((n) => n === 1), "a pair's only game this season is listed");
   }
   if (body.games.length > 0) {
     const page = await fetch(`${server.origin}${body.games[0].path}`, { redirect: "manual" });
