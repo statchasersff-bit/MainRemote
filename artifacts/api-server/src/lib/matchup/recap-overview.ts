@@ -33,7 +33,8 @@ import { scoreboardResult, type ScoreboardGame } from "./scoreboard-hero";
 import { BAR_ICON } from "./recap-premium";
 import type { GameOdds } from "./boxscore";
 import type { GamePbp, PbpDrive } from "./play-by-play";
-import { downText, isFinalScore, spotText, storyPlayFacts, type StoryPlayFacts } from "./play-facts";
+import { downText, halftimeLeadHeld, isFinalScore, leadHeldToFinal, scoreBefore, spotText, storyPlayFacts, type StoryPlayFacts } from "./play-facts";
+import type { ScoringPlay } from "./scoring-plays";
 import { composeRecap, factsHash, recapFacts, resolver, type TeamRecord } from "./recap-narrative";
 import type { PlayerUrlFn } from "../team/links";
 
@@ -197,6 +198,8 @@ export interface OverviewInput {
   drives?: PbpDrive[] | null;
   /** The game's play-by-play, which down, distance and the final whistle are read from (WEB-037). */
   pbp?: GamePbp | null;
+  /** The box score's scoring sequence: the only evidence that a lead held to the final (WEB-037). */
+  scoring?: ScoringPlay[] | null;
   odds?: GameOdds | null;
   records?: { away: TeamRecord | null; home: TeamRecord | null };
   divisional?: boolean;
@@ -247,6 +250,10 @@ interface Facts {
   pbpFacts: (p: StoryPlay) => StoryPlayFacts | null;
   /** The go-ahead score ended the game: it won it, there was no lead left to keep. */
   walkOff: boolean;
+  /** The box score confirms the winner stayed ahead from the go-ahead score through the final. */
+  leadHeld: boolean;
+  /** The box score confirms the winner's halftime lead held through the final. */
+  halfLeadHeld: boolean;
   /** "the Detroit 7" from "DET 7". */
   spot: (at: string | null) => string | null;
 }
@@ -356,6 +363,12 @@ function facts(input: OverviewInput): Facts | null {
       ? pbpFacts(goAhead)?.endsGame === true && isFinalScore(goAhead, { away: result.away, home: result.home }, winner, goAhead.td)
       : false,
     spot: (at) => spotText(at, cityOf),
+    leadHeld: (() => {
+      if (!goAhead) return false;
+      const before = scoreBefore(goAhead, winner);
+      return before !== null && leadHeldToFinal(input.scoring, game.away.abbr, game.home.abbr, { away: result.away, home: result.home }, { quarter: goAhead.qtr, side: winner, before });
+    })(),
+    halfLeadHeld: halftimeLeadHeld(input.scoring, game.away.abbr, game.home.abbr, { away: result.away, home: result.home }, winner),
   };
 }
 
@@ -438,7 +451,9 @@ function recapParagraphs(f: Facts, input: OverviewInput, name: ReturnType<typeof
           ? `${f.W.city} led ${winner}–${loser} at halftime, but ${f.L.city} came back to take the lead in the second half.`
           : tied
             ? `${f.W.city} led ${winner}–${loser} at halftime before ${f.L.city} pulled level in the second half.`
-            : `${f.W.city} led ${winner}–${loser} at halftime and never gave up the lead.`,
+            : f.halfLeadHeld
+              ? `${f.W.city} led ${winner}–${loser} at halftime and never gave up the lead.`
+              : `${f.W.city} led ${winner}–${loser} at halftime.`,
       );
     }
   }
@@ -474,7 +489,9 @@ function recapParagraphs(f: Facts, input: OverviewInput, name: ReturnType<typeof
       second.push(
         f.walkOff
           ? `${capital(line)} ${when(f.goAhead)} to win it on the final play.`
-          : `${capital(line)} ${when(f.goAhead)} to put ${f.W.city} ahead for good.`,
+          : f.leadHeld
+            ? `${capital(line)} ${when(f.goAhead)} to put ${f.W.city} ahead for good.`
+            : `${capital(line)} ${when(f.goAhead)} to give ${f.W.city} the lead.`,
       );
     }
   }
@@ -801,6 +818,7 @@ export function renderRecapOverviewParts(input: OverviewInput): { main: string; 
     city: input.city,
     drives: input.drives ?? null,
     pbp: input.pbp ?? null,
+    scoring: input.scoring ?? null,
     odds: input.odds ?? null,
     records: input.records,
     divisional: input.divisional,

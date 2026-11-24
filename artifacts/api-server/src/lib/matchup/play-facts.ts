@@ -270,3 +270,79 @@ export function storyPlayFacts<T extends StoryPlayLike>(plays: T[], pbp: GamePbp
   }
   return out;
 }
+
+type Side = "away" | "home";
+
+/**
+ * The box score's scoring sequence with the running score after each play,
+ * or null when it does not add up to the final (a dropped or partial feed):
+ * a sequence that cannot be checked confirms nothing.
+ */
+function runningScores(
+  scoring: ScoringPlay[] | null | undefined,
+  away: string,
+  home: string,
+  final: { away: number; home: number },
+): Array<{ play: ScoringPlay; before: { away: number; home: number }; after: { away: number; home: number } }> | null {
+  if (!scoring?.length) return null;
+  let a = 0;
+  let h = 0;
+  const out = scoring.map((play) => {
+    const before = { away: a, home: h };
+    if (play.team === away) a += playPoints(play);
+    else if (play.team === home) h += playPoints(play);
+    return { play, before, after: { away: a, home: h } };
+  });
+  return a === final.away && h === final.home ? out : null;
+}
+
+/**
+ * "Led the rest of the way" and "ahead for good", checked (WEB-037): true
+ * only when the box score's complete scoring sequence holds the score that
+ * gave `from.side` the lead - same quarter, that side scoring, the same
+ * score before it - and that side stayed strictly ahead after it and every
+ * later score through the final. A later tie or lead change, a sequence
+ * that does not add up to the final, or no single matching score: false.
+ */
+export function leadHeldToFinal(
+  scoring: ScoringPlay[] | null | undefined,
+  away: string,
+  home: string,
+  final: { away: number; home: number },
+  from: { quarter: number; side: Side; before: { away: number; home: number } },
+): boolean {
+  const seq = runningScores(scoring, away, home, final);
+  if (!seq) return false;
+  const code = from.side === "away" ? away : home;
+  const hits = seq
+    .map((s, i) => ({ s, i }))
+    .filter(({ s }) => s.play.quarter === from.quarter && s.play.team === code && s.before.away === from.before.away && s.before.home === from.before.home);
+  if (hits.length !== 1) return false;
+  const ahead = (x: { away: number; home: number }) => (from.side === "away" ? x.away > x.home : x.home > x.away);
+  return seq.slice(hits[0]!.i).every((s) => ahead(s.after));
+}
+
+/** A halftime lead kept through the final: every second-half score left `side` strictly ahead, by the complete sequence. */
+export function halftimeLeadHeld(
+  scoring: ScoringPlay[] | null | undefined,
+  away: string,
+  home: string,
+  final: { away: number; home: number },
+  side: Side,
+): boolean {
+  const seq = runningScores(scoring, away, home, final);
+  if (!seq) return false;
+  const ahead = (x: { away: number; home: number }) => (side === "away" ? x.away > x.home : x.home > x.away);
+  const half = [...seq].reverse().find((s) => s.play.quarter <= 2)?.after ?? { away: 0, home: 0 };
+  return ahead(half) && seq.filter((s) => s.play.quarter >= 3).every((s) => ahead(s.after));
+}
+
+/** The score before a story play, from the score after it (a touchdown's before its try). */
+export function scoreBefore(
+  p: { td: boolean; fg: string | null; safety?: boolean; awayScore: number | null; homeScore: number | null },
+  side: Side,
+): { away: number; home: number } | null {
+  if (p.awayScore === null || p.homeScore === null) return null;
+  const pts = p.td ? 6 : p.fg === "made" ? 3 : p.safety ? 2 : 0;
+  return side === "away" ? { away: p.awayScore - pts, home: p.homeScore } : { away: p.awayScore, home: p.homeScore - pts };
+}

@@ -31,7 +31,8 @@
 import type { BoxTeamStats, GameOdds } from "./boxscore";
 import type { GamePlayer, GamePlayers } from "./game-players";
 import type { GamePbp, PbpDrive } from "./play-by-play";
-import { downFacts, downText, endsGameAt, isFinalScore, matchStoryPlay, spotText, type StoryPlayFacts } from "./play-facts";
+import { downFacts, downText, endsGameAt, isFinalScore, leadHeldToFinal, matchStoryPlay, scoreBefore, spotText, type StoryPlayFacts } from "./play-facts";
+import type { ScoringPlay } from "./scoring-plays";
 import type { GameStory, StoryInjury, StoryPlay } from "./recap-overview";
 import { scoreboardResult, type ScoreboardGame } from "./scoreboard-hero";
 import { searchKey } from "../render";
@@ -59,6 +60,8 @@ export interface NarrativeInput {
   drives: PbpDrive[] | null;
   /** The game's play-by-play (data/matchup/pbp), for down, distance and the final whistle (WEB-037); optional. */
   pbp?: GamePbp | null;
+  /** The box score's scoring sequence: the only evidence that a lead held to the final (WEB-037); optional. */
+  scoring?: ScoringPlay[] | null;
   /** The closing line, or null. */
   odds: GameOdds | null;
   /** Each side's record through this game, when every earlier game is known. */
@@ -258,6 +261,8 @@ interface Ctx {
   goAhead: { state: DriveState; play: StoryPlay | null } | null;
   /** The go-ahead score ended the game (nothing snapped or kicked off after it). */
   walkOff: boolean;
+  /** The box score's complete scoring sequence shows the winner ahead from the go-ahead score through the final. */
+  leadHeld: boolean;
   sealer: StoryPlay | null;
   /** A story play's play-by-play facts, or null when it matches no single row. */
   pbpFact: (p: StoryPlay) => StoryPlayFacts | null;
@@ -421,6 +426,12 @@ function buildCtx(input: NarrativeInput): Ctx | null {
     trailedInFourth,
     goAhead,
     walkOff: goAhead?.play ? pbpFact(goAhead.play)?.endsGame === true : false,
+    leadHeld: (() => {
+      const p = goAhead?.play;
+      if (!p) return false;
+      const before = scoreBefore(p, winner);
+      return before !== null && leadHeldToFinal(input.scoring, game.away.abbr, game.home.abbr, final, { quarter: p.qtr, side: winner, before });
+    })(),
     sealer,
     pbpFact,
     spot: (at) => spotText(at, cityOf),
@@ -1165,8 +1176,9 @@ function goAheadSentence(c: Ctx, out: Sentence[]): void {
   // A score that ended the game won it (WEB-037); "ahead for good" is for a
   // lead that then had to hold through another possession.
   const text = late
-    ? `${capital(line)} ${p.qtr >= 5 ? (/^00:/.test(p.clock ?? "") ? `${clockLeft(p.clock)} in overtime` : "in overtime") : clockLeft(p.clock)}${dc ? `, finishing ${dc}` : ""}, ${c.walkOff ? `to win it ${score} on the final play` : `to put ${c.W.city} ahead ${score} for good`}.`
-    : `${capital(line)} ${when(p)}${dc ? `, finishing ${dc}` : ""}, and ${c.W.city} led the rest of the way.`;
+    ? `${capital(line)} ${p.qtr >= 5 ? (/^00:/.test(p.clock ?? "") ? `${clockLeft(p.clock)} in overtime` : "in overtime") : clockLeft(p.clock)}${dc ? `, finishing ${dc}` : ""}, ${c.walkOff ? `to win it ${score} on the final play` : c.leadHeld ? `to put ${c.W.city} ahead ${score} for good` : `to put ${c.W.city} ahead ${score}`}.`
+    : // "Led the rest of the way" only when the box score's scoring sequence says so (WEB-037).
+      `${capital(line)} ${when(p)}${dc ? `, finishing ${dc}` : ""}, and ${c.W.city} ${c.leadHeld ? "led the rest of the way" : "took the lead"}.`;
   out.push({ text, keep: 8, at: at(p) });
   c.told.add("goahead");
   c.told.add(`play:${at(p)}`);
