@@ -7,13 +7,14 @@
  *
  * Since 2026-11-05 ("remove the older version") this IS the Situational
  * Usage section: the original card (backfield() in usage-render.ts) was
- * deleted. Every number is that card's own: the same backs (the first three with weighted
+ * deleted. Since 2026-11-21 the takeaways are phoneAnalysis() at every
+ * width (mak: "use the phone version"); the paragraph cards are gone.
+ * Every number is that card's own: the same backs (the first three with weighted
  * opportunities), situationShare() for each cell, rbSituationTotals for the
  * samples, backfieldTakeaways() for the cards; nothing is computed twice.
  * Styles are `.sct-us-sit-*` in team.css, on the `.sct-us-prm` tokens.
  */
 
-import { linkFirstMentions, usageProsePlayers } from "./prose-links";
 import { escapeHtml as e } from "../render";
 import type { UsagePlayer, UsageView } from "./usage";
 import { surname } from "./usage";
@@ -74,8 +75,8 @@ function prose(body: string): string {
  * the opportunity count, with one interpretation; the injury scenario as a
  * <details> whose summary is one line and whose body sets the next back's
  * observed workload beside the modeled one, then the full paragraph.
- * team.css shows this on phones in place of the paragraph cards, which
- * desktop keeps; the titles are the cards' own (cardOf).
+ * Shown at every width since 2026-11-21 (the paragraph cards it replaced on
+ * phones are gone); the titles come from cardOf.
  */
 function phoneAnalysis(view: UsageView, takeaways: Takeaway[], nick: string): string {
   const [rb1, rb2] = view.rbs;
@@ -292,20 +293,9 @@ export function premiumSituational(view: UsageView, team: NflTeam): string {
     `</div>`;
 
   const takeaways = backfieldTakeaways(view, team.nickname);
-  // Each card links its first mention of a player (WEB-044).
-  const people = usageProsePlayers(view);
-  const cards = takeaways
-    .map((t, i) => {
-      const c = cardOf(t, i, view);
-      return (
-        `<article class="sct-us-sit-card${c.featured ? " is-featured" : ""}">` +
-        `<div class="sct-us-sit-card-head"><span class="sct-us-sit-card-icon" aria-hidden="true">${c.icon}</span>` +
-        `<h4 class="sct-us-sit-card-title">${e(c.title)}</h4></div>` +
-        `<p class="sct-us-sit-card-body">${linkFirstMentions(prose(t.body), people)}</p>` +
-        `</article>`
-      );
-    })
-    .join("");
+  // The phone analysis (figures, bars, one line each) at every width since
+  // 2026-11-21 (mak: "use the phone version"); the paragraph cards are gone.
+  const analysis = phoneAnalysis(view, takeaways, team.nickname);
 
   return (
     // id="situational": the section's anchor, carried over from the retired card.
@@ -316,15 +306,15 @@ export function premiumSituational(view: UsageView, team: NflTeam): string {
     `<span class="sct-us-prm-icon" aria-hidden="true">${ICON_BARS}</span>` +
     `<div class="sct-us-prm-titles">` +
     `<h3 class="sct-us-prm-title" id="usage-prm-situational">Situational Usage</h3>` +
-    `<p class="sct-us-prm-sub">${e("Each running back's share of the backfield's carries + targets in the situation, with the number of opportunities it is measured on.")}</p>` +
     `</div>` +
     `<span class="sct-us-prm-stripes" aria-hidden="true"></span>` +
     `</header>` +
-    `<div class="sct-us-sit-body${cards ? "" : " is-solo"}">` +
+    `<div class="sct-us-sit-body${analysis ? "" : " is-solo"}">` +
     matrix +
-    (cards ? `<div class="sct-us-sit-cards">${cards}</div>` + phoneAnalysis(view, takeaways, team.nickname) : "") +
+    analysis +
     `</div>` +
-    `<p class="sct-us-sit-fine">${e("Opportunities, not snaps: who was on the field comes from participation data, which is published after the season.")}</p>` +
+    // No explainer under the title and no fine print since 2026-11-21 (mak:
+    // the phone version everywhere).
     `</section>`
   );
 }

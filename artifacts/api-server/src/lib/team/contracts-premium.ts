@@ -310,8 +310,14 @@ function sheet(team: NflTeam, v: ContractsView): string {
 
 /* ------------------------------------------------------------------ cards */
 
-function cardHead(icon: string, id: string, title: string): string {
-  return `<div class="sct-ctp-card-head">${icon}<h3 class="sct-ctp-card-h" id="${id}">${e(title)}</h3></div>`;
+/**
+ * A card's head: icon, title and, since 2026-11-21, the count strip in the
+ * same row (mak: the phone method at every width). The row wraps, so in a
+ * narrow column the counts drop under the title, right aligned, still above
+ * the rule.
+ */
+function cardHead(icon: string, id: string, title: string, strip = ""): string {
+  return `<div class="sct-ctp-card-head${strip ? " has-strip" : ""}">${icon}<h3 class="sct-ctp-card-h" id="${id}">${e(title)}</h3>${strip}</div>`;
 }
 
 interface CardRow {
@@ -365,8 +371,7 @@ function capPositionCard(v: ContractsView): string {
   ];
   return (
     `<section class="sct-ctp-card is-position" aria-labelledby="sct-ctp-pos-h">` +
-    cardHead(ICON.coins, "sct-ctp-pos-h", "Cap Position") +
-    `<p class="sct-ctp-card-strip"><span class="sct-ctp-num">${n}</span> ${n === 1 ? "contract" : "contracts"}</p>` +
+    cardHead(ICON.coins, "sct-ctp-pos-h", "Cap Position", `<p class="sct-ctp-card-strip"><span class="sct-ctp-num">${n}</span> ${n === 1 ? "contract" : "contracts"}</p>`) +
     lead +
     `<ul class="sct-ctp-crows">${rows.map(cardRow).join("")}</ul>` +
     `</section>`
@@ -401,8 +406,7 @@ function flexibilityCard(v: ContractsView): string {
   ];
   return (
     `<section class="sct-ctp-card is-flex" aria-labelledby="sct-ctp-flex-h">` +
-    cardHead(ICON.bars, "sct-ctp-flex-h", "Flexibility") +
-    strip +
+    cardHead(ICON.bars, "sct-ctp-flex-h", "Flexibility", strip) +
     featured(
       "Cut savings",
       e(money(releasable)),
@@ -484,8 +488,7 @@ function deadCard(v: ContractsView): string {
       : "";
   return (
     `<section class="sct-ctp-card is-dead" aria-labelledby="sct-ctp-dead-h">` +
-    cardHead(ICON.tag, "sct-ctp-dead-h", `${v.season} Dead Money`) +
-    strip +
+    cardHead(ICON.tag, "sct-ctp-dead-h", `${v.season} Dead Money`, strip) +
     lead +
     reconcile +
     list +

@@ -237,6 +237,8 @@ function history(input: StatsPremiumInput): string {
     .join("");
   const span = seasons[seasons.length - 1]?.season;
   // The wrapper is the phone card (the recap card design, mak 2026-11-14); unstyled above 560px.
+  // One table at every width (WEB-044 integration, 2026-11-24): the 11-21
+  // phone list of seasons printed every season a second time and is gone.
   return (
     `<div class="sct-sp-history">` +
     band(ICON.calendar, "Season History", `Key team statistics over the last ${seasons.length} seasons, each ranked against the 32 teams of its own year.`) +
@@ -443,9 +445,7 @@ function renderStatsDashboard(input: StatsPremiumInput): string {
     (passRush ? `<div class="sct-sp-grid">${passRush}</div>` : "") +
     `<div class="sct-sp-grid">${discipline}${pace}</div>` +
     (mixes ? `<div class="sct-sp-mixes">${mixes}</div>` : "");
-  const detail =
-    (more ? `<details class="sct-sp-more"><summary>More team statistics: pass protection, pass rush, snaps, discipline and play mix</summary>${more}</details>` : "") +
-    history(input);
+  const detail = more ? `<details class="sct-sp-more"><summary>More team statistics: pass protection, pass rush, snaps, discipline and play mix</summary>${more}</details>` : "";
   const how =
     `<details class="sct-sp-how"><summary>How these are measured</summary>` +
     `<p>${e(`Every figure is ${season} regular season${d.throughWeek ? `, completed games through Week ${d.throughWeek}` : ""}, from the play-by-play (the same games as the Usage and Coaching tabs). Ranks are among all 32 teams on the value as printed: equal figures share a rank (T-). "NFL" is the average of the 32 teams' values (each team counts once). Season totals (touchdowns, sacks, takeaways, giveaways, turnover margin) are shown, ranked and averaged per game, because teams past their bye have played one game fewer; the total is under the label. On every scale bar right is better; snaps, attempts, blitz rate and time to throw rank most to least and have no better end.`)}</p>` +
@@ -468,7 +468,11 @@ function renderStatsDashboard(input: StatsPremiumInput): string {
     `<div class="sct-sp-top">${snapshot(input)}${recentForm(input)}</div>` +
     unitSection("offense", input) +
     unitSection("defense", input) +
-    `<section class="sct-sp-detail">${band(ICON.lines, "Detailed Statistics", "Pass protection and pass rush, snaps and play mix, discipline, five seasons of history and how every figure is measured.")}${detail}${how}</section>` +
+    // Season History and the definitions sit beside Detailed Statistics, not
+    // inside it, so each wears its own card above 560px (mak, 2026-11-21).
+    // Phones read the same order; .sct-sp-past is unstyled there.
+    `<section class="sct-sp-detail">${band(ICON.lines, "Detailed Statistics", "Pass protection and pass rush, snaps and play mix, discipline, five seasons of history and how every figure is measured.")}${detail}</section>` +
+    `<section class="sct-sp-past">${history(input)}${how}</section>` +
     `</div>`
   );
 }

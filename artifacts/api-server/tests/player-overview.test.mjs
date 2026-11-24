@@ -212,6 +212,41 @@ describe("overview sections (mak's Overview redesign, 2026-11-05)", () => {
     assert.match(text(h[1].querySelector(".scp-ow-tip")), /Did not play \(hamstring\)/);
   });
 
+  test("weekly chart states come from the record (mak's mobile brief, 2026-11-23): zero is a game, dressed is never Out, unlogged finals are no bar", () => {
+    const INJ = { seasonMissed: 1, summary: { totalMissed: 1 }, history: { nfl: [{ season: 2026, week: 2, type: "Injury", bodyPart: "Back", gamesMissed: 1 }] } };
+    const log = [
+      entry(1, 0, 40),
+      // Week 2: dressed (gp 1), no snap, inside the injury's span - DNP, not Out.
+      { ...entry(2, 0, null), game_status: "out", stats: { gp: 1, off_snp: 0 } },
+      // Week 3: no gp, inside the span - Out.
+      { ...entry(3, 0, null), game_status: "out", stats: {} },
+      entry(4, 12, 20),
+    ];
+    // Week 5 is final on the slate but the logs stop at week 4.
+    const doc = render(state({ leagueWeek: 5, gameLog: log, schedule: [1, 2, 3, 4, 5].map((w) => final(w)), injury: INJ, upcoming: [upcoming(6, 8), upcoming(7, 1)] }));
+    const c = cols(doc);
+    assert.deepEqual(c.map((li) => text(li.querySelector(".scp-ow-x"))), ["1", "2", "3", "4"], "no bar for a week the logs have not reached");
+    // A zero-point game he played is a bar with its 0.0, never an absence mark.
+    assert.ok(c[0].matches(".is-played.is-zero"));
+    assert.equal(c[0].querySelector(".scp-ow-mark"), null);
+    assert.equal(text(c[0].querySelector(".scp-ow-v")), "0.0");
+    assert.ok(c[1].matches(".is-dnp") && !c[1].matches(".is-inj"));
+    assert.equal(text(c[1].querySelector(".scp-ow-mark")), "DNP");
+    assert.match(text(c[1].querySelector(".scp-ow-tip")), /Active, did not play/);
+    assert.ok(c[2].matches(".is-dnp.is-inj"));
+    assert.equal(text(c[2].querySelector(".scp-ow-mark")), "Out");
+    // The key names only what is drawn, the average with its figure.
+    assert.deepEqual([...doc.querySelectorAll(".scp-ow-key li")].map(text), ["Game", "Average 6.0", "Out (injury)", "DNP"]);
+    // Week 5 is still done: Upcoming starts after it.
+    assert.deepEqual(games(doc).map((g) => text(g.querySelector(".scp-ow-gw"))), ["Week W6", "Week W7"]);
+  });
+
+  test("weekly chart key: a bye and a top-N week show; states not drawn do not", () => {
+    const log = [entry(1, 16.5, 15), entry(2, 25.6, 4), entry(4, 10, 20)];
+    const doc = render(state({ leagueWeek: 4, byeWeek: 3, gameLog: log, schedule: [final(1), final(2), final(4)] }));
+    assert.deepEqual([...doc.querySelectorAll(".scp-ow-key li")].map((li) => li.className), ["is-hit", "is-game", "is-avg", "is-bye"]);
+  });
+
   test("upcoming: the next four games with the bye in place, the grade from the shared bands", () => {
     const doc = render(state({ byeWeek: 6, upcoming: [upcoming(4, 8), upcoming(5, 15), upcoming(7, 25), upcoming(9, 3)] }));
     const g = games(doc);
@@ -271,16 +306,11 @@ describe("overview sections (mak's Overview redesign, 2026-11-05)", () => {
     assert.equal(games(doc).length, 4);
   });
 
-  test("the injury alert: only with something the header pill does not say", () => {
-    assert.equal(render(state()).querySelector(".scp-ox-alert"), null, "healthy: nothing");
-    assert.equal(render(state({ designation: { injuryStatus: "Questionable", injuryBodyPart: null, practice: null } })).querySelector(".scp-ox-alert"), null, "the pill alone");
+  test("no injury alert under the tabs: the header pill carries the designation", () => {
     const doc = render(state({ designation: { injuryStatus: "Questionable", injuryBodyPart: "Hamstring", practice: "Limited Participation in Practice" } }));
-    const alert = doc.querySelector(".scp-ox-alert");
-    assert.equal(text(alert.querySelector(".scp-ox-alert-h")), "Questionable - Hamstring");
-    assert.match(text(alert), /limited participation/);
-    assert.ok(alert.querySelector("a[href$='/injury/']"));
+    assert.equal(doc.querySelector(".scp-ox-alert"), null);
     const ir = render(state({ designation: { injuryStatus: "IR", injuryBodyPart: "Calf", practice: null } }));
-    assert.equal(text(ir.querySelector(".scp-ox-alert-h")), "Injured reserve - Calf");
+    assert.equal(ir.querySelector(".scp-ox-alert"), null);
     assert.match(text(ir.querySelector(".scp-ox-prose")), /on injured reserve/);
     assert.equal(text(ir.querySelector(".scp-ow-g.is-next .scp-ox-chip")), "Out");
   });

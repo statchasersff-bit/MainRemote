@@ -74,6 +74,22 @@ function prefetchOnIntent(link: HTMLAnchorElement): void {
  * user than the plain list of links the server sends, which behaves exactly as
  * announced.
  */
+/**
+ * Where the strip scrolls sideways (phones, narrow columns), center the
+ * current tab in it on load, so Schedule or Depth Chart does not open with
+ * its own tab off the right edge (mak, 2026-11-21: phones wear the desktop
+ * strip, whose pills are wider). Only the strip scrolls, never the page.
+ */
+function revealActiveTab(list: HTMLElement | null): void {
+  if (!list || list.scrollWidth <= list.clientWidth) return;
+  const active = list.querySelector<HTMLElement>(".sct-nav-link.is-active");
+  if (!active) return;
+  const box = list.getBoundingClientRect();
+  const r = active.getBoundingClientRect();
+  if (r.left >= box.left && r.right <= box.right) return;
+  list.scrollLeft += r.left - box.left - (box.width - r.width) / 2;
+}
+
 function wireTabs(root: HTMLElement): void {
   const nav = root.querySelector<HTMLElement>("[data-sct-nav]");
   if (!nav) return;
@@ -83,6 +99,8 @@ function wireTabs(root: HTMLElement): void {
     nav.querySelectorAll<HTMLAnchorElement>(".sct-nav-link"),
   );
   if (links.length === 0) return;
+  revealActiveTab(list);
+  void document.fonts?.ready.then(() => revealActiveTab(list));
 
   const tabs: Array<{ id: string; link: HTMLAnchorElement; panel: HTMLElement }> =
     [];

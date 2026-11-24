@@ -26,7 +26,10 @@ test("a player whose page is on last season still gets this season's outlook tit
     const season = Number(/data-season="(\d{4})"/.exec(html)?.[1]);
     // The take's heading names the outlook season; the page's own season
     // (data-season) can be an earlier one for a player with no snaps yet.
-    const take = /Rest-of-Season (?:Outlook|Projection)|(\d{4}) Outlook/.exec(html);
+    // Matched on the text: the heading splits its words into spans for the
+    // phones' "ROS" abbreviation (and the H1 reads "2026 Fantasy Outlook").
+    const text = html.replace(/<[^>]+>/g, "");
+    const take = /Rest-of-Season (?:Outlook|Projection)|(\d{4}) (?:Fantasy )?Outlook/.exec(text);
     if (!season || !take) continue;
     const title = (/<title>([^<]*)<\/title>/.exec(html)?.[1] ?? "").replace(/&amp;/g, "&");
     // Dated again since the Outlook brief (2026-11-05): the year is the

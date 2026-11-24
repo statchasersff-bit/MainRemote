@@ -216,7 +216,7 @@ export function renderCoachingFantasyPremium(c: TeamCoaching, team: NflTeam, vie
     `<span class="sct-cf-head-rule" aria-hidden="true"></span>` +
     `<div class="sct-cf-head-text">` +
     `<h3 class="sct-cf-h3" id="sct-cf-title">Fantasy Implications</h3>` +
-    `<p class="sct-cf-sub">${e(`What the ${season} tendencies and ${surnameOf(c)}'s history mean for fantasy lineups`)}</p>` +
+    // No subtitle since 2026-11-21 (mak: the phone version everywhere).
     `</div>` +
     `</header>` +
     // One analysis, then the finishes with nothing summarized under them

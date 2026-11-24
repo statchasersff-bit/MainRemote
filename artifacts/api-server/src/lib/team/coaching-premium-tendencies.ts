@@ -85,7 +85,9 @@ export function usageStyleHead(title: string, icon: string, sub?: string, id?: s
     `<span class="sct-us-prm-icon" aria-hidden="true">${icon}</span>` +
     `<div class="sct-us-prm-titles">` +
     `<h3 class="sct-us-prm-title"${id ? ` id="${id}"` : ""}>${e(title)}</h3>` +
-    (sub ? `<p class="sct-us-prm-sub">${e(sub)}</p>` : "") +
+    // No explainer under the title at any width since 2026-11-21 (mak: the
+    // phone version everywhere); `sub` is kept in the signature, unused.
+    (void sub, "") +
     `</div>` +
     `<span class="sct-us-prm-stripes" aria-hidden="true"></span>` +
     `</header>`
@@ -101,7 +103,9 @@ function card(kind: string, title: string, sub: string, icon: string, body: stri
   return (
     `<article class="sct-cpt-card is-${kind}">` +
     `<div class="sct-cpt-card-head"><span class="sct-cpt-card-icon">${ICON[icon]}</span>` +
-    `<div class="sct-cpt-card-text"><h4 class="sct-cpt-h4">${e(titleCase(title))}</h4><p class="sct-cpt-card-sub">${e(sub)}</p></div></div>` +
+    `<div class="sct-cpt-card-text"><h4 class="sct-cpt-h4">${e(titleCase(title))}</h4></div></div>` +
+    // No card explainer since 2026-11-21 (mak: the phone version everywhere).
+    (void sub, "") +
     body +
     `</article>`
   );
@@ -259,8 +263,8 @@ function fourthDownCard(c: TeamCoaching, team: NflTeam, view: UsageView | null):
   );
 }
 
-/** Situational Play Calling's sample note: the fourth-down caution and who owns the call, under both cards. */
-function situationalNote(c: TeamCoaching, team: NflTeam, view: UsageView | null): string {
+/** The fourth-down sample note: unmounted 2026-11-21 (mak: the phone version everywhere). */
+export function situationalNote(c: TeamCoaching, team: NflTeam, view: UsageView | null): string {
   const m = rzFourthModel(c, team, view);
   const f = m?.fourth ?? null;
   if (!f) return "";
@@ -345,15 +349,14 @@ export function renderCoachingPremiumTendencies(c: TeamCoaching, team: NflTeam, 
   const sit = scoreStateCard(c) + fourthDownCard(c, team, view);
   const tgt = distributionCard(c) + backfieldCard(c, view);
   if (!form && !sit && !tgt) return "";
-  // Subtitled title bars, like Fantasy Finishes by Season (mak, 2026-11-08).
-  const last = surnameOf(c);
-  const possessive = /s$/.test(last) ? `${last}'` : `${last}'s`;
-  const wk = c.tendencies.samples?.throughWeek;
   return (
     `<div class="sct-block sct-cp sct-cpt" id="coaching-premium-tendencies" data-sct-premium="coaching-tendencies">` +
     form +
-    (sit ? section("situational", usageStyleHead("Situational Play Calling", ICON["bars"]!, `How the score and fourth down shape ${possessive} calls, ${seasonOf(c)}${wk ? ` through Week ${wk}` : ""}`), `<div class="sct-cpt-grid">${sit}</div>${situationalNote(c, team, view)}`) : "") +
-    (tgt ? section("targets", usageStyleHead("Target & Backfield Tendencies", ICON["target"]!, `Where ${possessive} targets go by position, and how much his lead back gets`), `<div class="sct-cpt-grid">${tgt}</div>`) : "") +
+    // The two group title bars ("Situational Play Calling", "Target &
+    // Backfield Tendencies") and the fourth-down sample note came off
+    // 2026-11-21 (mak): each card's own head is the section head, as on phones.
+    (sit ? section("situational", "", `<div class="sct-cpt-grid">${sit}</div>`) : "") +
+    (tgt ? section("targets", "", `<div class="sct-cpt-grid">${tgt}</div>`) : "") +
     `</div>`
   );
 }

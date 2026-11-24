@@ -264,7 +264,9 @@ describe("/usage/: the fantasy table's percentile ranks the share printed under 
       if (!team) continue;
       const d = await doc(`/team/${team.slug}/usage/`);
       for (const cell of d.querySelectorAll("td.is-opp")) {
-        const pos = (cell.querySelector(".sct-us-unit")?.textContent ?? "").replace(/pctile/, "").trim();
+        // The position from the bar's label ("63rd percentile vs. NFL WRs"):
+        // the "pctile WR" unit under the figure came off 2026-11-21.
+        const pos = /vs\. NFL ([A-Z]+)s$/.exec(cell.querySelector(".sct-us-pbar")?.getAttribute("aria-label") ?? "")?.[1] ?? "";
         const pct = Number.parseInt(cell.querySelector(".is-lead")?.textContent ?? "", 10);
         const m = /([\d.]+)% target share/.exec(cell.querySelector(".sct-us-cap-stat")?.textContent ?? "");
         if (!pairs[pos] || !m || !Number.isFinite(pct)) continue;

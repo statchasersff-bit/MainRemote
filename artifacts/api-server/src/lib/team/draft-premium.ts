@@ -15,7 +15,7 @@ import { escapeHtml } from "../render";
 import { premiumTabHead } from "./premium-head";
 import type { CategoryShare, DraftCapitalView, DraftHistoryView, DraftPick, DraftSeason, DraftStatusDoc, DraftView, PickStatus } from "./draft";
 import { CATEGORY_LABEL, collegeLogoFor, getDraftStatus, pickCategory, pickStatus } from "./draft";
-import { capitalKicker, collegeName, depthSlotCell, faceIdFor, historyKicker, nick, playerCell } from "./draft-render";
+import { collegeName, depthSlotCell, faceIdFor, nick, playerCell } from "./draft-render";
 import type { NflTeam } from "./teams";
 import { getTeamByAbbreviation } from "./teams";
 
@@ -166,10 +166,12 @@ function phoneStatusText(text: string): string | null {
   return short === text ? null : short;
 }
 
-/** The full text, plus its phone wording when it differs; team.css shows one or the other. */
-function statusText(text: string, phone: string | null = phoneStatusText(text)): string {
-  if (!phone || phone === text) return e(text);
-  return `<span class="sct-drp-st-full">${e(text)}</span><span class="sct-drp-st-short" aria-hidden="true">${e(phone)}</span>`;
+/**
+ * The status wording, the short form at every width since 2026-11-21 (mak:
+ * "use the shortened version", names aside): "IR", "Unrostered", "with ATL".
+ */
+function statusText(text: string, short: string | null = phoneStatusText(text)): string {
+  return e(short || text);
 }
 
 /**
@@ -192,7 +194,9 @@ function statusCell(status: PickStatus): string {
   return (
     `<span class="sct-drp-status">` +
     (label
-      ? `<span class="sct-drp-badge" data-tone="${tone(status)}"${moved ? ` data-phone-tone="cut"` : ""} data-status="${e(status.key)}">${statusText(label, moved ? "Left" : undefined)}</span>`
+      // A player with another club reads "Left" in the neutral badge at every
+      // width since 2026-11-21 (mak): "Active" in green read as active here.
+      ? `<span class="sct-drp-badge" data-tone="${moved ? "cut" : tone(status)}" data-status="${e(status.key)}">${statusText(label, moved ? "Left" : undefined)}</span>`
       : `<span class="sct-drp-none">-</span>`) +
     (status.sub ? `<span class="sct-drp-status-sub">${statusText(status.sub, moved ? moved.sub : undefined)}</span>` : "") +
     `</span>`
@@ -201,7 +205,6 @@ function statusCell(status: PickStatus): string {
 
 function yearCard(team: NflTeam, s: DraftSeason, statusDoc: DraftStatusDoc | null, currentSeason: number): string {
   const club = team.abbreviation.toLowerCase();
-  const firsts = s.picks.filter((p) => p.round === 1).length;
   const rows = s.picks
     .map((p) => {
       const status = pickStatus(p, club, statusDoc, currentSeason);
@@ -222,8 +225,9 @@ function yearCard(team: NflTeam, s: DraftSeason, statusDoc: DraftStatusDoc | nul
     `<section class="sct-drp-year" aria-labelledby="sct-drp-y${s.season}">` +
     `<div class="sct-drp-year-head">` +
     `<span class="sct-drp-year-title">${ICON.calendar}<h3 class="sct-drp-h3" id="sct-drp-y${s.season}">${e(`${s.season} Draft`)}</h3></span>` +
-    // The Round 1 count is its own span so phones can drop it (mak, 2026-11-12).
-    `<span class="sct-drp-year-sum">${e(`${s.picks.length} ${s.picks.length === 1 ? "pick" : "picks"}`)}<span class="sct-drp-year-r1">${e(` · ${firsts} in Round 1`)}</span></span>` +
+    // The pick count alone at every width since 2026-11-21 (mak: the phone
+    // version); the Round 1 count came off.
+    `<span class="sct-drp-year-sum">${e(`${s.picks.length} ${s.picks.length === 1 ? "pick" : "picks"}`)}</span>` +
     // No gold double slash on the year heads (mak, 2026-11-08: "remove the double lines").
     `</div>` +
     `<div class="sct-drp-scroll" tabindex="0">` +
@@ -303,18 +307,14 @@ function ledgerRow(round: Round): string {
 }
 
 function capitalCard(team: NflTeam, c: DraftCapitalView): string {
-  const item = (n: number, label: string): string =>
-    `<span class="sct-drp-stat"><b class="sct-drp-num">${n}</b> ${e(label)}</span>`;
   return (
     `<section class="sct-drp-card is-capital" aria-labelledby="sct-drp-cap-title">` +
     `<div class="sct-drp-card-head">${ICON.calendar}<h3 class="sct-drp-h3" id="sct-drp-cap-title">${e(`${c.draftYear} NFL Draft Picks`)}</h3>` +
-    // The pick count again, in the head row: shown at 560px and under only,
-    // where the strip below is kept for screen readers alone (mak, 2026-11-12;
-    // acquired / sent away cut from it the same day).
-    `<span class="sct-drp-head-sum" aria-hidden="true">${e(`${c.total} ${c.total === 1 ? "pick" : "picks"}`)}</span></div>` +
+    // The pick count in the head row at every width since 2026-11-21 (mak:
+    // the phone version). The strip under it (picks, acquired, sent away),
+    // the kicker and the compensatory footnote came off.
+    `<span class="sct-drp-head-sum">${e(`${c.total} ${c.total === 1 ? "pick" : "picks"}`)}</span></div>` +
     `<div class="sct-drp-card-body">` +
-    `<p class="sct-drp-strip">${item(c.total, c.total === 1 ? "pick" : "picks")}${item(c.acquired, "acquired")}${item(c.sent.length, "sent away")}</p>` +
-    `<p class="sct-drp-kicker">${e(capitalKicker(c))}</p>` +
     `<ol class="sct-drp-ledger" aria-label="${e(`${team.nickname} ${c.draftYear} draft picks by round`)}">` +
     c.rounds.map(ledgerRow).join("") +
     `</ol>` +
@@ -323,7 +323,6 @@ function capitalCard(team: NflTeam, c: DraftCapitalView): string {
     `<span><span class="sct-drp-dot is-from"></span>Acquired</span>` +
     `<span><span class="sct-drp-dot is-sent"></span>Traded away</span>` +
     `</p>` +
-    `<p class="sct-drp-foot">Compensatory picks are awarded in March and join the rounds then. Pick ownership updates when a trade moves a pick.</p>` +
     `</div>` +
     `</section>`
   );
@@ -336,7 +335,6 @@ function shareRows(rows: CategoryShare[], total: number): string {
   const anyFirst = rows.some((r) => r.firstRounders > 0);
   return (
     `<div class="sct-drp-shares">` +
-    `<p class="sct-drp-shares-title">All picks</p>` +
     `<ul class="sct-drp-share-list" aria-label="${e(`${total} picks by position group`)}">` +
     rows
       .map((r) => {
@@ -361,18 +359,13 @@ function shareRows(rows: CategoryShare[], total: number): string {
 }
 
 function historyCard(h: DraftHistoryView): string {
-  const item = (n: number, label: string): string =>
-    `<span class="sct-drp-stat"><b class="sct-drp-num">${n}</b> ${e(label)}</span>`;
-  const kicker = historyKicker(h);
   return (
     `<section class="sct-drp-card is-history" aria-labelledby="sct-drp-hist-title">` +
     `<div class="sct-drp-card-head">${ICON.bars}<h3 class="sct-drp-h3" id="sct-drp-hist-title">${e(`Last ${h.seasons.length} Drafts`)}</h3>` +
-    // The strip again, in the head row: shown at 560px and under only, where
-    // the strip below is kept for screen readers alone (mak, 2026-11-12).
-    `<span class="sct-drp-head-sum" aria-hidden="true">${e(`${h.total} picks · ${h.firstRounders} in Round 1`)}</span></div>` +
+    // The count in the head row at every width since 2026-11-21 (mak: the
+    // phone version); the strip and the takeaway line came off.
+    `<span class="sct-drp-head-sum">${e(`${h.total} picks · ${h.firstRounders} in Round 1`)}</span></div>` +
     `<div class="sct-drp-card-body">` +
-    `<p class="sct-drp-strip is-compact">${item(h.total, `picks, ${h.firstSeason}-${h.lastSeason}`)}${item(h.firstRounders, "in Round 1")}</p>` +
-    (kicker ? `<p class="sct-drp-takeaway">${e(kicker)}</p>` : "") +
     (h.allPicks.length ? shareRows(h.allPicks, h.total) : "") +
     `</div>` +
     `</section>`

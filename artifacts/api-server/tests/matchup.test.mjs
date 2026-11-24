@@ -2012,13 +2012,15 @@ describe("the Cardinals–Rams games", () => {
       "Cardinals vs Rams Head-to-Head",
     ]);
     // Below the tabs, on every one of them, under both columns at the full width.
-    assert.deepEqual(
-      headings(".sct-mu-foot > .sct-rb-section > h2, .sct-mu-foot > nav > h2"),
-      [
-        "Cardinals vs Rams Fantasy Outlook for 2026",
-        "Cardinals vs Rams Game FAQ",
-      ].filter((h) => !/Fantasy Outlook/.test(h) || doc.querySelector("#fantasy-outlook")),
-    );
+    // The outlook names the next meeting's season while one is on the
+    // schedule; once both of the season's games are played it reads "in
+    // Fantasy" (recap-body.ts). Both 2026 games were final by Week 10.
+    const foot = headings(".sct-mu-foot > .sct-rb-section > h2, .sct-mu-foot > nav > h2");
+    assert.equal(foot.at(-1), "Cardinals vs Rams Game FAQ");
+    if (doc.querySelector("#fantasy-outlook")) {
+      assert.equal(foot.length, 2);
+      assert.match(foot[0], /^(Cardinals vs Rams Fantasy Outlook for \d{4}|Cardinals and Rams in Fantasy)$/);
+    } else assert.equal(foot.length, 1);
 
     // From ESPN's own feed, when it answered: the strip's four and the summary's end.
     const leaders = [...doc.querySelectorAll(".sct-ls-card .sct-ls-name")].map((n) => n.textContent);
@@ -2063,19 +2065,31 @@ describe("the Cardinals–Rams games", () => {
       "the FAQ JSON-LD matches the visible questions exactly",
     );
 
-    // The all-time series, from the shipped history plus this season.
+    // The all-time series, from the shipped history plus this season: the
+    // stored record runs through 2025 (Rams 53-41-2 in 96), and this season's
+    // finals from the slate snapshot add on top.
+    const cur = { la: 0, ari: 0 };
+    for (const line of fs.readFileSync(path.join(APP_DIR, "data/schedule/games.csv"), "utf8").split("\n")) {
+      const c = line.split(",");
+      if (c[1] !== "2026" || c[2] !== "REG" || c[8] === "" || c[10] === "") continue;
+      const pair = new Set([c[7], c[9]]);
+      if (!(pair.has("ARI") && pair.has("LA"))) continue;
+      const [away, as, home, hs] = [c[7], Number(c[8]), c[9], Number(c[10])];
+      if (as !== hs) cur[(as > hs ? away : home) === "LA" ? "la" : "ari"] += 1;
+    }
     const h2h = doc.getElementById("h2h");
     assert.equal(h2h.tagName, "H2");
     assert.equal(h2h.textContent, "Cardinals vs Rams Head-to-Head");
     const top = h2h.closest("section");
-    assert.match(top.querySelector(".sct-rb-sub").textContent, /^One of the NFL's oldest matchups/);
+    // No intro line over the tiles since 2026-11-09 (mak).
+    assert.equal(top.querySelector(".sct-rb-sub"), null);
     assert.deepEqual(
       [...top.querySelectorAll("dl.sct-rb-alltime .sct-rb-at")].map((t) => [
         t.querySelector(".sct-rb-at-num").textContent,
         t.querySelector(".sct-rb-at-cap").textContent,
       ]),
       [
-        ["53\u201341\u20132", "Rams lead, 96 meetings since 1937"],
+        [`${53 + cur.la}\u2013${41 + cur.ari}\u20132`, `Rams lead, ${96 + cur.la + cur.ari} meetings since 1937`],
         ["2\u20130", "Rams won in 1975 and 2021"],
         ["44\u20136", "2016"],
         ["34\u20130", "2018"],
@@ -2089,7 +2103,7 @@ describe("the Cardinals–Rams games", () => {
     assert.ok(questions.indexOf("What is the Cardinals vs Rams record since 2021?") > at);
     assert.equal(
       faq.mainEntity[at].acceptedAnswer.text,
-      "The Rams lead the all-time series 53\u201341\u20132 across 96 meetings since 1937, including a 2\u20130 record in the postseason.",
+      `The Rams lead the all-time series ${53 + cur.la}\u2013${41 + cur.ari}\u20132 across ${96 + cur.la + cur.ari} meetings since 1937, including a 2\u20130 record in the postseason.`,
     );
     // A playoff game has no fantasy table (the logs are regular season), so no note.
     assert.equal(doc.querySelector(".sct-mu-rc-note"), null);

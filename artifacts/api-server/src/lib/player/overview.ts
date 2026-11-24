@@ -42,7 +42,6 @@ import { phoneHeading } from "./phone-heading";
 import { renderFaqSection, selectFaq } from "./faq-engine";
 import { overviewPool } from "./faq-pools";
 import type { PlayerRenderOptions } from "../player-render";
-import { sectionHref } from "./sections";
 import { didNotPlayLabel, injuryForWeek } from "./injury-week";
 import { getTeamByAbbreviation, type NflTeam } from "../team/teams";
 import type { PlayerPageData } from "./player-data";
@@ -234,12 +233,23 @@ function season(data: PlayerPageData): Season {
 
   const weeks: WeekCell[] = [];
   const schedule = (data.schedule ?? []).filter((g) => g.seasonType !== "post");
+  // The last week the game logs reach (any row: played, out or bye). A final
+  // game past it has no record of what he did yet - the slate and the logs
+  // refresh on different clocks - so it is not a bar, and never a "DNP"
+  // (mak's mobile brief, 2026-11-23: Carson Beck read DNP for a Week 11 the
+  // logs had not reached).
+  const logThrough = log.reduce((w, e) => Math.max(w, e.week), 0);
+  // The last final week on the slate, logged or not: the upcoming list
+  // starts after it either way.
+  let lastFinal = 0;
   if (schedule.length) {
     // Final games only: a postponed or unplayed game is neither a result nor
     // a zero, so it is simply not a bar yet.
     for (const game of schedule) {
       if (game.status !== "final") continue;
+      lastFinal = Math.max(lastFinal, game.week);
       const entry = logByWeek.get(game.week) ?? null;
+      if (!entry && game.week > logThrough) continue;
       const active = entry?.game_status === "active";
       weeks.push({
         week: game.week,
@@ -302,42 +312,17 @@ function season(data: PlayerPageData): Season {
     weeks.sort((x, y) => x.week - y.week);
   }
 
+  const doneThrough = Math.max(lastDone, lastFinal);
   const ahead = [...(data.upcoming?.length ? data.upcoming : data.upcomingStrip ?? [])]
-    .filter((g) => g.week > lastDone)
+    .filter((g) => g.week > doneThrough)
     .sort((x, y) => x.week - y.week)
     .slice(0, 4);
   const next: Season["next"] = [...ahead];
-  if (bye !== null && bye > lastDone && ahead.length && bye < ahead[ahead.length - 1]!.week) {
+  if (bye !== null && bye > doneThrough && ahead.length && bye < ahead[ahead.length - 1]!.week) {
     next.splice(next.findIndex((g) => "week" in g && g.week > bye), 0, { bye });
   }
 
   return { pos, leagueSeason, leagueWeek, current, played, pts, weeks, next };
-}
-
-/* --------------------------------------------- the availability alert */
-
-/**
- * Only when there is a designation AND something to add to the header's pill:
- * the body part, the practice report. A healthy player, or a designation with
- * nothing behind it, prints nothing - the pill already says it.
- */
-function renderAlert(data: PlayerPageData, options: PlayerRenderOptions): string {
-  const status = (data.designation?.injuryStatus ?? "").trim();
-  if (!status) return "";
-  const part = (data.designation?.injuryBodyPart ?? "").trim();
-  const practice = (data.designation?.practice ?? "").trim();
-  if (!part && !practice) return "";
-  const severity = designationSeverity(status);
-  const tone = severity === "out" || severity === "doubtful" ? "bad" : severity === "probable" ? "good" : "mid";
-  const label = /^ir\b/i.test(status) || /injured reserve/i.test(status) ? "Injured reserve" : status;
-  const href = sectionHref(data, options, "injury");
-  return (
-    `<aside class="scp-ox-alert is-${tone}" aria-label="Availability">` +
-    `<p class="scp-ox-alert-h"><strong>${escapeHtml(part ? `${label} - ${part}` : label)}</strong></p>` +
-    (practice ? `<p class="scp-ox-alert-p">${escapeHtml(`Latest practice report: ${practice.replace(/\s+in practice$/i, "").toLowerCase()}.`)}</p>` : "") +
-    (href ? `<a class="scp-ox-alert-a" href="${escapeHtml(href)}">View injury details<span aria-hidden="true"> →</span></a>` : "") +
-    `</aside>`
-  );
 }
 
 /* ------------------------------------------------- 1. season stats */
@@ -405,8 +390,14 @@ function renderChart(data: PlayerPageData, s: Season, options: PlayerRenderOptio
         // "Out" only when an injury covers the week; a healthy backup who
         // never got in is "DNP" (mak, 2026-11-06: Minshew read "Out" for
         // weeks 1-7 as Murray's backup).
-        const inj = injuryForWeek(data, s.leagueSeason, c.week);
-        const why = didNotPlayLabel(inj, c.entry?.stats as { gp?: number } | undefined);
+        // A week the log says he dressed for (Sleeper's gp) is never "Out",
+        // whatever the injury record's span says: he was available and did
+        // not get in (2026-11-23). The log row is read here, not c.entry,
+        // which only carries a played week.
+        const row = data.gameLog.find((e) => e.week === c.week) ?? null;
+        const dressed = ((row?.stats as { gp?: number } | undefined)?.gp ?? 0) > 0;
+        const inj = dressed ? null : injuryForWeek(data, s.leagueSeason, c.week);
+        const why = didNotPlayLabel(inj, row?.stats as { gp?: number } | undefined);
         return (
           `<li class="scp-ow-col is-dnp${inj ? " is-inj" : ""}${side}" tabindex="0">` +
           `<span class="scp-ow-mark" aria-hidden="true">${inj ? "Out" : "DNP"}</span>` +
@@ -417,8 +408,11 @@ function renderChart(data: PlayerPageData, s: Season, options: PlayerRenderOptio
       }
       const rank = c.entry?.pos_rank ?? null;
       const tier = rank === null ? "" : rank <= line ? " is-hit" : "";
+      // A game he played and scored nothing in is a game, not an absence: a
+      // flat bar on the axis with its 0.0, never the DNP mark.
+      const zero = c.pts <= 0 ? " is-zero" : "";
       return (
-        `<li class="scp-ow-col is-played${tier}${side}" tabindex="0">` +
+        `<li class="scp-ow-col is-played${tier}${zero}${side}" tabindex="0">` +
         `<span class="scp-ow-bar" style="height:${pct(c.pts)}"><span class="scp-ow-v" aria-hidden="true">${one(c.pts)}</span></span>` +
         `<span class="scp-ow-tip"><b>${escapeHtml(`Week ${c.week} ${fixtureWords(c)}`)}</b>` +
         `<span>${escapeHtml(`${one(c.pts)} ${word} points`)}</span>` +
@@ -432,6 +426,22 @@ function renderChart(data: PlayerPageData, s: Season, options: PlayerRenderOptio
   const caption =
     `${titleCase(word === "fantasy" ? "Fantasy" : word)} points by week. Gold bars are top-${line} ${pos} weeks; ` +
     `the dashed line is his ${one(avg)}-point average over games played.`;
+  // The key (mak's mobile brief, 2026-11-23): only the states this chart
+  // draws, each from the week's own record - DNP (no snap, no injury on
+  // file), Out (an injury covers the week), Bye - so a zero-point game,
+  // which is a bar, is never read as an absence.
+  const drawn = weeks.filter((c) => c.kind === "played");
+  const keys: Array<[string, string]> = [];
+  if (drawn.some((c) => c.entry?.pos_rank != null && c.entry.pos_rank <= line)) keys.push(["is-hit", `Top-${line} ${pos} week`]);
+  if (drawn.some((c) => !(c.entry?.pos_rank != null && c.entry.pos_rank <= line))) keys.push(["is-game", "Game"]);
+  keys.push(["is-avg", `Average ${one(avg)}`]);
+  if (cols.includes("is-dnp is-inj")) keys.push(["is-out", "Out (injury)"]);
+  if (/is-dnp(?! is-inj)/.test(cols)) keys.push(["is-dnp", "DNP"]);
+  if (cols.includes("scp-ow-col is-bye")) keys.push(["is-bye", "Bye"]);
+  const key =
+    `<ul class="scp-ow-key" aria-hidden="true">` +
+    keys.map(([k, l]) => `<li class="${k}"><i></i>${escapeHtml(l)}</li>`).join("") +
+    `</ul>`;
   return (
     `<figure class="scp-ow-chart">` +
     `<figcaption class="scp-ow-cap">${escapeHtml(caption)}</figcaption>` +
@@ -441,7 +451,7 @@ function renderChart(data: PlayerPageData, s: Season, options: PlayerRenderOptio
     `</span>` +
     `<span class="scp-ow-avg" style="bottom:${pct(avg)}" aria-hidden="true"><b>${escapeHtml(`Avg ${one(avg)}`)}</b></span>` +
     `<ol class="scp-ow-cols" role="list">${cols.replaceAll("<li ", '<li role="listitem" ')}</ol>` +
-    `</div></figure>`
+    `</div>${key}</figure>`
   );
 }
 
@@ -471,7 +481,7 @@ function renderNext(data: PlayerPageData, s: Season): string {
       return (
         `<li class="scp-ow-g${isNext ? " is-next" : ""}">` +
         `<span class="scp-ow-gw"><span class="scp-sr">Week </span><span aria-hidden="true">W</span>${g.week}</span>` +
-        `<span class="scp-ow-go">${logo}${where}${code}</span>` +
+        `<span class="scp-ow-go">${logo}<span class="scp-ow-gt">${where}${code}</span></span>` +
         (m
           ? `<span class="scp-ow-gr">${ordinal(m.rank)}<small> vs ${escapeHtml(pos)}</small></span>`
           : `<span class="scp-ow-gr is-muted">${DASH}</span>`) +
@@ -881,8 +891,7 @@ export function renderOverviewSections(
   const before = leadHead(
     data,
     s,
-    renderAlert(data, options) +
-      renderSeasonStats(data, s, options) +
+    renderSeasonStats(data, s, options) +
       renderWeekly(data, s, options) +
       renderOutlook(data, s, options) +
       renderNews(data, options) +

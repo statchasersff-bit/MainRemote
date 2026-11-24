@@ -299,6 +299,16 @@ export function styleAttr(parts: Array<string | null>): string {
  * The rule is drawn by CSS on the element rather than being a separate node, so
  * it cannot be left behind by a heading that moves.
  */
+/** Icons for the Schedule tab's two link sections' heads (2026-11-21). */
+const SCHED_ICON = {
+  versus:
+    `<svg class="sct-sh-icon" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false">` +
+    `<path d="M4 7h11M11 3l4 4-4 4M20 17H9M13 13l-4 4 4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  links:
+    `<svg class="sct-sh-icon" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false">` +
+    `<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+};
+
 export function h2(text: string, extraClass = ""): string {
   return `<h2 class="sct-h2${extraClass ? ` ${extraClass}` : ""}">${escapeHtml(text)}</h2>`;
 }
@@ -1707,7 +1717,9 @@ function renderSeriesIndex(team: NflTeam, options: TeamRenderOptions): string {
   if (!groups) return "";
   return (
     `<nav class="sct-series" aria-label="${escapeHtml(`${team.nickname} head-to-head pages`)}">` +
-    `<h3 class="sct-mu-h3">${escapeHtml(`${team.nickname} vs Every Team`)}</h3>` +
+    // The standard section head since 2026-11-21 (mak: "use the new design"):
+    // icon, title, team-color rule (team.css).
+    `<h3 class="sct-mu-h3 has-icon">${SCHED_ICON.versus}<span>${escapeHtml(`${team.nickname} vs Every Team`)}</span></h3>` +
     `<div class="sct-series-groups">${groups}</div>` +
     `</nav>`
   );
@@ -2307,7 +2319,8 @@ function renderMoreLinks(team: NflTeam, options: TeamRenderOptions): string {
   const full = getTeamScheduleUrl(team);
   return (
     `<nav class="sct-sched-more" aria-label="${escapeHtml(`More ${team.nickname}`)}">` +
-    h2(`More ${team.nickname}`, "is-sub") +
+    // The standard section head since 2026-11-21 (mak), as above.
+    `<h2 class="sct-h2 is-sub has-icon">${SCHED_ICON.links}<span>${escapeHtml(`More ${team.nickname}`)}</span></h2>` +
     `<ul class="sct-sched-more-list">` +
     links
       .map(

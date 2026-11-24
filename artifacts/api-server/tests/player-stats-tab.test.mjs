@@ -242,22 +242,50 @@ describe("stats tab", () => {
     assert.equal(doc.querySelector(".scp-stp-analysis"), null);
   });
 
-  test("below the qualifying line: no ranks, one footnote says why, no row repeats it", () => {
+  test("below the qualifying line: one notice with the thresholds, rows print values only (mak's mobile brief, 2026-11-23)", () => {
     const unqualified = {
       ...CURRENT, qualified: false, qualifyNote: "50+ pass attempts, 6+ games and a 25%+ snap share",
+      row: { ...CURRENT.row, attempts: 18, games: 1 },
       metrics: CURRENT.metrics.map((m) => ({ ...m, read: "Not enough attempts to rank", standing: "muted", pct: null, pctl: null, rank: null, of: null })),
     };
     const doc = render(state({ statsAdvanced: { current: unqualified, last: null } }));
-    // One qualification note, with the line itself (2026-11-04), and not
-    // "Not enough attempts to rank" on every row.
-    assert.equal(text(doc.querySelector(".scp-stp-note")), "Ranks: 2026: below the qualifying line so far (50+ pass attempts, 6+ games and a 25%+ snap share), so no ranks.");
-    const sec = doc.querySelector(".scp-stp-note").closest("section");
-    assert.doesNotMatch(text(sec).replace(text(doc.querySelector(".scp-stp-note")), ""), /Not enough attempts/);
-    for (const pill of sec.querySelectorAll(".scp-stp-rank")) {
-      assert.equal(text(pill), "Unranked");
-      assert.equal(pill.dataset.tier, "none");
-    }
-    assert.equal(sec.querySelectorAll(".scp-stp-bar-track.is-empty").length, sec.querySelectorAll(".scp-stp-row").length, "no bar on an unranked row");
+    const notices = doc.querySelectorAll(".scp-stp-qual");
+    assert.equal(notices.length, 1, "one notice, not one per row");
+    assert.equal(
+      text(notices[0]),
+      "League rankings unavailable: minimum qualifying sample not met. Ranked QBs need 50+ pass attempts, 6+ games and a 25%+ snap share. He has 18 pass attempts in 1 game.",
+    );
+    // Above the cards, inside the season section.
+    const sec = notices[0].closest("section");
+    assert.ok(notices[0].compareDocumentPosition(sec.querySelector(".scp-stp-cards")) & 4, "the notice precedes the cards");
+    // No per-row Unranked pill, no empty bar, no repeated reason.
+    assert.doesNotMatch(text(sec), /Unranked|Not enough attempts/);
+    assert.equal(sec.querySelectorAll(".scp-stp-rank").length, 0);
+    assert.equal(sec.querySelectorAll(".scp-stp-bar-track, .scp-stp-bar-gap").length, 0);
+    // The statistics themselves are kept.
+    const rows = [...sec.querySelectorAll(".scp-stp-row")];
+    assert.equal(rows.length, 6);
+    for (const r of rows) assert.ok(r.classList.contains("is-plain"));
+    assert.equal(text(rows[0].querySelector(".scp-stp-row-value")), "+0.10");
+    // The footnote no longer repeats it: no ranked column, no Ranks line.
+    assert.equal(doc.querySelector(".scp-stp-note"), null);
+  });
+
+  test("a qualified column: ranks, bars and the footnote stay; a single metric with no rank says so with no bar", () => {
+    const one = { ...CURRENT, metrics: CURRENT.metrics.map((m, i) => (i === 1 ? { ...m, rank: null, of: null, pctl: null, read: "No pool for this metric" } : m)) };
+    const doc = render(state({ statsAdvanced: { current: one, last: null } }));
+    assert.equal(doc.querySelector(".scp-stp-qual"), null, "no qualification notice for a ranked player");
+    const rows = [...doc.querySelectorAll(".scp-stp-row")];
+    const plain = rows.filter((r) => r.classList.contains("is-plain"));
+    assert.equal(plain.length, 0);
+    const lone = rows[1];
+    assert.equal(text(lone.querySelector(".scp-stp-rank")), "Not ranked");
+    assert.equal(lone.querySelector(".scp-stp-rank").getAttribute("title"), "No pool for this metric");
+    assert.equal(lone.querySelector(".scp-stp-bar-track"), null, "no bar without a rank");
+    assert.ok(lone.querySelector(".scp-stp-bar-gap"));
+    for (const r of rows.filter((x) => x !== lone)) assert.ok(r.querySelector(".scp-stp-bar-fill"), "valid bars render");
+    assert.doesNotMatch(text(doc.body), /Unranked/);
+    assert.equal(text(doc.querySelector(".scp-stp-note")), "Ranks: 2026 through Week 3 among 36 qualified QBs.");
   });
 
   test("the fantasy impact reads by sample: a starter's floor, a reserve's playing time, a stale season says so", () => {
