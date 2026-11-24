@@ -98,6 +98,8 @@ describe("one rendering per dataset", () => {
     const seasons = [...history[0].querySelectorAll("tbody tr")].map((r) => r.querySelector("th, td").textContent.trim().slice(0, 4));
     for (const y of seasons) assert.equal(new Set(seasons).size, seasons.length, `season ${y} once`);
     assert.doesNotMatch(css, /\.sct-sph\b/, "no Season History list rules");
+    // Phones scroll it with the Season column frozen.
+    assert.match(css, /\.sct-sp-history \.sct-sp-h-scroll \.sct-sp-h-season \{\s*position: sticky;\s*left: 0;/);
     assert.ok(body.length > 0);
   });
 

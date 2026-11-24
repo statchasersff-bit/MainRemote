@@ -27464,3 +27464,18 @@ ul.sct-faq-list li {
 :is(.sct, #sct-table-armour) :is(.sct-cp-scroll, .sct-cs-scroll, .sct-cf-scroll) {
   position: relative;
 }
+
+/* Stats Season History on phones (WEB-044 integration, 2026-11-24): the
+   one table at every width (the 11-21 phone list is gone); where it is
+   wider than the card it scrolls inside its own region, and the Season
+   column stays frozen on white so a scrolled row keeps its year, as on
+   Coaching's Season by Season. */
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-sp-history .sct-sp-h-scroll .sct-sp-h-season {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    background: #fff !important;
+    box-shadow: 1px 0 0 var(--sp-border-light, #e2eaf4);
+  }
+}
