@@ -379,6 +379,20 @@ function statchasers_matchup_404(): void {
 }
 add_action( 'wp', 'statchasers_matchup_404', 0 );
 
+/*
+ * A matchup address the plugin has made a 404 stays a 404 (1.10.64,
+ * 2026-11-24). With the 404 set on `wp` (WEB-013), core's redirect_canonical
+ * guessed the holder page and 301ed an unplayed game (/dallas-cowboys-vs-
+ * kansas-city-chiefs/2026-week-13/) to /nfl/matchup/. Scoped by
+ * statchasers_matchup_not_found(); every other request is untouched.
+ */
+add_filter(
+	'redirect_canonical',
+	static function ( $redirect_url ) {
+		return statchasers_matchup_not_found() ? false : $redirect_url;
+	}
+);
+
 /**
  * The reversed spelling is a 301, and a segment that is not a pair is a 404 -
  * before anything renders, so neither is ever an indexable copy of the holder.

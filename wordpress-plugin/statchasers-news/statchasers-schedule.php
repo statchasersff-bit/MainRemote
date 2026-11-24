@@ -233,6 +233,20 @@ add_action( 'wp', 'statchasers_schedule_invalid_week_404', 0 );
 add_action( 'template_redirect', 'statchasers_schedule_invalid_week_404' );
 
 /*
+ * A week the plugin has made a 404 stays a 404 (1.10.64, 2026-11-24). Since
+ * the 404 is set on `wp` (WEB-013), core's redirect_canonical on
+ * template_redirect saw is_404() and its 404 guesser sent /week-99/ to the
+ * schedule page with a 301. Live for an hour on 1.10.63. Scoped by
+ * statchasers_schedule_invalid_week(): every other request is untouched.
+ */
+add_filter(
+	'redirect_canonical',
+	static function ( $redirect_url ) {
+		return statchasers_schedule_invalid_week() ? false : $redirect_url;
+	}
+);
+
+/*
  * The backstop, for a Paper something built before `wp` priority 0: an
  * invalid week says noindex and names no canonical and no og:url whatever
  * Rank Math resolved the page as - the shape the matchup game 404s were given
