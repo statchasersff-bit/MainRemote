@@ -154,6 +154,7 @@ import { renderMatchupPreviewBody, renderMatchupPreviewTop } from "./preview-pre
 import { addBarIcons, previewBarColors, previewHeroFills, previewSideColors, recapBarColors, renderRecapPremiumTop } from "./recap-premium";
 import { findGameStory, findGameStoryEntry, renderRecapOverviewParts } from "./recap-overview";
 import { loadGamePbp, renderPlayByPlayParts } from "./play-by-play";
+import { withGameEnding } from "./play-facts";
 import { renderGameFlowPremium } from "./game-flow-premium";
 import { pickLeaders } from "./leaders-strip";
 import type { Preview } from "./preview";
@@ -800,7 +801,7 @@ function renderOverview(data: MatchupData, input: RecapBodyInput, added: AddedSe
   });
   if (!entry) return none;
   const story = entry.story;
-  const pbp = loadGamePbp(meeting.season, entry.id);
+  const pbp = withGameEnding(loadGamePbp(meeting.season, entry.id), data.boxscore?.drives);
   const players = gamePlayers(data);
   const fantasy = fantasyInput(data);
   // The narrative's extra evidence: drives, the closing line, the records.
@@ -1445,7 +1446,7 @@ function renderGamePlayByPlay(data: MatchupData): { lead: string; rest: string }
   if (!entry) return null;
   return renderPlayByPlayParts({
     game,
-    pbp: loadGamePbp(meeting.season, entry.id),
+    pbp: withGameEnding(loadGamePbp(meeting.season, entry.id), data.boxscore?.drives),
     scoringPlays: data.boxscore?.scoringPlays ?? [],
     playerUrl: gameLinks(data),
     inks: { away: "var(--mu-ink-away)", home: "var(--mu-ink-home)" },
@@ -1469,7 +1470,7 @@ function renderGameFlowComparison(data: MatchupData): string {
     away: game.away.abbr,
   });
   if (!entry) return "";
-  return renderGameFlowPremium({ game, pbp: loadGamePbp(meeting.season, entry.id) });
+  return renderGameFlowPremium({ game, pbp: withGameEnding(loadGamePbp(meeting.season, entry.id), data.boxscore?.drives) });
 }
 
 function renderGamePossessions(data: MatchupData): string {
