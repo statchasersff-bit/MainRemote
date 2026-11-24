@@ -1550,6 +1550,45 @@ function statchasers_matchup_games(): array {
 	return $rows;
 }
 
+/**
+ * Is this request one of the sitemaps that list the game pages - the index
+ * or a /game-sitemap*.xml page? Pure, for the smoke test.
+ *
+ * @param string $path The request path, without the query string.
+ */
+function statchasers_matchup_is_game_sitemap_path( string $path ): bool {
+	return 1 === preg_match( '#/(?:sitemap_index|game-sitemap[0-9]*)\.xml$#', $path );
+}
+
+/**
+ * Refresh the game list at `init` on a sitemap request, before Rank Math
+ * reads its cached file (WEB-001, 2026-11-24).
+ *
+ * Rank Math calls the provider below only on a cache miss, and its cache of
+ * /game-sitemap*.xml lasts until something invalidates the 'game' type
+ * (files: indefinitely; transients: 100 days). Saving a post clears the
+ * post's own type and the index, not 'game'. So without this a newly final
+ * game, or a corrected lastmod, waited behind the cached file until some
+ * unrelated index rebuild happened to call the provider. Here the list's
+ * own hour-long transient decides when the API is asked, and
+ * statchasers_matchup_games() clears Rank Math's 'game' and index caches
+ * when the rows changed, so this request already serves the new list. A
+ * warm transient costs one option read.
+ */
+add_action(
+	'init',
+	function () {
+		if ( ! statchasers_matchup_urls_enabled() ) {
+			return;
+		}
+		$path = (string) wp_parse_url( (string) ( $_SERVER['REQUEST_URI'] ?? '' ), PHP_URL_PATH );
+		if ( statchasers_matchup_is_game_sitemap_path( $path ) ) {
+			statchasers_matchup_games();
+		}
+	},
+	20
+);
+
 /** The Rank Math sitemap type the game pages are published under: /game-sitemap.xml. */
 const STATCHASERS_MATCHUP_SITEMAP_TYPE = 'game';
 

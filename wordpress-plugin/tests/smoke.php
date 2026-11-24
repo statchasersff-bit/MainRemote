@@ -1992,6 +1992,12 @@ $rows = statchasers_matchup_games_rows( array(
 is( count( $rows ), 2, 'rows: a pair slug and a game segment of the right shape, nothing else' );
 is( $rows[0], array( 'cleveland-browns-vs-tampa-bay-buccaneers', '2026-week-2', '2026-09-20' ), 'the kickoff date is kept for lastmod' );
 is( statchasers_matchup_games_rows( array( 'games' => array() ) ), null, 'a body without ok is not the index' );
+// The list refreshes on a sitemap request, before Rank Math's cached file is read (WEB-001).
+is( statchasers_matchup_is_game_sitemap_path( '/sitemap_index.xml' ), true, 'the index refreshes the game list' );
+is( statchasers_matchup_is_game_sitemap_path( '/game-sitemap.xml' ), true, 'game sitemap page 1 refreshes it' );
+is( statchasers_matchup_is_game_sitemap_path( '/game-sitemap2.xml' ), true, 'and page 2' );
+is( statchasers_matchup_is_game_sitemap_path( '/page-sitemap.xml' ), false, 'another sitemap does not' );
+is( statchasers_matchup_is_game_sitemap_path( '/nfl/a-vs-b/2026-week-5/' ), false, 'nor a page' );
 is( statchasers_matchup_games_rows( array( 'ok' => true, 'games' => array() ) ), array(), 'an empty index is a valid answer' );
 $links = statchasers_matchup_games_links( $rows );
 is( count( $links ), 2, 'one link per game' );
