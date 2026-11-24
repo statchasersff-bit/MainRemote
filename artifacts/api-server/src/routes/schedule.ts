@@ -63,7 +63,8 @@ const publicDir = path.resolve(__dirname, "..", "public");
 /**
  * The rendering's cache policy, for the WordPress plugin (WEB-040).
  *
- * `X-SC-Schedule-State` is "live", "pregame" or "settled" for the games the
+ * `X-SC-Schedule-State` is "live", "pregame", "recent" (a final in its first
+ * 48 hours, WEB-040 matchup pages) or "settled" for the games the
  * view shows; `X-SC-Schedule-Next-Kickoff` is the next kickoff on it in epoch
  * seconds (pregame only, when one is confirmed). The plugin turns them into
  * the page's shared-cache lifetime: about a minute while live, until the next

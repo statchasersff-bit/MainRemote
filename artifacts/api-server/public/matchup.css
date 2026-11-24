@@ -15093,3 +15093,77 @@ a.sct-ex-game:hover .sct-ex-line {
     font-size: 0.92rem;
   }
 }
+
+/*
+ * The live game-state strip under a matchup page's hero (WEB-040,
+ * 2026-11-24): status, score and clock from the same record the schedule row
+ * prints; client/game-state.ts redraws it in an open tab. One line on every
+ * width; the note wraps under it. Printed `hidden` before kickoff.
+ */
+.sct-gs {
+  margin: 12px 0 0;
+  padding: 10px 14px;
+  border: 1px solid #d7dde6;
+  border-left: 4px solid #c8a24a;
+  border-radius: 6px;
+  background: #fff;
+  color: #0f1e33;
+}
+.sct-gs[hidden] {
+  display: none;
+}
+.sct-gs-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.35;
+}
+.sct-gs-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: #0f1e33;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+.sct-gs-badge[data-phase="live"],
+.sct-gs-badge[data-phase="break"] {
+  background: #0b6e4f;
+}
+.sct-gs-badge[data-phase="final"] {
+  background: #c8a24a;
+  color: #0f1e33;
+}
+.sct-gs-score {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.sct-gs-status {
+  color: #3d4b5f;
+}
+.sct-gs-note {
+  margin: 4px 0 0;
+  font-size: 14px;
+  color: #3d4b5f;
+}
+.sct-gs-note:empty {
+  display: none;
+}
+.sct-gs-action {
+  margin-left: 8px;
+  font-weight: 700;
+}
+button.sct-gs-action {
+  padding: 2px 10px;
+  border: 1px solid #0f1e33;
+  border-radius: 4px;
+  background: #fff;
+  color: #0f1e33;
+  cursor: pointer;
+}

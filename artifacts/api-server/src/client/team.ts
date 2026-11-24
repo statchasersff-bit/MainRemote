@@ -19,6 +19,7 @@
  */
 
 import { wirePlayerSearch } from "./player-search";
+import { wireGameState } from "./game-state";
 import { afterNextPaint, compareText } from "./schedule-work";
 
 const ROOT_SELECTOR = "[data-sct-root]";
@@ -2070,6 +2071,8 @@ function boot(): void {
   for (const root of roots) {
     wireTabs(root);
     wireMatchupTabs(root);
+    // The live strip under a matchup page's hero follows its game (WEB-040).
+    wireGameState(root);
     wirePlayByPlay(root);
     wireGameFlowTimeline(root);
     wireSegTabs(root);

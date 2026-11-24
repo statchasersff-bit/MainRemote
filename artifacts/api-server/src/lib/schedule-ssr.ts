@@ -32,7 +32,7 @@ import { getSchedule, type ScheduleSeason } from "./schedule/schedule-data";
 import { getLeagueStandings, type LeagueStandings } from "./team/profile";
 import { schedulePageMeta, renderScheduleHeadTags } from "./schedule-seo";
 import { LruCache } from "./lru";
-import { schedulePagePolicy, type CachePolicy } from "./schedule/game-status";
+import { schedulePagePolicy, withRecentFinal, type CachePolicy } from "./schedule/game-status";
 
 export interface ScheduleSsrResult {
   html: string;
@@ -106,10 +106,10 @@ export async function renderScheduleFragment(
   const version = `${data.version}-${hash(key)}-${hash(standingsKey(standings))}`;
 
   const now = options.now ?? Date.now();
-  const cache = schedulePagePolicy(
-    resolved.view === "week" ? data.games.filter((game) => game.week === resolved.week) : data.games,
-    now,
-  );
+  const shown = resolved.view === "week" ? data.games.filter((game) => game.week === resolved.week) : data.games;
+  // "recent" for the first 48 hours after a final on the view (WEB-040,
+  // matchup pages): corrections and late box scores still land then.
+  const cache = withRecentFinal(schedulePagePolicy(shown, now), shown, now);
 
   const hit = fragmentCache.get(key);
   if (hit && hit.version === version) return { ...hit, cache };

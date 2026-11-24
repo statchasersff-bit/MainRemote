@@ -55,9 +55,10 @@ test("every finished game has its own address, whatever the pair page leads with
       assert.equal(pair.meetingLinkTarget(game, meetings, season, now), "own");
     }
   }
-  // An unplayed game the pair page is previewing still links the pair page.
+  // An unplayed game links its own dated page even while the pair page is
+  // previewing it (WEB-040, 2026-11-24: one stable URL per game).
   const previewing = [at(played(60)), at(ahead(6))];
-  assert.equal(pair.meetingLinkTarget(previewing[1], previewing, season, now), "pair");
+  assert.equal(pair.meetingLinkTarget(previewing[1], previewing, season, now), "own");
 
   // Never for a fixture, never without a kickoff.
   assert.equal(pair.meetingHasOwnAddress({ kickoffMs: now - 20 * day, isFinal: false }), false);
