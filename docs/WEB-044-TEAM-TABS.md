@@ -169,3 +169,46 @@ combined:
   only) is compatible and removes the remaining duplicated takeaways.
 - Rerun `tests/team-web044.test.mjs`, the 32-team check and the Divi
   preview after the merge.
+
+## Integration with wip/held-from-publish-2026-11-23 (2026-11-24, mak: option 2)
+
+Branch `integ/web044-held-2026-11-24` (worktree .local/web044/integ), local
+only: WEB-044 0611c5d + the held WIP 24ba9d7 (merge 1913d4f), fix d25f91f,
+Stats sticky column 2ac6d5e. Neither source branch was changed.
+
+Resolutions:
+- Stats Season History renders once at every width: `historyPhone()` and
+  the `.sct-sph` CSS are removed; phones get the table (as on production),
+  scrolling inside its card with the Season column frozen (409px table in
+  a 372px card at 390).
+- Coaching: the held `@container coaching (max-width: 900px)` block that
+  swapped the season table for the removed list now keeps the table, Team /
+  PPG / rank scrolling and Season frozen.
+- Usage Situational: the held phone analysis at every width (mak 11-21)
+  replaces the paragraph cards, so the last duplicated takeaways are gone;
+  WEB-044's first-mention links in the card text went with the cards
+  (Usage links 2,465 -> 2,375 across the league; the FAQ links stay).
+- team.css: both sides' appended blocks kept. The first resolution split
+  the conflict on a `=======` inside a comment banner and dropped one `}`,
+  nesting every later rule (Coaching overflowed to 702px at 600 again);
+  d25f91f re-resolved with line-anchored markers and adds a brace-balance
+  test.
+
+Verified on the integration build (Chromium emulation, local server):
+- 32 teams x hub, Coaching, Stats, Usage, Depth Chart: all 200; no
+  `.sct-csp` / `.sct-cfp` / `.sct-sph` / name-triplet / situational-card
+  copies; one Season History, one season and one finishes table per page;
+  roster link = Depth Chart tab on hub and the three tabs, absent on the
+  Depth Chart page; 5,752 player links, all to published profiles.
+- Detroit at 390 / 600 / 768 / 1280: no page overflow on any tab; the
+  Coaching Season column frozen at 0-1px on white at 390, 600 and 768.
+- Not re-run on the integration: the live-Divi preview and the physical
+  phone (none available). The held branch's own player-page and schedule
+  changes are carried as they were; they were not reviewed here.
+- The held branch needs the gitignored roster caches
+  (`data/team-roster.json`, `data/player-teams.json`) in a fresh worktree;
+  without them six hub tests fail on it (environment, not code).
+
+Full suite on the integration branch (roster caches present, `INGEST_SECRET`
+unset): 1,844 tests, 1,842 pass, 1 fail ("a player card is its own
+fragment, and an unknown one is a 404", already failing on 7c3e646).
