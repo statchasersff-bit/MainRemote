@@ -274,10 +274,10 @@ describe("rendered", () => {
     assert.equal(doc.querySelector("footer.scp-st-foot"), null);
     assert.equal(
       doc.querySelector(".scp-inp-now-text").textContent,
-      "No injury designation for Week 4 at the Giants.",
+      "No game designation for Week 4 at the Giants.",
     );
     // Never "Active" (WEB-039, 2026-11-24): the slot says what the report says.
-    assert.equal(doc.querySelector(".scp-inp-now-word").textContent, "No designation");
+    assert.equal(doc.querySelector(".scp-inp-now-word").textContent, "No game designation");
     assert.ok(doc.querySelector(".scp-inp-now.is-good"));
     // "Status checked" is the snapshot time, not the render time.
     assert.equal(doc.querySelector(".scp-inp-checked time").getAttribute("datetime"), "2026-09-29T08:00:00.000Z");
@@ -454,7 +454,7 @@ describe("durability profile (Redraft Command's injury card, mak 2026-10-30)", (
     const hp = card.querySelector(".scp-inp-hp");
     assert.match(hp.getAttribute("aria-label"), /^Durability score \d+\.\d of 100, /);
     assert.match(hp.getAttribute("style"), /--hp:#/);
-    assert.equal(card.querySelector(".scp-inp-dur-status b").textContent, "No designation");
+    assert.equal(card.querySelector(".scp-inp-dur-status b").textContent, "No game designation");
     // The grid: a row per season, outlined missed weeks only where the record says.
     assert.ok(card.querySelectorAll(".scp-in-av-row").length >= 2);
     for (const b of card.querySelectorAll(".scp-in-ab.is-mark")) assert.ok(b.classList.contains("is-r"));
@@ -565,21 +565,21 @@ describe("the premium dashboard (mak's brief, 2026-11-05; the tab's own design s
   test("no designation: the card says 'yet' until the week's report is final", () => {
     const cs = (reportState) => ({
       playerId: "3257", season: 2026, week: 4, designation: null, designated: false,
-      label: reportState === "final" ? "No designation" : "No designation yet", reportState,
+      label: reportState === "final" ? "No game designation" : "Game designation pending", reportState,
       rosterStatus: null, practice: null, injury: null, kind: "active", source: "none", prior: null,
       missedWeek: null, reportFetchedAt: null, rosterFetchedAt: Date.parse("2026-09-29T08:00:00Z"),
       freshness: "current",
-      message: reportState === "final" ? "No game designation for Week 4." : "No Week 4 game designation yet; the Week 4 injury report is not on file.",
+      message: reportState === "final" ? "No game designation for Week 4." : "Game designation pending for Week 4; the Week 4 injury report is not on file.",
     });
     const card = (reportState) => text(render({ currentStatus: cs(reportState) }).doc.querySelector(".scp-inp"));
     for (const state of ["missing", "pending"]) {
       const t = card(state);
-      assert.match(t, /No game designation yet for Week 4 at the Giants\./, state);
-      assert.doesNotMatch(t, /No injury designation for Week 4/, state);
+      assert.match(t, /Game designation pending for Week 4 at the Giants\./, state);
+      assert.doesNotMatch(t, /No game designation for Week 4/, state);
     }
     const fin = card("final");
-    assert.match(fin, /No injury designation for Week 4 at the Giants\./);
-    assert.doesNotMatch(fin, /designation yet/);
+    assert.match(fin, /No game designation for Week 4 at the Giants\./);
+    assert.doesNotMatch(fin, /designation pending/);
   });
 
   test("no injury record: nothing renders, as the tab itself does not", () => {

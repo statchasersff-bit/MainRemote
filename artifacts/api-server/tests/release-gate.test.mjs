@@ -79,7 +79,7 @@ describe("team overview injuries = player pages' current status", () => {
         rows++;
         if (["questionable", "doubtful", "out"].includes(status)) {
           const page = strip((await body(server.origin, `/player/${slug}/injury`)).text);
-          assert.doesNotMatch(page, /No injury designation for Week/, `${team} ${slug}: overview says ${status}`);
+          assert.doesNotMatch(page, /(?:No game designation|Game designation pending) for Week/, `${team} ${slug}: overview says ${status}`);
         }
       }
     }
@@ -92,7 +92,7 @@ describe("team overview injuries = player pages' current status", () => {
     const html = (await body(server.origin, "/team/det")).text;
     const list = /<ul class="sct-ovw-inj-list">([\s\S]*?)<\/ul>/.exec(html)?.[1] ?? "";
     const row = [...list.matchAll(/<li class="sct-ovw-inj-row">([\s\S]*?)<\/li>/g)].find((m) => /sione-vaki/.test(m[1]));
-    if (/No injury designation for Week/.test(page)) {
+    if (/(?:No game designation|Game designation pending) for Week/.test(page)) {
       assert.equal(row, undefined, "his page has no designation; the overview lists none");
       let answer = "";
       for (const b of html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)) {
@@ -166,7 +166,7 @@ describe("team News Injury Watch = Overview = player pages (all 32 hubs)", () =>
         compared++;
         if (r.slug && ["questionable", "doubtful", "out"].includes(r.status.toLowerCase())) {
           const page = strip((await body(server.origin, `/player/${r.slug}/injury`)).text);
-          assert.doesNotMatch(page, /No injury designation for Week/, `${team}: ${name} reads ${r.status} on the team page`);
+          assert.doesNotMatch(page, /(?:No game designation|Game designation pending) for Week/, `${team}: ${name} reads ${r.status} on the team page`);
         }
       }
     }

@@ -65,7 +65,7 @@ describe("Depth Chart links and statuses", () => {
       if (!p || !/^IR/i.test(p.injury_status ?? "")) continue;
       const { doc } = await page(`/player/${slug}/injury`);
       assert.match(doc.body.textContent, /is on injured reserve/, `${slug}: IR on his page`);
-      assert.doesNotMatch(doc.body.textContent, /No injury designation for Week/, `${slug}: not read as healthy`);
+      assert.doesNotMatch(doc.body.textContent, /(?:No game designation|Game designation pending) for Week/, `${slug}: not read as healthy`);
     }
     assert.ok(off.length >= 0);
   });
@@ -86,7 +86,7 @@ describe("Depth Chart links and statuses", () => {
         // The header pill says Pending too (shared current status), not the roster's "Active".
         const hub = await page(`/player/${target}`);
         assert.equal(hub.doc.querySelector(".scp-ptag-inj, .scp-ptag-status")?.textContent, "Pending", `${target}: header pill`);
-        assert.doesNotMatch(text, /Status pending ?No injury designation/, `${target}: headline reads healthy`);
+        assert.doesNotMatch(text, /Status pending ?No game designation/, `${target}: headline reads healthy`);
         checked++;
       }
     }

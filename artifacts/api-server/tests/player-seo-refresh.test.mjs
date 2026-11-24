@@ -175,7 +175,7 @@ test("the injury page: a dated title, the question and its Yes/No answer first, 
     assert.ok(description.length <= DESCRIPTION_MAX, `${description.length}: ${description}`);
     assert.match(
       description,
-      /^(?:No injury designation|Questionable|Doubtful|Out|On injured reserve|On the PUP list|On the NFI list|Suspended)/,
+      /^(?:No game designation|Game designation pending|Questionable|Doubtful|Out|On injured reserve|On the PUP list|On the NFI list|Suspended)/,
       description,
     );
     assert.match(description, /\(checked [A-Z][a-z]{2} \d{1,2}\)\. .+ injury history/, description);

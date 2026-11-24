@@ -257,8 +257,8 @@ describe("one injury status (WEB-039)", () => {
     assert.equal(status.displayedStatus(s), null);
     // The fixture's Week 11 report has no Bears rows yet: no designation,
     // and never read as cleared (WEB-039 follow-up, 2026-11-24).
-    assert.match(s.message, /^No Week 11 game designation yet; the Week 11 injury report is not on file\./);
-    assert.equal(s.label, "No designation yet");
+    assert.match(s.message, /^Game designation pending for Week 11; the Week 11 injury report is not on file\./);
+    assert.equal(s.label, "Game designation pending");
     assert.equal(s.reportState, "missing");
   });
 
@@ -384,13 +384,13 @@ describe("one status per game week, official designations only (WEB-039 follow-u
     assert.equal(a.lastGame.week, 9, "Week 10 was the bye: the last game is Week 9");
     assert.equal(a.status, null);
     assert.equal(a.designated, false);
-    assert.equal(a.label, "No designation yet");
+    assert.equal(a.label, "Game designation pending");
     assert.equal(a.report.state, "missing", "a Week 11 entry with no Bears rows is not a report");
     assert.match(a.note, /^Reported Questionable after Week 9; not an official Week 11 game status/);
     // The player page reads the same record: header, Outlook, Injury tab, FAQ.
     assert.equal(s.designation, null);
     assert.equal(status.displayedStatus(s), null);
-    assert.equal(s.label, "No designation yet");
+    assert.equal(s.label, "Game designation pending");
     assert.doesNotMatch(s.message, /\b(active|cleared|healthy)\b/i, "an empty report never reads as cleared");
     // And the preview's roster for the same game.
     const g = availability.gameRoster(chi(), 2026, 11, [row({ injuryStatus: "Questionable" })], { logs: LOGS["2026"], practice: BEARS_1118 });
@@ -406,7 +406,7 @@ describe("one status per game week, official designations only (WEB-039 follow-u
     assert.equal(a.status, null);
     assert.equal(a.practice, "Full Thu");
     assert.equal(a.report.state, "final", "game statuses are out (Gordon's Out)");
-    assert.equal(a.label, "No designation");
+    assert.equal(a.label, "No game designation");
     assert.equal(s.designation, null);
     assert.match(s.message, /^No game designation for Week 11\. Practice: Full Thu\./);
   });
@@ -434,15 +434,15 @@ describe("one status per game week, official designations only (WEB-039 follow-u
     wed.weeks[11].fetchedAt = "2026-11-18T23:00:00Z"; // Wednesday night, four days out
     const { a, s } = resolve(wed);
     assert.equal(a.report.state, "pending");
-    assert.equal(a.label, "No designation yet");
-    assert.match(s.message, /^No Week 11 game designation yet; game statuses are not out\./);
+    assert.equal(a.label, "Game designation pending");
+    assert.match(s.message, /^Game designation pending for Week 11; game statuses are not out\./);
   });
 
   test("an unavailable feed: no report at all is 'no designation yet', not active", () => {
     const { a, s } = resolve({ weeks: {} }, null);
     assert.equal(a.report.state, "missing");
-    assert.equal(a.label, "No designation yet");
-    assert.equal(s.label, "No designation yet");
+    assert.equal(a.label, "Game designation pending");
+    assert.equal(s.label, "Game designation pending");
     assert.match(s.message, /injury report is not on file/);
   });
 

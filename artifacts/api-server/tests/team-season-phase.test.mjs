@@ -314,7 +314,7 @@ describe("a designation reported after the last game is not an official game sta
     assert.match(s.upgraded.availability.note, /Reported Out after Week 10; not an official Week 11 game status \(no Week 11 injury report yet\)/);
     assert.equal(s.unlisted.injuryStatus, null, "a reported Questionable is a note, not a status");
     assert.match(s.unlisted.availability.note, /Reported Questionable after Week 10/);
-    assert.equal(s.unlisted.availability.label, "No designation yet");
+    assert.equal(s.unlisted.availability.label, "Game designation pending");
     assert.equal(s.missed.injuryStatus, "Pending");
     assert.equal(s.ir.injuryStatus, "IR");
     assert.equal(s.ir.availability.designated, false, "a reserve list is a roster status, not a game designation");
@@ -326,7 +326,7 @@ describe("a designation reported after the last game is not an official game sta
     const s = statuses({ weeks });
     assert.equal(s.stale.injuryStatus, null);
     assert.equal(s.upgraded.injuryStatus, null, "on the report with no game status yet");
-    assert.equal(s.upgraded.availability.label, "No designation yet");
+    assert.equal(s.upgraded.availability.label, "Game designation pending");
     assert.equal(s.upgraded.availability.practice, "DNP Wed", "practice kept apart from the game status");
     assert.equal(s.upgraded.availability.report.state, "pending");
     assert.equal(s.unlisted.injuryStatus, null, "not on this week's report: no designation");
@@ -340,7 +340,7 @@ describe("a designation reported after the last game is not an official game sta
     assert.equal(s.upgraded.availability.source, "nfl-report");
     assert.equal(s.upgraded.availability.designated, true);
     assert.equal(s.upgraded.availability.report.state, "final");
-    assert.equal(s.stale.availability.label, "No designation", "final report, not listed");
+    assert.equal(s.stale.availability.label, "No game designation", "final report, not listed");
   });
 
   test("a Doubtful reported since the last game reads Doubtful (mak, 2026-11-24)", () => {
