@@ -709,6 +709,76 @@ function statchasers_schedule_page_title(): string {
 	return '' === $page ? 'NFL Schedule' : $page;
 }
 
+/**
+ * The season the schedule page is about, or 0 when nothing says.
+ *
+ * Read off the fragment the page is about to print - the same cached fetch the
+ * shortcode and the FAQ schema make, same arguments, so it costs no second
+ * round trip - because the board is the thing that knows which season it is
+ * showing, and in the weeks between one season ending and the next schedule
+ * being released that is not the calendar year. Without a fragment, the year
+ * written in the page's own title, which is where the season was read from
+ * before. Never the current NFL week's season by assumption.
+ */
+function statchasers_schedule_season(): int {
+	static $season = null;
+
+	if ( null !== $season ) {
+		return $season;
+	}
+
+	$season = 0;
+
+	if ( ! statchasers_schedule_post_has_shortcode() ) {
+		return $season;
+	}
+
+	$data = statchasers_schedule_fetch(
+		statchasers_schedule_args( statchasers_schedule_mounted_atts() )
+	);
+	$html = null === $data ? '' : (string) ( $data['html'] ?? '' );
+
+	if ( 1 === preg_match( '/data-scs-season="(\d{4})"/', $html, $m ) ) {
+		$season = (int) $m[1];
+	} elseif ( 1 === preg_match( '/\b((?:19|20)\d{2})\b/', statchasers_schedule_page_title(), $m ) ) {
+		$season = (int) $m[1];
+	}
+
+	return $season;
+}
+
+/**
+ * The <title> this request should carry, brand included, or '' to leave
+ * whatever the SEO plugin would print.
+ *
+ *     hub:   2026 NFL Schedule | StatChasers
+ *     week:  NFL Week 12 Schedule 2026 | StatChasers
+ *
+ * WEB-022. Only the document title: the H1 (the_title, the hero) keeps the
+ * page's own name with ": Week N", the description and canonical are
+ * unchanged. Scoped like the week title - the page that mounts the schedule -
+ * and never on a 404, so /week-99/ keeps the title it had. Without a season
+ * the year is left out rather than guessed.
+ */
+function statchasers_schedule_document_title(): string {
+	if ( ! statchasers_schedule_post_has_shortcode() || is_404() ) {
+		return '';
+	}
+
+	$week   = statchasers_schedule_request_week();
+	$season = statchasers_schedule_season();
+
+	if ( $week > 0 ) {
+		$title = $season > 0
+			? sprintf( 'NFL Week %d Schedule %d', $week, $season )
+			: sprintf( 'NFL Week %d Schedule', $week );
+	} else {
+		$title = $season > 0 ? sprintf( '%d NFL Schedule', $season ) : 'NFL Schedule';
+	}
+
+	return $title . ' | StatChasers';
+}
+
 /** The description for a week URL, or '' when this is not one. */
 function statchasers_schedule_week_description(): string {
 	$week = statchasers_schedule_request_week();
@@ -807,10 +877,25 @@ add_filter(
 	2
 );
 
+// The <title>, apart from the heading. WEB-022 (2026-11-24): the tab title is
+// its own short phrase, not the heading with the brand on the end, so the week
+// is at the front of a results line rather than past the 60th character. The
+// string is complete - brand included - so it replaces Rank Math's whole title
+// rather than handing it something to suffix, and core gets the same string at
+// a later priority than Rank Math's own pre_get_document_title, which keeps
+// one brand on the page whichever of the two prints the tag.
 add_filter( 'rank_math/frontend/title', function ( $title ) {
-	$own = statchasers_schedule_week_title();
-	return '' === $own ? $title : $own . ' | StatChasers';
+	$own = statchasers_schedule_document_title();
+	return '' === $own ? $title : $own;
 } );
+add_filter(
+	'pre_get_document_title',
+	static function ( $title ) {
+		$own = statchasers_schedule_document_title();
+		return '' === $own ? $title : $own;
+	},
+	20
+);
 add_filter( 'rank_math/frontend/description', function ( $description ) {
 	$own = statchasers_schedule_week_description();
 	return '' === $own ? $description : $own;
@@ -822,13 +907,6 @@ add_filter( 'rank_math/frontend/canonical', function ( $canonical ) {
 add_filter( 'rank_math/opengraph/url', function ( $url ) {
 	$own = statchasers_schedule_week_canonical();
 	return '' === $own ? $url : $own;
-} );
-add_filter( 'document_title_parts', function ( array $parts ): array {
-	$own = statchasers_schedule_week_title();
-	if ( '' !== $own && isset( $parts['title'] ) ) {
-		$parts['title'] = $own;
-	}
-	return $parts;
 } );
 add_filter( 'get_canonical_url', function ( $canonical ) {
 	$own = statchasers_schedule_week_canonical();
