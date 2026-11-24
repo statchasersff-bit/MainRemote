@@ -87,6 +87,20 @@ describe("one rendering per dataset", () => {
     assert.match(css, /\.sct-up-name \.sct-nm-i::after \{\s*content: "\.";/);
   });
 
+  test("Stats: Season History is one table at every width (integration guard for wip/held-from-publish-2026-11-23)", async () => {
+    // The held branch adds a phone list (historyPhone(), .sct-sph) beside the
+    // Season History table. Merged as is it would print every season twice;
+    // the merge must keep this test green (adapt the one table with CSS).
+    const { doc, body } = await page("/team/detroit-lions/stats/");
+    assert.equal(doc.querySelectorAll(".sct-sph, .sct-sph-row").length, 0, "no Season History phone copy");
+    const history = [...doc.querySelectorAll("table")].filter((t) => /^Season\b/.test(t.querySelector("thead th")?.textContent ?? "") && t.classList.contains("sct-sp-h"));
+    assert.equal(history.length, 1, "one Season History table");
+    const seasons = [...history[0].querySelectorAll("tbody tr")].map((r) => r.querySelector("th, td").textContent.trim().slice(0, 4));
+    for (const y of seasons) assert.equal(new Set(seasons).size, seasons.length, `season ${y} once`);
+    assert.doesNotMatch(css, /\.sct-sph\b/, "no Season History list rules");
+    assert.ok(body.length > 0);
+  });
+
   test("CSS: phones keep the tables, nothing hides them for a copy", () => {
     assert.doesNotMatch(css, /\.sct-csp\b/, "no season-list rules left");
     assert.doesNotMatch(css, /\.sct-cfp-(row|sum|kv|head|cell)\b/, "no finishes-list rules left");
@@ -98,6 +112,8 @@ describe("one rendering per dataset", () => {
     // A scrolling table keeps its absolutely positioned bits (the 1px
     // screen-reader words) inside its region, so the page never widens.
     assert.match(css, /:is\(\.sct-cp-scroll, \.sct-cs-scroll, \.sct-cf-scroll\) \{\s*position: relative;/);
+    // Phones scroll the season table with the Season column frozen and opaque (2026-11-24 review).
+    assert.match(css, /\.sct-cc-body :is\(\.sct-cs-td, \.sct-cs-th\)\.is-season \{\s*position: sticky !important;\s*left: 0 !important;\s*z-index: 2;\s*background: #fff !important;/);
   });
 });
 

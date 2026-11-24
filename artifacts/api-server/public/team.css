@@ -21793,7 +21793,8 @@ ul.sct-faq-list li {
  * and a row falls back to the short form only when team.ts's fitSnapNames()
  * finds the full name cut off (.is-tight). Since WEB-044 (2026-11-24) the
  * name is in the HTML once (name-forms.ts) and the short form is painted
- * from it: the rest of the first name hidden, a "." after the initial.
+ * from it: the rest of the first name hidden, a "." after the initial
+ * (a copy keeps it: client/team.ts wireNameCopy).
  */
 :is(.sct, #sct-table-armour) .sct-up-name .sct-nm-r {
   display: none;
@@ -23735,13 +23736,28 @@ ul.sct-faq-list li {
   }
 }
 
-/* Coaching Season by Season at 560px and under (mak, 2026-11-15): no
-   frozen columns; Season and Team scroll with the rest of the table. */
+/* Coaching Season by Season at 560px and under (mak, 2026-11-15): Team,
+   PPG and rank scroll with the rest of the table. Since WEB-044 phones get
+   the table itself (the season list is gone), so the Season column stays
+   frozen there, on the card's white with a hairline edge (phone rows carry
+   no fill), or a scrolled row would lose its year (2026-11-24 review). */
 @media (max-width: 560px) {
-  :is(.sct, #sct-table-armour) .sct-cc-body :is(.sct-cs-td, .sct-cs-th):is(.is-season, .is-team, .is-ppg, .is-rank) {
+  :is(.sct, #sct-table-armour) .sct-cc-body :is(.sct-cs-td, .sct-cs-th):is(.is-team, .is-ppg, .is-rank) {
     position: static !important;
     left: auto !important;
     box-shadow: none !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cc-body :is(.sct-cs-td, .sct-cs-th).is-season {
+    position: sticky !important;
+    left: 0 !important;
+    z-index: 2;
+    background: #fff !important;
+    box-shadow: 1px 0 0 var(--tp-c-e2eaf4, #e2eaf4) !important;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cc-body .sct-cs-th.is-season {
+    background: var(--tp-c-f3f6fa, #f3f6fa) !important;
   }
 }
 
@@ -26010,6 +26026,15 @@ ul.sct-faq-list li {
 @container tpb (max-width: 679px) {
   .sct .sct-tpb-roster {
     display: block;
+  }
+}
+
+/* 650-679px: the hero still wears its crest column (every row starts
+   "badge"), so the link sits in the content column under the facts, not
+   under the crest panel at the hero's edge (Divi preview, 2026-11-24). */
+@container tpb (min-width: 650px) and (max-width: 679px) {
+  .sct .sct-tpb-roster {
+    grid-column: 2 / -1;
   }
 }
 

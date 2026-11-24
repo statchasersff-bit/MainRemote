@@ -83,27 +83,89 @@ Coaching scroll regions and every new link take focus with a visible ring.
 - Names in FAQ questions stay text (a link inside `<summary>` fights the
   toggle); later mentions in an answer stay text.
 
-## Verification gaps
+## Verification gaps (see the review below for what was closed)
 
-- Headless Chromium only; no real device and no Divi/WordPress host
-  simulation yet (needed before release, see the launch checklist).
-- "Published" is the workspace's `indexed_players.json`; a profile published
-  on WordPress after the last data rebuild stays unlinked until the next one.
-- Copying a painted short name ("J. Goff") copies "J Goff" (the "." is CSS).
-- The held WIP `24ba9d7` edits the same files (team.css, coaching-*,
-  usage-*); its 11-21 Stats Season History phone list (`.sct-sph`) would add
-  a duplicated dataset back if merged as is.
+- No physical phone yet: every check is headless Chromium (CDP emulation),
+  some of it on the live Divi template (below).
+- "Published" is the workspace's `indexed_players.json` (generated
+  2026-11-23 05:37 UTC); the live sitemap matched it on 2026-11-24 (below).
+- The held WIP `24ba9d7` edits the same files; see the integration
+  requirement below.
 
 ## Tests
 
-`tests/team-web044.test.mjs` (8 tests; 7 fail on 7c3e646, the Stats one
-passes on both because that link was already there).
+`tests/team-web044.test.mjs` (9 tests; the Stats leaders and Season History
+guards pass on 7c3e646 too, the other 7 fail there).
 `tests/team-coaching.test.mjs`: the phone-list test now asserts the single
 table (it also pinned a rank that has since moved, QB4 -> QB8).
 
-Full suite (`node --test tests/*.test.mjs`, `INGEST_SECRET` unset): branch
-1,826 pass / 12 fail, 7c3e646 1,817 pass / 13 fail. The 12 are the same
+Full suite (`node --test tests/*.test.mjs`, `INGEST_SECRET` unset), rerun
+after the review fixes: branch 1,827 pass / 12 fail, 7c3e646 1,817 pass / 13 fail. The 12 are the same
 tests on both (embed player script, table-armour Usage prefixes for
 `.sct-us-sit-short` / `.sct-us-pa`, ESPN sweep, Wild Card, bio and others:
 data drift and earlier work, none in files this branch changes); the 13th
 on 7c3e646 is the old finishes test.
+
+## Review, 2026-11-24 (before release)
+
+How each check ran: **C** = headless Chromium with CDP device emulation
+against the local build; **D** = the live statchasers.com Detroit Coaching
+page (real Divi template, header, fonts, WP Rocket) loaded in headless
+Chromium with its team fragment and `team.css` swapped for the local
+build's over CDP (the live fragment equals the 7c3e646 embed apart from the
+FAQ data island the plugin strips); **P** = physical phone (none yet).
+
+| Check | How | Result |
+|---|---|---|
+| Season by Season at 390, before/after, same data (no data diff 7c3e646..branch) | D | before: phone list with tap-to-open rows; after: the table, 860px inside a 348px region, page 390px |
+| Sticky Season column when scrolled | C, D | **was broken on phones** (an 11-15 rule set it static at 560px and under, written while phones saw the list). Fixed: Season frozen at 0px, white, on top; Team/PPG/rank scroll |
+| Fantasy Finishes at 390 | D | fits (348 in 348), in-season stop label wraps to 3 lines ("Through Week 10 · In-season"), Amon-Ra St. Brown shows "St. Brown" as a link |
+| Roster link opens Detroit's depth chart | D (real mouse click) | landed on https://statchasers.com/nfl/teams/detroit-lions/depth-chart/, H1 "Detroit Lions Depth Chart", Depth Chart tab current |
+| Header around the 680px breakpoint | D (600-1000px sweep, 10px steps) | no width where the Depth Chart tab is cut off and the link is missing; both show at 690-700 (tab fits from a 667px header). At 680-700 the link sat under the crest panel at the hero's edge; fixed (content column at 650-679px) |
+| Page overflow 600-1000 | D | none |
+| Accessible names | C (Accessibility.getPartialAXTree) | links: "Jared Goff", "Amon-Ra St. Brown" (Usage, painted "J. Goff" / "A. St. Brown"); finishes link "Amon-Ra St. Brown" (painted "St. Brown") |
+| Copy of a painted short name | C (real clipboard: execCommand copy, clipboard.readText) | 7c3e646: "J. GoffJared Goff"; 4c6ed3d: "J Goff"; now "J. Goff", "A. St. Brown", and a whole-table copy keeps every "." |
+
+The copy fix: the "." stays CSS `::after` (page text, aria-labels and
+crawlers read the plain full name) and `client/team.ts wireNameCopy()` puts
+it back into the copied plain text for painted short names. A "." in the
+markup was tried first and reverted: it made the page text "Drake. Maye",
+and eight existing tests that find rows by name failed on it.
+
+Gap: a Usage name with no link (no published page) is announced as painted
+("K. Latu" where the short form shows): `aria-label` on a plain span is not
+reliably read. 48 Usage rows across the league are unlinked.
+
+### Published-player lookup
+
+`ids().indexed` in `src/lib/player/data.ts` reads
+`data/player/indexed_players.json`, written by
+`scripts/player/buildIndexedPlayers.js` (step 3 of the hand-run player
+builders, scripts/player/README.md: Sleeper dictionary + Ourlads chart,
+additive). The daily chain is off, so it moves when someone rebuilds; the
+WordPress player pages are built from the same list by WP-Cron. The newest
+manifest available is the live Rank Math page sitemaps (fetched
+2026-11-24, newest lastmod 2026-11-23 22:52 UTC): 650 player hubs, all 650
+in the local list (the list's other 32 entries are team defenses). No
+unresolved identity resolves against it; all 4,534 player links on the hub,
+Coaching, Stats and Usage of the 32 teams point at a slug in the live
+sitemap.
+
+### Integration requirement: wip/held-from-publish-2026-11-23
+
+Keep that branch separate until WEB-044 is reviewed. When the two are
+combined:
+
+- **Stats Season History must render once at every width.** The held
+  branch adds `historyPhone()` in `stats-premium.ts` (a `.sct-sph`
+  `<details>` list beside the Season History table, mak 11-21). Merged as
+  is it prints every season twice. Adapt the one table with CSS instead;
+  `tests/team-web044.test.mjs` "Stats: Season History is one table at every
+  width" fails while the list exists.
+- Its container-query copies of the Coaching `.sct-csp` season-list rules
+  (`@container coaching` up to 900px) target markup WEB-044 removed; drop
+  them, and do not restore the lists (`.sct-csp`, `.sct-cfp`).
+- Its "phone version at every width" Usage situational change (`.sct-us-pa`
+  only) is compatible and removes the remaining duplicated takeaways.
+- Rerun `tests/team-web044.test.mjs`, the 32-team check and the Divi
+  preview after the merge.

@@ -11,7 +11,10 @@
  *
  *   - the full name ("Jared Goff"): nothing hidden;
  *   - the short form ("J. Goff"): `.sct-nm-r` hidden and a "." added after
- *     `.sct-nm-i` with `::after` (generated content, not page text);
+ *     `.sct-nm-i` with `::after`. Generated content keeps the page text the
+ *     plain name ("Jared Goff") for crawlers and anything reading the HTML;
+ *     a copy of the painted short form gets its "." back from the team
+ *     bundle's copy handler (client/team.ts wireNameCopy, 2026-11-24 review);
  *   - the surname ("Goff", "St. Brown"): `.sct-nm-first` hidden.
  *
  * Same rule as the short forms it replaces (shortName in

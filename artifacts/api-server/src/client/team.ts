@@ -781,6 +781,45 @@ function fitSnapNames(root: HTMLElement): void {
 }
 
 /**
+ * A copied short name keeps its period (WEB-044 review, 2026-11-24).
+ *
+ * The Usage tables print each name once ("Jared Goff", name-forms.ts) and
+ * team.css paints the short form from it: the rest of the first name hidden
+ * and the "." drawn with ::after. Generated content is not copied, so a
+ * selection of the painted "J. Goff" would paste as "J Goff". On copy, each
+ * painted short name inside the selection gets its "." back in the plain
+ * text; nothing else in the copied text changes, and the page text (what a
+ * crawler or a screen reader reads) stays the plain full name.
+ */
+function wireNameCopy(root: HTMLElement): void {
+  root.addEventListener("copy", (event: ClipboardEvent) => {
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0 || !event.clipboardData) return;
+    const range = selection.getRangeAt(0);
+    const painted = Array.from(root.querySelectorAll<HTMLElement>(".sct-up-name")).filter((n) => {
+      if (!range.intersectsNode(n)) return false;
+      const rest = n.querySelector<HTMLElement>(".sct-nm-r");
+      return !!rest && getComputedStyle(rest).display === "none";
+    });
+    if (painted.length === 0) return;
+    let text = selection.toString();
+    let from = 0;
+    for (const n of painted) {
+      const initial = n.querySelector(".sct-nm-i")?.textContent ?? "";
+      const last = n.querySelector(".sct-nm-last")?.textContent ?? "";
+      if (!initial || !last) continue;
+      const shown = `${initial} ${last}`;
+      const at = text.indexOf(shown, from);
+      if (at < 0) continue;
+      text = `${text.slice(0, at)}${initial}. ${last}${text.slice(at + shown.length)}`;
+      from = at + shown.length + 1;
+    }
+    event.clipboardData.setData("text/plain", text);
+    event.preventDefault();
+  });
+}
+
+/**
  * Draft tables on phones (mak, 2026-11-15): a name that would wrap onto a
  * second line shows as "J. Smith" first; only a name that still does not
  * fit then wraps. Each name is measured in full; one that breaks across
@@ -2035,6 +2074,7 @@ function boot(): void {
     wireUsageProfiles(root);
     wireSnapTables(root);
     fitSnapNames(root);
+    wireNameCopy(root);
     fitDraftNames(root);
     wireDepthViews(root);
     wireCutScenario(root);
