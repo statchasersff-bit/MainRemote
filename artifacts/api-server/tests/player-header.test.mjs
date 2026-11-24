@@ -449,3 +449,67 @@ describe("player header", () => {
     assert.equal(render.teamInk(CARDINALS), "#97233F");
   });
 });
+
+describe("the header's PPG is the rate its rank was measured on (2026-11-24)", async () => {
+  const ranks = await importModule("lib/player/ranks");
+  const metrics = await importModule("lib/player/metrics");
+
+  /** A game he was active for; `touch` false is a roster week with no snap, target or carry. */
+  const game = (week, pts, touch = true) => ({
+    week,
+    season: 2026,
+    game_status: "active",
+    stats: touch ? { off_snp: 40, rec_tgt: 6, rec: 4, pts_ppr: pts, pts_half_ppr: pts - 2, pts_std: pts - 4 } : { pts_ppr: 0, pts_half_ppr: 0, pts_std: 0 },
+  });
+  const players = [
+    { id: "w1", name: "Active Nosnap", slug: "active-nosnap", position: "WR" },
+    { id: "w2", name: "Other One", slug: "other-one", position: "WR" },
+    { id: "w3", name: "Short Sample", slug: "short-sample", position: "WR" },
+  ];
+  // Four touch games of 15 and one week active without a snap or touch.
+  const logs = {
+    w1: [game(1, 15), game(2, 15), game(3, 15), game(4, 15), game(5, 0, false)],
+    w2: [game(1, 13), game(2, 13), game(3, 13), game(4, 13), game(5, 13)],
+    w3: [game(1, 30), game(2, 30), game(3, 30)],
+  };
+  const table = ranks.ppgPositionTable(logs, players, "WR", "ppr");
+  const wr = (id, overrides = {}) => {
+    const base = state();
+    return state({
+      player: { ...base.player, id, slug: id, name: players.find((p) => p.id === id).name, position: "WR" },
+      stats: metrics.computeGameLogStats(logs[id], "WR", "ppr"),
+      production: [],
+      seasonRank: table.byId.get(id).rank,
+      seasonRankPpg: table.byId.get(id).rank === null ? null : table.byId.get(id).ppg,
+      seasonRankTotal: 2,
+      ...overrides,
+    });
+  };
+  const board = (d) => [...header(d).querySelectorAll(".scp-pboard .scp-pstat")].map((c) => text(c.querySelector("b")));
+
+  test("the fixture splits the two denominators", () => {
+    // The old header figure averaged five active weeks; the rank counts four games.
+    assert.equal(metrics.computeGameLogStats(logs.w1, "WR", "ppr").ppg, 12);
+    assert.equal(table.byId.get("w1").games, 4);
+    assert.equal(table.byId.get("w1").ppg, 15);
+    assert.equal(table.byId.get("w1").rank, 1);
+  });
+
+  test("beside the shared rank the header prints the shared rate", () => {
+    assert.deepEqual(board(wr("w1")).slice(0, 2), ["15.0", "WR1"]);
+    assert.deepEqual(board(wr("w2")).slice(0, 2), ["13.0", "WR2"]);
+  });
+
+  test("below the minimum: the game log's rate, the total-points rank and its tooltip", () => {
+    const d = wr("w3");
+    assert.equal(d.seasonRank, null);
+    assert.deepEqual(board(d).slice(0, 2), ["30.0", "WR2"]);
+    const title = header(d).querySelector(".scp-pboard .scp-pstat:nth-child(2) abbr").getAttribute("title");
+    assert.match(title, /^2026 position rank by total PPR fantasy points \(per-game rank from four games played\)$/);
+  });
+
+  test("beside a snapshot's rank, the game log's rate as before", () => {
+    const d = wr("w1", { production: [{ season: 2026, posFinishPpg: 9, posFinishTotal: 9 }] });
+    assert.deepEqual(board(d).slice(0, 2), ["12.0", "WR9"]);
+  });
+});

@@ -400,10 +400,17 @@ export function headerBoard(data: PlayerPageData): BoardCell[] {
       : `${data.season} position rank by total ${fmtWord}fantasy points (per-game rank from four games played)`;
   const pos = player.position ?? "";
   const ranked = played && pos && rank != null;
+  // Beside the shared PPG rank, the rate that rank was measured on
+  // (2026-11-24): a game he was active for without a snap or touch is not a
+  // game in the rank, so the game log's average over active games could sit
+  // under a rank it did not earn. Below the minimum, and beside a snapshot's
+  // rank, the game log's figure as before.
+  const sharedRank = season?.posFinishPpg == null && data.seasonRank != null;
+  const ppg = sharedRank && data.seasonRankPpg != null ? data.seasonRankPpg : (stats?.ppg ?? 0);
 
   return [
     {
-      value: played && stats ? num(stats.ppg) : DASH,
+      value: played && stats ? num(ppg) : DASH,
       unit: "PPG",
       title: fmtWord ? `${fmtWord}fantasy points per game` : "Fantasy points per game (a kicker scores the same in every format)",
       lead: true,
