@@ -1,5 +1,5 @@
 {
-  "builtAt": "2026-11-23T05:40:37.995Z",
+  "builtAt": "2026-11-24T12:58:49.179Z",
   "source": "data/schedule/games.csv (regular season, final scores)",
   "seasons": {
     "1999": 20.8,
@@ -59,6 +59,6 @@
     "2023": 272,
     "2024": 272,
     "2025": 272,
-    "2026": 162
+    "2026": 163
   }
 }

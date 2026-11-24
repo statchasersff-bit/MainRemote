@@ -2349,7 +2349,22 @@
    "writtenAt": "2026-11-23T06:09:26.465Z",
    "words": 261,
    "checked": "house checks + checker agent"
+  },
+  "2026_11_CIN_WAS": {
+   "headline": "Stevens kicks five field goals as Commanders edge Bengals 22–20",
+   "paragraphs": [
+    "Washington did not reach the end zone after halftime and still came back. The Commanders scored on their last six possessions to erase a 10–0 deficit and beat the Cincinnati Bengals 22–20 on Monday night, winning on a 26-yard field goal by Drew Stevens on the final play. Cincinnati had closed as a 6-point favorite.",
+    "The Bengals scored first on a 38-yard Evan McPherson field goal, and Joe Burrow found Tee Higgins for a 31-yard touchdown with two minutes left in the half. Jacory Croskey-Merritt's 1-yard run with 16 seconds left got Washington on the board, and Stevens tied it early in the third quarter. Burrow's 4-yard touchdown pass to Colbie Young made it 17–10, but Stevens answered with kicks from 40 and 25 yards.",
+    "His 41-yarder late in the fourth quarter gave Washington its first lead, 19–17. Burrow then hit Mike Gesicki for 32 yards, and McPherson made a 56-yard field goal with 50 seconds left to put the Bengals back in front. Washington took over at its own 28 with 46 seconds left, and Jayden Daniels found Antonio Williams for 22 yards and then for 42, setting up the winner.",
+    "Daniels threw for 289 yards and ran for 55, and Williams caught nine passes for 122 yards. Washington outgained Cincinnati 428 to 312 and ran for 150 yards to the Bengals' 31, but went one of four in the red zone.",
+    "Burrow threw for 300 yards and two touchdowns, and Boye Mafe had three sacks. The Commanders have won two straight and are 4-5-1; the Bengals fell to 7-3."
+   ],
+   "hash": "27eb688695dacc68",
+   "model": "claude-code-session",
+   "writtenAt": "2026-11-24T13:06:01.465Z",
+   "words": 261,
+   "checked": "house checks + checker agent"
   }
  },
- "updatedAt": "2026-11-24T02:54:54.139Z"
+ "updatedAt": "2026-11-24T13:06:01.465Z"
 }
