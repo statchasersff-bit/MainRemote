@@ -880,6 +880,14 @@ describe("the upcoming page (premium design)", () => {
         assert.equal(count(injCard.querySelector(".sct-mpp-tag")), injCard.querySelectorAll('.sct-mpp-inj[data-listing="designated"]').length, `${p}: bar count`);
         for (const col of injCard.querySelectorAll(".sct-mpp-col")) {
           assert.equal(count(col.querySelector(".sct-mpp-colhead small")), col.querySelectorAll('.sct-mpp-inj[data-listing="designated"]').length, `${p}: column count`);
+          // The count names the report it read (WEB-039 verify pass,
+          // 2026-11-24), and "carry a designation" - a clean report - is said
+          // only under a final one: a missing report is not a clean bill.
+          const head = col.querySelector(".sct-mpp-colhead small")?.textContent ?? "";
+          assert.match(head, /· (report as of [A-Z][a-z]{2} \d{1,2}|Week \d+ report not out yet|Week \d+ game statuses not out yet|.+ report)$/, `${p}: ${head}`);
+          const foot = col.querySelector(".sct-mpp-inj-foot")?.textContent ?? "";
+          if (/carry a designation/.test(foot)) assert.match(head, /report as of/, `${p}: "${foot}" under "${head}"`);
+          if (/designation yet/.test(foot)) assert.doesNotMatch(head, /report as of/, `${p}: "${foot}" under "${head}"`);
         }
       }
       await assertPremiumHero(hero);

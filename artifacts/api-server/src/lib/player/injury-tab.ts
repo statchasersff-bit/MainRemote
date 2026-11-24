@@ -462,7 +462,12 @@ function statusAnswer(m: Model): string {
       let first = "No injury designation.";
       if (m.next) {
         const at = m.next.homeAway === "home" ? "against the" : "at the";
-        first = `No injury designation for ${wk} ${at} ${nextGameText(m.next).opp}.`;
+        // WEB-039 verify pass (2026-11-24): before the week's game statuses
+        // are out, "No injury designation for Week 12" reads as a published
+        // report that has none. It says "yet" until the report is final.
+        first = m.notYet
+          ? `No game designation yet for ${wk} ${at} ${nextGameText(m.next).opp}.`
+          : `No injury designation for ${wk} ${at} ${nextGameText(m.next).opp}.`;
       }
       // No "has (not) missed a game this season" tail (mak, 2026-11-06):
       // the "2026 games missed" figure beside the card says it.

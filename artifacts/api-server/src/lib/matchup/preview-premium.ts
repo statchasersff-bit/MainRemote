@@ -31,7 +31,7 @@ import {
   weatherText,
   type PreviewRenderContext,
 } from "./preview-render";
-import { PENDING } from "./availability";
+import { PENDING, type WeekReport } from "./availability";
 import { gameKeys, KEY_WORD } from "./preview-keys";
 import { composePreview } from "./preview-narrative";
 import { BATTLE_WORD, type BattlePlayer } from "./preview-extras";
@@ -925,16 +925,32 @@ function listingCount(rows: Preview["injuries"]["away"]): string {
   return parts.join(" · ");
 }
 
+/** "Nov 24", in Eastern time: the day the report was read. */
+const REPORT_DAY = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", timeZone: "America/New_York" });
+
+/**
+ * The report a count stands on (WEB-039 verify pass, 2026-11-24): "0
+ * designated" means nothing until the club's game statuses for THIS week are
+ * out, so the count says which report it read, or that none is out yet.
+ */
+function reportTag(r: WeekReport | undefined, weekLabel: string): string {
+  if (!r || r.state === "missing") return `${weekLabel} report not out yet`;
+  if (r.state === "pending") return `${weekLabel} game statuses not out yet`;
+  return r.fetchedAt !== null ? `report as of ${REPORT_DAY.format(r.fetchedAt)}` : `${weekLabel} report`;
+}
+
 function injuryCard(p: Preview): string {
   const column = (s: PreviewSide) => {
     const rows = p.injuries[s.key];
     const listed = rows.filter((r) => r.listing !== "clean");
     const clean = rows.some((r) => r.listing === "clean");
+    const report = p.injuryReports?.[s.key];
+    const final = report?.state === "final";
     return (
       `<div class="sct-mpp-col is-${s.key}">` +
       `<p class="sct-mpp-colhead">` +
       (s.team.logo ? `<img src="${e(s.team.logo)}" alt="" width="22" height="22" loading="lazy" decoding="async">` : "") +
-      `<span>${e(`${s.team.nickname} Injury Watch`)}</span><small>${e(listingCount(rows))}</small></p>` +
+      `<span>${e(`${s.team.nickname} Injury Watch`)}</span><small>${e(`${listingCount(rows)} · ${reportTag(report, p.meeting.weekLabel)}`)}</small></p>` +
       (listed.length
         ? `<ul class="sct-mpp-inj-list">` +
           listed
@@ -960,7 +976,11 @@ function injuryCard(p: Preview): string {
             .join("") +
           `</ul>`
         : "") +
-      (clean ? `<p class="sct-mpp-inj-foot">No ${listed.length ? "other " : ""}5%+ rostered ${e(s.team.nickname)} carry a designation.</p>` : "") +
+      (clean
+        ? final
+          ? `<p class="sct-mpp-inj-foot">No ${listed.length ? "other " : ""}5%+ rostered ${e(s.team.nickname)} carry a designation.</p>`
+          : `<p class="sct-mpp-inj-foot">No ${listed.length ? "other " : ""}5%+ rostered ${e(s.team.nickname)} have a ${e(p.meeting.weekLabel)} game designation yet.</p>`
+        : "") +
       `</div>`
     );
   };
@@ -969,7 +989,15 @@ function injuryCard(p: Preview): string {
   // Phones (mak, 2026-11-11): one container under the main cards' bar, the
   // two team headings hidden and both teams in one list. The bar is CSS-hidden
   // above 560px, where the two team boxes keep their own headings.
-  const total = listingCount([...p.injuries.away, ...p.injuries.home]);
+  // The phones' single bar: the report state when both clubs agree on it.
+  const both = [p.injuryReports?.away, p.injuryReports?.home];
+  const totalReport =
+    both.every((r) => r?.state === "final")
+      ? reportTag({ state: "final", fetchedAt: Math.max(...both.map((r) => r?.fetchedAt ?? 0)) || null }, p.meeting.weekLabel)
+      : both.every((r) => r?.state !== "final")
+        ? `${p.meeting.weekLabel} game statuses not out yet`
+        : null;
+  const total = listingCount([...p.injuries.away, ...p.injuries.home]) + (totalReport ? ` · ${totalReport}` : "");
   const bar =
     `<div class="sct-mpp-head sct-mpp-inj-bar"><span class="sct-mpp-icon">${ICON.injury}</span>` +
     `<p class="sct-mpp-h">Injury Watch</p>` +
