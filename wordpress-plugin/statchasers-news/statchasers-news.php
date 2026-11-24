@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       StatChasers
  * Description:       Creates the NFL team, player and matchup pages for you, then mounts the StatChasers tools into them - the news feed, team hubs, player profiles, matchups, Fantasy Points Allowed, rest-of-season rankings, the schedule, advanced player stats, RB handcuff rankings, fantasy football strength of schedule, the NFL depth charts, the injury risk analysis and the injury database. Server-rendered markup in the page's own HTML, with the compiled bundles loaded through the WordPress enqueue system. No iframe.
- * Version:           1.10.67
+ * Version:           1.10.68
  * Requires at least: 6.3
  * Requires PHP:      7.4
  * Author:            StatChasers
@@ -43,7 +43,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * outage. scripts/build-zip.sh refuses to build when this and the header
  * disagree, so a release bumps both or ships neither.
  */
-const STATCHASERS_NEWS_VERSION       = '1.10.67';
+const STATCHASERS_NEWS_VERSION       = '1.10.68';
 const STATCHASERS_NEWS_SHORTCODE     = 'statchasers_news';
 const STATCHASERS_NEWS_HANDLE        = 'statchasers-news';
 const STATCHASERS_NEWS_OPTION_ORIGIN = 'statchasers_news_origin';
@@ -79,6 +79,10 @@ require_once __DIR__ . '/statchasers-rb-handcuffs.php';
 require_once __DIR__ . '/statchasers-sos.php';
 require_once __DIR__ . '/statchasers-page-identity.php';
 require_once __DIR__ . '/statchasers-rookie-hit-rates.php';
+// The Rookie Hit Rates tool page 1319 uses, [rookie_hit_rates]: the former
+// standalone iframe plugin, shipped inside this one since 1.10.68. Its own
+// function names, so a still-active standalone copy is not a fatal.
+require_once __DIR__ . '/rookie-hit-rates/rookie-hit-rates.php';
 require_once __DIR__ . '/statchasers-redraft-strategy.php';
 require_once __DIR__ . '/statchasers-injury-impact.php';
 // After the three they build on: the player builder uses the team file's
@@ -1243,6 +1247,49 @@ function statchasers_retire_standalone_depth_charts(): void {
 	update_option( 'statchasers_depth_retired_notice', 1, false );
 }
 add_action( 'admin_init', 'statchasers_retire_standalone_depth_charts' );
+
+/**
+ * Retire the standalone Rookie Hit Rates plugin (statchasers-rookie-hit-rates)
+ * once this one carries the tool (rookie-hit-rates/, since 1.10.68).
+ *
+ * Both can be active at once without harm: the embedded copy uses its own
+ * function names and registers [rookie_hit_rates] on init, after the
+ * standalone file has registered its own, so the embedded one renders. The
+ * standalone has no activation state worth keeping, so it is deactivated
+ * quietly on the next admin request; the folder stays until deleted.
+ */
+const STATCHASERS_RHR_STANDALONE = 'statchasers-rookie-hit-rates/statchasers-rookie-hit-rates.php';
+function statchasers_retire_standalone_rookie_hit_rates(): void {
+	if ( ! current_user_can( 'activate_plugins' ) ) {
+		return;
+	}
+	if ( ! function_exists( 'is_plugin_active' ) ) {
+		require_once ABSPATH . 'wp-admin/includes/plugin.php';
+	}
+	if ( ! is_plugin_active( STATCHASERS_RHR_STANDALONE ) ) {
+		return;
+	}
+	deactivate_plugins( STATCHASERS_RHR_STANDALONE, true );
+	update_option( 'statchasers_rhr_retired_notice', 1, false );
+}
+add_action( 'admin_init', 'statchasers_retire_standalone_rookie_hit_rates' );
+
+add_action(
+	'admin_notices',
+	static function (): void {
+		if ( ! current_user_can( 'activate_plugins' ) || ! get_option( 'statchasers_rhr_retired_notice' ) ) {
+			return;
+		}
+		if ( ! file_exists( WP_PLUGIN_DIR . '/' . STATCHASERS_RHR_STANDALONE ) ) {
+			delete_option( 'statchasers_rhr_retired_notice' );
+			return;
+		}
+		printf(
+			'<div class="notice notice-info"><p>%s</p></div>',
+			esc_html__( 'StatChasers now includes the Rookie Hit Rates tool. The separate "StatChasers - Rookie Hit Rates" plugin has been deactivated and can be deleted from the Plugins screen.', 'statchasers-news' )
+		);
+	}
+);
 
 add_action(
 	'admin_notices',

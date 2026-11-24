@@ -1,7 +1,8 @@
 <?php
 /**
- * Smoke test for the standalone Rookie Hit Rates plugin
- * (wordpress-plugin/statchasers-rookie-hit-rates), the one page 1319 uses.
+ * Smoke test for the Rookie Hit Rates tool page 1319 uses, [rookie_hit_rates]
+ * (wordpress-plugin/statchasers-news/rookie-hit-rates, the former standalone
+ * iframe plugin).
  *
  *   php wordpress-plugin/tests/smoke-rhr-embed.php
  *
@@ -16,6 +17,8 @@ define( 'ABSPATH', __DIR__ . '/' );
 
 $GLOBALS['shortcodes'] = array();
 function add_shortcode( $tag, $cb ) { $GLOBALS['shortcodes'][ $tag ] = $cb; }
+$GLOBALS['actions'] = array();
+function add_action( $hook, $cb, $prio = 10 ) { $GLOBALS['actions'][ $hook ][] = array( $cb, $prio ); }
 function trailingslashit( $s ) { return rtrim( $s, '/' ) . '/'; }
 function plugins_url( $path, $file ) { return 'https://statchasers.com/wp-content/plugins/' . basename( dirname( $file ) ) . '/' . $path; }
 function plugin_dir_path( $file ) { return $GLOBALS['rhr_plugin_dir'] ?? trailingslashit( dirname( $file ) ); }
@@ -32,8 +35,11 @@ function shortcode_atts( $pairs, $atts, $tag = '' ) {
 	return $out;
 }
 
-$plugin = dirname( __DIR__ ) . '/statchasers-rookie-hit-rates';
-require $plugin . '/statchasers-rookie-hit-rates.php';
+$plugin = dirname( __DIR__ ) . '/statchasers-news/rookie-hit-rates';
+require $plugin . '/rookie-hit-rates.php';
+// Registered on init (priority 20), not at load: nothing yet, then run init.
+$registered_at_load = isset( $GLOBALS['shortcodes']['rookie_hit_rates'] );
+foreach ( $GLOBALS['actions']['init'] ?? array() as $a ) { if ( 20 === $a[1] ) { call_user_func( $a[0] ); } }
 
 $ok = 0;
 $fail = 0;
@@ -51,13 +57,15 @@ $json = json_decode( file_get_contents( $plugin . '/summary/hit-rates-summary.js
 check( is_array( $json ), 'summary json parses' );
 
 // Both shortcode names still render the embed.
-check( isset( $GLOBALS['shortcodes']['rookie_hit_rates'], $GLOBALS['shortcodes']['statchasers_rookie_hit_rates'] ), 'both shortcodes registered' );
+check( ! $registered_at_load && isset( $GLOBALS['shortcodes']['rookie_hit_rates'] ), '[rookie_hit_rates] registered on init 20' );
+check( ! isset( $GLOBALS['shortcodes']['statchasers_rookie_hit_rates'] ), 'no alias over the port shortcode' );
+check( ! function_exists( 'scff_rhr_shortcode' ), 'no standalone function names (would fatal next to the standalone plugin)' );
 
 $html = call_user_func( $GLOBALS['shortcodes']['rookie_hit_rates'], array() );
 
 // The iframe is unchanged.
 check( 1 === substr_count( $html, '<iframe class="rhr-embed-frame"' ), 'one iframe' );
-check( false !== strpos( $html, 'src="https://statchasers.com/wp-content/plugins/statchasers-rookie-hit-rates/app/index.html"' ), 'iframe src' );
+check( false !== strpos( $html, 'src="https://statchasers.com/wp-content/plugins/rookie-hit-rates/app/index.html"' ), 'iframe src' );
 check( false !== strpos( $html, 'style="width:100%;height:1400px;border:0;display:block;overflow:hidden;"' ), 'iframe style unchanged' );
 check( strpos( $html, '<iframe' ) < strpos( $html, '<section class="rhr-summary"' ), 'summary after the tool' );
 
@@ -67,7 +75,7 @@ check( 1 === preg_match_all( '/<h2\b/', $html ), 'one h2' );
 check( false !== strpos( $html, '>How We Count a Hit</h2>' ), 'h2 text' );
 
 // Methodology states the definition from the JSON settings.
-$text = html_entity_decode( strip_tags( preg_replace( '~<(style|script)>.*?</\1>~s', '', $html ) ), ENT_QUOTES );
+$text = html_entity_decode( strip_tags( preg_replace( '~<(style|script)\b[^>]*>.*?</\1>~s', '', $html ) ), ENT_QUOTES );
 check( false !== strpos( $text, 'finishes Top-12 or better at his position in at least one season, from his rookie year through 2025' ), 'hit threshold + window' );
 check( false !== strpos( $text, 'at least 8 games' ), 'min games' );
 check( false !== strpos( $text, 'regular-season PPR fantasy points' ), 'rank basis' );
@@ -93,6 +101,9 @@ $sum_hits  = array_sum( array_column( $json['rows'], 'hits' ) );
 $sum_total = array_sum( array_column( $json['rows'], 'total' ) );
 check( $sum_hits === $json['total']['hits'] && $sum_total === $json['total']['total'], 'rows add up to the total' );
 
+// The resize listener is kept out of WP Rocket's Delay JS.
+check( false !== strpos( $html, '<script data-no-optimize="1" data-noptimize="1" data-no-defer="1" data-cfasync="false" nowprocket>(function(){window.addEventListener("message"' ), 'listener not delayed' );
+
 // Without JavaScript the iframe hides and the summary stays.
 check( false !== strpos( $html, '<noscript><style>.rhr-embed-wrap{display:none!important}</style></noscript>' ), 'noscript hides iframe' );
 
@@ -111,11 +122,11 @@ file_put_contents( $tmp . 'app/data/season_finishes.csv', file_get_contents( $pl
 $child = function ( $dir ) use ( $plugin ) {
 	// The summary is memoised per process, so each case runs in its own.
 	$code = 'define("ABSPATH","/");$GLOBALS["rhr_plugin_dir"]=' . var_export( $dir, true ) . ';'
-		. 'function add_shortcode($t,$c){} function trailingslashit($s){return rtrim($s,"/")."/";}'
+		. 'function add_shortcode($t,$c){} function add_action($h,$c,$p=10){} function trailingslashit($s){return rtrim($s,"/")."/";}'
 		. 'function plugins_url($p,$f){return "u/".$p;} function plugin_dir_path($f){return $GLOBALS["rhr_plugin_dir"];}'
 		. 'function esc_url($s){return $s;} function esc_attr($s){return $s;} function esc_html($s){return $s;}'
-		. 'require ' . var_export( $plugin . '/statchasers-rookie-hit-rates.php', true ) . ';'
-		. 'echo scff_rhr_summary_html(1380);';
+		. 'require ' . var_export( $plugin . '/rookie-hit-rates.php', true ) . ';'
+		. 'echo statchasers_rhr_embed_summary_html(1380);';
 	return (string) shell_exec( escapeshellarg( PHP_BINARY ) . ' -r ' . escapeshellarg( $code ) );
 };
 check( '' === $child( $tmp ), 'stale CSV prints no summary' );

@@ -74,6 +74,19 @@ if [ -n "$PHP" ] && [ -f "$here/tests/depth-charts/checks.php" ]; then
 	say "depth    ok"
 fi
 
+# Rookie Hit Rates (rookie-hit-rates/): the methodology table's numbers are
+# regenerated from the app's CSVs on every build, so a data refresh cannot ship
+# an old table, then its own harness checks the page markup.
+if [ -d "$plugin/rookie-hit-rates" ]; then
+	node "$here/scripts/rhr/build-summary.mjs" >/dev/null || die "rookie-hit-rates summary build failed."
+	node "$here/scripts/rhr/build-summary.mjs" --check >/dev/null || die "rookie-hit-rates summary did not reproduce."
+	say "rhr      summary ok"
+	if [ -n "$PHP" ]; then
+		"$PHP" "$here/tests/smoke-rhr-embed.php" >/dev/null || die "tests/smoke-rhr-embed.php failed. Run it to see why."
+		say "rhr      smoke ok"
+	fi
+fi
+
 # ---------------------------------------------------------------- 2. version
 
 version="$(grep -m1 -oE '^ \* Version: +[0-9.]+' "$plugin/statchasers-news.php" | grep -oE '[0-9.]+$')"
@@ -114,6 +127,10 @@ for file in "$plugin"/depth-charts/includes/*.php; do
 	grep -q "includes/$name" "$depth" || missing="$missing depth-charts/includes/$name"
 done
 [ -z "$missing" ] || die "the depth charts loader does not require:$missing"
+
+grep -q "require_once __DIR__ . '/rookie-hit-rates/rookie-hit-rates.php'" "$plugin/statchasers-news.php" \
+	|| die "the loader does not require rookie-hit-rates/rookie-hit-rates.php"
+grep -q "Plugin Name:" "$plugin/rookie-hit-rates/rookie-hit-rates.php" && die "rookie-hit-rates/rookie-hit-rates.php carries a Plugin Name header; it is not a plugin of its own."
 
 say "loader   ok"
 

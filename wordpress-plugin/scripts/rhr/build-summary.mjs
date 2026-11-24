@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 /**
- * Regenerate statchasers-rookie-hit-rates/summary/hit-rates-summary.json from
+ * Regenerate statchasers-news/rookie-hit-rates/summary/hit-rates-summary.json from
  * the plugin's own app/data/*.csv with the tool's own calculation.
  *
  *   node wordpress-plugin/scripts/rhr/build-summary.mjs          # write
  *   node wordpress-plugin/scripts/rhr/build-summary.mjs --check  # fail if stale
  *
- * build-zip-rhr.sh runs it before every zip, so a dataset refresh (new CSVs in
+ * build-zip.sh runs it before every zip, so a dataset refresh (new CSVs in
  * app/data) cannot ship with an old summary. The JSON records the sha256 and
  * byte size of the two CSVs it was computed from; --check compares hashes, and
  * the PHP (which must stay cheap on every page view) compares sizes and prints
@@ -22,7 +22,7 @@ import { createRequire } from "node:module";
 const here = dirname(fileURLToPath(import.meta.url));
 // esbuild is a dependency of the API workspace, not of the plugin.
 const { build } = createRequire(resolve(here, "../../../artifacts/api-server/package.json"))("esbuild");
-const plugin = resolve(here, "../../statchasers-rookie-hit-rates");
+const plugin = resolve(here, "../../statchasers-news/rookie-hit-rates");
 const dataDir = join(plugin, "app/data");
 const outFile = join(plugin, "summary/hit-rates-summary.json");
 const CSVS = ["rookie_drafts.csv", "season_finishes.csv"];

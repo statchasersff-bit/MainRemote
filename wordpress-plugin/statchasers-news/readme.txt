@@ -2,7 +2,7 @@
 Contributors: statchasers
 Requires at least: 6.3
 Requires PHP: 7.4
-Stable tag: 1.10.67
+Stable tag: 1.10.68
 License: GPL-2.0-or-later
 
 Mounts the StatChasers NFL news tool, the 32 team hubs, the player pages, the Fantasy Points Allowed table, the rest-of-season rankings, the NFL schedule, the advanced player stats, the RB handcuff rankings, the fantasy football strength of schedule, the dynasty rookie hit rates and the redraft draft strategy analysis into WordPress pages.
@@ -19,6 +19,9 @@ answers that question directly, with a Last-Modified header that says when the
 upload landed. Keep "Stable tag" in step with the Version header.
 
 == Changelog ==
+
+= 1.10.68 =
+* Rookie Hit Rates moves into this plugin (rookie-hit-rates/), on top of 1.10.67. The former standalone "StatChasers - Rookie Hit Rates" iframe plugin (1.0.0, live on /nfl/rookie-hit-rates/, page 1319) now ships here with the same [rookie_hit_rates] shortcode and the same page, plus: a "How We Count a Hit" methodology section and a Top-12 hit-rate-by-position table printed in the page under the tool, from rookie-hit-rates/summary/hit-rates-summary.json (computed at build time by the app's own calculation; no request or calculation per page view; nothing prints if the CSVs do not match it); <noscript> hides the iframe so JS-off readers get the table; data with every rookie linked to all his seasons (app repository PR #1). The iframe now loads from /wp-content/plugins/statchasers-news/rookie-hit-rates/app/. The standalone plugin is deactivated on the next admin request (notice until deleted); delete it after upload. The standalone registered a [statchasers_rookie_hit_rates] alias that overrode the server-rendered port's shortcode; the alias is gone.
 
 = 1.10.67 =
 * NFL Player Stats audit (2026-11-24), on top of 1.10.66 (team audit, live 2026-11-24). WEB-003: a WP-cron check every five minutes reads the API's stats version (GET /embed/player-stats/version, needs the matching API deploy) and, when it moves, refreshes the four pages' fragment copies, clears WP Rocket for them, purges their paths (and /qb/ and old ?season= variants) at the Rocket.net edge through its CDN Cache Plugin, then warms them as desktop and phone; a failed or inconsistent fetch changes nothing. The pages ask for a six-hour edge lifetime (needs the Rocket.net rule in docs/WEB-003-STATS-FRESHNESS.md to take effect) and send X-SC-Stats-Cache. WEB-002: an expired fragment is fetched once under concurrency, others serve the backup. WEB-020: ?season= on a stats page 301s to the position's canonical with #season= (the season menu is buttons now, in the API). WEB-021: og:image and the Organization/WebSite/WebPage graph on the four stats routes via statchasers-page-identity.php. Upload, run `wp eval 'statchasers_news_run_upgrade_now();'`, then `wp eval 'print_r( statchasers_player_stats_publish_check( true ) );'`.

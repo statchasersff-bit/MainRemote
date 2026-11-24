@@ -1,24 +1,40 @@
 <?php
 /**
- * Plugin Name:       StatChasers — Rookie Hit Rates
- * Plugin URI:        https://statchasers.com/
- * Description:        Embed the StatChasers Rookie Hit Rates dynasty analytics tool anywhere with the [rookie_hit_rates] shortcode. The whole app is self-contained (runs in an isolated iframe) so it never conflicts with your theme's styles.
- * Version:           1.1.0
- * Author:            StatChasers
- * License:           GPL-2.0-or-later
- * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
- * Requires at least: 5.0
- * Requires PHP:      7.0
+ * The Rookie Hit Rates tool: [rookie_hit_rates], used by /nfl/rookie-hit-rates/
+ * (page 1319).
  *
- * Usage: place  [rookie_hit_rates]  into any page, post, or "Code" module.
- * Optional attributes:
+ * The former standalone "StatChasers - Rookie Hit Rates" plugin (1.0.0, an
+ * iframe embed of the app's Vite build), shipped inside statchasers-news since
+ * 1.10.68. Not to be confused with statchasers-rookie-hit-rates.php beside the
+ * loader: that is the server-rendered port, [statchasers_rookie_hit_rates],
+ * which no page uses.
+ *
+ * Layout (paths relative to this folder):
+ *   app/                         the app build, copied verbatim from the app
+ *                                repository's wordpress-plugin/statchasers-
+ *                                rookie-hit-rates/app (statchasersff-bit/
+ *                                Rookie-Hit-Rate, script/build-wp-plugin.sh)
+ *   summary/hit-rates-summary.json  the methodology table's numbers, written by
+ *                                wordpress-plugin/scripts/rhr/build-summary.mjs;
+ *                                build-zip.sh regenerates it before every zip
+ *
+ * Data refresh: copy the new app/ (or just app/data/*.csv) over this folder's
+ * app/, then run wordpress-plugin/scripts/build-zip.sh.
+ *
+ * Functions are statchasers_rhr_embed_*, not the standalone's statchasers_rhr_embed_*, so
+ * both can be loaded at once while the standalone plugin is being retired
+ * (WordPress loads statchasers-news first; same names would be a fatal). The
+ * shortcode is registered on init, after every plugin file has loaded, so this
+ * copy wins over a standalone copy that is still active.
+ *
+ * Attributes:
  *   height     Initial iframe height in px before auto-resize kicks in. Default 1400.
  *   min_height Never shrink the iframe below this many px. Default 600.
  *   max_width  Max width of the embed in px (centered). Default 1380. Use 0 for full width.
  *   summary    "0" leaves out the server-rendered methodology + results table
  *              printed under the tool. Default "1".
  *
- * Example: [rookie_hit_rates height="1500" max_width="0"]
+ * @package StatChasers\News
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -28,7 +44,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Absolute URL to the bundled single-page app folder (with trailing slash).
  */
-function scff_rhr_app_url() {
+function statchasers_rhr_embed_app_url() {
 	return trailingslashit( plugins_url( 'app', __FILE__ ) );
 }
 
@@ -38,7 +54,7 @@ function scff_rhr_app_url() {
  * @param array $atts Shortcode attributes.
  * @return string HTML markup.
  */
-function scff_rhr_shortcode( $atts ) {
+function statchasers_rhr_embed_shortcode( $atts ) {
 	$atts = shortcode_atts(
 		array(
 			'height'     => '1400',
@@ -50,7 +66,7 @@ function scff_rhr_shortcode( $atts ) {
 		'rookie_hit_rates'
 	);
 
-	$app        = esc_url( scff_rhr_app_url() . 'index.html' );
+	$app        = esc_url( statchasers_rhr_embed_app_url() . 'index.html' );
 	$height     = max( 200, (int) $atts['height'] );
 	$min_height = max( 0, (int) $atts['min_height'] );
 	$max_width  = max( 0, (int) $atts['max_width'] );
@@ -62,7 +78,10 @@ function scff_rhr_shortcode( $atts ) {
 	$listener = '';
 	if ( ! $listener_printed ) {
 		$listener_printed = true;
-		$listener        = '<script>(function(){window.addEventListener("message",function(e){var d=e.data;if(!d||d.__rhr!==true||d.type!=="rhr-height")return;var frames=document.querySelectorAll("iframe.rhr-embed-frame");for(var i=0;i<frames.length;i++){if(frames[i].contentWindow===e.source){var min=parseInt(frames[i].getAttribute("data-min-height"),10)||0;frames[i].style.height=Math.max(d.height,min)+"px";}}});})();</script>';
+		// Kept out of WP Rocket's Delay JS like every tool bundle
+		// (statchasers-perf.php): delayed, the iframe stays at its initial 1400px
+		// until the reader's first tap, over the summary printed under it.
+		$listener        = '<script data-no-optimize="1" data-noptimize="1" data-no-defer="1" data-cfasync="false" nowprocket>(function(){window.addEventListener("message",function(e){var d=e.data;if(!d||d.__rhr!==true||d.type!=="rhr-height")return;var frames=document.querySelectorAll("iframe.rhr-embed-frame");for(var i=0;i<frames.length;i++){if(frames[i].contentWindow===e.source){var min=parseInt(frames[i].getAttribute("data-min-height"),10)||0;frames[i].style.height=Math.max(d.height,min)+"px";}}});})();</script>';
 	}
 
 	$wrap_style = 'width:100%;margin:0 auto;';
@@ -82,7 +101,7 @@ function scff_rhr_shortcode( $atts ) {
 		esc_attr( $frame_style )
 	);
 
-	$summary = '0' === (string) $atts['summary'] ? '' : scff_rhr_summary_html( $max_width );
+	$summary = '0' === (string) $atts['summary'] ? '' : statchasers_rhr_embed_summary_html( $max_width );
 
 	return $listener
 		. '<div class="rhr-embed-wrap" style="' . esc_attr( $wrap_style ) . '">'
@@ -90,17 +109,22 @@ function scff_rhr_shortcode( $atts ) {
 		. '</div>'
 		. $summary;
 }
-add_shortcode( 'rookie_hit_rates', 'scff_rhr_shortcode' );
-// Convenience alias.
-add_shortcode( 'statchasers_rookie_hit_rates', 'scff_rhr_shortcode' );
+add_action(
+	'init',
+	static function () {
+		add_shortcode( 'rookie_hit_rates', 'statchasers_rhr_embed_shortcode' );
+	},
+	20
+);
 
 /* ------------------------------------------------------------------ summary */
 
 /**
  * The default view's numbers, computed at build time by the tool's own code.
  *
- * summary/hit-rates-summary.json is written by script/build-wp-summary.mjs in
- * the app repository (step 4 of script/build-wp-plugin.sh, every build) from
+ * summary/hit-rates-summary.json is written by
+ * wordpress-plugin/scripts/rhr/build-summary.mjs (build-zip.sh runs it before
+ * every zip; the app repository's build-wp-plugin.sh writes the same file) from
  * app/data/*.csv, the same two files the iframe loads. Reading it is one small
  * file per request, once; no network and no calculation here.
  *
@@ -110,7 +134,7 @@ add_shortcode( 'statchasers_rookie_hit_rates', 'scff_rhr_shortcode' );
  *
  * @return array|null
  */
-function scff_rhr_summary() {
+function statchasers_rhr_embed_summary() {
 	static $memo = false;
 	if ( false !== $memo ) {
 		return $memo;
@@ -146,8 +170,8 @@ function scff_rhr_summary() {
  * @param int $max_width The embed's max width, so the section lines up with it.
  * @return string
  */
-function scff_rhr_summary_html( $max_width ) {
-	$data = scff_rhr_summary();
+function statchasers_rhr_embed_summary_html( $max_width ) {
+	$data = statchasers_rhr_embed_summary();
 	if ( null === $data ) {
 		return '';
 	}
