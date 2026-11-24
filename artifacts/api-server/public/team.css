@@ -27385,7 +27385,10 @@ ul.sct-faq-list li {
   width: 24px;
   height: 24px;
   color: var(--tp-c-f0c13b, #f0c13b);
+}
 
+
+/* =========================================================================
    Team header: the roster link (WEB-044, 2026-11-24). The Depth Chart tab
    is the club's roster, and the strip links it on every tab, but as the
    eighth of nine tabs it sits off the end of the strip wherever the header

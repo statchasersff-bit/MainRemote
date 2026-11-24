@@ -101,6 +101,18 @@ describe("one rendering per dataset", () => {
     assert.ok(body.length > 0);
   });
 
+  test("CSS: team.css is balanced, so no rule ends up nested in a block it does not belong to", () => {
+    // A merge once dropped one closing brace (2026-11-24): every later rule,
+    // the scroll containment among them, sat inside an open @media block.
+    const code = css.replace(/\/\*[\s\S]*?\*\//g, "").replace(/"[^"\n]*"|'[^'\n]*'/g, '""');
+    let depth = 0;
+    for (const ch of code) {
+      if (ch === "{") depth++;
+      else if (ch === "}") { depth--; assert.ok(depth >= 0, "a closing brace with nothing open"); }
+    }
+    assert.equal(depth, 0, "every block is closed");
+  });
+
   test("CSS: phones keep the tables, nothing hides them for a copy", () => {
     assert.doesNotMatch(css, /\.sct-csp\b/, "no season-list rules left");
     assert.doesNotMatch(css, /\.sct-cfp-(row|sum|kv|head|cell)\b/, "no finishes-list rules left");
