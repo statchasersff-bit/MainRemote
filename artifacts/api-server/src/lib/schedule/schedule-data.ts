@@ -70,6 +70,13 @@ const GAMES_CSV_URL =
  * and a host that cannot reach GitHub for an hour should not lose 32 team
  * pages' schedules over it.
  */
+import {
+  KICKOFF_GRACE_MS,
+  LIVE_STALE_MS,
+  resolveGameStatus,
+  type GameStatus,
+} from "./game-status";
+
 const GAMES_CSV_FILE = (process.env["SC_SCHEDULE_CSV_FILE"] ?? "").trim();
 const GAMES_CSV_SNAPSHOT = dataPath("schedule", "games.csv");
 
@@ -88,14 +95,8 @@ const FEED_TIME_ZONE = "America/New_York";
  */
 const SCHEDULE_USER_AGENT = "StatChasersSchedule/1.0 (+statchasers.com)";
 
-/**
- * Where a game stands.
- *
- * "postponed" and "canceled" come from ESPN's status (STATUS_POSTPONED,
- * STATUS_CANCELED); nflverse carries neither, so without the live layer a
- * postponed game reads as scheduled until the feed moves its date.
- */
-export type GameStatus = "scheduled" | "live" | "final" | "postponed" | "canceled";
+/** Where a game stands - decided in ./game-status.ts, re-exported for old importers. */
+export type { GameStatus } from "./game-status";
 
 /**
  * Who vouched for the kickoff the game carries.
@@ -151,8 +152,22 @@ export interface ScheduleGame {
   awayScore: number | null;
   homeScore: number | null;
   status: GameStatus;
-  /** ESPN's display-ready detail ("Q3 5:23", "Final/OT"), when we have one. */
+  /**
+   * The detail that agrees with `status` (lib/schedule/game-status.ts):
+   * "Final" or "Final/OT" for a final, ESPN's clock or "Halftime" for a game
+   * in progress whose observation is fresh, "Postponed", "Delayed". Never a
+   * clock beside a final; null for a kickoff or a stale live entry.
+   */
   statusDetail: string | null;
+  /**
+   * False when no source currently vouches for the status: an in-progress
+   * entry that has not been refreshed for ten minutes, or a kickoff well past
+   * with no word from anyone. Renderers print neutral wording then. Optional
+   * so games built outside normalize() (the matchup page's) read as confirmed.
+   */
+  statusConfirmed?: boolean;
+  /** When a confirmed in-progress game's clock was read from ESPN; else null. */
+  statusObservedAtMs?: number | null;
   /** Normalized broadcaster name(s): "FOX", "NFL Network", "ESPN / ABC". */
   network: string | null;
   stadium: string | null;
@@ -407,14 +422,28 @@ interface EspnGame {
   neutralSite: boolean | null;
   venue: string | null;
   venueCity: string | null;
-  /** "STATUS_POSTPONED", "STATUS_CANCELED" - the status name when it is one of those. */
+  /** ESPN's status name when it is one game-status.ts reads (postponed, canceled, delayed). */
   statusName: string | null;
+  /** ESPN's period (5+ is overtime); null for an entry recorded before 2026-11-24. */
+  period: number | null;
+  /** When this host last fetched the entry from ESPN; null for an old entry. */
+  seenAtMs: number | null;
 }
+
+/** The status names kept on an entry: the ones game-status.ts acts on. */
+const KEPT_STATUS_NAMES = new Set([
+  "STATUS_FINAL",
+  "STATUS_POSTPONED",
+  "STATUS_CANCELED",
+  "STATUS_DELAYED",
+  "STATUS_RAIN_DELAY",
+]);
 
 interface EspnEvent {
   id?: string;
   date?: string;
   status?: {
+    period?: number;
     type?: {
       name?: string;
       state?: string;
@@ -481,8 +510,9 @@ function readEspnEvent(event: EspnEvent): EspnGame | null {
     neutralSite: typeof competition?.neutralSite === "boolean" ? competition.neutralSite : null,
     venue: competition?.venue?.fullName?.trim() || null,
     venueCity: espnVenueCity(competition?.venue?.address),
-    statusName:
-      statusName === "STATUS_POSTPONED" || statusName === "STATUS_CANCELED" ? statusName : null,
+    statusName: statusName && KEPT_STATUS_NAMES.has(statusName) ? statusName : null,
+    period: typeof event.status?.period === "number" ? event.status.period : null,
+    seenAtMs: null,
   };
 }
 
@@ -507,13 +537,38 @@ function upgradeEspnEntry(raw: Partial<EspnGame> & Pick<EspnGame, "state">): Esp
     venue: raw.venue ?? null,
     venueCity: raw.venueCity ?? null,
     statusName: raw.statusName ?? null,
+    period: typeof raw.period === "number" ? raw.period : null,
+    seenAtMs: typeof raw.seenAtMs === "number" ? raw.seenAtMs : null,
   };
 }
 
 const ESPN_FULL_TTL_MS = 6 * 60 * 60 * 1000;
+/**
+ * Test seam: `SC_SCHEDULE_TEST_TIMING` is JSON that shortens the schedule's
+ * clocks so a replay can walk a game from pregame to final in seconds -
+ * {"liveTtlMs","idleTtlMs","staleMs","graceMs","slateTtlMs"}, each optional,
+ * each only ever SHORTER than the real value. Read by
+ * tests/schedule-game-status.test.mjs and scripts/schedule/web040-cache-replay.mjs.
+ * Never set in a deployment.
+ */
+const TEST_TIMING: Record<string, number> = (() => {
+  try {
+    const parsed = JSON.parse((process.env["SC_SCHEDULE_TEST_TIMING"] ?? "").trim() || "{}") as Record<string, unknown>;
+    return Object.fromEntries(
+      Object.entries(parsed).filter(([, v]) => typeof v === "number" && Number.isFinite(v) && v >= 50),
+    ) as Record<string, number>;
+  } catch {
+    return {};
+  }
+})();
+function timing(key: string, real: number): number {
+  const v = TEST_TIMING[key];
+  return typeof v === "number" && v < real ? v : real;
+}
+
 /** While a game is in progress the score is the point of the page. */
-const ESPN_LIVE_TTL_MS = 30 * 1000;
-const ESPN_IDLE_TTL_MS = 15 * 60 * 1000;
+const ESPN_LIVE_TTL_MS = timing("liveTtlMs", 30 * 1000);
+const ESPN_IDLE_TTL_MS = timing("idleTtlMs", 15 * 60 * 1000);
 /**
  * After a sweep that reached nothing. ESPN refuses this host for hours at a
  * time, and on the idle clock every expiry repeated the whole 18-week sweep -
@@ -583,9 +638,12 @@ async function fetchEspnWeek(
     );
     if (!response.ok) return false;
     const payload = (await response.json()) as { events?: EspnEvent[] };
+    // The moment this host read the scoreboard: the age game-status.ts
+    // judges an in-progress clock by.
+    const seenAtMs = Date.now();
     for (const event of payload.events ?? []) {
       const parsed = readEspnEvent(event);
-      if (parsed && event.id) into.set(event.id, parsed);
+      if (parsed && event.id) into.set(event.id, { ...parsed, seenAtMs });
     }
     return true;
   } catch {
@@ -840,6 +898,8 @@ interface RawGame {
   homeCode: string;
   awayScore: number | null;
   homeScore: number | null;
+  /** nflverse's `overtime` column: 1 for a game that went to overtime. */
+  overtime: boolean;
   location: string | null;
   stadium: string | null;
   divisional: boolean;
@@ -914,6 +974,7 @@ function parseSlate(
       homeCode,
       awayScore: numberOrNull(get(row, "away_score")),
       homeScore: numberOrNull(get(row, "home_score")),
+      overtime: cell(get(row, "overtime")) === "1",
       location: cell(get(row, "location")) || null,
       stadium: cell(get(row, "stadium")) || null,
       // The column has been spelled both ways across releases.
@@ -940,7 +1001,7 @@ let sharedCsv: { at: number; text: Promise<string> } | null = null;
 
 function gamesCsv(): Promise<string> {
   const now = Date.now();
-  if (sharedCsv && now - sharedCsv.at < CSV_SHARE_MS) return sharedCsv.text;
+  if (sharedCsv && now - sharedCsv.at < timing("slateTtlMs", CSV_SHARE_MS)) return sharedCsv.text;
   // Its own timeout, not a caller's signal: one caller giving up must not
   // abort the download every other season is waiting on.
   const text = GAMES_CSV_FILE
@@ -978,7 +1039,7 @@ const slateCache = createKeyedCache<RawGame[]>({
   name: "nflverse-schedule",
   // The slate is stable for hours; every visitor after the first is served from
   // memory, and a flex change still lands well before kickoff.
-  ttlMs: 6 * 60 * 60 * 1000,
+  ttlMs: timing("slateTtlMs", 6 * 60 * 60 * 1000),
   timeoutMs: 20_000,
   // Longer than the shared default of a minute. The failure that lasts is a
   // season nflverse has not published yet - every March to mid-May - and at a
@@ -1116,6 +1177,7 @@ function normalize(
   row: RawGame,
   season: number,
   espn: Map<string, EspnGame>,
+  nowMs: number,
 ): ScheduleGame {
   const away = getTeamByAbbreviation(row.awayCode);
   const home = getTeamByAbbreviation(row.homeCode);
@@ -1153,20 +1215,24 @@ function normalize(
   // A feed final wins over a layer entry that never saw the whistle: a week
   // closes in the feed and is not asked for again, so an entry saved before
   // kickoff stays "pre" for good (2026-11-18: DAL @ PHI Week 7 sat as an
-  // upcoming 0-0 and its dated page 404'd).
-  const liveFinal = live ? live.completed || (live.state === "post" && live.awayScore !== null) : false;
-  const isFinal = liveFinal || finalFromFeed;
-  const status: GameStatus =
-    live?.state === "in" && !finalFromFeed
-      ? "live"
-      : isFinal
-        ? "final"
-        : live?.statusName === "STATUS_POSTPONED"
-          ? "postponed"
-          : live?.statusName === "STATUS_CANCELED"
-            ? "canceled"
-            : "scheduled";
-  const useLiveScore = live !== undefined && (status === "live" || liveFinal);
+  // upcoming 0-0 and its dated page 404'd). The same is true of an entry
+  // saved mid-game ("12:04 - 4th", WEB-040): the status and the detail are
+  // decided together in game-status.ts, so a final never prints a clock.
+  const resolved = resolveGameStatus({
+    feedFinal: finalFromFeed,
+    feedOvertime: row.overtime,
+    live,
+    // The kickoff as the board would print it for an unstarted game: a TBD
+    // window's placeholder midnight is not a kickoff that can pass.
+    kickoffMs: resolveKickoff(row, live, "scheduled").kickoffMs,
+    nowMs,
+    liveStaleMs: timing("staleMs", LIVE_STALE_MS),
+    kickoffGraceMs: timing("graceMs", KICKOFF_GRACE_MS),
+  });
+  const status: GameStatus = resolved.status;
+  const useLiveScore = live !== undefined && resolved.liveScoreUsable;
+  // A stale in-progress score is the last thing anyone saw, not the score.
+  const hideScore = status === "live" && !resolved.confirmed;
 
   const kickoff = resolveKickoff(row, live, status);
 
@@ -1186,10 +1252,12 @@ function normalize(
     homeCode: home?.code ?? row.homeCode,
     away,
     home,
-    awayScore: useLiveScore ? (live.awayScore ?? row.awayScore) : row.awayScore,
-    homeScore: useLiveScore ? (live.homeScore ?? row.homeScore) : row.homeScore,
+    awayScore: hideScore ? null : useLiveScore ? (live.awayScore ?? row.awayScore) : row.awayScore,
+    homeScore: hideScore ? null : useLiveScore ? (live.homeScore ?? row.homeScore) : row.homeScore,
     status,
-    statusDetail: status === "scheduled" ? null : (live?.detail ?? null),
+    statusDetail: resolved.detail,
+    statusConfirmed: resolved.confirmed,
+    statusObservedAtMs: resolved.observedAtMs,
     network: normalizeNetwork(live?.network),
     stadium,
     location,
@@ -1238,6 +1306,8 @@ function fingerprint(season: number, games: ScheduleGame[]): string {
       game.homeScore ?? "",
       game.network ?? "",
       game.statusDetail ?? "",
+      game.statusConfirmed === false ? "u" : "",
+      game.statusObservedAtMs ?? "",
       game.spreadLine ?? "",
       game.totalLine ?? "",
     ].join("\u0001"),
@@ -1328,7 +1398,7 @@ export async function getPostseason(season: number): Promise<PostseasonGame[]> {
   const none = new Map<string, EspnGame>();
   return rows
     .map((row) => ({
-      ...normalize(row, season, none),
+      ...normalize(row, season, none, Date.now()),
       round: row.gameType as PostseasonRound,
     }))
     .sort((a, b) => a.week - b.week || a.id.localeCompare(b.id));
@@ -1342,7 +1412,7 @@ async function build(
 
   const espn = await loadEspn(season, rows, nowMs);
   const games = rows
-    .map((row) => normalize(row, season, espn))
+    .map((row) => normalize(row, season, espn, nowMs))
     .sort(
       (a, b) =>
         a.week - b.week ||

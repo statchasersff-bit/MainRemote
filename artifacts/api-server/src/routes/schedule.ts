@@ -26,6 +26,7 @@
  * invisible to search until `[statchasers_schedule]` embeds it.
  */
 
+import type { CachePolicy } from "../lib/schedule/game-status";
 import { Router, type IRouter, type Request, type Response } from "express";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -57,6 +58,41 @@ import {
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const publicDir = path.resolve(__dirname, "..", "public");
+
+
+/**
+ * The rendering's cache policy, for the WordPress plugin (WEB-040).
+ *
+ * `X-SC-Schedule-State` is "live", "pregame" or "settled" for the games the
+ * view shows; `X-SC-Schedule-Next-Kickoff` is the next kickoff on it in epoch
+ * seconds (pregame only, when one is confirmed). The plugin turns them into
+ * the page's shared-cache lifetime: about a minute while live, until the next
+ * kickoff before, the platform's long default once every game is final.
+ */
+const SCHEDULE_STATE_HEADER = "X-SC-Schedule-State";
+const SCHEDULE_NEXT_KICKOFF_HEADER = "X-SC-Schedule-Next-Kickoff";
+
+/**
+ * The response's own max-age: 30 s while live, never past the next kickoff
+ * before one, five minutes once settled. The plugin's transient follows it.
+ */
+function scheduleMaxAge(cache: CachePolicy, nowMs: number): number {
+  if (cache.state === "live") return 30;
+  if (cache.state === "pregame" && cache.nextKickoffMs !== null) {
+    return Math.max(1, Math.min(300, Math.floor((cache.nextKickoffMs - nowMs) / 1000)));
+  }
+  return 300;
+}
+
+function setScheduleCacheHeaders(res: Response, cache: CachePolicy, dev: boolean): void {
+  const now = Date.now();
+  res
+    .set("Cache-Control", dev ? "no-store" : `public, max-age=${scheduleMaxAge(cache, now)}`)
+    .set(SCHEDULE_STATE_HEADER, cache.state);
+  if (cache.state === "pregame" && cache.nextKickoffMs !== null) {
+    res.set(SCHEDULE_NEXT_KICKOFF_HEADER, String(Math.floor(cache.nextKickoffMs / 1000)));
+  }
+}
 
 const router: IRouter = Router();
 
@@ -263,18 +299,11 @@ function sendSchedulePage(
         html = injectDevBar(html, { path: req.path, embed });
       }
 
+      // Short while live, never past the next kickoff before one: the ETag
+      // catches a change immediately either way; this only bounds how long a
+      // shared cache may skip asking.
+      setScheduleCacheHeaders(res, result.cache, dev);
       res
-        // Short, because a live score is the one thing on this page that can
-        // change minute to minute. The ETag catches a change immediately either
-        // way; this only bounds how long a shared cache may skip asking.
-        .set(
-          "Cache-Control",
-          dev
-            ? "no-store"
-            : result.data?.liveNow
-              ? "public, max-age=30"
-              : "public, max-age=300",
-        )
         .set("X-Robots-Tag", "noindex, indexifembedded")
         .type("html")
         .send(html);
@@ -560,11 +589,10 @@ router.get("/embed/schedule", (req, res) => {
         return;
       }
 
+      // The WordPress plugin reads the state and next kickoff to set the
+      // page's own shared-cache lifetime (WEB-040).
+      setScheduleCacheHeaders(res, result.cache, false);
       res
-        .set(
-          "Cache-Control",
-          result.data.liveNow ? "public, max-age=30" : "public, max-age=300",
-        )
         .set("X-Robots-Tag", "noindex, indexifembedded")
         .type("html")
         .send(result.html);

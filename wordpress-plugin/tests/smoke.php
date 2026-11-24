@@ -636,6 +636,12 @@ if ( 'weekstray' === $group ) {
 	exit( $fail ? 1 : 0 );
 }
 
+if ( 'schedlive' === $group || 'schedfinal' === $group ) {
+	require __DIR__ . '/smoke-schedule-cache.php';
+	echo "\n" . ( $fail ? "$fail FAILED\n" : "all passed\n" );
+	exit( $fail ? 1 : 0 );
+}
+
 echo "team headings\n";
 is( statchasers_team_heading( 'new-england-patriots', '' ), 'New England Patriots 2026 Stats, Schedule & Fantasy Outlook', 'hub' );
 is( statchasers_team_heading( 'new-england-patriots', 'outlook' ), 'New England Patriots 2026 Stats, Schedule & Fantasy Outlook', 'outlook is the hub' );
@@ -2413,7 +2419,7 @@ is( statchasers_player_lazyload_exclusions( null ), array( 'class="scp-pwell-img
  * The other groups. Their failures are this run's failures - a split that only
  * reported the half it felt like running would be worse than not splitting.
  */
-foreach ( array( 'containers', 'week', 'weekstray', 'schedtitles', 'sched404s', 'route404s', 'leak', 'headings', 'playersection', 'rules', 'playerlinks', 'playerbuilder', 'sos', 'sosleak', 'sospage', 'sosfallback', 'fpa', 'fpaleak', 'fpaarchive', 'rhr', 'rhrleak', 'rds', 'rdsleak', 'scin', 'scindb', 'scinleak', 'bdp', 'hostcss', 'newsrail' ) as $child_group ) {
+foreach ( array( 'containers', 'week', 'weekstray', 'schedtitles', 'sched404s', 'route404s', 'schedlive', 'schedfinal', 'leak', 'headings', 'playersection', 'rules', 'playerlinks', 'playerbuilder', 'sos', 'sosleak', 'sospage', 'sosfallback', 'fpa', 'fpaleak', 'fpaarchive', 'rhr', 'rhrleak', 'rds', 'rdsleak', 'scin', 'scindb', 'scinleak', 'bdp', 'hostcss', 'newsrail' ) as $child_group ) {
 	$child = array();
 	$code  = 0;
 	exec(
