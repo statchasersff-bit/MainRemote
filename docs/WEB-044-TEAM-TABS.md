@@ -212,3 +212,29 @@ Verified on the integration build (Chromium emulation, local server):
 Full suite on the integration branch (roster caches present, `INGEST_SECRET`
 unset): 1,844 tests, 1,842 pass, 1 fail ("a player card is its own
 fragment, and an unknown one is a 404", already failing on 7c3e646).
+
+## Team audit T1 (2026-11-24): finishing on the release base 2d0bd3b
+
+2d0bd3b already carries 4c6ed3d, 0611c5d and the integration c084b06, so the
+one-table, name-once, finishes-link and roster-link work was in place.
+Added on `fix/team-audit-t1-2026-11-24`:
+
+- **Fantasy Finishes surname clashes on phones.** Phones paint surnames, so
+  Detroit's table read "St. Brown" (Amon-Ra) and "Brown" (Marquise, Petzing's
+  2023 Cardinals) as bare surnames. `name-forms.ts surnameClashes()` compares
+  names in one table by the last word of the surname (suffix dropped); a
+  clash keeps the initial on phones ("A. St. Brown", "M. Brown"), and the
+  full name when the initial clashes too (Kansas City's Darrel and Damien
+  Williams). Five clubs have a clash today: ARI (three Wilsons), CHI
+  (Caleb / Jamaal Williams), DET, KC, TEN (Daniel / Zay Jones). Desktop
+  already showed full names. The copy handler restores the "." in copied
+  text. CSS: one block at the end of team.css (`team-audit T1`).
+- **Finishes links by game log only.** `playerProfileUrl` matched a name
+  inside the club by the player's game logs for the season OR his club
+  today; a historical row could have matched a namesake who plays for that
+  club now. `game.logsOnly` (links.ts) drops the current-club shortcut for
+  the finishes. No link changed on today's data: all 490 finish links across
+  the 32 clubs have a game-log row for that club and season.
+- Tests: `tests/team-audit-t1.test.mjs` (all 32 clubs: no two finish names
+  in one table paint alike on phones; every finish link confirmed by game
+  log on DET, ARI, CHI, NE).

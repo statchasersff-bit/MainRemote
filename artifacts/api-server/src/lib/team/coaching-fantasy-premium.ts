@@ -22,7 +22,7 @@ import { finishRows, finishStop, finishTier, readFinish, rowViews, seasonOf, sur
 import { reliabilityRating, type FinishCell } from "./coaching";
 import { ICON, usageStyleHead } from "./coaching-premium-tendencies";
 import { playerProfileUrl } from "./links";
-import { nameForms } from "./name-forms";
+import { nameForms, surnameClashes, type NameForm } from "./name-forms";
 
 const e = escapeHtml;
 
@@ -69,19 +69,45 @@ const POSN = ["QB", "RB1", "WR1", "TE1"];
  * that name played for that club, in that position group, that season
  * (playerProfileUrl, by name inside club and position, with the season's
  * game logs for the club): the finishes store no player ids, so the club
- * and the season are the identity. Anything less certain stays plain text.
+ * and the season are the identity, and only a game-log row for that club and
+ * season counts (logsOnly, team audit T1: his club today does not). Anything
+ * less certain stays plain text.
  */
-function finishWho(cell: FinishCell, f: { pos: string; player: string }, club: string, year: string): string {
-  const full = (cell.name || f.player).trim();
+function finishName(cell: FinishCell, f: { player: string }): string {
+  return (cell.name || f.player).trim().replace(/\s+/g, " ");
+}
+
+/**
+ * The phone form of each name, when its surname alone would read like
+ * another player's in the same table (surnameClashes): "A. St. Brown" and
+ * "M. Brown" on Detroit's (team audit T1, 2026-11-24). Every row counts,
+ * the ones behind Show all too.
+ */
+function finishClashes(rows: FinishRow[]): Map<string, NameForm> {
+  const names: string[] = [];
+  for (const row of rows) {
+    for (const cell of row.cells) {
+      const f = readFinish(cell.text);
+      if (f) names.push(finishName(cell, f));
+    }
+  }
+  return surnameClashes(names);
+}
+
+function finishWho(cell: FinishCell, f: { pos: string; player: string }, club: string, year: string, clashes: Map<string, NameForm>): string {
+  const full = finishName(cell, f);
+  const form = clashes.get(full);
+  const cls = `sct-cf-who${form === "initial" ? " is-nm-initial" : form === "full" ? " is-nm-full" : ""}`;
   const season = Number(year);
   const href = playerProfileUrl(full, {
     team: clubCode(club),
     pos: f.pos,
-    game: Number.isInteger(season) && season > 0 ? { season } : null,
+    // The season's game logs alone: a namesake on the club today is no match.
+    game: Number.isInteger(season) && season > 0 ? { season, logsOnly: true } : null,
   });
   return href
-    ? `<a class="sct-cf-who sct-player-link" href="${e(href)}" target="_top" title="${e(full)}" aria-label="${e(full)}">${nameForms(full)}</a>`
-    : `<span class="sct-cf-who" title="${e(full)}">${nameForms(full)}</span>`;
+    ? `<a class="${cls} sct-player-link" href="${e(href)}" target="_top" title="${e(full)}" aria-label="${e(full)}">${nameForms(full)}</a>`
+    : `<span class="${cls}" title="${e(full)}">${nameForms(full)}</span>`;
 }
 
 /**
@@ -91,7 +117,7 @@ function finishWho(cell: FinishCell, f: { pos: string; player: string }, club: s
  * every position still in view with no sideways scroll: the crest and the
  * first names step aside there, the pills and surnames stay.
  */
-function finishRow(row: FinishRow): string {
+function finishRow(row: FinishRow, clashes: Map<string, NameForm>): string {
   const { club, year } = finishStop(row);
   const pace = row.context.match(/^pace through (Week \d+)$/i);
   const context = row.current ? `${pace ? `Through ${pace[1]}` : row.context} · In-season` : row.context;
@@ -107,7 +133,7 @@ function finishRow(row: FinishRow): string {
       .map((cell, i) => {
         const f = readFinish(cell.text);
         return f
-          ? `<td class="sct-cf-td is-fin">${rankPill(f.pos, f.rank, !!row.current)}${finishWho(cell, f, club, year)}</td>`
+          ? `<td class="sct-cf-td is-fin">${rankPill(f.pos, f.rank, !!row.current)}${finishWho(cell, f, club, year, clashes)}</td>`
           : `<td class="sct-cf-td is-fin"><span class="sct-cf-none" aria-label="${e(`${POSN[i] ?? "Finish"}: none`)}">${e(cell.text || "–")}</span></td>`;
       })
       .join("") +
@@ -123,6 +149,8 @@ function finishes(c: TeamCoaching, team: NflTeam): string {
   const newest = [...rows].reverse();
   const recent = newest.slice(0, 5);
   const older = newest.slice(5);
+  const clashes = finishClashes(rows);
+  const row = (r: FinishRow): string => finishRow(r, clashes);
   const allId = `sct-cfp-all-${c.playCaller.name.toLowerCase().replace(/[^a-z]+/g, "-")}`;
   return (
     `<section class="sct-cf-panel" aria-labelledby="sct-cf-fin-h">` +
@@ -140,8 +168,8 @@ function finishes(c: TeamCoaching, team: NflTeam): string {
     `<th scope="col" class="sct-cf-th is-fin">RB1</th>` +
     `<th scope="col" class="sct-cf-th is-fin">WR1</th>` +
     `<th scope="col" class="sct-cf-th is-fin">TE1</th>` +
-    `</tr></thead><tbody>${recent.map(finishRow).join("")}</tbody>` +
-    (older.length ? `<tbody class="sct-cf-older">${older.map(finishRow).join("")}</tbody>` : "") +
+    `</tr></thead><tbody>${recent.map(row).join("")}</tbody>` +
+    (older.length ? `<tbody class="sct-cf-older">${older.map(row).join("")}</tbody>` : "") +
     `</table></div>` +
     (older.length
       ? `<label class="sct-cfp-more" for="${allId}"><span class="sct-cfp-more-show">${e(`Show all ${rows.length} seasons`)}</span><span class="sct-cfp-more-hide">Show recent seasons only</span></label>`

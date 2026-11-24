@@ -157,7 +157,7 @@ export interface PlayerLinkRef {
    * A past game the row describes: a player traded since then is still
    * matched on the club he played for that week (from his game logs).
    */
-  game?: { season: number; week?: number | null } | null;
+  game?: { season: number; week?: number | null; logsOnly?: boolean } | null;
 }
 
 /** A renderer's link callback: the printed name and whatever ids the row has. */
@@ -236,7 +236,10 @@ function slugFromIds(ref: PlayerLinkRef): string | null | undefined {
 /** The clubs a dictionary player can be matched on for this row. */
 function clubsOf(player: { id: string; team: string | null }, game: PlayerLinkRef["game"]): Set<string> {
   const clubs = new Set<string>();
-  const now = clubCode(player.team);
+  // `logsOnly`: the season's game logs alone place him (team audit T1,
+  // 2026-11-24). A historical row (a Fantasy Finishes season years back)
+  // must not match a namesake who merely plays for that club today.
+  const now = game?.logsOnly ? null : clubCode(player.team);
   if (now) clubs.add(now);
   if (game) {
     const rows = loadGameLogs(game.season)[player.id] ?? [];

@@ -44,3 +44,51 @@ export function nameForms(name: string): string {
     ` </span><span class="sct-nm-last">${e(rest)}</span>`
   );
 }
+
+/**
+ * Which form a table that paints SURNAMES must widen a name to so that no two
+ * players in it read alike (team audit T1, 2026-11-24). The Fantasy Finishes
+ * table shows surnames on phones, where "St. Brown" (Amon-Ra) and "Brown"
+ * (Marquise) share a Detroit table and "Wilson" means three players on
+ * Arizona's. Names are compared by the last word of the surname, suffix
+ * dropped, so "St. Brown" and "Brown" or "Harrison Jr." and "Harrison"
+ * count as the same; such a name gets its initial ("A. St. Brown",
+ * "M. Brown"), and the full name when the initial clashes too ("Darrel
+ * Williams", "Damien Williams"). Unclashed names are absent from the map and
+ * keep the surname.
+ */
+export type NameForm = "initial" | "full";
+
+function splitName(name: string): { initial: string; last: string } | null {
+  const full = name.trim().replace(/\s+/g, " ");
+  const gap = full.indexOf(" ");
+  if (gap <= 0) return null;
+  return { initial: full.charAt(0).toLowerCase(), last: full.slice(gap + 1) };
+}
+
+function surnameKey(last: string): string {
+  const core = last.replace(/\s+(jr\.?|sr\.?|ii|iii|iv|v)$/i, "");
+  return (core.split(" ").pop() ?? core).toLowerCase().replace(/[^a-z]/g, "");
+}
+
+export function surnameClashes(names: Iterable<string>): Map<string, NameForm> {
+  const groups = new Map<string, Map<string, { initial: string }>>();
+  for (const raw of names) {
+    const name = raw.trim().replace(/\s+/g, " ");
+    const parts = splitName(name);
+    if (!parts) continue;
+    const key = surnameKey(parts.last);
+    const group = groups.get(key) ?? new Map<string, { initial: string }>();
+    group.set(name, { initial: parts.initial });
+    groups.set(key, group);
+  }
+  const out = new Map<string, NameForm>();
+  for (const group of groups.values()) {
+    if (group.size < 2) continue;
+    for (const [name, { initial }] of group) {
+      const twins = [...group.values()].filter((g) => g.initial === initial).length;
+      out.set(name, twins > 1 ? "full" : "initial");
+    }
+  }
+  return out;
+}

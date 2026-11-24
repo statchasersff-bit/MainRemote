@@ -808,14 +808,15 @@ function fitSnapNames(root: HTMLElement): void {
  * selection of the painted "J. Goff" would paste as "J Goff". On copy, each
  * painted short name inside the selection gets its "." back in the plain
  * text; nothing else in the copied text changes, and the page text (what a
- * crawler or a screen reader reads) stays the plain full name.
+ * crawler or a screen reader reads) stays the plain full name. The Fantasy
+ * Finishes table's phone initials ("A. St. Brown", team audit T1) too.
  */
 function wireNameCopy(root: HTMLElement): void {
   root.addEventListener("copy", (event: ClipboardEvent) => {
     const selection = window.getSelection();
     if (!selection || selection.rangeCount === 0 || !event.clipboardData) return;
     const range = selection.getRangeAt(0);
-    const painted = Array.from(root.querySelectorAll<HTMLElement>(".sct-up-name")).filter((n) => {
+    const painted = Array.from(root.querySelectorAll<HTMLElement>(".sct-up-name, .sct-cf-who")).filter((n) => {
       if (!range.intersectsNode(n)) return false;
       const rest = n.querySelector<HTMLElement>(".sct-nm-r");
       return !!rest && getComputedStyle(rest).display === "none";

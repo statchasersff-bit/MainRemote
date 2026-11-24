@@ -27479,3 +27479,24 @@ ul.sct-faq-list li {
     box-shadow: 1px 0 0 var(--sp-border-light, #e2eaf4);
   }
 }
+
+/* team-audit T1: Fantasy Finishes surname clashes on phones (2026-11-24).
+   Phones paint surnames in the finishes table; where two players in one
+   table would read alike ("St. Brown" / "Brown" on Detroit, three Wilsons on
+   Arizona), name-forms.ts surnameClashes() marks them and they keep their
+   initial ("A. St. Brown", "M. Brown") or, when the initial clashes too, the
+   full name. The copy handler (client/team.ts wireNameCopy) restores the "."
+   in copied text. */
+@media (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-cf-panel .sct-cf-who:is(.is-nm-initial, .is-nm-full) .sct-nm-first {
+    display: inline;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cf-panel .sct-cf-who.is-nm-initial .sct-nm-r {
+    display: none;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-cf-panel .sct-cf-who.is-nm-initial .sct-nm-i::after {
+    content: ".";
+  }
+}
