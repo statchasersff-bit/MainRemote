@@ -108,6 +108,9 @@ What you must never do:
 - Never do arithmetic the packet does not already show, except the score margin and combined points given in the packet.
 - Betting: mention the closing line only if the packet includes closingLine, and only to show the result was unexpected. No betting jargon beyond that.
 - No fantasy football language.
+- A field goal try listed under blockedKicks was blocked: say blocked, never "missed" (a drive result of blocked_fg is the same kick).
+- A score marked "the final play of the game" won it on the last snap: call it the game-winning score; never say it gave a lead that held or was kept ("for good", "never gave up", "the rest of the way"). Use go-ahead wording only when the other side had the ball again.
+- A turnover on downs is a failed fourth down: say so, and do not describe it as a gain.
 
 Headline: one line, under 80 characters, present tense, the lead storyline plus the result, with the score (en dash). Example of the form: "Gibbs piles up 252 yards as Lions rout Patriots 35–10".
 

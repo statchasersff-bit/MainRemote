@@ -37,6 +37,7 @@ const RESULT_TEXT: Record<DriveResult, string> = {
   fumble: "Fumble",
   downs: "Downs",
   missed_fg: "Missed FG",
+  blocked_fg: "Blocked FG",
   safety: "Safety",
   end_half: "End of half",
   end_game: "End of game",
@@ -362,6 +363,7 @@ export function renderPossessions(input: PossessionsInput): string {
     { label: "Turnovers", results: ["int", "fumble"], key: true, always: true },
     { label: "Turnovers on downs", results: ["downs"] },
     { label: "Missed field goals", results: ["missed_fg"] },
+    { label: "Blocked field goals", results: ["blocked_fg"] },
     { label: "Safeties", results: ["safety"] },
   ];
   const defensive = input.drives.filter((d) => d.defensiveScore);

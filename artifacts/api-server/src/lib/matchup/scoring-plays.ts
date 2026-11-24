@@ -48,6 +48,11 @@ export interface ScoringPlay {
   /** On a safety, the player tackled in the end zone, when the feed names one. */
   tackled?: string;
   pat?: PointAfter;
+  /**
+   * Nothing was snapped or kicked off after it (play-facts.ts, from the
+   * play-by-play): the score ended the game. Absent when unknown.
+   */
+  endsGame?: boolean;
 }
 
 /** Points the play itself is worth, try included. */
