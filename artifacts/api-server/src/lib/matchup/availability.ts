@@ -33,13 +33,16 @@
  *      is "pending"; one who played has no current designation, and the
  *      note carries the old one as history. (Until 2026-11-19 a player who
  *      played kept the designation.) A Sleeper status filed SINCE the last
- *      game (Team Pages Phase 4) is reported, not official: an Out or
- *      Doubtful makes him "pending", a Questionable is a note. It is never a
- *      game designation (WEB-039: Burden's Questionable, filed after Week 9,
- *      read as his Week 11 status across the Week 10 bye).
+ *      game (Team Pages Phase 4), before this week's report has the club:
+ *      an Out stands as Out (mak, 2026-11-24: A.J. Brown and Drake Maye,
+ *      Out after Week 10, read Out through New England's bye), a Doubtful
+ *      makes him "pending", a Questionable is only a note (WEB-039: Burden's
+ *      Questionable, filed after Week 9, read as his Week 11 status across
+ *      the Week 10 bye).
  *
- * `designated` is true only for an official game status for THIS week: the
- * one thing an Injury Watch counts and conditional advice may act on.
+ * `designated` is true for an official game status for THIS week, and for a
+ * Sleeper Out filed since the last game (the note says it is not yet on the
+ * official report): what an Injury Watch counts and advice may act on.
  *
  * Nothing is inferred from news or headlines.
  */
@@ -272,7 +275,9 @@ export function gameAvailability(
   // which is not a clean bill of health.
   const none = wr.state === "final" ? NO_DESIGNATION : NO_DESIGNATION_YET;
   const set = (id: string, a: Omit<Availability, "designated" | "report" | "label">): void => {
-    const designated = a.source === "nfl-report" && (a.kind === "out" || a.kind === "doubtful" || a.kind === "questionable");
+    const designated =
+      (a.source === "nfl-report" && (a.kind === "out" || a.kind === "doubtful" || a.kind === "questionable")) ||
+      (a.source === "sleeper" && a.kind === "out");
     const label =
       a.kind === "reserve" || designated
         ? a.status!
@@ -337,12 +342,14 @@ export function gameAvailability(
             `no Week ${week} designation yet.`,
         });
       } else if (designatedSinceLastGame(raw, prior, lastGame, lastReport)) {
-        // Reported since the last game, before any Week N report: real news,
-        // not an official game status. An Out or Doubtful keeps him out of
-        // the lineup reads as pending; a Questionable is only a note.
+        // Reported since the last game, before any Week N report. An Out
+        // stands (mak, 2026-11-24), sourced and noted as not yet official; a
+        // Doubtful reads pending; a Questionable is only a note.
         const status = capStatus(raw);
         const note = `Reported ${status} after Week ${lastGame!.week}; not an official Week ${week} game status (no Week ${week} injury report yet).`;
-        if (status === "Questionable") {
+        if (status === "Out") {
+          set(r.id, { ...base, kind: "out", status, source: "sleeper", note });
+        } else if (status === "Questionable") {
           set(r.id, { ...base, kind: "active", status: null, source: "sleeper", note });
         } else {
           set(r.id, { ...base, kind: "pending", status: PENDING, source: "sleeper", note });

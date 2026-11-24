@@ -827,7 +827,7 @@ export function injuryPremiumModel(data: PlayerPageData, options: PlayerRenderOp
   const adds = !!cs && (cs.reportState !== "final" || !!cs.practice || !!cs.prior || cs.source === "sleeper");
   const statusNote = !cs
     ? null
-    : pending || (undesignated && adds)
+    : pending || (undesignated && adds) || (cs.designated && cs.source === "sleeper")
       ? cs.message
       : m.code === "ACTIVE" && cs.prior
         ? `No current game designation reported. Listed ${cs.prior.status} for Week ${cs.prior.week}.`
