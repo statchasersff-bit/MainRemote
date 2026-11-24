@@ -313,7 +313,12 @@ function statchasers_schedule_ttl( $response ): int {
  * Fetch the server-rendered schedule fragment, cached.
  *
  * @param array{view:string,week:int,filter:string,season:int} $args Render arguments.
- * @return array{html:string,version:string}|null Null when nothing is available.
+ * `volatile` is true when the render must not be kept by a page cache: the API
+ * said a game on it is in progress or pending (X-SC-Schedule-Volatile), or the
+ * render is the outage backup, whose clocks may be hours old. See
+ * statchasers_schedule_keep_volatile_out_of_page_cache().
+ *
+ * @return array{html:string,version:string,volatile?:bool}|null Null when nothing is available.
  */
 function statchasers_schedule_fetch( array $args ): ?array {
 	$origin = statchasers_news_origin();
@@ -366,6 +371,9 @@ function statchasers_schedule_fetch( array $args ): ?array {
 	if ( 200 !== $code || '' === trim( $body ) ) {
 		$backup = statchasers_cache_get( $backup_key );
 		if ( is_array( $backup ) && isset( $backup['html'] ) ) {
+			// The last good board, which may have been saved mid-game: never
+			// let WP Rocket or the edge hold it once the API is back.
+			$backup['volatile'] = true;
 			// Held under the fresh key for a minute too: otherwise every view,
 			// and every caller within a view, retries the origin and waits out
 			// the timeout for as long as it stays down.
@@ -377,8 +385,9 @@ function statchasers_schedule_fetch( array $args ): ?array {
 	}
 
 	$payload = array(
-		'html'    => $body,
-		'version' => trim( (string) wp_remote_retrieve_header( $response, 'etag' ) ),
+		'html'     => $body,
+		'version'  => trim( (string) wp_remote_retrieve_header( $response, 'etag' ) ),
+		'volatile' => '1' === trim( (string) wp_remote_retrieve_header( $response, 'x-sc-schedule-volatile' ) ),
 	);
 
 	set_transient( $cache_key, $payload, statchasers_schedule_ttl( $response ) );
@@ -600,6 +609,12 @@ function statchasers_schedule_shortcode( $atts = array() ): string {
 	$args = statchasers_schedule_args( is_array( $atts ) ? $atts : array() );
 	$data = statchasers_schedule_fetch( $args );
 
+	// Late for the headers (template_redirect below sends those), in time for
+	// WP Rocket, which reads DONOTCACHEPAGE when the buffer closes.
+	if ( is_array( $data ) && ! empty( $data['volatile'] ) ) {
+		statchasers_schedule_mark_uncacheable();
+	}
+
 	// Idempotent - covers widgets/templates that wp_enqueue_scripts missed.
 	statchasers_schedule_enqueue_assets();
 
@@ -640,6 +655,52 @@ function statchasers_schedule_shortcode( $atts = array() ): string {
 	return statchasers_schedule_shortcode_heading( $season ) . $html;
 }
 add_shortcode( STATCHASERS_SCHEDULE_SHORTCODE, 'statchasers_schedule_shortcode' );
+
+/**
+ * Keep this response out of every page cache.
+ *
+ * Same pair as statchasers_player_mark_uncacheable(): WP Rocket honors
+ * DONOTCACHEPAGE, and the Cache-Control nocache_headers() sends is what the
+ * edge reads.
+ */
+function statchasers_schedule_mark_uncacheable(): void {
+	if ( ! defined( 'DONOTCACHEPAGE' ) ) {
+		define( 'DONOTCACHEPAGE', true );
+	}
+	if ( ! headers_sent() ) {
+		nocache_headers();
+	}
+}
+
+/**
+ * A board with a game in progress is not a page to cache (WEB-040).
+ *
+ * The page cache in front of this site keeps a page for days (s-maxage of 30
+ * days at the edge) and nothing purges it when a game ends. A week page
+ * rendered with IND @ HOU in the fourth quarter could therefore outlive the
+ * game by as long as the cache did, whatever the API said after. So a render
+ * the API marks volatile - a game live or pending - is served uncached: the
+ * reader gets the 30-second transient, and the first view after the last game
+ * goes final is the one the cache keeps. Asked here, before any output, so the
+ * no-cache headers still reach the edge; the fetch is the same cached one the
+ * shortcode makes a moment later.
+ *
+ * A page cached BEFORE kickoff is not reached by this - nothing runs on a
+ * cache hit. That page still needs a purge at release and on game days; see
+ * docs/WEB-040-SCHEDULE-STATUS.md.
+ */
+function statchasers_schedule_keep_volatile_out_of_page_cache(): void {
+	if ( is_admin() || ! statchasers_schedule_post_has_shortcode() || '' === statchasers_news_origin() ) {
+		return;
+	}
+	$data = statchasers_schedule_fetch(
+		statchasers_schedule_args( statchasers_schedule_mounted_atts() )
+	);
+	if ( is_array( $data ) && ! empty( $data['volatile'] ) ) {
+		statchasers_schedule_mark_uncacheable();
+	}
+}
+add_action( 'template_redirect', 'statchasers_schedule_keep_volatile_out_of_page_cache', 20 );
 
 /**
  * The <h1> the shortcode prints itself. Off unless the probe says to.

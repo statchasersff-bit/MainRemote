@@ -58,6 +58,16 @@ import {
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const publicDir = path.resolve(__dirname, "..", "public");
 
+
+/**
+ * "1" while a game on the season is in progress or its status is pending -
+ * the states whose printed words change without anything else on the page
+ * changing. The plugin (statchasers-schedule.php) keeps those renders out of
+ * every page cache, so a live clock is never what a cache holds after the
+ * whistle. WEB-040, 2026-11-24.
+ */
+const SCHEDULE_VOLATILE_HEADER = "X-SC-Schedule-Volatile";
+
 const router: IRouter = Router();
 
 const TRUTHY = new Set(["1", "true", "yes", "on"]);
@@ -271,10 +281,11 @@ function sendSchedulePage(
           "Cache-Control",
           dev
             ? "no-store"
-            : result.data?.liveNow
+            : result.data?.liveNow || result.data?.volatile
               ? "public, max-age=30"
               : "public, max-age=300",
         )
+        .set(SCHEDULE_VOLATILE_HEADER, result.data?.volatile ? "1" : "0")
         .set("X-Robots-Tag", "noindex, indexifembedded")
         .type("html")
         .send(html);
@@ -563,8 +574,11 @@ router.get("/embed/schedule", (req, res) => {
       res
         .set(
           "Cache-Control",
-          result.data.liveNow ? "public, max-age=30" : "public, max-age=300",
+          result.data.liveNow || result.data.volatile ? "public, max-age=30" : "public, max-age=300",
         )
+        // The WordPress plugin reads this to keep a page whose clock or
+        // status can change on its own out of WP Rocket and the edge (WEB-040).
+        .set(SCHEDULE_VOLATILE_HEADER, result.data.volatile ? "1" : "0")
         .set("X-Robots-Tag", "noindex, indexifembedded")
         .type("html")
         .send(result.html);

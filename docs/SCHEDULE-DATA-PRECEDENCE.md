@@ -59,6 +59,12 @@ score are keyed on it.
 | `postponed` | ESPN `STATUS_POSTPONED`. Shown as such; kickoff TBD. |
 | `canceled` | ESPN `STATUS_CANCELED`. Shown as such; left out of structured data. |
 
+Since WEB-040 (2026-11-24) the status and the words printed beside it are
+decided together in `src/lib/schedule/game-status.ts`: a final prints "Final"
+or "Final/OT" and never a clock, a live clock prints only while the ESPN read
+is under ten minutes old, and a game no source vouches for prints "Status
+pending" (`statusConfirmed: false`). See docs/WEB-040-SCHEDULE-STATUS.md.
+
 ## Networks
 
 ESPN's broadcaster strings are normalized once (`normalizeNetwork`): "Fox"

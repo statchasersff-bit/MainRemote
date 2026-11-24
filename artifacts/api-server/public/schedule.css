@@ -389,6 +389,18 @@ body.scs-page.is-embed {
   color: hsl(var(--scs-accent));
 }
 
+/* WEB-040: when the oldest live clock on the week was read. Only printed
+   while a game is in progress. */
+.scs-updated {
+  margin: 0;
+  color: hsl(var(--scs-muted-foreground));
+  font-family: var(--scs-font);
+  --scs-ff: var(--sc-font);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
 .scs-view-sub {
   margin-left: 8px;
   color: hsl(var(--scs-muted-foreground));

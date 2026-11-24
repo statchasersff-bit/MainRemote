@@ -54,6 +54,7 @@ import {
 } from "./matchup/pair";
 import { gameLink, type GameLinkMeeting } from "./matchup/game-link";
 import { scheduleSeason } from "./schedule/schedule-data";
+import { gameStatusLabel } from "./schedule/game-status";
 import { markFrame, networkMarkFor } from "./team/network-marks";
 import {
   leagueHasPlayed,
@@ -265,15 +266,45 @@ function stateUrl(
   return query ? `${path}?${query}` : path;
 }
 
-/** Where the game stands: the clock while it runs, the word FINAL after. */
+/**
+ * Where the game stands: the clock while it runs, FINAL (or FINAL/OT) after,
+ * POSTPONED / DELAYED as ESPN names them, STATUS PENDING when no source vouches
+ * for any of those, and the kickoff otherwise. The words come from
+ * schedule/game-status.ts, which never pairs a final with a clock (WEB-040).
+ */
 function statusText(game: ScheduleGame): string {
-  if (game.status === "live") {
-    return (game.statusDetail ?? "Live").toUpperCase();
-  }
-  if (game.status === "final") {
-    return (game.statusDetail ?? "Final").toUpperCase();
-  }
-  return formatKickoff(game.time);
+  const label = gameStatusLabel(game);
+  return label === null ? formatKickoff(game.time) : label.toUpperCase();
+}
+
+/** The cell still holds a kickoff the browser may relabel in local time. */
+function showsKickoff(game: ScheduleGame): boolean {
+  return game.status === "scheduled" && gameStatusLabel(game) === null && game.kickoffMs !== null;
+}
+
+/**
+ * "Updated 9:41 PM ET" for a week with a game in progress: the moment the
+ * OLDEST live clock on the board was read from ESPN, so the stamp never claims
+ * a clock is fresher than it is. Nothing for a week with no confirmed live
+ * game - a final or a kickoff needs no stamp, and a fetch time of our own is
+ * not the source's.
+ */
+function renderLiveStamp(games: ScheduleGame[]): string {
+  const seen = games
+    .filter((game) => game.status === "live" && game.statusConfirmed !== false)
+    .map((game) => game.statusObservedAtMs)
+    .filter((ms): ms is number => typeof ms === "number" && ms > 0);
+  if (seen.length === 0) return "";
+  const at = Math.min(...seen);
+  const label = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/New_York",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(new Date(at));
+  return (
+    `<p class="scs-updated"><time datetime="${new Date(at).toISOString()}">` +
+    `Updated ${escapeHtml(label)} ET</time></p>`
+  );
 }
 
 function spreadLabel(game: ScheduleGame): string {
@@ -666,7 +697,8 @@ function renderGameRow(
   now: number,
   meetings: PairMeetings,
 ): string {
-  const live = game.status === "live";
+  // The dot means "this clock is running now"; a stale entry gets no dot.
+  const live = game.status === "live" && game.statusConfirmed !== false;
   const hasScore = game.awayScore !== null && game.homeScore !== null;
   const lines = cardLines(game);
 
@@ -727,7 +759,11 @@ function renderGameRow(
     `--scs-home-c:${escapeHtml(homeColor)}`;
 
   return (
-    `<article class="scs-game" data-status="${game.status}" id="${escapeHtml(
+    `<article class="scs-game" data-status="${
+      // "pending" rather than "live" for a stale entry, so nothing styled
+      // for a running game (the red clock) dresses one nobody can vouch for.
+      game.statusConfirmed === false ? "pending" : game.status
+    }" id="${escapeHtml(
       `scs-game-${game.id}`,
     )}" style="${colors}">` +
     `<p class="scs-visually-hidden">${escapeHtml(spoken)}</p>` +
@@ -739,9 +775,7 @@ function renderGameRow(
     // is live or final this cell holds a clock or the word FINAL, and a bundle
     // that rewrote it into a local time would erase the score's own status.
     `<span class="scs-game-status"${
-      game.kickoffMs === null || game.status !== "scheduled"
-        ? ""
-        : ` data-kickoff="${game.kickoffMs}"`
+      showsKickoff(game) ? ` data-kickoff="${game.kickoffMs}"` : ""
     }>` +
     (live ? `<span class="scs-live-dot" aria-hidden="true"></span>` : "") +
     `${escapeHtml(statusText(game))}</span>` +
@@ -1143,6 +1177,7 @@ function renderWeekView(
     `<div class="scs-viewhead">` +
     `<h2 class="scs-view-title">Week ${state.week}` +
     `<span class="scs-view-sub"> / ${TOTAL_WEEKS}</span></h2>` +
+    renderLiveStamp(all) +
     `</div>` +
     renderWeekRail(base, state, linkQuery) +
     `<div class="scs-board">` +
