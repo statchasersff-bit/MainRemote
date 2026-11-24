@@ -518,6 +518,19 @@ if ( 'main' === $group ) {
 	is( statchasers_divi_late_css_applies(), true, 'on for a matchup request' );
 	$GLOBALS['page']['is404'] = true;
 	is( statchasers_divi_late_css_applies(), true, 'and on a matchup 404, which still renders the holder' );
+	unset( $GLOBALS['page']['is404'] );
+	// Decided on `wp`; by wp_footer Divi's Theme Builder footer layout may be
+	// the queried object (live on 1.10.64 the rewrite never ran). The footer
+	// keeps the answer taken on `wp`.
+	statchasers_divi_late_css_decide();
+	$sc_footer_layout         = new WP_Post();
+	$sc_footer_layout->ID     = 269;
+	$GLOBALS['page']['post']  = $sc_footer_layout;
+	is( statchasers_divi_late_css_applies(), true, 'decided on wp: a footer layout as the queried object does not turn it off' );
+	$GLOBALS['page']['post']  = $sc_article;
+	statchasers_divi_late_css_decide();
+	is( statchasers_divi_late_css_applies(), false, 'and a request decided off stays off' );
+	statchasers_divi_late_css_decided( null, true );
 	unset( $GLOBALS['page'], $GLOBALS['pages_by_path'] );
 	$GLOBALS['query'] = array();
 	echo "\n";

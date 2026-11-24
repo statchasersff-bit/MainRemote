@@ -42,6 +42,10 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Divi templates that print the same loader.
  */
 function statchasers_divi_late_css_applies(): bool {
+	$decided = statchasers_divi_late_css_decided();
+	if ( null !== $decided ) {
+		return $decided;
+	}
 	// The pair var only counts on the matchup holder (WEB-013): `?sc_matchup=`
 	// on any other page is not the matchup template. A game 404 still renders
 	// the holder, so it keeps the rewrite.
@@ -49,6 +53,34 @@ function statchasers_divi_late_css_applies(): bool {
 		? '' !== statchasers_matchup_raw()
 		: '' !== (string) get_query_var( 'sc_matchup' );
 	return (bool) apply_filters( 'statchasers_divi_late_css_applies', $applies );
+}
+
+/**
+ * The answer taken once, on `wp`, while the queried object is still the
+ * request's own (2026-11-24b). Since WEB-013 the gate reads
+ * get_queried_object(), and by wp_footer Divi's Theme Builder has rendered its
+ * footer layout: live on 1.10.64 the H2H and dated game pages still printed
+ * Divi's two-file loader and the browser requested ".../4825-late.css,https:/
+ * .../late.css" (404), while the rewrite itself turns that exact script into
+ * the fixed one. Deciding before the template (and before WEB-013's 404 on
+ * `wp` 0) keeps the footer from depending on what the layouts left behind.
+ */
+function statchasers_divi_late_css_decided( ?bool $set = null, bool $clear = false ): ?bool {
+	static $decided = null;
+	if ( $clear ) {
+		$decided = null;
+	} elseif ( null !== $set ) {
+		$decided = $set;
+	}
+	return $decided;
+}
+
+function statchasers_divi_late_css_decide(): void {
+	if ( is_admin() ) {
+		return;
+	}
+	statchasers_divi_late_css_decided( null, true );
+	statchasers_divi_late_css_decided( statchasers_divi_late_css_applies() );
 }
 
 /**
@@ -135,5 +167,6 @@ function statchasers_divi_late_css_finish(): void {
 	echo statchasers_divi_late_css_rewrite( (string) ob_get_clean() ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- the footer's own output, one script redrawn.
 }
 
+add_action( 'wp', 'statchasers_divi_late_css_decide', PHP_INT_MIN );
 add_action( 'wp_footer', 'statchasers_divi_late_css_start', PHP_INT_MIN );
 add_action( 'wp_footer', 'statchasers_divi_late_css_finish', PHP_INT_MAX );
