@@ -79,3 +79,40 @@ news database and the player pages. No design change.
 - (4) A shorter WP Rocket lifespan for /nfl/teams/ and /nfl/<pair>/ pages on
   game days, or a manual "purge team pages" step in the weekly checklist after
   each slate; not an automatic purge.
+
+## Follow-up findings (2026-11-20, after mak's review)
+
+### Washington news (investigated, nothing changed)
+
+mak: no website scraping; keep the national outlets and the player wire.
+
+- **Obsolete feed entries are already excluded.** commanders.com/rss/news
+  serves 20 items from April 2022. Club items older than 45 days are never
+  stored (MAX_ITEM_AGE_DAYS in club-news.ts), so none of them is in the
+  database. The 5 Commanders club stories stored since September are current
+  ones the feed published briefly (Sep 1, 12, 16; Oct 10; Nov 5). They are
+  valid.
+- **The old items on the tab are valid stories from other sources.** Of
+  Washington's 53 items, the 11 older than 45 days are 7 Dynasty Command wire
+  reports (Jun 17-19, Aug 17-20) about current Commanders (Rachaad White,
+  Jayden Daniels, Stefon Diggs, Drew Stevens), the 3 September club stories and
+  1 August item. They appear only because Washington has so few recent
+  stories; other clubs fill the list within 13 days.
+- **Option for review (not built):** a display age cap on the team News tab,
+  for example 45 days to match the club cutoff, applied to every lane. Today it
+  would remove those 11 items from Washington (53 to 42) and **nothing from
+  any other team** (every other club's oldest shown item is under 13 days).
+  Risk: in the offseason every club thins out, so the cap should only apply
+  when at least N recent items remain (say 20), or only in season. No
+  collection logic changes either way.
+
+### Low-priority task: Dynasty Command double-slash links
+
+113 Dynasty Command items link `https://www.rotowire.com//football/player/...`
+(doubled slash, a player page rather than the story). They resolve (200).
+The fix belongs in Dynasty Command, which is not modified in this release.
+Tracked here as a separate low-priority task.
+
+### Rematch links and cache freshness
+
+See docs/MATCHUP-REMATCH-ASSESSMENT.md and docs/GAME-DAY-CACHE-FRESHNESS.md.
