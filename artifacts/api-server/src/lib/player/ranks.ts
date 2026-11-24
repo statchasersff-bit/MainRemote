@@ -16,6 +16,7 @@
 import { getTeamByAbbreviation } from "../team/teams";
 import { seasonYear } from "../seo";
 import { getEntryPoints, type ScoringFormat } from "./scoring";
+import { scoringTotalsSource } from "../scoring/house-rules";
 import { loadByeWeeks, loadGameLogs, loadGameScores } from "./data";
 import type { GameLogEntry, GameLogStats, GameScore, Player } from "./types";
 
@@ -435,6 +436,99 @@ export function enrichWithTeamMetrics(
  */
 export const PPG_MIN_GAMES = 4;
 
+/* ------------------------------------------------ the one PPG position rank */
+
+/** One player's line in his position's points-per-game table. */
+export interface PpgRankRow {
+  id: string;
+  /** Season points in the format, over the games below. */
+  total: number;
+  /** Games he took part in (hasParticipation), which the rate is over. */
+  games: number;
+  /** total / games, unrounded. */
+  ppg: number;
+  /** His PPG rank at the position, or null under PPG_MIN_GAMES games. */
+  rank: number | null;
+}
+
+export interface PpgPositionTable {
+  /** The eligible players (PPG_MIN_GAMES+ games), best rate first. */
+  ranked: PpgRankRow[];
+  /** Every player at the position with a game, eligible or not. */
+  byId: Map<string, PpgRankRow>;
+  /** The games each of those players took part in. */
+  played: Map<string, GameLogEntry[]>;
+}
+
+/** A rate as an integer key, so 15 and 30/2 tie and float dust does not split them. */
+const ppgKey = (ppg: number): number => Math.round(ppg * 1e6);
+
+const ppgTableCache = new WeakMap<object, WeakMap<object, Map<string, PpgPositionTable>>>();
+
+/**
+ * The PPG position rank: the ONE calculation every surface prints (the
+ * player header, the peers rail, the player index, the matchup preview),
+ * so a player cannot be the WR17 on his page and the WR19 in a preview
+ * (2026-11-24: the preview ranked the usage feed's rounded nflverse points
+ * over a 2-game minimum while the page ranked these logs over four).
+ *
+ * The rules, all in here:
+ * - Pool: every player whose players.json position is `position`, league-wide,
+ *   with at least one game in the season's logs. Nobody is dropped for team,
+ *   roster or roster percentage; a surface picks whom to SHOW afterwards.
+ * - Games: a game he took part in (hasParticipation), not a roster week.
+ * - Points: getEntryPoints() in the format, under the active scoring policy.
+ * - Cutoff: whatever the season's game logs hold, the latest data.
+ * - Eligibility: PPG_MIN_GAMES games; under that, rank null (the surface's
+ *   own "no rank" state), though the row keeps his rate and games.
+ * - Order: unrounded rate, best first. Equal rates share the better rank
+ *   (15.0, 15.0, 14.9 -> 1, 1, 3); within a tie rows sort by id so the
+ *   order is stable.
+ *
+ * Built once per loaded game-log object, player list, position, format and
+ * scoring policy.
+ */
+export function ppgPositionTable(
+  logs: Record<string, GameLogEntry[]>,
+  players: Player[],
+  position: string,
+  format: ScoringFormat,
+): PpgPositionTable {
+  let byPlayers = ppgTableCache.get(logs);
+  if (!byPlayers) ppgTableCache.set(logs, (byPlayers = new WeakMap()));
+  let byKey = byPlayers.get(players);
+  if (!byKey) byPlayers.set(players, (byKey = new Map()));
+  const key = `${position}|${format}|${scoringTotalsSource()}`;
+  const hit = byKey.get(key);
+  if (hit) return hit;
+
+  const atPosition = new Set<string>();
+  for (const p of players) if (p.position === position) atPosition.add(p.id);
+
+  const byId = new Map<string, PpgRankRow>();
+  const played = new Map<string, GameLogEntry[]>();
+  const ranked: PpgRankRow[] = [];
+  for (const [id, entries] of Object.entries(logs)) {
+    if (!atPosition.has(id)) continue;
+    const games = entries.filter((e) => hasParticipation(e.stats, position));
+    if (games.length === 0) continue;
+    const total = games.reduce((sum, e) => sum + getEntryPoints(e.stats, format), 0);
+    const row: PpgRankRow = { id, total, games: games.length, ppg: total / games.length, rank: null };
+    byId.set(id, row);
+    played.set(id, games);
+    if (games.length >= PPG_MIN_GAMES) ranked.push(row);
+  }
+  ranked.sort((a, b) => ppgKey(b.ppg) - ppgKey(a.ppg) || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+  ranked.forEach((row, i) => {
+    const prev = ranked[i - 1];
+    row.rank = prev && ppgKey(prev.ppg) === ppgKey(row.ppg) ? prev.rank : i + 1;
+  });
+
+  const table = { ranked, byId, played };
+  byKey.set(key, table);
+  return table;
+}
+
 /** Where one player stands in his position's table for a season. */
 export interface SeasonStanding {
   /** His place in it: 14 for the QB14. */
@@ -493,7 +587,7 @@ export function buildSeasonStandings(
     games: number;
   }
 
-  const byPos = new Map<string, { ppgs: Row[]; totals: Row[] }>();
+  const byPos = new Map<string, { totals: Row[] }>();
   let week = 0;
 
   for (const [id, entries] of Object.entries(logs)) {
@@ -512,20 +606,16 @@ export function buildSeasonStandings(
 
     let tables = byPos.get(pos);
     if (!tables) {
-      tables = { ppgs: [], totals: [] };
+      tables = { totals: [] };
       byPos.set(pos, tables);
     }
     tables.totals.push({ id, value: total, games });
-    if (games >= PPG_MIN_GAMES) {
-      tables.ppgs.push({ id, value: total / games, games });
-    }
   }
 
   const byId = new Map<string, SeasonStanding>();
 
-  for (const tables of byPos.values()) {
+  for (const [pos, tables] of byPos) {
     tables.totals.sort((a, b) => b.value - a.value);
-    tables.ppgs.sort((a, b) => b.value - a.value);
 
     // Points first, rates second, and the second overwrites: every player who
     // played gets a standing, and the ones who clear the minimum then take
@@ -540,14 +630,16 @@ export function buildSeasonStandings(
         games: row.games,
       });
     });
-    tables.ppgs.forEach((row, i) => {
+    // The rate ranks are the shared PPG table's (ppgPositionTable), the same
+    // rank the profile header and the matchup preview print.
+    for (const row of ppgPositionTable(logs, players, pos, format).ranked) {
       byId.set(row.id, {
-        rank: i + 1,
-        value: row.value,
+        rank: row.rank!,
+        value: row.ppg,
         measure: "ppg",
         games: row.games,
       });
-    });
+    }
   }
 
   const standings: SeasonStandings = { season, format, week, byId };

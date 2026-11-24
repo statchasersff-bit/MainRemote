@@ -103,7 +103,7 @@ import {
   hasParticipation,
   isGamePlayed,
   leagueWeeksLogged,
-  PPG_MIN_GAMES,
+  ppgPositionTable,
   resolveSeasonTeam,
   teamCode,
   type SeasonStanding,
@@ -353,6 +353,12 @@ export interface PlayerPageData {
    * exists.
    */
   seasonRank: number | null;
+  /**
+   * The points per game `seasonRank` was measured on (ranks.ts
+   * ppgPositionTable: touch games, not roster weeks). The header prints it
+   * beside that rank so the two cannot disagree; null wherever seasonRank is.
+   */
+  seasonRankPpg?: number | null;
   seasonRankTotal: number | null;
   /**
    * The players ranked either side of them at their position this season.
@@ -786,7 +792,7 @@ const PEER_RADIUS = 3;
  * a page" rather than a renumbered list that claims QB15 is somebody else.
  */
 function neighborhood(
-  table: Array<{ id: string; value: number }>,
+  table: Array<{ id: string; value: number; rank?: number }>,
   index: number,
   playerById: Map<string, Player>,
   indexed: Set<string>,
@@ -800,7 +806,7 @@ function neighborhood(
       if (!row) break;
       const player = playerById.get(row.id);
       if (!player || !indexed.has(player.slug)) continue;
-      out.push({ id: row.id, rank: i + 1, value: row.value });
+      out.push({ id: row.id, rank: row.rank ?? i + 1, value: row.value });
     }
     return out;
   };
@@ -847,7 +853,7 @@ function neighborhood(
  */
 type PositionTables = {
   playerById: Map<string, Player>;
-  ppgs: { id: string; value: number }[];
+  ppgs: { id: string; value: number; rank: number }[];
   totals: { id: string; value: number }[];
   playedById: Map<string, GameLogEntry[]>;
 };
@@ -868,26 +874,24 @@ function positionTables(
   if (hit) return hit;
 
   const playerById = new Map(allPlayers.map((p) => [p.id, p]));
-  const ppgs: { id: string; value: number }[] = [];
-  const totals: { id: string; value: number }[] = [];
+  // The rate table is the shared PPG rank (ranks.ts ppgPositionTable), the
+  // one the matchup preview and the player index print too; the points table
+  // is built over the same players and games.
+  const shared = ppgPositionTable(logs, allPlayers, position, format);
+  const ppgs = shared.ranked.map((row) => ({ id: row.id, value: row.ppg, rank: row.rank! }));
+  const totals = [...shared.byId.values()].map((row) => ({ id: row.id, value: row.total }));
   // The played games per player: the peers rail's cards print per-game rates
   // from the same games the rank counts.
-  const playedById = new Map<string, GameLogEntry[]>();
-  for (const [id, entries] of Object.entries(logs)) {
-    if (playerById.get(id)?.position !== position) continue;
-    const played = entries.filter((e) => hasParticipation(e.stats, position));
-    if (played.length === 0) continue;
-    playedById.set(id, played);
-    const total = played.reduce((sum, e) => sum + fpts(e, format), 0);
-    totals.push({ id, value: total });
-    if (played.length < PPG_MIN_GAMES) continue;
-    ppgs.push({ id, value: total / played.length });
-  }
-  ppgs.sort((a, b) => b.value - a.value);
+  const playedById = shared.played;
   totals.sort((a, b) => b.value - a.value);
   const tables = { playerById, ppgs, totals, playedById };
   byKey.set(key, tables);
   return tables;
+}
+
+/** A row's place: its own rank where the table carries one (shared PPG ties), else its position. */
+function placeIn(table: ReadonlyArray<{ id: string; rank?: number }>, i: number): number | null {
+  return i >= 0 ? (table[i]?.rank ?? i + 1) : null;
 }
 
 function positionalFinish(
@@ -900,9 +904,9 @@ function positionalFinish(
   // number. Built on request rather than always, so eleven seasons of career
   // rows do not each assemble a neighborhood that is then thrown away.
   wantPeers = false,
-): { ppg: number | null; total: number | null; peers: PositionPeers | null } {
+): { ppg: number | null; total: number | null; rate: number | null; peers: PositionPeers | null } {
   const position = player.position;
-  if (!position) return { ppg: null, total: null, peers: null };
+  if (!position) return { ppg: null, total: null, rate: null, peers: null };
   const logs = loadGameLogs(season);
   const { playerById, ppgs, totals, playedById } = positionTables(logs, allPlayers, position, format);
 
@@ -967,7 +971,7 @@ function positionalFinish(
         name: player.name,
         team: getTeamByAbbreviation(player.team),
         headshot: player.headshotUrl ?? null,
-        rank: index + 1,
+        rank: placeIn(table, index) ?? index + 1,
         value: table[index]?.value ?? 0,
         isCurrent: true,
         ...rates(player.id),
@@ -977,8 +981,10 @@ function positionalFinish(
     }
   }
 
-  const place = (i: number): number | null => (i >= 0 ? i + 1 : null);
-  return { ppg: place(ppgIndex), total: place(totalIndex), peers };
+  // The rate the PPG rank was measured on, so the header prints the figure
+  // the rank came from; null wherever the rank is.
+  const rate = ppgIndex >= 0 ? (ppgs[ppgIndex]?.value ?? null) : null;
+  return { ppg: placeIn(ppgs, ppgIndex), total: placeIn(totals, totalIndex), rate, peers };
 }
 
 /**
@@ -1471,6 +1477,7 @@ export async function getPlayerPageData(
     season,
     seasonLabel,
     seasonRank: rank.ppg,
+    seasonRankPpg: rank.rate,
     seasonRankTotal: rank.total,
     peers: rank.peers,
     availableSeasons: seasons,

@@ -24,9 +24,11 @@ import type { NflTeam } from "../team/teams";
 import type { TeamStats, StatRow } from "../team/stats";
 import type { RosterPlayer } from "../team/roster";
 import type { FpaRow } from "../fpa/fpa-data";
-import { getUsageDoc, type UsageDoc, type UsagePlayer, type UsageTeam } from "../team/usage";
+import { getUsageDoc, type UsagePlayer, type UsageTeam } from "../team/usage";
 import { getTeamCoaching, type TeamCoaching } from "../team/coaching";
-import { loadRosterPct } from "../player/data";
+import { loadGameLogs, loadPlayers, loadRosterPct } from "../player/data";
+import { ppgPositionTable, type PpgPositionTable } from "../player/ranks";
+import type { GameLogEntry, Player } from "../player/types";
 import type { MatchupData, Meeting } from "./matchup-data";
 import { impliedTotals, type Forecast, type GameLine, type WeekLines } from "./game-lines";
 import { battlesFor, pickBattles, defendersVersion, gameConditions, teamForm, type Battle, type BattleSide, type Conditions, type TeamForm } from "./preview-extras";
@@ -335,34 +337,51 @@ function findRow(stats: TeamStats | null, key: string): StatRow | null {
 
 /* ----------------------------------------------------------------- league */
 
-interface League {
-  /** Raw PPR ppg per position, best first - the cut-off ladder. */
+export interface League {
+  /** The position's eligible PPG, best first - the cut-off ladder. */
   ladder: Record<Pos, number[]>;
+  /** His PPG rank at the position, null under the four-game minimum. */
   rankOf(p: UsagePlayer): number | null;
+  /** His PPG in the format, from the games the rank counts; null with none logged. */
+  ppgOf(p: UsagePlayer): number | null;
 }
 
-function buildLeague(doc: UsageDoc, format: ScoringFormat = "ppr"): League {
-  const pools: Record<Pos, Array<{ id: string; ppg: number }>> = { QB: [], RB: [], WR: [], TE: [] };
-  const minGames = Math.min(2, Math.max(1, doc.throughWeek - 1));
-  for (const team of Object.values(doc.teams)) {
-    for (const p of team.players) {
-      const ppg = formatPpg(p, format);
-      if (ppg === null || p.games < minGames) continue;
-      pools[p.pos].push({ id: p.id, ppg });
-    }
-  }
-  for (const pos of Object.keys(pools) as Pos[]) pools[pos].sort((x, y) => y.ppg - x.ppg);
+/**
+ * The league tables the preview ranks against: the shared PPG position rank
+ * (ranks.ts ppgPositionTable) over the season's game logs and the whole
+ * league at the position, the same rank and pool the player page prints
+ * (2026-11-24). The usage feed only decides whom the preview shows; it used
+ * to rank too, from its own rounded points over a 2-game minimum, which put
+ * Luther Burden III at WR19 here and WR17 on his page.
+ */
+export function buildLeague(
+  season: number,
+  format: ScoringFormat = "ppr",
+  // The tests hand in a fixture; the page reads the stored season.
+  source: { logs: Record<string, GameLogEntry[]>; players: Player[] } = { logs: loadGameLogs(season), players: loadPlayers() },
+): League {
+  const { logs, players } = source;
+  const fmt = format === "std" ? "standard" : format;
+  const positionOf = new Map(players.map((pl) => [pl.id, pl.position]));
+  const tables = {
+    QB: ppgPositionTable(logs, players, "QB", fmt),
+    RB: ppgPositionTable(logs, players, "RB", fmt),
+    WR: ppgPositionTable(logs, players, "WR", fmt),
+    TE: ppgPositionTable(logs, players, "TE", fmt),
+  } satisfies Record<Pos, PpgPositionTable>;
+  // Only within the position the preview labels him with: a rank from
+  // another position's table would print as the wrong "WR17".
+  const row = (p: UsagePlayer) =>
+    p.sleeperId && positionOf.get(p.sleeperId) === p.pos ? (tables[p.pos].byId.get(p.sleeperId) ?? null) : null;
   return {
     ladder: {
-      QB: pools.QB.map((x) => x.ppg),
-      RB: pools.RB.map((x) => x.ppg),
-      WR: pools.WR.map((x) => x.ppg),
-      TE: pools.TE.map((x) => x.ppg),
+      QB: tables.QB.ranked.map((x) => x.ppg),
+      RB: tables.RB.ranked.map((x) => x.ppg),
+      WR: tables.WR.ranked.map((x) => x.ppg),
+      TE: tables.TE.ranked.map((x) => x.ppg),
     },
-    rankOf(p) {
-      const i = pools[p.pos].findIndex((x) => x.id === p.id);
-      return i < 0 ? null : i + 1;
-    },
+    rankOf: (p) => row(p)?.rank ?? null,
+    ppgOf: (p) => row(p)?.ppg ?? null,
   };
 }
 
@@ -476,18 +495,23 @@ export function buildPreview(data: MatchupData, inputs: PreviewInputs): Preview 
   const sideOf = (k: SideKey) => (k === "away" ? away : home);
   const otherOf = (k: SideKey) => (k === "away" ? home : away);
 
-  const league = usage ? buildLeague(usage) : null;
+  const league = usage ? buildLeague(season) : null;
   // The starters block switches between PPR, half PPR and standard (mak,
   // 2026-11-02), so each figure carries all three with its rank in each.
   const leagues = usage
-    ? { ppr: league!, half: buildLeague(usage, "half"), std: buildLeague(usage, "std") }
+    ? { ppr: league!, half: buildLeague(season, "half"), std: buildLeague(season, "std") }
     : null;
   for (const side of [away, home]) {
     for (const p of side.usage?.players ?? []) {
-      const ppg = pprPpg(p);
+      // The PPG beside the rank is the rank's own figure; the usage feed's
+      // only stands in for a player with no logged game.
+      const ppg = league?.ppgOf(p) ?? pprPpg(p);
       if (!p.sleeperId || ppg === null) continue;
       const formats = Object.fromEntries(
-        SCORING_FORMATS.map((f) => [f, { ppg: formatPpg(p, f) ?? ppg, posRank: leagues?.[f].rankOf(p) ?? null }]),
+        SCORING_FORMATS.map((f) => [
+          f,
+          { ppg: leagues?.[f].ppgOf(p) ?? formatPpg(p, f) ?? ppg, posRank: leagues?.[f].rankOf(p) ?? null },
+        ]),
       ) as Record<ScoringFormat, { ppg: number; posRank: number | null }>;
       side.ppr[p.sleeperId] = { ppg, posRank: league?.rankOf(p) ?? null, formats };
     }
@@ -515,7 +539,7 @@ export function buildPreview(data: MatchupData, inputs: PreviewInputs): Preview 
   for (const side of [away, home]) {
     const opp = otherOf(side.key);
     for (const p of side.usage?.players ?? []) {
-      const ppg = pprPpg(p);
+      const ppg = league?.ppgOf(p) ?? pprPpg(p);
       if (ppg === null || !league) continue;
       const rostered = owned(p.sleeperId);
       if (rostered < 5) continue;
