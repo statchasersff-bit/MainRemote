@@ -25,8 +25,10 @@
  * 3. **A control that cannot work is not shown.** The filter bar, the section
  *    pills and the sort buttons do nothing without the bundle, so they ship
  *    `hidden` (the pills and filters) or are built by the bundle (the sort
- *    buttons, the banner's hide controls). The season and position controls
- *    are links, and work either way.
+ *    buttons, the banner's hide controls). The position control is links,
+ *    and works either way. The season control is buttons the bundle swaps
+ *    the table with; the season it opens on is always the one rendered, so
+ *    without scripting it still names the table on the page.
  */
 
 import { escapeHtml, escapeJsonLd } from "./render";
@@ -72,7 +74,7 @@ export interface StatsRenderOptions {
   /** Carried onto player links so embed mode stays embed mode. */
   linkQuery?: string;
   /**
-   * Carried onto the season and position links. Separate from `linkQuery`
+   * Carried onto the position links. Separate from `linkQuery`
    * because in the WordPress fragment those are statchasers.com addresses,
    * where `?embed=1` is a reserved query var - while a player link may still
    * point back at this origin.
@@ -169,21 +171,16 @@ function positionHref(position: StatsPosition, options: StatsRenderOptions): str
 }
 
 /**
- * An internal link with the season and the embed flag carried on it.
+ * An internal link with the embed flag carried on it.
  *
- * The default season is left off, so the table a reader lands on from a
- * position link has one address rather than two.
+ * Never a season: a position link is the position's one canonical address,
+ * and the season a reader picked rides in the URL fragment instead (see
+ * src/client/player-stats.ts), so crawlers and caches see one page per
+ * position rather than one per season.
  */
-function withQuery(
-  href: string,
-  season: StatsSeason,
-  options: StatsRenderOptions,
-): string {
-  const params: string[] = [];
+function withQuery(href: string, options: StatsRenderOptions): string {
   const extra = (options.pageQuery ?? "").replace(/^\?/, "");
-  if (extra !== "") params.push(extra);
-  if (season !== (options.defaultSeason ?? null)) params.push(`season=${season}`);
-  return params.length === 0 ? href : `${href}?${params.join("&")}`;
+  return extra === "" ? href : `${href}?${extra}`;
 }
 
 function playerHref(slug: string, options: StatsRenderOptions): string {
@@ -218,8 +215,9 @@ function renderName(row: StatsRow, options: StatsRenderOptions, className: strin
  *   WR Stats ▾ | 2026 ▾ | Totals / Per Game | More Filters ▾   Search
  *   Overview   Usage & Opportunity   Receiving   Efficiency   Advanced
  *
- * The position and season menus are <details> holding real links, so both
- * still work with scripting off. Everything else filters or rearranges rows
+ * The position menu is a <details> holding real links, so it still works
+ * with scripting off. The season menu holds buttons the bundle swaps the
+ * table with in place; without scripting it shows the season rendered. Everything else filters or rearranges rows
  * already on the page, and ships `hidden` until the bundle wires it.
  */
 
@@ -248,7 +246,7 @@ function renderPositions(table: StatsTable, options: StatsRenderOptions): string
     const on = position === table.position;
     return (
       `<a class="sca-menu-item${on ? " is-active" : ""}"` +
-      ` href="${escapeHtml(withQuery(positionHref(position, options), table.season, options))}"` +
+      ` href="${escapeHtml(withQuery(positionHref(position, options), options))}"` +
       (on ? ` aria-current="page"` : "") +
       ` title="${escapeHtml(`NFL ${POSITION_NAMES[position]} Stats`)}">${position} Stats</a>`
     );
@@ -261,24 +259,21 @@ function renderPositions(table: StatsTable, options: StatsRenderOptions): string
   );
 }
 
-function renderSeasons(table: StatsTable, options: StatsRenderOptions): string {
-  const here = positionHref(table.position, options);
+function renderSeasons(table: StatsTable): string {
   const items = getStatsSeasons()
     .map((season) => {
       const on = season === table.season;
       return (
-        `<a class="sca-menu-item${on ? " is-active" : ""}"` +
-        ` href="${escapeHtml(withQuery(here, season, options))}"` +
+        `<button type="button" class="sca-menu-item${on ? " is-active" : ""}"` +
         ` data-sca-season="${escapeHtml(String(season))}"` +
-        (on ? ` aria-current="true"` : "") +
-        ` rel="nofollow">${escapeHtml(seasonShortLabel(season))}</a>`
+        ` aria-pressed="${on ? "true" : "false"}">${escapeHtml(seasonShortLabel(season))}</button>`
       );
     })
     .join("");
   return renderMenu(
     "",
     `<span class="sca-sr-only">Season: </span>${escapeHtml(seasonShortLabel(table.season))}`,
-    `<nav aria-label="Season">${items}</nav>`,
+    `<div role="group" aria-label="Season">${items}</div>`,
     ` data-sca-seasons`,
   );
 }
@@ -417,7 +412,7 @@ function renderControls(table: StatsTable, options: StatsRenderOptions): string 
     `<div class="sca-panel">` +
     `<div class="sca-controls">` +
     renderPositions(table, options) +
-    renderSeasons(table, options) +
+    renderSeasons(table) +
     renderMode() +
     renderFilters(table) +
     `</div>` +

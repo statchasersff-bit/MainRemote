@@ -34,9 +34,14 @@
  * and canonical. /qb/ is the bare page, and 301s there, because one table has
  * one address; the standalone app's links to /qb land where they should.
  *
- * The season is not an address. It is a control: the bundle swaps seasons in
- * place, and with scripting off the season links carry `?season=`, which
- * {@see statchasers_player_stats_args()} reads.
+ * The season is not an address. It is a control: the season menu is buttons,
+ * the bundle swaps seasons in place, and the season a reader picked is kept
+ * in the URL fragment (`#season=2024`, nothing for the default season), which
+ * no crawler requests and no cache keys on. So each position is one page,
+ * one edge-cache entry and one backup transient, not one per season. Old
+ * `?season=` links still work: {@see statchasers_player_stats_redirect_target()}
+ * 301s them to the position's clean address with the season moved into the
+ * fragment, and the shortcode no longer reads the query string.
  *
  * @package StatChasers\News
  */
@@ -184,38 +189,83 @@ function statchasers_player_stats_request_position(): string {
 }
 
 /**
- * /qb/ is the bare page. A 301, with the query string kept, so a link to
- * `/qb/?season=2024` lands on the 2024 table.
+ * Where a request for the stats page must go instead, or '' to serve it.
+ *
+ * Two old forms, answered in one hop:
+ *
+ * - /qb/, which is the bare page;
+ * - any position with `?season=` (the season links the table used to print,
+ *   and every bookmark of them), which is the position's clean address with
+ *   the season in the fragment, `#season=2024`, where the bundle reads it.
+ *   A season of the wrong shape is just dropped.
+ *
+ * Every other query parameter is kept. The target never carries `season` and
+ * is never /qb/, so it does not redirect again. Only on the page that mounts
+ * the table: `?season=` on an article is that article's business.
  */
+function statchasers_player_stats_redirect_target(): string {
+	if ( ! statchasers_player_stats_post_has_shortcode() ) {
+		return '';
+	}
+	$is_qb = 'qb' === strtolower( trim( (string) get_query_var( 'sc_stats_pos' ) ) );
+	// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- a read-only redirect.
+	$has_season = isset( $_GET['season'] );
+	if ( ! $is_qb && ! $has_season ) {
+		return '';
+	}
+
+	$pos    = $is_qb ? 'qb' : statchasers_player_stats_request_position();
+	$target = statchasers_player_stats_position_url( '' === $pos ? 'qb' : $pos );
+
+	// phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- only the query string is reused.
+	$query = isset( $_SERVER['QUERY_STRING'] ) ? (string) wp_unslash( $_SERVER['QUERY_STRING'] ) : '';
+	$kept  = array();
+	foreach ( explode( '&', $query ) as $pair ) {
+		if ( '' === $pair ) {
+			continue;
+		}
+		$key = strtolower( urldecode( explode( '=', $pair, 2 )[0] ) );
+		// `season`, and the array spellings PHP also files under it.
+		if ( 1 === preg_match( '/^season(\[.*)?$/', $key ) ) {
+			continue;
+		}
+		$kept[] = $pair;
+	}
+	if ( array() !== $kept ) {
+		$target .= '?' . implode( '&', $kept );
+	}
+
+	$season = $has_season ? statchasers_player_stats_query_season() : '';
+	if ( '' !== $season ) {
+		$target .= '#season=' . $season;
+	}
+	return $target;
+}
+
 add_action(
 	'template_redirect',
 	static function (): void {
-		if ( 'qb' !== strtolower( trim( (string) get_query_var( 'sc_stats_pos' ) ) ) ) {
+		$target = statchasers_player_stats_redirect_target();
+		if ( '' === $target ) {
 			return;
-		}
-		// `?sc_stats_pos=qb` on any other page is not /qb/.
-		if ( ! statchasers_player_stats_post_has_shortcode() ) {
-			return;
-		}
-		$target = statchasers_player_stats_position_url( 'qb' );
-		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- only the query string is reused.
-		$query = isset( $_SERVER['QUERY_STRING'] ) ? (string) wp_unslash( $_SERVER['QUERY_STRING'] ) : '';
-		if ( '' !== $query ) {
-			$target .= '?' . $query;
 		}
 		wp_safe_redirect( $target, 301 );
 		exit;
-	}
+	},
+	// Before core's redirect_canonical (10), so the reader gets one hop to
+	// the final address rather than core's idea of the page first.
+	1
 );
 
 /* ------------------------------------------------------------- the fetch */
 
 /**
- * The season the reader asked for with scripting off: `?season=2024` or
- * `?season=all`. Validated for shape and range only - the API knows which
- * seasons it has and falls back to the newest for anything else. The range
- * matters: each value is its own cached copy and its own origin fetch, so an
- * unbounded year would let any crawler fill wp_options one URL at a time.
+ * The season an old `?season=2024` or `?season=all` link asked for, which
+ * the redirect above moves into the fragment. Validated for shape and range
+ * only - the bundle checks it against the seasons the menu offers and clears
+ * anything else. It no longer feeds the render: every season would be its
+ * own cached copy and its own origin fetch, and a crawler could fill
+ * wp_options one URL at a time.
  */
 function statchasers_player_stats_query_season(): string {
 	// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display state, read-only.
@@ -240,8 +290,9 @@ function statchasers_player_stats_query_season(): string {
  * The position: the address first, because it IS the address - a page reached
  * at /rb/ that rendered quarterbacks would be a wrong answer at a
  * right-looking URL - then the attribute, then quarterbacks. The season: the
- * attribute first, because a page that writes season="2024" has decided what
- * it shows, then the query string, then the API's newest.
+ * attribute, because a page that writes season="2024" has decided what it
+ * shows, then the API's newest. Never the query string: `?season=` is
+ * redirected before anything renders, and the bundle swaps a season in place.
  *
  * @param array<string,mixed> $atts Raw shortcode attributes.
  * @return array{pos:string,season:string}
@@ -268,7 +319,7 @@ function statchasers_player_stats_args( array $atts ): array {
 
 	$season = strtolower( trim( (string) $atts['season'] ) );
 	if ( ! isset( $given['season'] ) || ( 'all' !== $season && 1 !== preg_match( '/^\d{4}$/', $season ) ) ) {
-		$season = statchasers_player_stats_query_season();
+		$season = '';
 	}
 
 	return array(

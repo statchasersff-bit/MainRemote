@@ -1743,10 +1743,14 @@ is( statchasers_player_stats_request_position(), '', 'a position the table does 
 
 $GLOBALS['query'] = array();
 $_GET             = array( 'season' => 'all' );
-is( statchasers_player_stats_args( array() )['season'], 'all', 'the season link works with scripting off' );
-is( statchasers_player_stats_args( array( 'season' => '2024' ) )['season'], '2024', 'an attribute outranks the query string' );
+is( statchasers_player_stats_args( array() )['season'], '', 'the query string no longer picks the season (it is redirected)' );
+is( statchasers_player_stats_query_season(), 'all', 'but its shape is still read, for the redirect' );
+is( statchasers_player_stats_args( array( 'season' => '2024' ) )['season'], '2024', 'the attribute still picks the season' );
+is( statchasers_player_stats_args( array( 'season' => 'nope' ) )['season'], '', 'an attribute that is not a season is dropped' );
 $_GET = array( 'season' => '<script>' );
-is( statchasers_player_stats_args( array() )['season'], '', 'a season that is not one is dropped' );
+is( statchasers_player_stats_query_season(), '', 'a season that is not one is dropped' );
+$_GET = array( 'season' => '1998' );
+is( statchasers_player_stats_query_season(), '', 'and so is one out of range' );
 $_GET = array();
 
 is(

@@ -4,8 +4,8 @@
  * The table is complete before this runs - every player for the open position
  * and season, every figure, every grade and the leader cards are in the HTML
  * the server sent, sorted by overall grade, with the players the default
- * filters leave out marked `hidden`. The season and position controls are
- * links that work with scripting off.
+ * filters leave out marked `hidden`. The position control is links that work
+ * with scripting off; the season control is buttons this bundle wires.
  *
  * It adds what the standalone app's React state did, over that markup:
  *
@@ -20,11 +20,14 @@
  *    reader clicks elsewhere or presses Escape.
  * 3. **The views** - Overview, Receiving, Advanced and so on - each showing a
  *    set of column groups and hiding the rest.
- * 4. **Switching season without leaving the page.** The season links are
- *    intercepted, the fragment for that season is fetched and swapped in, and
- *    nothing is written to the URL - the season was never part of the address
- *    in the standalone app either. Position links are left alone: each
- *    position is its own page.
+ * 4. **Switching season without leaving the page.** A season button fetches
+ *    the fragment for that season and swaps it in. The latest choice wins:
+ *    a newer click aborts the older fetch, and a response that is no longer
+ *    the latest is thrown away. The season is not part of the address (one
+ *    page per position, for crawlers and caches); it is kept in the URL
+ *    fragment, `#season=2024`, so a reload or a shared link opens on it, and
+ *    the fragment is dropped for the default season. Position links are left
+ *    alone: each position is its own clean page.
  * 5. **The Totals / Per Game switch.** Worked out here from the totals on the
  *    page rather than shipped as a second copy of every count - the page is
  *    already the size of fifty columns by three hundred rows.
@@ -434,35 +437,74 @@ function closeMenus(root: HTMLElement, except?: Element | null): void {
 
 /* ------------------------------------------------------------ season swap */
 
-/** Re-point the position links at the season now on screen. */
-function syncPositionLinks(root: HTMLElement, season: string): void {
+/** The `#season=` fragment's value, or null when the hash is something else. */
+function hashSeason(): string | null {
+  const match = /^#season=([^&]*)$/.exec(window.location.hash);
+  if (!match) return null;
+  try {
+    return decodeURIComponent(match[1] ?? "");
+  } catch {
+    return "";
+  }
+}
+
+/**
+ * Write the season on screen to the fragment, or take it off for the default
+ * season. Only a `#season=` fragment is ever removed; another hash the host
+ * page uses is left alone unless a season replaces it.
+ */
+function writeHash(root: HTMLElement, season: string): void {
   const fallback = root.dataset["defaultSeason"] ?? "";
-  for (const link of Array.from(
-    root.querySelectorAll<HTMLAnchorElement>("[data-sca-positions] a"),
-  )) {
-    try {
-      const url = new URL(link.href, document.baseURI);
-      if (season === fallback) url.searchParams.delete("season");
-      else url.searchParams.set("season", season);
-      link.setAttribute("href", url.pathname + url.search);
-    } catch {
-      // A link we cannot parse keeps its href; it still loads a real table.
+  const base = window.location.pathname + window.location.search;
+  try {
+    if (season !== fallback) {
+      history.replaceState(history.state, "", `${base}#season=${encodeURIComponent(season)}`);
+    } else if (hashSeason() !== null) {
+      history.replaceState(history.state, "", base);
     }
+  } catch {
+    // A sandboxed frame may refuse; the table on screen is still right.
   }
 }
 
 /*
  * The blocks a season change rewrites. Not the position strip: its links are
  * this page's own addresses, which the fragment endpoint does not know, so
- * they stay and only their season is updated.
+ * they stay as they are.
  */
 const SWAPPABLE = [
   "[data-sca-seasons]", "[data-sca-filters]", "[data-sca-sections]", "[data-sca-body]",
 ];
 
-async function swapSeason(root: HTMLElement, season: string): Promise<boolean> {
+/**
+ * Per root, the id of the latest season request and the fetch it started.
+ * Every request takes the next id and aborts the one before it, and a
+ * response whose id is no longer the latest is discarded, so an older season
+ * can never land on top of a newer choice.
+ */
+interface SwapState {
+  id: number;
+  controller: AbortController | null;
+}
+const swaps = new WeakMap<HTMLElement, SwapState>();
+
+type SwapResult = "ok" | "stale" | "failed";
+
+async function swapSeason(root: HTMLElement, season: string): Promise<SwapResult> {
   const endpoint = root.dataset["scaEndpoint"];
-  if (!endpoint) return false;
+  if (!endpoint) return "failed";
+
+  let state = swaps.get(root);
+  if (!state) {
+    state = { id: 0, controller: null };
+    swaps.set(root, state);
+  }
+  state.controller?.abort();
+  const id = ++state.id;
+  const controller = typeof AbortController === "function" ? new AbortController() : null;
+  state.controller = controller;
+  const current = state;
+  const isLatest = (): boolean => current.id === id;
 
   const url = new URL(endpoint, document.baseURI);
   url.searchParams.set("pos", (root.dataset["position"] ?? "QB").toLowerCase());
@@ -475,17 +517,21 @@ async function swapSeason(root: HTMLElement, season: string): Promise<boolean> {
       // Same-origin, not omit: on this origin's own pages the key cookie
       // (lib/embed-key.ts) must ride along. Cross-origin it sends nothing.
       credentials: "same-origin",
+      signal: controller?.signal,
     });
-    if (!res.ok) return false;
+    if (!isLatest()) return "stale";
+    if (!res.ok) return "failed";
     markup = await res.text();
   } catch {
-    return false;
+    return isLatest() ? "failed" : "stale";
   }
+  if (!isLatest()) return "stale";
+  current.controller = null;
 
   const next = new DOMParser()
     .parseFromString(markup, "text/html")
     .querySelector<HTMLElement>(ROOT_SELECTOR);
-  if (!next) return false;
+  if (!next) return "failed";
 
   // The search box is the one thing a reader typed that survives a season
   // change, as it did in the standalone app. The thresholds do not: each
@@ -510,7 +556,7 @@ async function swapSeason(root: HTMLElement, season: string): Promise<boolean> {
 
   root.dataset["season"] = next.dataset["season"] ?? season;
   closeMenus(root);
-  syncPositionLinks(root, root.dataset["season"] ?? season);
+  writeHash(root, root.dataset["season"] ?? season);
 
   const box = root.querySelector<HTMLInputElement>(`[data-sca-filters] input[name="search"]`);
   if (box) box.value = search;
@@ -527,7 +573,49 @@ async function swapSeason(root: HTMLElement, season: string): Promise<boolean> {
     if (th) sortBy(root, th, sortDescending);
   }
   updateScrollCues(root);
-  return true;
+  return "ok";
+}
+
+/**
+ * Switch to a season and put focus back on the season menu's button (the
+ * menu that was clicked in has been replaced by its fresh, closed copy).
+ * `aria-busy` stays on until the latest request settles. A failure keeps
+ * the table that is on screen.
+ */
+function selectSeason(root: HTMLElement, season: string, refocus: boolean): void {
+  root.setAttribute("aria-busy", "true");
+  void swapSeason(root, season).then((result) => {
+    if (result === "stale") return;
+    root.removeAttribute("aria-busy");
+    if (result === "failed") closeMenus(root);
+    if (refocus) root.querySelector<HTMLElement>("[data-sca-seasons] summary")?.focus();
+  });
+}
+
+/** The season button for a value, if the menu offers it. */
+function seasonButton(root: HTMLElement, season: string): HTMLElement | null {
+  return root.querySelector<HTMLElement>(
+    `[data-sca-seasons] [data-sca-season="${CSS.escape(season)}"]`,
+  );
+}
+
+/**
+ * Open on the season the fragment names. An unknown value is cleared; the
+ * season already rendered needs no fetch.
+ */
+function seasonFromHash(root: HTMLElement): void {
+  const wanted = hashSeason();
+  if (wanted === null) return;
+  if (!seasonButton(root, wanted)) {
+    try {
+      history.replaceState(history.state, "", window.location.pathname + window.location.search);
+    } catch {
+      // Nothing to undo: the table on screen is the rendered one.
+    }
+    return;
+  }
+  if (wanted === root.dataset["season"]) return;
+  selectSeason(root, wanted, false);
 }
 
 /* ------------------------------------------------------------------ wiring */
@@ -657,7 +745,6 @@ function wire(root: HTMLElement): void {
   });
 
   root.addEventListener("click", (event) => {
-    const mouse = event as MouseEvent;
     const target = event.target as Element | null;
     if (!target) return;
 
@@ -693,32 +780,18 @@ function wire(root: HTMLElement): void {
       return;
     }
 
-    const link = target.closest<HTMLAnchorElement>("[data-sca-seasons] a[data-sca-season]");
-    if (!link) return;
-    // Modified clicks are the reader asking for the other URL in another tab,
-    // and that URL is real and serves that exact table.
-    if (mouse.defaultPrevented || mouse.button !== 0 || mouse.metaKey || mouse.ctrlKey || mouse.shiftKey || mouse.altKey) {
+    // A button, so Enter and Space arrive here as clicks too.
+    const choice = target.closest<HTMLElement>("[data-sca-seasons] [data-sca-season]");
+    if (!choice) return;
+    event.preventDefault();
+    const season = choice.dataset["scaSeason"] ?? "";
+    if (season === "") return;
+    if (season === root.dataset["season"] && root.getAttribute("aria-busy") !== "true") {
+      closeMenus(root);
+      root.querySelector<HTMLElement>("[data-sca-seasons] summary")?.focus();
       return;
     }
-    event.preventDefault();
-
-    const season = link.dataset["scaSeason"] ?? "";
-    if (season === root.dataset["season"] || root.getAttribute("aria-busy") === "true") return;
-
-    root.setAttribute("aria-busy", "true");
-    void swapSeason(root, season)
-      .then((ok) => {
-        if (!ok) {
-          // The link still works. Following it beats a control that silently
-          // does nothing.
-          window.location.href = link.href;
-          return;
-        }
-        // The menu clicked in has been replaced by its fresh, closed copy;
-        // put focus on its button rather than letting it fall back to <body>.
-        root.querySelector<HTMLElement>("[data-sca-seasons] summary")?.focus();
-      })
-      .finally(() => root.removeAttribute("aria-busy"));
+    selectSeason(root, season, true);
   });
 
   // A headshot that fails is removed rather than left as a broken image:
@@ -746,6 +819,9 @@ function wire(root: HTMLElement): void {
   }
 
   wireFrameHeight(root);
+
+  seasonFromHash(root);
+  window.addEventListener("hashchange", () => seasonFromHash(root));
 }
 
 function boot(): void {

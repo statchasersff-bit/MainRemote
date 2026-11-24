@@ -23,8 +23,10 @@
  *
  * The season is a query argument and never part of a canonical. It is a
  * control: the standalone app kept it in component state, off the URL
- * entirely, and the bundle here swaps seasons without touching the address.
- * `?season=` exists so the season links work with scripting off.
+ * entirely, and the bundle here swaps seasons in place, keeping the choice in
+ * the URL fragment (`#season=2024`). No page links to `?season=` any more;
+ * these noindex routes still read it, for the fragment endpoint and for old
+ * links.
  */
 
 import { Router, type IRouter, type Request, type Response } from "express";

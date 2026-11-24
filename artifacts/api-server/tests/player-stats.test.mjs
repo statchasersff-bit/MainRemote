@@ -377,9 +377,41 @@ describe("the pages", () => {
     assert.ok(doc.querySelector("[data-sca-filters]").hasAttribute("hidden"));
     assert.ok(doc.querySelector("[data-sca-sections]").hasAttribute("hidden"));
     assert.equal(doc.querySelectorAll(".sca-sort").length, 0, "sort buttons are built, not shipped");
-    // The season and position controls are links, and work without it.
-    assert.equal(doc.querySelectorAll("[data-sca-seasons] a[href]").length, 5);
+    // The position control is links, and works without it. The season
+    // control is buttons (the season is not an address), one pressed.
+    assert.equal(doc.querySelectorAll("[data-sca-seasons] a").length, 0);
+    const seasons = [...doc.querySelectorAll("[data-sca-seasons] button[data-sca-season]")];
+    assert.equal(seasons.length, 5);
+    assert.ok(seasons.every((b) => b.getAttribute("type") === "button"));
+    assert.deepEqual(
+      seasons.filter((b) => b.getAttribute("aria-pressed") === "true").map((b) => b.dataset.scaSeason),
+      ["2026"],
+    );
+    assert.ok(seasons.every((b) => ["true", "false"].includes(b.getAttribute("aria-pressed"))));
+    assert.equal(doc.querySelector('[data-sca-seasons] [role="group"]').getAttribute("aria-label"), "Season");
+    assert.match(doc.querySelector("[data-sca-seasons] summary .sca-sr-only").textContent, /^Season:/);
     assert.equal(doc.querySelectorAll("[data-sca-positions] a[href]").length, 4);
+    assert.deepEqual(
+      [...doc.querySelectorAll("[data-sca-positions] a")].map((a) => a.getAttribute("href")),
+      ["/player-stats", "/player-stats/rb", "/player-stats/wr", "/player-stats/te"],
+    );
+  });
+
+  test("no page links to a ?season= address, whatever season it opens on", async () => {
+    for (const where of ["/player-stats/wr?season=2024", "/player-stats?season=all", "/player-stats/te?embed=1&season=2023"]) {
+      const { body, doc } = await page(where);
+      assert.doesNotMatch(body, /rel="nofollow"/, where);
+      assert.ok(
+        [...doc.querySelectorAll("a[href]")].every((a) => !/season=/.test(a.getAttribute("href"))),
+        `${where}: no link carries a season`,
+      );
+    }
+    // The standalone embed keeps its flag on the position links, and only that.
+    const { doc } = await page("/player-stats/te?embed=1&season=2023");
+    assert.deepEqual(
+      [...doc.querySelectorAll("[data-sca-positions] a")].map((a) => a.getAttribute("href")),
+      ["/player-stats?embed=1", "/player-stats/rb?embed=1", "/player-stats/wr?embed=1", "/player-stats/te?embed=1"],
+    );
   });
 
   test("player names link to player pages by Sleeper id", async () => {
@@ -503,20 +535,53 @@ describe("the WordPress fragment", () => {
     const positions = [...doc.querySelectorAll("[data-sca-positions] a")].map((a) =>
       a.getAttribute("href"),
     );
+    // Clean canonical addresses, whatever season the fragment is.
     assert.deepEqual(positions, [
-      "/nfl/nfl-player-stats/?season=2024",
-      "/nfl/nfl-player-stats/rb/?season=2024",
-      "/nfl/nfl-player-stats/wr/?season=2024",
-      "/nfl/nfl-player-stats/te/?season=2024",
+      "/nfl/nfl-player-stats/",
+      "/nfl/nfl-player-stats/rb/",
+      "/nfl/nfl-player-stats/wr/",
+      "/nfl/nfl-player-stats/te/",
     ]);
+    assert.equal(
+      doc.querySelector('[data-sca-seasons] button[aria-pressed="true"]').dataset.scaSeason,
+      "2024",
+    );
     // `embed` is a reserved WordPress query var: it must never ride along on
     // a statchasers.com address.
     assert.doesNotMatch(
-      [...doc.querySelectorAll("[data-sca-seasons] a, [data-sca-positions] a")]
+      [...doc.querySelectorAll("[data-sca-positions] a")]
         .map((a) => a.getAttribute("href"))
         .join(" "),
       /embed=/,
     );
+  });
+
+  test("none of the four fragments carries a season in any address", async () => {
+    for (const pos of ["qb", "rb", "wr", "te"]) {
+      for (const season of ["", "2024", "all"]) {
+        const where = `/embed/player-stats?pos=${pos}${season ? `&season=${season}` : ""}`;
+        const { status, body, doc } = await page(where);
+        assert.equal(status, 200, where);
+        // `data-sca-season="2024"` is the button's value, not an address;
+        // no query string or href anywhere names a season.
+        assert.doesNotMatch(body, /href="\?season=/, where);
+        assert.doesNotMatch(body, /[?&]season=|&amp;season=/, where);
+        assert.doesNotMatch(body, /rel="nofollow"/, where);
+        assert.ok(
+          [...doc.querySelectorAll("[href]")].every((a) => !/season/.test(a.getAttribute("href"))),
+          where,
+        );
+        const pressed = [...doc.querySelectorAll("[data-sca-seasons] button[data-sca-season]")]
+          .filter((b) => b.getAttribute("aria-pressed") === "true");
+        assert.equal(pressed.length, 1, where);
+        assert.equal(pressed[0].dataset.scaSeason, doc.querySelector("[data-sca-root]").dataset.season, where);
+        assert.deepEqual(
+          [...doc.querySelectorAll("[data-sca-positions] a")].map((a) => a.getAttribute("href")),
+          ["/nfl/nfl-player-stats/", "/nfl/nfl-player-stats/rb/", "/nfl/nfl-player-stats/wr/", "/nfl/nfl-player-stats/te/"],
+          where,
+        );
+      }
+    }
   });
 
   test("an unknown position falls back to quarterbacks", async () => {
@@ -541,7 +606,7 @@ describe("the bundle", () => {
   });
 
   /** A host page with the fragment in it, and the real bundle run against it. */
-  async function mount(query = "") {
+  async function mount(query = "", { url = "https://statchasers.com/nfl/nfl-player-stats/", respond } = {}) {
     const fragment = await (await fetch(`${server.origin}/embed/player-stats${query}`)).text();
     const errors = [];
     const virtualConsole = new VirtualConsole();
@@ -550,15 +615,22 @@ describe("the bundle", () => {
       `<!doctype html><html><body><h1>NFL Player Stats</h1>${fragment}</body></html>`,
       {
         runScripts: "outside-only",
-        url: "https://statchasers.com/nfl/nfl-player-stats/",
+        url,
         pretendToBeVisual: true,
         virtualConsole,
       },
     );
     const { window } = dom;
     const fetched = [];
-    window.fetch = async (input) => {
+    const signals = [];
+    window.fetch = async (input, init = {}) => {
       fetched.push(String(input));
+      signals.push(init.signal ?? null);
+      // A test can hold a response back, or fail it, to race two requests.
+      if (respond) {
+        const answer = await respond(String(input), fetched.length - 1);
+        if (answer) return answer;
+      }
       const res = await fetch(String(input));
       const text = await res.text();
       return { ok: res.ok, status: res.status, text: async () => text };
@@ -574,7 +646,7 @@ describe("the bundle", () => {
       el.value = value;
       el.dispatchEvent(new window.Event("input", { bubbles: true }));
     };
-    return { window, doc, root, errors, fetched, visible, header, input, type };
+    return { window, doc, root, errors, fetched, signals, visible, header, input, type };
   }
 
   test("wires up without errors and shows the controls", async () => {
@@ -740,8 +812,8 @@ describe("the bundle", () => {
 
     // The choice carries over a season switch; the new table arrives as totals.
     click(doc.querySelector('[data-sca-mode] [data-mode="game"]'));
-    const link = doc.querySelector('[data-sca-seasons] a[data-sca-season="all"]');
-    link.dispatchEvent(new window.MouseEvent("click", { bubbles: true, cancelable: true, button: 0 }));
+    const choice = doc.querySelector('[data-sca-seasons] button[data-sca-season="all"]');
+    choice.dispatchEvent(new window.MouseEvent("click", { bubbles: true, cancelable: true, button: 0 }));
     await until(() => root.dataset.season === "all");
     assert.equal(root.dataset.season, "all");
     const next = doc.querySelector(".sca-table tbody tr");
@@ -750,30 +822,106 @@ describe("the bundle", () => {
     assert.equal(tgt.textContent, perGameTgt.toFixed(perGameTgt >= 10 ? 1 : 2));
   });
 
-  test("a season link swaps the table in place and moves nothing else", async () => {
+  test("a season button swaps the table in place and keeps the season in the fragment", async () => {
     const { doc, window, root, fetched, errors } = await mount("?pos=wr");
     const before = window.location.href;
-    const link = doc.querySelector('[data-sca-seasons] a[data-sca-season="all"]');
-    link.dispatchEvent(new window.MouseEvent("click", { bubbles: true, cancelable: true, button: 0 }));
-    await until(() => root.dataset.season === "all");
+    const pick = (season) =>
+      doc
+        .querySelector(`[data-sca-seasons] button[data-sca-season="${season}"]`)
+        .dispatchEvent(new window.MouseEvent("click", { bubbles: true, cancelable: true, button: 0 }));
+    pick("all");
+    await until(() => root.dataset.season === "all" && !root.hasAttribute("aria-busy"));
 
     assert.deepEqual(errors, []);
     assert.equal(fetched.length, 1);
     assert.match(fetched[0], /\/embed\/player-stats\?pos=wr&season=all$/);
     assert.equal(root.dataset.season, "all");
-    assert.equal(window.location.href, before, "the address does not move");
+    assert.equal(window.location.href, `${before}#season=all`, "only the fragment moves");
     assert.equal(doc.querySelector(".sca-meta-season").textContent, "2023-2025");
     // The multi-season table opens on its own, tighter, defaults.
     assert.equal(doc.querySelector('[data-sca-filters] input[name="minTgt"]').value, "75");
-    // The position strip is the page's own and stays, re-pointed at the season.
-    assert.equal(
-      doc.querySelector("[data-sca-positions] a").getAttribute("href"),
-      "/nfl/nfl-player-stats/?season=all",
+    // The position strip is the page's own and stays clean.
+    assert.deepEqual(
+      [...doc.querySelectorAll("[data-sca-positions] a")].map((a) => a.getAttribute("href")),
+      ["/nfl/nfl-player-stats/", "/nfl/nfl-player-stats/rb/", "/nfl/nfl-player-stats/wr/", "/nfl/nfl-player-stats/te/"],
     );
-    // The season menu names the new season and is closed again.
+    // The season menu names the new season, is closed again, and has focus.
     assert.match(doc.querySelector("[data-sca-seasons] summary").textContent, /2023-2025$/);
     assert.ok(!doc.querySelector("[data-sca-seasons]").open);
+    assert.equal(doc.activeElement, doc.querySelector("[data-sca-seasons] summary"));
+    assert.equal(
+      doc.querySelector('[data-sca-seasons] button[aria-pressed="true"]').dataset.scaSeason,
+      "all",
+    );
     // The fresh table is wired: its headers are sort buttons again.
     assert.ok(doc.querySelectorAll(".sca-sort").length > 40);
+
+    pick("2024");
+    await until(() => root.dataset.season === "2024" && !root.hasAttribute("aria-busy"));
+    assert.equal(window.location.hash, "#season=2024");
+    // Back to the default season: the fragment goes.
+    pick(root.dataset.defaultSeason);
+    await until(() => root.dataset.season === root.dataset.defaultSeason && !root.hasAttribute("aria-busy"));
+    assert.equal(window.location.href, before, "the default season has no fragment");
+  });
+
+  test("the latest season choice wins over a slower, older response", async () => {
+    let release;
+    const held = new Promise((r) => { release = r; });
+    const { doc, window, root, fetched, signals } = await mount("?pos=wr", {
+      // The first request (2024) is held until after the second has landed.
+      respond: async (_url, i) => {
+        if (i === 0) await held;
+        return null;
+      },
+    });
+    const pick = (season) =>
+      doc
+        .querySelector(`[data-sca-seasons] button[data-sca-season="${season}"]`)
+        .dispatchEvent(new window.MouseEvent("click", { bubbles: true, cancelable: true, button: 0 }));
+    pick("2024");
+    pick("all");
+    await until(() => root.dataset.season === "all");
+    assert.equal(fetched.length, 2, "the second click is not ignored");
+    assert.ok(signals[0]?.aborted, "the older request is aborted");
+    release();
+    await new Promise((r) => setTimeout(r, 300));
+    assert.equal(root.dataset.season, "all", "the older response never lands");
+    assert.equal(doc.querySelector(".sca-meta-season").textContent, "2023-2025");
+    assert.equal(window.location.hash, "#season=all");
+    assert.ok(!root.hasAttribute("aria-busy"));
+  });
+
+  test("a failed swap keeps the table on screen and goes nowhere", async () => {
+    const { doc, window, root } = await mount("?pos=wr", {
+      respond: async () => ({ ok: false, status: 503, text: async () => "" }),
+    });
+    const before = window.location.href;
+    const rows = doc.querySelectorAll(".sca-table tbody tr").length;
+    doc
+      .querySelector('[data-sca-seasons] button[data-sca-season="2024"]')
+      .dispatchEvent(new window.MouseEvent("click", { bubbles: true, cancelable: true, button: 0 }));
+    await until(() => !root.hasAttribute("aria-busy"));
+    assert.equal(root.dataset.season, root.dataset.defaultSeason);
+    assert.equal(doc.querySelectorAll(".sca-table tbody tr").length, rows);
+    assert.equal(window.location.href, before);
+  });
+
+  test("a #season= fragment opens on that season, and an unknown one is cleared", async () => {
+    const page = "https://statchasers.com/nfl/nfl-player-stats/wr/";
+    const opened = await mount("?pos=wr", { url: `${page}#season=2024` });
+    await until(() => opened.root.dataset.season === "2024" && !opened.root.hasAttribute("aria-busy"));
+    assert.equal(opened.root.dataset.season, "2024");
+    assert.match(opened.fetched[0], /season=2024$/);
+    assert.equal(opened.window.location.hash, "#season=2024");
+
+    const unknown = await mount("?pos=wr", { url: `${page}#season=1990` });
+    assert.equal(unknown.fetched.length, 0);
+    assert.equal(unknown.window.location.href, page);
+
+    // The season already rendered needs no fetch.
+    const same = await mount("?pos=wr&season=2024", { url: `${page}#season=2024` });
+    assert.equal(same.fetched.length, 0);
+    assert.equal(same.root.dataset.season, "2024");
   });
 });

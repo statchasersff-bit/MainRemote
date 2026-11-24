@@ -466,7 +466,8 @@ body.sca-page {
   right: 0;
 }
 
-.sca-menu-pop > nav {
+.sca-menu-pop > nav,
+.sca-menu-pop > [role="group"] {
   display: grid;
   gap: 2px;
   margin: -6px;
@@ -491,6 +492,35 @@ body.sca-page {
 .sca-menu-item.is-active {
   background: var(--sc-navy);
   color: #fff;
+}
+
+/* The season items are buttons (the season is not an address), drawn as the
+   link items: no button face, full width, text on the left. */
+button.sca-menu-item {
+  width: 100%;
+  margin: 0;
+  border: 0;
+  background: none;
+  font-family: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
+  text-align: start;
+  text-transform: none;
+  cursor: pointer;
+  appearance: none;
+}
+
+button.sca-menu-item:hover {
+  background: var(--sc-surface-sink);
+}
+
+button.sca-menu-item.is-active {
+  background: var(--sc-navy);
+}
+
+.sca-menu-item:focus-visible {
+  outline: 2px solid var(--sc-gold);
+  outline-offset: -2px;
 }
 
 /* The Totals / Per Game switch: one segmented control. */
@@ -1575,6 +1605,25 @@ th[aria-sort="ascending"] .sca-sort::after {
 .sca .sca-menu-item {
   color: var(--sc-muted-strong);
   text-decoration: none;
+}
+
+/* Divi styles bare buttons (border, padding, font size, shadow); the season
+   items keep the link items' face. */
+.sca .sca-menu-pop button.sca-menu-item {
+  padding: 7px 12px;
+  border: 0;
+  border-radius: var(--sc-radius-xs);
+  box-shadow: none;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.sca .sca-menu-pop button.sca-menu-item:hover {
+  background: var(--sc-surface-sink);
+}
+
+.sca .sca-menu-pop button.sca-menu-item.is-active {
+  background: var(--sc-navy);
 }
 
 .sca .sca-mode-btn,

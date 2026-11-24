@@ -39,6 +39,13 @@ if ( 'leak' === $group ) {
 	is( statchasers_player_stats_request_position(), '', 'the stats position is not read off it either' );
 	is( statchasers_player_stats_title(), '', 'so it is not retitled as a stats table' );
 	is( statchasers_h1_mounts_a_tool(), false, 'and the heading machinery leaves it alone' );
+
+	$_GET                    = array( 'season' => '2024' );
+	$_SERVER['QUERY_STRING'] = 'season=2024';
+	$GLOBALS['query']        = array( 'sc_stats_pos' => 'qb' );
+	is( statchasers_player_stats_redirect_target(), '', 'and an article at /qb/?season=2024 is never redirected by the stats table' );
+	$_GET                    = array();
+	$_SERVER['QUERY_STRING'] = '';
 	return;
 }
 
@@ -91,3 +98,39 @@ is( str_contains( statchasers_ros_rankings_shortcode(), '<h1' ), false, 'in auto
 $stats_html = statchasers_player_stats_shortcode();
 is( str_contains( $stats_html, '<h1' ), false, 'nor does the stats table' );
 is( str_contains( $stats_html, '<div class="sca-intro">' ), true, 'which keeps its own intro under the theme\'s title' );
+
+/*
+ * Old `?season=` links: a 301 to the position's clean address, in one hop,
+ * with the season moved into the fragment and every other parameter kept.
+ * The page above mounts the table (memoized), so the redirect is live here.
+ */
+echo "\nold season links redirect to the clean address\n";
+
+$stats_redirect = static function ( array $query_var, string $query ): string {
+	$GLOBALS['query'] = $query_var;
+	parse_str( $query, $get );
+	$_GET                    = $get;
+	$_SERVER['QUERY_STRING'] = $query;
+	$target                  = statchasers_player_stats_redirect_target();
+	$_GET                    = array();
+	$_SERVER['QUERY_STRING'] = '';
+	return $target;
+};
+
+is( $stats_redirect( array(), '' ), '', 'the bare page is served' );
+is( $stats_redirect( array( 'sc_stats_pos' => 'wr' ), '' ), '', 'and so is a clean position address' );
+is( $stats_redirect( array( 'sc_stats_pos' => 'wr' ), 'utm_source=x' ), '', 'other parameters alone are not redirected' );
+is( $stats_redirect( array(), 'season=2024' ), 'https://example.com/nfl/nfl-player-stats/#season=2024', 'the bare page with a season goes to the fragment' );
+is( $stats_redirect( array( 'sc_stats_pos' => 'wr' ), 'season=all' ), 'https://example.com/nfl/nfl-player-stats/wr/#season=all', 'a position keeps its address' );
+is( $stats_redirect( array( 'sc_stats_pos' => 'te' ), 'season=ALL' ), 'https://example.com/nfl/nfl-player-stats/te/#season=all', 'case folded' );
+is( $stats_redirect( array( 'sc_stats_pos' => 'rb' ), 'utm_source=x&season=2023&ref=y' ), 'https://example.com/nfl/nfl-player-stats/rb/?utm_source=x&ref=y#season=2023', 'other parameters are kept, in order' );
+is( $stats_redirect( array( 'sc_stats_pos' => 'rb' ), 'season=%3Cscript%3E' ), 'https://example.com/nfl/nfl-player-stats/rb/', 'a season of the wrong shape is just dropped' );
+is( $stats_redirect( array( 'sc_stats_pos' => 'rb' ), 'season=1998' ), 'https://example.com/nfl/nfl-player-stats/rb/', 'and so is one out of range' );
+is( $stats_redirect( array( 'sc_stats_pos' => 'rb' ), 'season=' ), 'https://example.com/nfl/nfl-player-stats/rb/', 'and an empty one' );
+is( $stats_redirect( array( 'sc_stats_pos' => 'rb' ), 'season%5B%5D=2024&x=1' ), 'https://example.com/nfl/nfl-player-stats/rb/?x=1', 'and the array spelling' );
+is( $stats_redirect( array( 'sc_stats_pos' => 'qb' ), '' ), 'https://example.com/nfl/nfl-player-stats/', '/qb/ is the bare page' );
+is( $stats_redirect( array( 'sc_stats_pos' => 'qb' ), 'season=2024' ), 'https://example.com/nfl/nfl-player-stats/#season=2024', '/qb/?season=2024 lands on the final address in one hop' );
+is( $stats_redirect( array( 'sc_stats_pos' => 'qb' ), 'ref=y' ), 'https://example.com/nfl/nfl-player-stats/?ref=y', '/qb/ keeps other parameters' );
+$GLOBALS['query'] = array();
+$_GET             = array();
+is( statchasers_player_stats_args( array() )['season'], '', 'the target, served, renders the default season' );
