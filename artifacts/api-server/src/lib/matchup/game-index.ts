@@ -16,11 +16,16 @@
  * itself as its canonical, and a game outside the window (a 404) is never
  * listed. Each game is listed once, keyed on its pair and segment.
  *
- * `modified` (the sitemap's lastmod) is the stored box score's fetch stamp -
- * the last time the game's stats were written, which moves on a stat
- * correction until the game settles - and null when no box score is stored:
- * a kickoff time is not a modification time, so the sitemap omits lastmod
- * rather than inventing one.
+ * `modified` (the sitemap's lastmod) is always null, so the sitemap prints no
+ * lastmod (WEB-001 follow-up, 2026-11-24). The only stamp stored per game is
+ * the box score's `fetchedAt`, and buildBoxscores.mjs rewrites it on every
+ * re-fetch inside the seven-day settle window whether or not anything changed
+ * (ATL @ GB, Week 3 2026: refetched 09-30 00:09 and 13:37 with an identical
+ * summary), so it cannot tell an unchanged refresh from a stat correction.
+ * The page also draws on stores (play-by-play, recap prose, videos, odds)
+ * that keep no per-game change stamp at all. A kickoff is not a modification
+ * time either. Until a stamp exists that moves only when the rendered game
+ * data changes, an absent lastmod is the accurate one.
  *
  * The WordPress plugin reads this at /embed/matchup-games.json and serves
  * each path from /game-sitemap.xml (paginated by Rank Math's per-page limit).
@@ -29,7 +34,6 @@
 import { TEAMS, type NflTeam } from "../team/teams";
 import { getTeamPostseason, getTeamSchedule, type ScheduleGame } from "../team/schedule";
 import { nflState } from "../team/nfl-state";
-import { storedBoxscoreFetchedAt } from "./boxscore";
 import { HISTORY_SEASONS } from "./matchup-data";
 import {
   canonicalizeMatchupPair,
@@ -50,7 +54,10 @@ export interface ArchivedGame {
   seasonType: "regular" | "post";
   /** Kickoff, ISO. */
   kickoff: string;
-  /** The sitemap's lastmod, ISO: the stored stats' fetch stamp; null without one. */
+  /**
+   * The sitemap's lastmod, ISO, or null for none. Always null today: no stored
+   * stamp moves only when the game's data changes (see the file comment).
+   */
   modified: string | null;
 }
 
@@ -96,7 +103,7 @@ async function seasonGames(prefix: string, season: number): Promise<ArchivedGame
       week: game.week,
       seasonType: game.seasonType,
       kickoff: new Date(game.kickoffMs!).toISOString(),
-      modified: storedBoxscoreFetchedAt(game.espnEventId),
+      modified: null,
     });
   }
   return games;

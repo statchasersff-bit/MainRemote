@@ -1924,6 +1924,12 @@ is( $rows[0], array( 'a-vs-b', '2026-week-3', '' ), 'modified null: no lastmod, 
 is( $rows[1], array( 'a-vs-b', '2026-week-9', '2026-11-04' ), 'modified sent: the stat pull is the lastmod' );
 is( statchasers_matchup_games_links( array( $rows[0] ) ), array( array( 'loc' => statchasers_matchup_url( 'a-vs-b', '2026-week-3' ) ) ), 'and the link carries none' );
 
+is(
+	statchasers_matchup_games_index_links( statchasers_matchup_games_links( array( $rows[0] ) ), 100 ),
+	array( array( 'loc' => 'https://example.com/game-sitemap.xml' ) ),
+	'no game with a lastmod: the index entry carries none either'
+);
+
 echo "\nmatchup game segments have one spelling\n";
 is( statchasers_matchup_game_segment( '2025-postseason-week-5' ), '2025-super-bowl', 'a named round by number is the named round' );
 is( statchasers_matchup_game_segment( '2025-postseason-week-1' ), '2025-wild-card', 'the wild card too' );

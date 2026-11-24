@@ -1583,7 +1583,7 @@ function statchasers_matchup_games_sitemap_url( int $page = 0 ): string {
  *
  * @param array<int,array{loc:string,mod?:string}> $links       statchasers_matchup_games_links().
  * @param int                                     $max_entries Rank Math's items-per-page setting.
- * @return array<int,array{loc:string,lastmod:string}>
+ * @return array<int,array{loc:string,lastmod?:string}>
  */
 function statchasers_matchup_games_index_links( array $links, int $max_entries ): array {
 	if ( ! $links ) {
@@ -1600,10 +1600,13 @@ function statchasers_matchup_games_index_links( array $links, int $max_entries )
 				$newest = $link['mod'];
 			}
 		}
-		$index[] = array(
-			'loc'     => statchasers_matchup_games_sitemap_url( $n ),
-			'lastmod' => $newest,
-		);
+		// No game on the page carries a lastmod (WEB-001: the API sends
+		// none it cannot vouch for), so the index entry carries none either.
+		$entry = array( 'loc' => statchasers_matchup_games_sitemap_url( $n ) );
+		if ( '' !== $newest ) {
+			$entry['lastmod'] = $newest;
+		}
+		$index[] = $entry;
 	}
 	return $index;
 }

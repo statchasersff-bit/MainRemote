@@ -5,7 +5,7 @@
  * dated address (meetingHasOwnAddress), so the list is every completed game
  * the page serves - the current season and the HISTORY_SEASONS before it -
  * each once. Each listed path must answer 200 and name itself as its
- * canonical; lastmod is the stored stats' fetch stamp, or absent.
+ * canonical. No lastmod: no stored stamp moves only on a real data change.
  */
 
 import test, { before, after } from "node:test";
@@ -86,11 +86,10 @@ test("the index lists dated game pages, each of which answers at its own address
     assert.equal(game.path, `/nfl/${game.pair}/${game.game}/`);
     assert.match(game.kickoff, /^\d{4}-\d{2}-\d{2}T/);
     assert.ok(Date.parse(game.kickoff) < Date.now(), "a played game");
-    // The stored stats' fetch stamp, or null: never the kickoff stood in.
-    if (game.modified !== null) {
-      assert.match(game.modified, /^\d{4}-\d{2}-\d{2}T/, "a lastmod for the sitemap");
-      assert.ok(Date.parse(game.modified) >= Date.parse(game.kickoff), "stats are pulled after kickoff");
-    }
+    // No lastmod: the box score's fetch stamp moves on an unchanged refresh,
+    // and nothing else records when a game's data changed. Never the kickoff.
+    assert.ok("modified" in game, "the key is sent, so the plugin omits lastmod rather than falling back");
+    assert.equal(game.modified, null);
   }
   const keys = body.games.map((g) => g.path);
   assert.equal(new Set(keys).size, keys.length, "each game once");
