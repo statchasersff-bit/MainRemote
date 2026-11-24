@@ -2,7 +2,7 @@
 Contributors: statchasers
 Requires at least: 6.3
 Requires PHP: 7.4
-Stable tag: 1.10.64
+Stable tag: 1.10.65
 License: GPL-2.0-or-later
 
 Mounts the StatChasers NFL news tool, the 32 team hubs, the player pages, the Fantasy Points Allowed table, the rest-of-season rankings, the NFL schedule, the advanced player stats, the RB handcuff rankings, the fantasy football strength of schedule, the dynasty rookie hit rates and the redraft draft strategy analysis into WordPress pages.
@@ -19,6 +19,9 @@ answers that question directly, with a Last-Modified header that says when the
 upload landed. Keep "Stable tag" in step with the Version header.
 
 == Changelog ==
+
+= 1.10.65 =
+* Matchup candidate of 2026-11-24 (local, not uploaded), on top of 1.10.64. Brings back WEB-001 (held for the 2026-12-02 window): every completed game is self-canonical at its season/week URL, refused game segments are 404 noindex with no canonical, numbered playoff spellings 301 to the named round, the game list is refreshed on sitemap requests and Rank Math's game sitemap cache is cleared when it changes, game sitemap lastmod comes from the API's stored content stamps. WEB-024: the Divi late-CSS gate is decided once, before the footer (the 1.10.64 gate did not run live). WEB-040: matchup cache states (live/pending 60 s edge, pregame until kickoff, recent 1 h for 48 h after a final, settled default; WP Rocket only stores settled pages) and a POST purge-games route that does nothing until its key is set. Ships with the matching API build. Upload, run `wp eval 'statchasers_news_run_upgrade_now();'`, let the cache upgrade sweep settle, then purge.
 
 = 1.10.64 =
 * Hotfix for 1.10.63 (2026-11-24): an invalid schedule week (/week-99/) and a matchup address that is not a game (an unplayed or impossible week) are 404s again. 1.10.63 set the 404 on `wp` (WEB-013), early enough that core's redirect_canonical guessed a parent page and answered with a 301 (to the schedule page, to /nfl/matchup/). redirect_canonical is now told not to redirect a request the plugin has decided is a 404; nothing else changes. Includes 1.10.63 unchanged.
