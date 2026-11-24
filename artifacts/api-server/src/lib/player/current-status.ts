@@ -234,8 +234,8 @@ export function currentStatus(input: CurrentStatusInput): CurrentStatus {
     a.report.state === "final"
       ? `No game designation for Week ${week}.`
       : a.report.state === "pending"
-        ? `No Week ${week} game designation yet; game statuses are not out.`
-        : `No Week ${week} game designation yet; the Week ${week} injury report is not on file.`;
+        ? `Game designation pending for Week ${week}; game statuses are not out.`
+        : `Game designation pending for Week ${week}; the Week ${week} injury report is not on file.`;
   return {
     ...base,
     ...resolved,

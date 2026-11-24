@@ -92,8 +92,8 @@ export interface WeekReport {
 }
 
 /** The slot's words for a player with no game designation. */
-export const NO_DESIGNATION_YET = "No designation yet";
-export const NO_DESIGNATION = "No designation";
+export const NO_DESIGNATION_YET = "Game designation pending";
+export const NO_DESIGNATION = "No game designation";
 
 const RESERVE = new Set(["ir", "pup", "nfi", "sus", "suspended", "dnr", "cov", "na", "ir-r"]);
 const GAME = new Set(["out", "doubtful", "questionable"]);
@@ -339,7 +339,7 @@ export function gameAvailability(
           source: "sleeper",
           note:
             `${was === "Out" || raw === "Out" ? "Out" : `Listed ${was}`} for Week ${lastGame.week}${r.injuryBodyPart ? ` (${r.injuryBodyPart.toLowerCase()})` : ""} and did not play; ` +
-            `no Week ${week} designation yet.`,
+            `Week ${week} game designation pending.`,
         });
       } else if (designatedSinceLastGame(raw, prior, lastGame, lastReport)) {
         // Reported since the last game, before any Week N report. An Out or

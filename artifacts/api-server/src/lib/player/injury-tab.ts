@@ -457,17 +457,17 @@ function statusAnswer(m: Model): string {
       return `No current injury designation; the season is over.`;
     default: {
       if (m.pending) {
-        return `${m.last} has no ${wk} game designation yet${m.pending.missedWeek ? ` after missing Week ${m.pending.missedWeek}` : ""}.`;
+        return `Game designation pending for ${wk}${m.pending.missedWeek ? ` after missing Week ${m.pending.missedWeek}` : ""}.`;
       }
-      let first = "No injury designation.";
+      let first = m.notYet ? "Game designation pending." : "No game designation.";
       if (m.next) {
         const at = m.next.homeAway === "home" ? "against the" : "at the";
         // WEB-039 verify pass (2026-11-24): before the week's game statuses
         // are out, "No injury designation for Week 12" reads as a published
         // report that has none. It says "yet" until the report is final.
         first = m.notYet
-          ? `No game designation yet for ${wk} ${at} ${nextGameText(m.next).opp}.`
-          : `No injury designation for ${wk} ${at} ${nextGameText(m.next).opp}.`;
+          ? `Game designation pending for ${wk} ${at} ${nextGameText(m.next).opp}.`
+          : `No game designation for ${wk} ${at} ${nextGameText(m.next).opp}.`;
       }
       // No "has (not) missed a game this season" tail (mak, 2026-11-06):
       // the "2026 games missed" figure beside the card says it.
@@ -622,8 +622,14 @@ function answerOf(m: Model, data: PlayerPageData): InjuryAnswer {
       break;
     default:
       yes = false;
-      sentence = `No. ${m.name} has no injury designation for ${wk}.${tail}`;
-      lead = `No injury designation for ${wkShort}${paren}.`;
+      // mak, 2026-11-24 release: the visible card, the FAQ and the meta/og/
+      // twitter descriptions say the same two things: "Game designation
+      // pending" before the game's report is out, "No game designation"
+      // once a published report supports it.
+      sentence = m.notYet
+        ? `No. ${m.name}'s game designation for ${wk} is pending; the club's report is not out yet.${tail}`
+        : `No. ${m.name} has no game designation for ${wk}.${tail}`;
+      lead = m.notYet ? `Game designation pending for ${wkShort}${paren}.` : `No game designation for ${wkShort}${paren}.`;
   }
 
   const thisSeason =

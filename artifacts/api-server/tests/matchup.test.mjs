@@ -896,7 +896,7 @@ describe("the upcoming page (premium design)", () => {
           assert.match(head, /· (report as of [A-Z][a-z]{2} \d{1,2}|Week \d+ report not out yet|Week \d+ game statuses not out yet|.+ report)$/, `${p}: ${head}`);
           const foot = col.querySelector(".sct-mpp-inj-foot")?.textContent ?? "";
           if (/carry a designation/.test(foot)) assert.match(head, /report as of/, `${p}: "${foot}" under "${head}"`);
-          if (/designation yet/.test(foot)) assert.doesNotMatch(head, /report as of/, `${p}: "${foot}" under "${head}"`);
+          if (/designation yet|designation pending/.test(foot)) assert.doesNotMatch(head, /report as of/, `${p}: "${foot}" under "${head}"`);
         }
       }
       await assertPremiumHero(hero);

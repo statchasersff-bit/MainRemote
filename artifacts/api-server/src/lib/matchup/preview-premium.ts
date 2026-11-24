@@ -31,7 +31,7 @@ import {
   weatherText,
   type PreviewRenderContext,
 } from "./preview-render";
-import { PENDING, type WeekReport } from "./availability";
+import { NO_DESIGNATION_YET, PENDING, type WeekReport } from "./availability";
 import { gameKeys, KEY_WORD } from "./preview-keys";
 import { composePreview } from "./preview-narrative";
 import { BATTLE_WORD, type BattlePlayer } from "./preview-extras";
@@ -908,7 +908,7 @@ function compareCard(p: Preview): string {
 
 /** A designation in words; "Pending" (availability.ts) has none for this game yet. */
 function statusLabel(status: string, p: Preview): string {
-  return status === PENDING ? `No ${p.meeting.weekLabel} designation yet` : status;
+  return status === PENDING ? NO_DESIGNATION_YET : status;
 }
 
 /**
@@ -921,7 +921,7 @@ function listingCount(rows: Preview["injuries"]["away"]): string {
   const n = (k: string) => rows.filter((r) => r.listing === k).length;
   const parts = [`${n("designated")} designated`];
   if (n("reserve")) parts.push(`${n("reserve")} reserve`);
-  if (n("pending")) parts.push(`${n("pending")} no designation yet`);
+  if (n("pending")) parts.push(`${n("pending")} game designation pending`);
   return parts.join(" · ");
 }
 
