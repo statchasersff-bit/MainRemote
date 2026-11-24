@@ -122,6 +122,26 @@ export function endsGameAt(plays: PbpPlay[], i: number): boolean {
   return true;
 }
 
+/**
+ * True when the final score is this play's score plus at most its try: the
+ * other side unchanged, the scorer up by nothing (a field goal, a safety) or
+ * by its try (0-2 after a touchdown). A stored play-by-play can stop short
+ * of the game (a partial nflverse file); the final box score is the check
+ * that nothing was scored after the play, so a score the play-by-play ends
+ * on is not taken for the last one when the final says otherwise.
+ */
+export function isFinalScore(
+  at: { awayScore: number | null; homeScore: number | null },
+  final: { away: number; home: number },
+  scorer: "away" | "home",
+  touchdown: boolean,
+): boolean {
+  if (at.awayScore === null || at.homeScore === null) return false;
+  const mine = scorer === "away" ? final.away - at.awayScore : final.home - at.homeScore;
+  const theirs = scorer === "away" ? final.home - at.homeScore : final.away - at.awayScore;
+  return theirs === 0 && mine >= 0 && mine <= (touchdown ? 2 : 0);
+}
+
 export interface DownFacts {
   down: number;
   togo: number;
@@ -193,21 +213,25 @@ export function spotText(at: string | null, city: (code: string) => string | nul
  *
  * Matched by what the score made: the quarter and the score after the play
  * (a touchdown before its try). A play with no single match keeps the
- * feed's clock. Without a play-by-play, a fourth-quarter or overtime score
- * the feed clocks at 0:00 is the only ending taken on trust.
+ * feed's clock. Only the feed's LAST scoring play can have ended the game:
+ * a play-by-play that stops at an earlier score (a partial file) does not
+ * make it a walk-off when the box score holds a later one. Without a
+ * play-by-play, a fourth-quarter or overtime score the feed clocks at 0:00
+ * is the only ending taken on trust.
  */
 export function pbpScoringPlays(plays: ScoringPlay[], pbp: GamePbp | null, away: string, home: string): ScoringPlay[] {
   let a = 0;
   let h = 0;
   const used = new Set<number>();
-  return plays.map((play) => {
+  return plays.map((play, n) => {
+    const last = n === plays.length - 1;
     const action = play.type === "field_goal" ? 3 : play.type === "safety" ? 2 : 6;
     const wantA = a + (play.team === away ? action : 0);
     const wantH = h + (play.team === home ? action : 0);
     if (play.team === away) a += playPoints(play);
     else if (play.team === home) h += playPoints(play);
     if (!pbp) {
-      return play.quarter >= 4 && clockKey(play.clock) === "0:00" ? { ...play, endsGame: true } : play;
+      return last && play.quarter >= 4 && clockKey(play.clock) === "0:00" ? { ...play, endsGame: true } : play;
     }
     const hits: number[] = [];
     pbp.plays.forEach((p, i) => {
@@ -220,7 +244,7 @@ export function pbpScoringPlays(plays: ScoringPlay[], pbp: GamePbp | null, away:
     used.add(i);
     const row = pbp.plays[i]!;
     const clock = clockKey(row.c) || play.clock;
-    const ends = endsGameAt(pbp.plays, i);
+    const ends = last && endsGameAt(pbp.plays, i);
     return { ...play, clock, ...(ends ? { endsGame: true } : {}) };
   });
 }

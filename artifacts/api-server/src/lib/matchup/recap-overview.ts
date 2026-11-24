@@ -33,7 +33,7 @@ import { scoreboardResult, type ScoreboardGame } from "./scoreboard-hero";
 import { BAR_ICON } from "./recap-premium";
 import type { GameOdds } from "./boxscore";
 import type { GamePbp, PbpDrive } from "./play-by-play";
-import { downText, spotText, storyPlayFacts, type StoryPlayFacts } from "./play-facts";
+import { downText, isFinalScore, spotText, storyPlayFacts, type StoryPlayFacts } from "./play-facts";
 import { composeRecap, factsHash, recapFacts, resolver, type TeamRecord } from "./recap-narrative";
 import type { PlayerUrlFn } from "../team/links";
 
@@ -350,7 +350,11 @@ function facts(input: OverviewInput): Facts | null {
     sealer,
     longTd,
     pbpFacts,
-    walkOff: goAhead ? pbpFacts(goAhead)?.endsGame === true : false,
+    // The play-by-play says nothing came after it AND the final agrees: a
+    // file that stops short of the game is not a walk-off (WEB-037).
+    walkOff: goAhead
+      ? pbpFacts(goAhead)?.endsGame === true && isFinalScore(goAhead, { away: result.away, home: result.home }, winner, goAhead.td)
+      : false,
     spot: (at) => spotText(at, cityOf),
   };
 }

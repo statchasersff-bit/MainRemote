@@ -31,9 +31,9 @@
 import type { BoxTeamStats, GameOdds } from "./boxscore";
 import type { GamePlayer, GamePlayers } from "./game-players";
 import type { GamePbp, PbpDrive } from "./play-by-play";
-import { downFacts, downText, endsGameAt, matchStoryPlay, spotText, type StoryPlayFacts } from "./play-facts";
+import { downFacts, downText, endsGameAt, isFinalScore, matchStoryPlay, spotText, type StoryPlayFacts } from "./play-facts";
 import type { GameStory, StoryInjury, StoryPlay } from "./recap-overview";
-import type { ScoreboardGame } from "./scoreboard-hero";
+import { scoreboardResult, type ScoreboardGame } from "./scoreboard-hero";
 import { searchKey } from "../render";
 
 /* ------------------------------------------------------------- inputs */
@@ -386,10 +386,20 @@ function buildCtx(input: NarrativeInput): Ctx | null {
       .find((p) => (p.int || p.fumble) && p.def === W.code && at(p) >= 3300 && (scoreOf(p, winner) ?? 0) > (scoreOf(p, loser) ?? 0) && (scoreOf(p, winner) ?? 0) - (scoreOf(p, loser) ?? 0) <= 8) ?? null;
 
   const pbp = input.pbp ?? null;
+  // endsGame needs the play-by-play AND the final to agree (WEB-037): a
+  // partial file that stops at a score does not make it the last one.
+  // The box score's final first: the story's own finals come from the same play-by-play.
+  const line = scoreboardResult(game);
+  const final = line ? { away: line.away, home: line.home } : { away: a, home: h };
   const pbpFact = (p: StoryPlay): StoryPlayFacts | null => {
     if (!pbp?.plays.length) return null;
     const i = matchStoryPlay(p, pbp.plays);
-    return i < 0 ? null : { down: downFacts(pbp, i), endsGame: endsGameAt(pbp.plays, i) };
+    if (i < 0) return null;
+    // Who scored on it: the touchdown's club, the defense on a safety, else the offense.
+    const by = p.td ? p.tdTeam : p.safety ? p.def : p.pos;
+    const side = by === game.away.abbr ? "away" : by === game.home.abbr ? "home" : null;
+    const last = side !== null && endsGameAt(pbp.plays, i) && isFinalScore(p, final, side, p.td);
+    return { down: downFacts(pbp, i), endsGame: last };
   };
   const cityOf = (code: string) => (code === game.away.abbr ? input.city.away : code === game.home.abbr ? input.city.home : null);
 

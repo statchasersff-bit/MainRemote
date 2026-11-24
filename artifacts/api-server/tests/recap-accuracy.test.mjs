@@ -293,3 +293,67 @@ test("the win-probability chart's summary ends a tie at 50%, not 100%", async ()
   assert.match(html, /finished at 50% in a tie/);
   assert.doesNotMatch(html, /finished at 100%/);
 });
+
+/* ---------------------- a play-by-play that stops short of the box score */
+
+describe("a play-by-play that ends at the go-ahead score while the box score has a later score", () => {
+  // The stored play-by-play stops at the home side's go-ahead field goal
+  // (17-20); the final box score has the visitors scoring afterward.
+  const truncated = {
+    season: 2026, week: 1, seasonType: "regular", home: "BBB", away: "AAA",
+    drives: [drive({ n: 9, team: "BBB", result: "fg" })],
+    plays: [play({ d: 9, t: "BBB", k: "field_goal", c: "00:40", x: "J.Bates 50 yard field goal is GOOD.", score: 1, away: 17, home: 20 })],
+  };
+
+  test("the play-by-play alone would call it the end; the scoring list does not", () => {
+    assert.equal(facts.endsGameAt(truncated.plays, 0), true);
+    const espn = [
+      { quarter: 1, clock: "9:00", team: "AAA", type: "pass_td", yards: 10, pat: { type: "kick", result: "good" } },
+      { quarter: 2, clock: "9:00", team: "AAA", type: "pass_td", yards: 10, pat: { type: "kick", result: "good" } },
+      { quarter: 3, clock: "9:00", team: "AAA", type: "field_goal", yards: 30 },
+      { quarter: 1, clock: "5:00", team: "BBB", type: "pass_td", yards: 10, pat: { type: "kick", result: "good" } },
+      { quarter: 2, clock: "5:00", team: "BBB", type: "pass_td", yards: 10, pat: { type: "kick", result: "good" } },
+      { quarter: 3, clock: "5:00", team: "BBB", type: "field_goal", yards: 30 },
+      { quarter: 4, clock: "0:36", team: "BBB", type: "field_goal", yards: 50 },
+      // The visitors' answer, which the play-by-play never got.
+      { quarter: 4, clock: "0:05", team: "AAA", type: "field_goal", yards: 55 },
+    ].sort((a, b) => a.quarter - b.quarter || b.clock.localeCompare(a.clock));
+    const out = facts.pbpScoringPlays(espn, truncated, "AAA", "BBB");
+    const kick = out.find((p) => p.team === "BBB" && p.yards === 50);
+    assert.equal(kick.clock, "0:40", "still re-clocked from its matched row");
+    assert.equal(kick.endsGame, undefined, "a later score in the box score means it did not end the game");
+    assert.equal(out.some((p) => p.endsGame), false);
+  });
+
+  test("a score is the game's last only when the final adds nothing but its try", () => {
+    assert.equal(facts.isFinalScore({ awayScore: 17, homeScore: 20 }, { away: 17, home: 20 }, "home", false), true);
+    assert.equal(facts.isFinalScore({ awayScore: 20, homeScore: 26 }, { away: 20, home: 27 }, "home", true), true, "a touchdown before its extra point");
+    assert.equal(facts.isFinalScore({ awayScore: 20, homeScore: 26 }, { away: 20, home: 27 }, "home", false), false, "a field goal has no try");
+    assert.equal(facts.isFinalScore({ awayScore: 17, homeScore: 20 }, { away: 19, home: 20 }, "home", false), false, "a visitors' safety afterward");
+    assert.equal(facts.isFinalScore({ awayScore: 17, homeScore: 20 }, { away: 20, home: 20 }, "home", false), false, "the visitors scored afterward");
+    assert.equal(facts.isFinalScore({ awayScore: 17, homeScore: 20 }, { away: 17, home: 23 }, "home", false), false, "the home side scored again");
+  });
+
+  test("How the Game Swung keeps go-ahead wording when the final shows a later score", () => {
+    // Packers-Lions with the Lions' winning kick, but a final that says the
+    // Packers scored afterward (a 20-20 tie would have no winner, so: 19-20).
+    const ID = "2026_07_GB_DET";
+    const pbp = facts.refineDrives(read("pbp", "2026", `${ID}.json`));
+    const story = read("game_story_2026.json").games[ID];
+    const stored = Object.entries(read("boxscores", "2026.json").games).find(([, g]) => g.week === 7 && g.name === "GB @ DET");
+    const box = boxscore.parseEspnSummary(stored[0], stored[1].summary);
+    const players = gamePlayers.buildGamePlayers(box.players, null, box.scoringPlays);
+    const game = {
+      status: "final", seasonLabel: "2026", gameType: "regular", roundLabel: "Week 7", kickoff: "2026-10-25T20:25:00.000Z", venue: null,
+      away: { abbr: "GB", name: "Green Bay Packers", short: "Packers", quarters: [7, 0, 7, 5], ot: null, score: 19 },
+      home: { abbr: "DET", name: "Detroit Lions", short: "Lions", quarters: [7, 3, 7, 3], ot: null, score: 20 },
+    };
+    const { main } = overview.renderRecapOverviewParts({
+      game, story, stats: { away: null, home: null }, players, leaders: [],
+      city: { away: "Green Bay", home: "Detroit" }, playerUrl: () => null, photo: () => "", highlights: "",
+      inks: { away: "#203731", home: "#0076b6" }, drives: pbp.drives, pbp,
+    });
+    assert.match(main, /Bates makes the go-ahead field goal\./);
+    assert.doesNotMatch(main, /game-winning|on the final play/);
+  });
+});
