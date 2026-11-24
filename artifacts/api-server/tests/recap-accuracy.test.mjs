@@ -263,8 +263,14 @@ describe("Giants at Commanders, a 27-27 tie", () => {
     assert.doesNotMatch(a, /won the game/);
   });
 
-  test("no Game info card (removed by WEB-041), so no Winner row to get wrong", () => {
+  // The Game info card itself went with WEB-041 (its rows repeat the score
+  // header); what WEB-037 asked of it, no winner named for a tie, still holds
+  // for the whole body.
+  test("a tie names no winner: no Game info card, no Winner row", () => {
     assert.equal(body.renderGameInfo, undefined);
+    const html = body.renderRecapBody(input([game()]));
+    assert.doesNotMatch(html, /sct-rb-info"/);
+    assert.doesNotMatch(html, />Winner</);
   });
 
   test("a rematch already played later that season is not 'don't meet again'", () => {
