@@ -839,37 +839,106 @@ function statchasers_fpa_redirect_target( array $get, int $page_season, int $cur
 }
 
 /**
+ * Where this request's season address 301s to, or ''. Memoized.
+ */
+function statchasers_fpa_season_target(): string {
+	static $target = null;
+	if ( null !== $target ) {
+		return $target;
+	}
+	$page_season = statchasers_fpa_request_season();
+	$copy        = statchasers_fpa_page_copy();
+	$current     = isset( $copy['currentSeason'] ) ? (int) $copy['currentSeason'] : 0;
+	$is_live     = isset( $copy['kind'] ) && 'live' === $copy['kind'];
+	// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- a read-only redirect.
+	$target = statchasers_fpa_redirect_target( wp_unslash( $_GET ), $page_season, $current, $page_season > 0 && $is_live );
+	return $target;
+}
+
+/**
+ * Is this a season address the API has no table for? Never a request that
+ * 301s instead.
+ */
+function statchasers_fpa_season_not_found(): bool {
+	if ( ! statchasers_fpa_page_urls_enabled() || ! statchasers_fpa_post_has_shortcode() ) {
+		return false;
+	}
+	return statchasers_fpa_request_season() > 0
+		&& '' === statchasers_fpa_season_target()
+		&& null === statchasers_fpa_request_data();
+}
+
+/**
+ * Make a season with no table a 404. On `wp` at priority 0 (WEB-013), before
+ * Rank Math builds its Paper on `wp` at 10, so the head is Rank Math's 404
+ * head rather than the FPA page's; template_redirect asks again. Idempotent.
+ */
+function statchasers_fpa_season_404(): void {
+	if ( ! statchasers_fpa_season_not_found() ) {
+		return;
+	}
+	global $wp_query;
+	if ( ! is_404() && $wp_query instanceof WP_Query && method_exists( $wp_query, 'set_404' ) ) {
+		$wp_query->set_404();
+	}
+	status_header( 404 );
+	nocache_headers();
+}
+add_action( 'wp', 'statchasers_fpa_season_404', 0 );
+
+/**
  * `?season=` 301s to the season's address, and the current season's address
  * 301s to the page, before anything renders; a season the API has no table
- * for is a 404, not an empty page.
+ * for is a 404 (statchasers_fpa_season_404), not an empty page.
  */
 function statchasers_fpa_season_redirect(): void {
 	if ( ! statchasers_fpa_page_urls_enabled() || ! statchasers_fpa_post_has_shortcode() ) {
 		return;
 	}
 
-	$page_season = statchasers_fpa_request_season();
-	$copy        = statchasers_fpa_page_copy();
-	$current     = isset( $copy['currentSeason'] ) ? (int) $copy['currentSeason'] : 0;
-	$is_live     = isset( $copy['kind'] ) && 'live' === $copy['kind'];
-
-	// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- a read-only redirect.
-	$target = statchasers_fpa_redirect_target( wp_unslash( $_GET ), $page_season, $current, $page_season > 0 && $is_live );
+	$target = statchasers_fpa_season_target();
 	if ( '' !== $target ) {
 		wp_safe_redirect( $target, 301 );
 		exit;
 	}
 
-	if ( $page_season > 0 && null === statchasers_fpa_request_data() ) {
-		global $wp_query;
-		if ( $wp_query instanceof WP_Query && method_exists( $wp_query, 'set_404' ) ) {
-			$wp_query->set_404();
-		}
-		status_header( 404 );
-		nocache_headers();
-	}
+	statchasers_fpa_season_404();
 }
 add_action( 'template_redirect', 'statchasers_fpa_season_redirect', 9 );
+
+/*
+ * The backstop, as on the schedule weeks and matchups (WEB-013): a season
+ * with no table says noindex and names no canonical or og:url whatever Paper
+ * Rank Math built. Scoped by statchasers_fpa_season_not_found().
+ */
+add_filter(
+	'rank_math/frontend/robots',
+	static function ( $robots ) {
+		if ( ! is_array( $robots ) || ! statchasers_fpa_season_not_found() ) {
+			return $robots;
+		}
+		$robots['index']  = 'noindex';
+		$robots['follow'] = 'follow';
+		return $robots;
+	},
+	99
+);
+foreach ( array( 'rank_math/frontend/canonical', 'get_canonical_url' ) as $statchasers_fpa_hook ) {
+	add_filter(
+		$statchasers_fpa_hook,
+		static function ( $canonical ) {
+			return statchasers_fpa_season_not_found() ? false : $canonical;
+		},
+		99
+	);
+}
+add_filter(
+	'rank_math/opengraph/url',
+	static function ( $url ) {
+		return statchasers_fpa_season_not_found() ? '' : $url;
+	},
+	99
+);
 
 /* -------------------------------------------------- titles and headings */
 
@@ -1013,7 +1082,8 @@ function statchasers_fpa_updated_line(): string {
  * is six addresses for one table and none of them may become a canonical.
  */
 function statchasers_fpa_canonical(): string {
-	if ( ! statchasers_fpa_post_has_shortcode() ) {
+	// A 404 (a season with no table) names no address (WEB-013).
+	if ( ! statchasers_fpa_post_has_shortcode() || is_404() ) {
 		return '';
 	}
 	$season = statchasers_fpa_request_season();

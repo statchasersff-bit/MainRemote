@@ -284,25 +284,86 @@ function statchasers_matchup_url( string $slug, string $game = '' ): string {
 }
 
 /**
+ * Is this matchup request a 404? Memoized; false off a matchup URL.
+ *
+ * Three cases: a segment that is not a pair; a game segment the rewrite let
+ * through but the validator refused (a week past 25, a leading zero); and a
+ * game the API says those two never played (X-Matchup-Missing). Never on a
+ * request that 301s instead - the reversed pair and the second spelling of a
+ * postseason round - and never on an outage: a null fetch is not an answer
+ * about the URL, and a cached render keeps serving.
+ */
+function statchasers_matchup_not_found(): bool {
+	static $answer = null;
+	if ( null !== $answer ) {
+		return $answer;
+	}
+	$answer = false;
+	if ( '' === (string) get_query_var( 'sc_matchup' ) ) {
+		return $answer;
+	}
+	$pair = statchasers_matchup_current();
+	if ( null === $pair ) {
+		$answer = true;
+		return $answer;
+	}
+	if ( ! $pair['canonical'] ) {
+		return $answer;
+	}
+	$raw_game = statchasers_matchup_game();
+	if ( '' !== $raw_game && statchasers_matchup_game_segment( $raw_game ) !== $raw_game ) {
+		return $answer;
+	}
+	if ( '' === $raw_game ) {
+		$answer = '' !== trim( (string) get_query_var( 'sc_matchup_game' ) );
+		return $answer;
+	}
+	// A game address answers to the API, because only the API knows the
+	// schedule. The fetch is the one the shortcode reuses from its transient.
+	$data   = statchasers_matchup_fetch( $pair['slug'], $raw_game );
+	$answer = is_array( $data ) && ! empty( $data['missing'] );
+	return $answer;
+}
+
+/**
+ * Make a not-found matchup request a 404. Idempotent: `wp` and
+ * template_redirect both ask.
+ *
+ * On `wp` at priority 0 (WEB-013, 2026-11-24): Rank Math builds the Paper its
+ * whole head is read from once, on `wp` at priority 10. Set on
+ * template_redirect, as it was, the 404 got the 404 template and status but a
+ * head built from the matchup holder or the game: /nfl/foo-vs-bar/ was titled
+ * "NFL Matchups" with the holder's og:url, a refused segment carried the
+ * pair's full game head (index, canonical, share card, FAQ, SportsEvent), and
+ * a game that never happened kept the game's title and og:url. Before the
+ * Paper exists, the 404 is Rank Math's own: Page not found, noindex.
+ */
+function statchasers_matchup_404(): void {
+	if ( ! statchasers_matchup_not_found() ) {
+		return;
+	}
+	global $wp_query;
+	if ( ! is_404() ) {
+		$wp_query->set_404();
+	}
+	status_header( 404 );
+	nocache_headers();
+}
+add_action( 'wp', 'statchasers_matchup_404', 0 );
+
+/**
  * The reversed spelling is a 301, and a segment that is not a pair is a 404 -
  * before anything renders, so neither is ever an indexable copy of the holder.
+ * The 404s are statchasers_matchup_404()'s, decided on `wp`; asked again here.
  */
 add_action(
 	'template_redirect',
 	function (): void {
-		$raw = (string) get_query_var( 'sc_matchup' );
-		if ( '' === $raw ) {
+		if ( '' === (string) get_query_var( 'sc_matchup' ) ) {
 			return;
 		}
 		$pair = statchasers_matchup_current();
-		if ( null === $pair ) {
-			global $wp_query;
-			$wp_query->set_404();
-			status_header( 404 );
-			nocache_headers();
-			return;
-		}
-		if ( ! $pair['canonical'] ) {
+		if ( null !== $pair && ! $pair['canonical'] ) {
 			wp_safe_redirect(
 				statchasers_matchup_url( $pair['slug'], statchasers_matchup_game_segment( statchasers_matchup_game() ) ),
 				301
@@ -313,54 +374,13 @@ add_action(
 		// Super Bowl, whose address is `2025-super-bowl`, so it 301s there
 		// rather than rendering a second self-canonical copy of the game.
 		$raw_game = statchasers_matchup_game();
-		if ( '' !== $raw_game && statchasers_matchup_game_segment( $raw_game ) !== $raw_game ) {
+		if ( null !== $pair && '' !== $raw_game && statchasers_matchup_game_segment( $raw_game ) !== $raw_game ) {
 			wp_safe_redirect( statchasers_matchup_url( $pair['slug'], statchasers_matchup_game_segment( $raw_game ) ), 301 );
 			exit;
 		}
-
-		// A game address answers to the API, because only the API knows the
-		// schedule: whether those two played that week, and whether the pair's
-		// own page has let the game go yet. Both answers ride in on the fetch
-		// the shortcode is about to reuse from the same transient.
-		$game = statchasers_matchup_game();
-		if ( '' === $game ) {
-			// A segment that got past the rewrite but not the validator - a
-			// leading zero, a week past the end of a season. Never a page.
-			if ( '' !== trim( (string) get_query_var( 'sc_matchup_game' ) ) ) {
-				global $wp_query;
-				$wp_query->set_404();
-				status_header( 404 );
-				nocache_headers();
-			}
-			return;
-		}
-
-		$data = statchasers_matchup_fetch( $pair['slug'], $game );
-
-		// Null is the origin being unreachable, which is not an answer about
-		// this URL. Leaving the page alone keeps a cached render serving rather
-		// than turning an outage into a 404 Google will act on.
-		if ( null === $data ) {
-			return;
-		}
-
-		if ( ! empty( $data['missing'] ) ) {
-			global $wp_query;
-			$wp_query->set_404();
-			status_header( 404 );
-			nocache_headers();
-			return;
-		}
-
-		if ( 'current' === $data['game'] ) {
-			// The pair's own page is previewing this fixture: the dated page
-			// renders, with its canonical pointing at the pair's address and
-			// no SportsEvent of its own (statchasers_matchup_canonical,
-			// statchasers_matchup_event_node). Mirrors the API's own page.
-			// A finished game is never "current" since WEB-001 (2026-11-24):
-			// the API answers "archived" and the dated page is self-canonical.
-			return;
-		}
+		// A game the pair's own page is previewing renders, with its canonical
+		// pointing at the pair's address (statchasers_matchup_canonical).
+		statchasers_matchup_404();
 	}
 );
 
@@ -955,7 +975,8 @@ function statchasers_matchup_completed_meta( string $name_a, string $name_b, str
 /** This request's metadata, or null off a matchup URL. */
 function statchasers_matchup_request_meta(): ?array {
 	$pair = statchasers_matchup_current();
-	if ( null === $pair || ! $pair['canonical'] ) {
+	// A 404 wears Rank Math's 404 head, not the game's (WEB-013).
+	if ( null === $pair || ! $pair['canonical'] || is_404() ) {
 		return null;
 	}
 	$game = statchasers_matchup_game();
@@ -1005,7 +1026,7 @@ function statchasers_matchup_request_meta(): ?array {
  */
 function statchasers_matchup_share_image(): ?array {
 	$pair = statchasers_matchup_current();
-	if ( null === $pair || ! $pair['canonical'] ) {
+	if ( null === $pair || ! $pair['canonical'] || is_404() ) {
 		return null;
 	}
 	$data = statchasers_matchup_fetch( $pair['slug'], statchasers_matchup_game() );
@@ -1152,7 +1173,7 @@ function statchasers_matchup_video_node() {
  * @return array<string,mixed>
  */
 function statchasers_matchup_rank_math_schema( $data ) {
-	if ( ! is_array( $data ) ) {
+	if ( ! is_array( $data ) || is_404() ) {
 		return $data;
 	}
 
@@ -1177,7 +1198,7 @@ add_filter( 'rank_math/json_ld', 'statchasers_matchup_rank_math_schema', 20 );
 
 /** The SportsEvent and the FAQ on their own, for a site with no schema-graph plugin. */
 function statchasers_matchup_print_fallback_schema(): void {
-	if ( statchasers_news_graph_provider_present() ) {
+	if ( statchasers_news_graph_provider_present() || is_404() ) {
 		return;
 	}
 
@@ -1195,7 +1216,7 @@ add_action( 'wp_head', 'statchasers_matchup_print_fallback_schema', 20 );
 
 function statchasers_matchup_canonical(): string {
 	$pair = statchasers_matchup_current();
-	if ( null === $pair ) {
+	if ( null === $pair || is_404() ) {
 		return '';
 	}
 	$game = statchasers_matchup_game();
@@ -1267,14 +1288,18 @@ add_filter( 'rank_math/frontend/description', function ( $description ) {
 	return $meta ? $meta['description'] : $description;
 } );
 add_filter( 'rank_math/frontend/canonical', function ( $canonical ) {
-	// No canonical at all on a dated preview or a game 404 (1.10.59).
-	if ( statchasers_matchup_unindexed() ) {
+	// No canonical at all on a dated preview or a game 404 (1.10.59), nor on
+	// any matchup 404 (WEB-013).
+	if ( statchasers_matchup_not_found() || statchasers_matchup_unindexed() ) {
 		return false;
 	}
 	$url = statchasers_matchup_canonical();
 	return '' === $url ? $canonical : $url;
 } );
 add_filter( 'rank_math/opengraph/url', function ( $url ) {
+	if ( statchasers_matchup_not_found() ) {
+		return '';
+	}
 	$own = statchasers_matchup_canonical();
 	return '' === $own ? $url : $own;
 } );
@@ -1332,6 +1357,12 @@ function statchasers_matchup_print_fallback_social(): void {
 add_action( 'wp_head', 'statchasers_matchup_print_fallback_social', 5 );
 
 add_filter( 'rank_math/frontend/robots', function ( $robots ) {
+	// A matchup 404 is noindex whatever Paper Rank Math built (WEB-013).
+	if ( is_array( $robots ) && statchasers_matchup_not_found() ) {
+		$robots['index']  = 'noindex';
+		$robots['follow'] = 'follow';
+		return $robots;
+	}
 	if ( null === statchasers_matchup_request_meta() ) {
 		return $robots;
 	}
@@ -1358,7 +1389,7 @@ add_filter( 'document_title_parts', function ( array $parts ): array {
 	return $parts;
 } );
 add_filter( 'get_canonical_url', function ( $canonical ) {
-	if ( statchasers_matchup_unindexed() ) {
+	if ( statchasers_matchup_not_found() || statchasers_matchup_unindexed() ) {
 		return false;
 	}
 	$url = statchasers_matchup_canonical();
@@ -1385,7 +1416,7 @@ add_filter( 'get_canonical_url', function ( $canonical ) {
  */
 function statchasers_matchup_breadcrumbs( $crumbs ) {
 	$pair = statchasers_matchup_current();
-	if ( ! is_array( $crumbs ) || null === $pair || ! $pair['canonical'] ) {
+	if ( ! is_array( $crumbs ) || null === $pair || ! $pair['canonical'] || is_404() ) {
 		return $crumbs;
 	}
 
