@@ -434,7 +434,7 @@ describe("a tie", () => {
     assert.ok(!faq.some((q) => /beat|won the game|game-winning|covered by/.test(q.question + q.answer.replace(/^.*?\. /, ""))), "no winner in a tie");
     // A turnover edge in a tie says the game was tied, not that someone won it.
     const turned = body.recapFaq({ ...input, faqFacts: { turnovers: { away: 0, home: 2 } } });
-    assert.match(turned.find((q) => /turnover battle/.test(q.question)).answer, /The game still ended in a tie\.$/);
+    assert.match(turned.find((q) => /turnover battle/.test(q.question)).answer, /The game ended in a tie\.$/);
     assert.equal(doc.querySelector(".sct-rb-dl"), null, "no Game info card (WEB-041)");
   });
 
