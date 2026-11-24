@@ -1345,11 +1345,16 @@ function fantasyInput(data: MatchupData): FantasySectionInput | null {
     if (live) {
       for (const side of seasonSides(data)) {
         const after = side.games
-          .filter((g) => g.status !== "final" && (g.kickoffMs ?? Infinity) > (meeting.kickoffMs ?? 0))
+          .filter((g) => (g.kickoffMs ?? Infinity) > (meeting.kickoffMs ?? 0))
           // A game with no kickoff yet (a late-season TBD) sorts last, not
           // first: it was putting Week 17 ahead of Week 10 (2026-11-10).
           .sort((x, y) => (x.kickoffMs ?? Infinity) - (y.kickoffMs ?? Infinity) || 0)[0];
-        next[side.abbr] = after ? { label: after.weekLabel, opponent: after.opponent?.nickname ?? after.opponentName } : null;
+        // The club's NEXT game after this one, played or not. Once it is final
+        // this page is an archive: no start/sit advice for whatever week is
+        // current (the Week 7 Packers-Lions page was telling readers to start
+        // Jacobs "in Week 12 against the Rams", 2026-11-24).
+        next[side.abbr] =
+          after && after.status !== "final" ? { label: after.weekLabel, opponent: after.opponent?.nickname ?? after.opponentName } : null;
       }
     }
     input = {

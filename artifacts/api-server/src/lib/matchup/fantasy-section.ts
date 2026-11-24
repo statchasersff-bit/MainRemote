@@ -797,7 +797,9 @@ export function renderFantasyTakeaways(input: FantasySectionInput): string {
  * Nothing for a playoff game or once the season is over.
  */
 function renderNextWeek(input: FantasySectionInput, usage: Usage[]): string {
-  if (!input.countsInSeasonLong || !input.next) return "";
+  // No side with a game still to play (an archived game: both clubs have
+  // played since): no section at all, not an empty heading.
+  if (!input.countsInSeasonLong || !input.next || !Object.values(input.next).some(Boolean)) return "";
   const pairs = decisionPairs(input, usage);
   return (
     `<h2 class="sct-rb-h2" id="decisions">Next-Week Decisions</h2>` +

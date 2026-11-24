@@ -2597,6 +2597,19 @@ describe("recap Overview tab (new design)", () => {
   });
 });
 
+describe("an archived game gives no start/sit advice for the current week (2026-11-24)", () => {
+  // Packers-Lions Week 7: both clubs played Week 8 since. The page was telling
+  // readers "If the role holds, Jacobs is a start in Week 12 against the Rams"
+  // and printing Next-Week Decisions for whatever week was current.
+  test("no Next-Week Decisions, no 'in Week N against' advice", async () => {
+    const { doc } = await dom("/nfl/detroit-lions-vs-green-bay-packers/2026-week-7/");
+    const tab = doc.querySelector("#fantasy-recap-tab");
+    assert.ok(tab, "the Fantasy tab renders");
+    assert.equal(doc.querySelector("#decisions"), null);
+    assert.doesNotMatch(tab.textContent, /\bin Week \d+ against\b|Compare their Week/);
+  });
+});
+
 describe("recap Fantasy tab (fantasy-tab.ts)", () => {
   const PAGE = "/nfl/new-england-patriots-vs-seattle-seahawks/2026-week-1/";
 
