@@ -197,20 +197,80 @@ function statchasers_schedule_request_week(): int {
  * not the truth - and without this it would quietly render whatever week the
  * board opens on, at an address claiming to be week 23. The API answers the
  * same URL with a 404 for the same reason.
+ *
+ * Decided on `wp` at priority 0, not on `template_redirect` (WEB-013,
+ * 2026-11-24). Rank Math builds its Paper - the object every title, robots,
+ * canonical and og tag in the head is read from - once per request, in
+ * Frontend::integrations() on `wp` at priority 10, and never rebuilds it. A
+ * 404 set later on template_redirect got the 404 template and status, but a
+ * head built from the schedule page itself: its stored title, "index,
+ * follow", the hub's canonical and og:url, and a WebPage at the hub's address
+ * carrying the hub's FAQ - live on /week-99/ until this change. Set before the
+ * Paper exists, the 404 is Rank Math's own 404: "Page not found", noindex,
+ * no canonical, the same head as any other missing page on the site.
+ * template_redirect stays registered too, for a request that reaches it
+ * without `wp` having run.
  */
-add_action(
-	'template_redirect',
-	static function (): void {
-		$raw = trim( (string) get_query_var( 'sc_sched_week' ) );
-		// Elsewhere the var means nothing, so it cannot make a page a 404 either.
-		if ( '' === $raw || ! statchasers_schedule_post_has_shortcode() || statchasers_schedule_request_week() > 0 ) {
-			return;
-		}
-		global $wp_query;
-		$wp_query->set_404();
-		status_header( 404 );
-		nocache_headers();
+function statchasers_schedule_invalid_week(): bool {
+	$raw = trim( (string) get_query_var( 'sc_sched_week' ) );
+	// Elsewhere the var means nothing, so it cannot make a page a 404 either.
+	return '' !== $raw && statchasers_schedule_post_has_shortcode() && 0 === statchasers_schedule_request_week();
+}
+
+/** Make an invalid week a 404. Idempotent: `wp` and template_redirect both ask. */
+function statchasers_schedule_invalid_week_404(): void {
+	if ( ! statchasers_schedule_invalid_week() ) {
+		return;
 	}
+	global $wp_query;
+	if ( ! is_404() ) {
+		$wp_query->set_404();
+	}
+	status_header( 404 );
+	nocache_headers();
+}
+add_action( 'wp', 'statchasers_schedule_invalid_week_404', 0 );
+add_action( 'template_redirect', 'statchasers_schedule_invalid_week_404' );
+
+/*
+ * The backstop, for a Paper something built before `wp` priority 0: an
+ * invalid week says noindex and names no canonical and no og:url whatever
+ * Rank Math resolved the page as - the shape the matchup game 404s were given
+ * in 1.10.61. Scoped by statchasers_schedule_invalid_week(), so no valid
+ * week, the hub or any other page is touched.
+ */
+add_filter(
+	'rank_math/frontend/robots',
+	static function ( $robots ) {
+		if ( ! is_array( $robots ) || ! statchasers_schedule_invalid_week() ) {
+			return $robots;
+		}
+		$robots['index']  = 'noindex';
+		$robots['follow'] = 'follow';
+		return $robots;
+	},
+	99
+);
+add_filter(
+	'rank_math/frontend/canonical',
+	static function ( $canonical ) {
+		return statchasers_schedule_invalid_week() ? false : $canonical;
+	},
+	99
+);
+add_filter(
+	'rank_math/opengraph/url',
+	static function ( $url ) {
+		return statchasers_schedule_invalid_week() ? '' : $url;
+	},
+	99
+);
+add_filter(
+	'get_canonical_url',
+	static function ( $canonical ) {
+		return statchasers_schedule_invalid_week() ? false : $canonical;
+	},
+	99
 );
 
 /**
@@ -1016,7 +1076,9 @@ function statchasers_schedule_faq_items(): array {
 
 	$items = array();
 
-	if ( ! statchasers_schedule_post_has_shortcode() ) {
+	// A 404 (an invalid week) has no board on it, so no questions about one:
+	// before WEB-013 the hub's FAQ rode into /week-99/'s graph.
+	if ( ! statchasers_schedule_post_has_shortcode() || is_404() || statchasers_schedule_invalid_week() ) {
 		return $items;
 	}
 

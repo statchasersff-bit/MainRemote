@@ -32,8 +32,11 @@ $GLOBALS['hooks']   = array();
 $GLOBALS['options'] = array();
 $GLOBALS['query']   = array();
 
-function add_action( $hook, $fn, $priority = 10, $args = 1 ) { $GLOBALS['hooks'][ $hook ][] = $fn; }
-function add_filter( $hook, $fn, $priority = 10, $args = 1 ) { $GLOBALS['hooks'][ $hook ][] = $fn; }
+// Priorities are recorded beside the callbacks (same index) for the tests that
+// replay a request in WordPress's order; apply_filters below still runs in
+// registration order, as it always has.
+function add_action( $hook, $fn, $priority = 10, $args = 1 ) { $GLOBALS['hooks'][ $hook ][] = $fn; $GLOBALS['hook_priority'][ $hook ][] = (int) $priority; }
+function add_filter( $hook, $fn, $priority = 10, $args = 1 ) { $GLOBALS['hooks'][ $hook ][] = $fn; $GLOBALS['hook_priority'][ $hook ][] = (int) $priority; }
 
 /**
  * Really runs the callbacks, in registration order.
@@ -332,7 +335,7 @@ function _n( $s, $p, $n ) { return 1 === $n ? $s : $p; }
 function __( $s, $d = '' ) { return $s; }
 function esc_html__( $s, $d = '' ) { return $s; }
 function wp_kses( $s, $a ) { return $s; }
-function status_header() {}
+function status_header( $code = 200 ) { $GLOBALS['status_code'] = (int) $code; }
 function nocache_headers() {}
 function is_page() { return false; }
 function get_children() { return array(); }
@@ -503,7 +506,18 @@ if ( 'main' === $group ) {
 	$GLOBALS['query'] = array();
 	is( statchasers_divi_late_css_applies(), false, 'off outside the matchup template' );
 	$GLOBALS['query'] = array( 'sc_matchup' => 'detroit-lions-vs-green-bay-packers' );
+	$sc_article               = new WP_Post();
+	$sc_article->ID           = 92;
+	$sc_holder_dl             = new WP_Post();
+	$sc_holder_dl->ID         = 50;
+	$GLOBALS['pages_by_path'] = array( STATCHASERS_MATCHUP_HOLDER => $sc_holder_dl );
+	$GLOBALS['page']['post']  = $sc_article;
+	is( statchasers_divi_late_css_applies(), false, 'off for ?sc_matchup= on any other page (WEB-013)' );
+	$GLOBALS['page']['post']  = $sc_holder_dl;
 	is( statchasers_divi_late_css_applies(), true, 'on for a matchup request' );
+	$GLOBALS['page']['is404'] = true;
+	is( statchasers_divi_late_css_applies(), true, 'and on a matchup 404, which still renders the holder' );
+	unset( $GLOBALS['page'], $GLOBALS['pages_by_path'] );
 	$GLOBALS['query'] = array();
 	echo "\n";
 }
@@ -604,6 +618,18 @@ if ( 'schedtitles' === $group || 'schedtitle' === $group ) {
 	exit( $fail ? 1 : 0 );
 }
 
+if ( 'sched404s' === $group || 'sched404' === $group ) {
+	require __DIR__ . '/smoke-schedule-404.php';
+	echo "\n" . ( $fail ? "$fail FAILED\n" : "all passed\n" );
+	exit( $fail ? 1 : 0 );
+}
+
+if ( 'route404s' === $group || 'route404' === $group ) {
+	require __DIR__ . '/smoke-route-404.php';
+	echo "\n" . ( $fail ? "$fail FAILED\n" : "all passed\n" );
+	exit( $fail ? 1 : 0 );
+}
+
 if ( 'weekstray' === $group ) {
 	require __DIR__ . '/smoke-week-stray.php';
 	echo "\n" . ( $fail ? "$fail FAILED\n" : "all passed\n" );
@@ -649,6 +675,14 @@ is( statchasers_player_section_urls_enabled(), true, 'player sections' );
 is( statchasers_matchup_urls_enabled(), true, 'matchup pairs' );
 
 echo "\nmatchup headings\n";
+// The pair var is read only on the holder page (WEB-013): every matchup
+// check below renders it, as the rewrite does.
+$sc_holder                = new WP_Post();
+$sc_holder->ID            = 50;
+$sc_holder->post_name     = 'matchup';
+$sc_holder->post_content  = '[statchasers_matchup]';
+$GLOBALS['pages_by_path'] = array_merge( $GLOBALS['pages_by_path'] ?? array(), array( STATCHASERS_MATCHUP_HOLDER => $sc_holder ) );
+$GLOBALS['page']['post']  = $sc_holder;
 $GLOBALS['query']['sc_matchup'] = 'new-england-patriots-vs-philadelphia-eagles';
 is( statchasers_matchup_heading(), 'New England Patriots vs Philadelphia Eagles', 'pair' );
 
@@ -2379,7 +2413,7 @@ is( statchasers_player_lazyload_exclusions( null ), array( 'class="scp-pwell-img
  * The other groups. Their failures are this run's failures - a split that only
  * reported the half it felt like running would be worse than not splitting.
  */
-foreach ( array( 'containers', 'week', 'weekstray', 'schedtitles', 'leak', 'headings', 'playersection', 'rules', 'playerlinks', 'playerbuilder', 'sos', 'sosleak', 'sospage', 'sosfallback', 'fpa', 'fpaleak', 'fpaarchive', 'rhr', 'rhrleak', 'rds', 'rdsleak', 'scin', 'scindb', 'scinleak', 'bdp', 'hostcss', 'newsrail' ) as $child_group ) {
+foreach ( array( 'containers', 'week', 'weekstray', 'schedtitles', 'sched404s', 'route404s', 'leak', 'headings', 'playersection', 'rules', 'playerlinks', 'playerbuilder', 'sos', 'sosleak', 'sospage', 'sosfallback', 'fpa', 'fpaleak', 'fpaarchive', 'rhr', 'rhrleak', 'rds', 'rdsleak', 'scin', 'scindb', 'scinleak', 'bdp', 'hostcss', 'newsrail' ) as $child_group ) {
 	$child = array();
 	$code  = 0;
 	exec(
