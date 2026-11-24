@@ -27581,3 +27581,21 @@ ul.sct-faq-list li {
 :is(.sct, #sct-table-armour) .sct-cc-body .sct-cs-live {
   white-space: normal;
 }
+
+/* team-audit T5: the Schedule page's previous-season results board (2026-11-24).
+   Same table as this season's Results board; its own attribute so nothing
+   that counts this season's boards counts it. */
+:is(.sct, #sct-table-armour) .sct-shp-table[data-shp-archive] {
+  min-width: 560px;
+}
+
+.sct-shp-board.is-previous .sct-shp-table[data-shp-archive] + .sct-shp-scroll,
+.sct-shp-board.is-previous .sct-shp-scroll + .sct-shp-scroll {
+  margin-top: 12px;
+}
+
+@container (max-width: 560px) {
+  :is(.sct, #sct-table-armour) .sct-shp-table[data-shp-archive] {
+    min-width: 0;
+  }
+}

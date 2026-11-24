@@ -46,6 +46,9 @@ const SITE_NAME = "StatChasers";
  *
  * Returns null for a section with no written metadata; the caller falls back to
  * the hub's.
+ *
+ * Every description fits 160 characters for the longest team name (team audit,
+ * 2026-11-24); scripts/team/scanTeamPages.mjs checks the live pages for it.
  */
 function sectionMeta(
   team: NflTeam,
@@ -116,8 +119,8 @@ function sectionMeta(
         `${name} Schedule ${season}`,
       ]),
       description:
-        `${name} schedule for the ${season} NFL season: every game with date, kickoff time, ` +
-        `TV network, venue and result, the ${nick} bye week, and the next game.`,
+        `${name} ${season} schedule: every game with date, kickoff time, TV network, venue ` +
+        `and result, plus the ${nick} bye week and next game.`,
     };
   }
 
@@ -129,7 +132,7 @@ function sectionMeta(
       ]),
       description:
         `Every ${name} opponent in ${season}, week by week, with results and a matchup ` +
-        `page for each pair: team stats side by side, injuries and the head-to-head record.`,
+        `page for each: stats side by side, injuries and head-to-head record.`,
     };
   }
 
@@ -140,8 +143,8 @@ function sectionMeta(
         `${name} News ${season}: Injuries & Roster Moves`,
       ]),
       description:
-        `The latest ${name} news: injury designations, roster moves and depth-chart ` +
-        `changes through the ${season} season, each with what it means for ${nick} fantasy value.`,
+        `Latest ${name} news: injury designations, roster moves and depth-chart changes ` +
+        `in ${season}, each with its ${nick} fantasy impact.`,
     };
   }
 
@@ -154,8 +157,8 @@ function sectionMeta(
         `${name} Depth Chart ${season}`,
       ]),
       description:
-        `View the ${name} depth chart for the ${season} NFL season, including current starters, ` +
-        `backups, offense, defense, special teams and fantasy skill-position rankings.`,
+        `View the ${name} depth chart for ${season}, including current starters, backups, ` +
+        `offense, defense, special teams and fantasy skill-position rankings.`,
     };
   }
 

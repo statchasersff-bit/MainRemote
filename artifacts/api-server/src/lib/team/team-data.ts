@@ -101,6 +101,13 @@ export interface TeamPageData {
    * it has games, so no club gets a playoff section it has not earned.
    */
   postseason: TeamSchedule | null;
+  /**
+   * The season before, regular season and postseason, from the same slate
+   * (team audit, 2026-11-24): the Schedule tab lists its results with a link
+   * to each game's dated page, so last season's games are reachable from the
+   * team's own pages. Null when the slate has no such season.
+   */
+  previousSeason?: { season: number; schedule: TeamSchedule; postseason: TeamSchedule | null } | null;
   profile: TeamProfile | null;
   snapshot: TeamSnapshot | null;
   /**
@@ -232,7 +239,7 @@ export async function getTeamPageData(team: NflTeam): Promise<TeamPageData> {
     new Promise((resolve) => setTimeout(resolve, 3_000).unref()),
   ]);
 
-  const [newsResult, scheduleResult, postseasonResult, profileResult, snapshotResult, statsResult] =
+  const [newsResult, scheduleResult, postseasonResult, profileResult, snapshotResult, statsResult, prevResult, prevPostResult] =
     await Promise.allSettled([
       listNewsForTeam(team.abbreviation, { limit: TEAM_NEWS_LIMIT }),
       getTeamSchedule(team, state.season),
@@ -240,7 +247,10 @@ export async function getTeamPageData(team: NflTeam): Promise<TeamPageData> {
       getTeamProfile(team, state.season),
       getTeamSnapshot(team, state.statsSeason),
       getTeamStats(team, state.statsSeason),
+      getTeamSchedule(team, state.season - 1),
+      getTeamPostseason(team, state.season - 1),
     ]);
+  const previousSchedule = settled(prevResult);
 
   const news = recentTeamNews(settled(newsResult) ?? [], Date.now());
   const profile = settled(profileResult);
@@ -272,6 +282,9 @@ export async function getTeamPageData(team: NflTeam): Promise<TeamPageData> {
     depthCharts: currentDepthCharts(team, state.season, schedule, getTeamDepthCharts(team.abbreviation), roster),
     schedule,
     postseason,
+    previousSeason: previousSchedule
+      ? { season: state.season - 1, schedule: previousSchedule, postseason: settled(prevPostResult) }
+      : null,
     profile:
       profile && !recordDescribesSeason(profile, schedule, state)
         ? // ESPN's "record" still describes the preseason. Drop the field
@@ -307,6 +320,8 @@ export function dataVersion(data: TeamPageData, contentVersion: string): string 
     // slate fetches, and the page has to re-render for it.
     data.schedule?.version ?? "",
     data.postseason?.version ?? "",
+    data.previousSeason?.schedule.version ?? "",
+    data.previousSeason?.postseason?.version ?? "",
     data.profile?.fetchedAt ?? 0,
     data.snapshot?.fetchedAt ?? 0,
     data.stats?.fetchedAt ?? 0,

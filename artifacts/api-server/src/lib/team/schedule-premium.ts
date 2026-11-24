@@ -36,6 +36,7 @@ import { seasonShape, type SeasonShape } from "./season-shape";
 import type { TeamPageData } from "./team-data";
 import type { NflTeam } from "./teams";
 import { premiumTabHead } from "./premium-head";
+import { gameLink, meetingForWeek, teamMeetings } from "../matchup/game-link";
 
 const e = escapeHtml;
 
@@ -323,14 +324,15 @@ function byeRow(week: number, columns: number): string {
   );
 }
 
-function table(kind: "results" | "remaining", caption: string, rows: string[]): string {
+/** `attr` names the board: `data-shp-board` this season, `data-shp-archive` an earlier one. */
+function table(kind: "results" | "remaining", caption: string, rows: string[], attr = "data-shp-board"): string {
   const head =
     kind === "results"
       ? `<th scope="col" class="is-week">Wk</th><th scope="col" class="is-opp">Opponent</th><th scope="col" class="is-date">Date</th><th scope="col" class="is-result">Result</th><th scope="col" class="is-record"><span class="sct-shp-long">Record</span><span class="sct-shp-short" aria-hidden="true">Rec</span></th><th scope="col" class="is-view"><span class="sct-visually-hidden">Game page</span></th>`
       : `<th scope="col" class="is-week">Wk</th><th scope="col" class="is-opp">Opponent</th><th scope="col" class="is-date">Date</th><th scope="col" class="is-time">Time</th><th scope="col" class="is-tv">TV</th><th scope="col" class="is-venue">Venue</th><th scope="col" class="is-view"><span class="sct-visually-hidden">Game page</span></th>`;
   return (
     `<div class="sct-shp-scroll" tabindex="0">` +
-    `<table class="sct-shp-table" data-shp-board="${kind}">` +
+    `<table class="sct-shp-table" ${attr}="${kind}">` +
     `<caption class="sct-visually-hidden">${e(caption)}</caption>` +
     `<thead><tr class="sct-shp-th-row">${head}</tr></thead>` +
     `<tbody>${rows.join("")}</tbody>` +
@@ -392,6 +394,94 @@ function boards(data: TeamPageData, schedule: TeamSchedule, options: TeamRenderO
       `</section>`;
   }
   return out;
+}
+
+/* --------------------------------------------------------- last season */
+
+/**
+ * A finished game of an earlier season: its own dated page, or null.
+ *
+ * Through gameLink(), the one rule every game link on the site obeys, with
+ * the league's CURRENT season - a game of the season before is always an
+ * archive at its own address (meetingHasOwnAddress), which is also the rule
+ * the game sitemap lists it by. Anything that does not resolve to a dated
+ * address (no opponent, not final, no score, no kickoff) gets no link: the
+ * pair's page would open this season's meeting, not that game.
+ */
+function archiveHref(
+  team: NflTeam,
+  game: ScheduleGame,
+  schedule: TeamSchedule,
+  currentSeason: number,
+  options: TeamRenderOptions,
+  now: number,
+): string | null {
+  if (!game.opponent || game.status !== "final" || !game.result || game.kickoffMs === null) return null;
+  if (schedule.season >= currentSeason) return null;
+  const meetings = teamMeetings(schedule, game.opponent);
+  const me = meetingForWeek(meetings, game.week, game.seasonType);
+  if (!me) return null;
+  const href = gameLink(team, game.opponent, me, meetings, {
+    prefix: (options.matchupPathPrefix ?? "/nfl/").trim(),
+    query: options.linkQuery ?? "",
+    currentSeason,
+    now,
+  });
+  return href && new RegExp(`/${schedule.season}-[a-z0-9-]+/(\\?|$)`).test(href) ? href : null;
+}
+
+function archiveRow(team: NflTeam, game: ScheduleGame, schedule: TeamSchedule, currentSeason: number, options: TeamRenderOptions, now: number): string {
+  const href = archiveHref(team, game, schedule, currentSeason, options, now);
+  return (
+    `<tr class="sct-shp-row" data-site="${game.site}">` +
+    `<th scope="row" class="sct-shp-td is-week">${weekCell(game)}</th>` +
+    `<td class="sct-shp-td is-opp">${opponentCell(game, options)}</td>` +
+    `<td class="sct-shp-td is-date">${e(gameShortDate(game))}</td>` +
+    `<td class="sct-shp-td is-result">${resultBadge(game)}</td>` +
+    `<td class="sct-shp-td is-record"><span class="sct-shp-num">${e(recordThrough(schedule.games, game).text)}</span></td>` +
+    (href
+      ? `<td class="sct-shp-td is-view"><a class="sct-shp-view" href="${e(href)}">` +
+        `<span class="sct-shp-view-label">View recap </span><span class="sct-shp-arrow" aria-hidden="true">&rarr;</span></a></td>`
+      : `<td class="sct-shp-td is-view" data-shp-unlinked></td>`) +
+    `</tr>`
+  );
+}
+
+/**
+ * Last season's results, under this season's boards (team audit, 2026-11-24):
+ * every game of the season before with its score, the record after it and a
+ * link to that game's own page, so last season is reachable from the team's
+ * pages in server-rendered links. The same table as the Results board; the
+ * current season's layout above is untouched.
+ */
+function previousSeasonBoard(data: TeamPageData, options: TeamRenderOptions, now: number): string {
+  const prev = data.previousSeason;
+  if (!prev || !prev.schedule.games.length) return "";
+  const { team } = data;
+  const current = data.state.season;
+  const games = prev.schedule.games;
+  const rows = games.map((g) => archiveRow(team, g, prev.schedule, current, options, now));
+  const bye = prev.schedule.byeWeek;
+  if (bye) {
+    const at = games.findIndex((g) => g.week > bye);
+    rows.splice(at === -1 ? rows.length : at, 0, byeRow(bye, 6));
+  }
+  const post = prev.postseason?.games.length
+    ? table(
+        "results",
+        `${team.fullName} ${prev.season} postseason results.`,
+        prev.postseason.games.map((g) => archiveRow(team, g, prev.postseason as TeamSchedule, current, options, now)),
+        "data-shp-archive",
+      )
+    : "";
+  return (
+    `<section class="sct-shp-board is-previous" aria-labelledby="sct-shp-prev-h">` +
+    sectionHead(ICON.clipboard, "sct-shp-prev-h", `${team.fullName} ${prev.season} Results`, rangeOf(games)) +
+    legend(`${team.nickname} ${prev.season} results, ${rangeOf(games).toLowerCase()}`) +
+    table("results", `${team.fullName} ${prev.season} results: week, opponent, date, result, record after the game.`, rows, "data-shp-archive") +
+    post +
+    `</section>`
+  );
 }
 
 /* ------------------------------------------------------------------ rail */
@@ -535,7 +625,7 @@ export function renderSchedulePremium(data: TeamPageData, options: TeamRenderOpt
     identity(data, schedule) +
     `<div class="sct-shp-featured">` + nextCard(data, schedule, options, now) + lastCard(data, schedule, options, now) + `</div>` +
     `<div class="sct-shp-layout${rail ? "" : " is-single"}">` +
-    `<div class="sct-shp-main">${boards(data, schedule, options, now)}</div>` +
+    `<div class="sct-shp-main">${boards(data, schedule, options, now)}${previousSeasonBoard(data, options, now)}</div>` +
     rail +
     `</div>` +
     `</div>`

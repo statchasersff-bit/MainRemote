@@ -480,7 +480,8 @@ describe("embedded mode", () => {
 
   test("the season shape rail only ever counts the rows beside it", async () => {
     const { doc } = await dom("/team/new-england-patriots/schedule/");
-    const rows = [...doc.querySelectorAll("#schedule .sct-shp-row:not(.is-bye)")];
+    // This season's boards; last season's results table (data-shp-archive) is not beside the rail.
+    const rows = [...doc.querySelectorAll("#schedule [data-shp-board] .sct-shp-row:not(.is-bye)")];
     const shape = doc.querySelector("#schedule .sct-shp-rail");
     if (rows.length === 0) {
       assert.equal(shape, null, "no fixtures, nothing to draw a shape from");

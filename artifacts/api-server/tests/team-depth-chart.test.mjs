@@ -139,7 +139,7 @@ describe("the team depth-chart page, as statchasers.com mounts it", () => {
     assert.match(body, /<title>Buffalo Bills Depth Chart 2\d{3}: Starters &amp; Backups<\/title>/);
     assert.match(
       body,
-      /<meta name="description" content="View the Buffalo Bills depth chart for the 2\d{3} NFL season, including current starters, backups, offense, defense, special teams and fantasy skill-position rankings\." \/>/,
+      /<meta name="description" content="View the Buffalo Bills depth chart for 2\d{3}, including current starters, backups, offense, defense, special teams and fantasy skill-position rankings\." \/>/,
     );
     assert.match(body, /<link rel="canonical" href="[^"]*\/team\/buffalo-bills\/depth-chart\/" \/>/);
   });

@@ -306,7 +306,7 @@ describe("the Schedule page", () => {
   test("title, H1 and the context line under it", async () => {
     const { doc, body } = await dom(IND);
     assert.equal(doc.querySelector("title").textContent, "Indianapolis Colts Schedule 2026: Dates, Times, TV & Results");
-    assert.match(doc.querySelector('meta[name="description"]').getAttribute("content"), /^Indianapolis Colts schedule for the 2026 NFL season: every game with date, kickoff time, TV network, venue and result/);
+    assert.match(doc.querySelector('meta[name="description"]').getAttribute("content"), /^Indianapolis Colts 2026 schedule: every game with date, kickoff time, TV network, venue and result/);
     // Standalone, the hero is the H1 and the panel's heading an H2 - the same
     // words the WordPress mount promotes to its H1 (see the embed test). The
     // heading is the shared premium tab header's (the Draft tab's design,
@@ -471,7 +471,7 @@ describe("the Schedule page", () => {
 
   test("every opponent links to its hub, every game to its matchup, and the networks are marks", async () => {
     const { doc } = await dom(IND);
-    const rows = [...doc.querySelectorAll(".sct-shp-table .sct-shp-row:not(.is-bye)")];
+    const rows = [...doc.querySelectorAll(".sct-shp-table[data-shp-board] .sct-shp-row:not(.is-bye)")];
     for (const row of rows) {
       const team = row.querySelector("a.sct-shp-opp-name");
       assert.match(team.getAttribute("href"), /^\/team\/[a-z-]+\/$/, "the opponent's hub");
@@ -570,5 +570,28 @@ describe("the hub's Schedule tab", () => {
     const { doc } = await dom("/team/indianapolis-colts/stats/");
     const tab = doc.querySelector('.sct-nav-link[data-sct-panel-id="schedule"]');
     assert.equal(tab.getAttribute("href"), "/team/indianapolis-colts/schedule/");
+  });
+});
+
+describe("last season on the Schedule page (team audit, 2026-11-24)", () => {
+  test("every 2025 game is a row linking its own dated page; a divisional rival's two meetings link two games", async () => {
+    const { doc } = await dom("/team/buffalo-bills/schedule/");
+    const board = doc.querySelector(".sct-shp-board.is-previous");
+    assert.ok(board, "the previous-season board rendered");
+    assert.equal(board.querySelector("h3").textContent.trim(), "Buffalo Bills 2025 Results");
+    const rows = [...board.querySelectorAll("[data-shp-archive] .sct-shp-row:not(.is-bye)")];
+    assert.ok(rows.length >= 17, `${rows.length} rows`);
+    const hrefs = rows.map((row) => row.querySelector("a.sct-shp-view")?.getAttribute("href"));
+    for (const href of hrefs) assert.match(href ?? "", /^\/nfl\/[a-z0-9-]+-vs-[a-z0-9-]+\/2025-[a-z0-9-]+\/$/);
+    const miami = hrefs.filter((h) => h.startsWith("/nfl/buffalo-bills-vs-miami-dolphins/"));
+    assert.equal(miami.length, 2, miami.join(" "));
+    assert.notEqual(miami[0], miami[1]);
+    // This season's boards do not count it (the rail's Games figure, the board counts).
+    assert.equal(doc.querySelectorAll('[data-shp-board="results"]').length, 1);
+    // And each link resolves to the game it names.
+    for (const href of miami) {
+      const res = await get(href);
+      assert.equal(res.status, 200, href);
+    }
   });
 });

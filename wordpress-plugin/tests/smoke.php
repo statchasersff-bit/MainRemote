@@ -119,7 +119,7 @@ function add_query_arg( ...$a ) {
 	// Both of WordPress's forms: (array $args, $url) and ($key, $value, $url).
 	return is_array( $a[0] ) ? $a[1] . '?' . http_build_query( $a[0] ) : $a[2] . '?' . $a[0] . '=' . $a[1];
 }
-function get_permalink( $id ) { return 'https://example.com/p/' . $id . '/'; }
+function get_permalink( $id ) { return 'https://example.com/p/' . ( $id instanceof WP_Post ? $id->ID : $id ) . '/'; }
 function get_post_status( $id ) { return 'publish'; }
 if ( ! function_exists( 'get_post_modified_time' ) ) { function get_post_modified_time( $f = '', $g = false, $id = 0 ) { return '2026-09-24T00:00:00+00:00'; } }
 function get_page_by_path( $p ) { return $GLOBALS['pages_by_path'][ $p ] ?? null; }

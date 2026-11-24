@@ -46,6 +46,28 @@
  * and the two tool files own those. A route that is a 404 (/week-99/) gets
  * none of this.
  *
+ * ## The team pages (team audit, 2026-11-24)
+ *
+ * The same gap on the team directory (/nfl/teams/), the 32 hubs and every
+ * tab address under them (/usage/, /coaching/, /stats/, /schedule/,
+ * /depth-chart/, /matchups/, /news/): BreadcrumbList plus an FAQPage with no
+ * @id or url, no Organization, WebSite or WebPage, and no og:image on 26 of
+ * the 32 hubs (the other six carry the crest the page builder set as their
+ * featured image). They join as a third family, 'team', on exactly the
+ * mechanism above: global entities on, the brand card as the fallback image
+ * (so the six crests stay theirs, and the 26 others get one), and the
+ * WebPage's @id built from the canonical statchasers-team-pages.php already
+ * sets per tab. The team FAQ (statchasers-team.php) folds into that WebPage
+ * the way the schedule's does, and the Schedule tab's ItemList hangs off it.
+ *
+ * One more piece is the team pages' own: the hub's breadcrumb. Rank Math
+ * names a page's crumb with the page title, and the team page's title is its
+ * H1, which statchasers-team-pages.php writes per tab - so on the Schedule
+ * tab the crumb at the HUB's address read "Buffalo Bills Schedule", and on
+ * the hub "Buffalo Bills 2026 Stats, Schedule & Fantasy Outlook". The hub
+ * crumb is the team's name on every team route
+ * (statchasers_team_identity_breadcrumbs).
+ *
  * @package StatChasers\News
  */
 
@@ -54,9 +76,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * The share image for both families: the StatChasers brand card. There is no
- * schedule or SOS graphic in the media library; this one names the site and
- * what it does, which is true of both pages. Real pixels (checked 2026-11-24:
+ * The share image for every family: the StatChasers brand card. There is no
+ * schedule, SOS or team graphic in the media library; this one names the site
+ * and what it does, which is true of all of them. A team hub with a featured
+ * image (its crest) keeps it: this is only ever the fallback. Real pixels (checked 2026-11-24:
  * 200, image/png, 1200 x 630).
  */
 const STATCHASERS_PAGE_IDENTITY_IMAGE = array(
@@ -68,12 +91,17 @@ const STATCHASERS_PAGE_IDENTITY_IMAGE = array(
 );
 
 /**
- * Which family this request is a valid route of: 'schedule', 'sos' or ''.
+ * Which family this request is a valid route of: 'schedule', 'sos', 'team'
+ * or ''.
  *
  * Valid means the page that mounts the tool, rendered as a page: a week the
  * season does not have is a 404 (statchasers-schedule.php's
  * template_redirect) and answers ''. The mount checks are the tool files' own
  * memoized predicates, so a query var on an article cannot opt it in.
+ *
+ * 'team' is the directory at /nfl/teams/ (the index shortcode, or the
+ * container page the plugin fills) and a page carrying [statchasers_team]
+ * whose slug is a team, on its hub address or a tab the rewrite serves.
  */
 function statchasers_page_identity_family(): string {
 	if ( is_404() || ! is_singular() ) {
@@ -85,7 +113,32 @@ function statchasers_page_identity_family(): string {
 	if ( function_exists( 'statchasers_sos_post_has_shortcode' ) && statchasers_sos_post_has_shortcode() ) {
 		return 'sos';
 	}
+	if ( statchasers_page_identity_is_team() ) {
+		return 'team';
+	}
 	return '';
+}
+
+/**
+ * Is this request the team directory, a team hub or one of a hub's tabs?
+ *
+ * A hub is a page carrying [statchasers_team] at a team's slug
+ * (statchasers_team_current_slug(), the key the title, canonical and render
+ * already share), so a page somebody made at a team slug for another purpose
+ * is not one. `/outlook/` 301s before the head is built and answers like the
+ * hub it lands on.
+ */
+function statchasers_page_identity_is_team(): bool {
+	if ( function_exists( 'statchasers_team_post_has_index_shortcode' ) && statchasers_team_post_has_index_shortcode() ) {
+		return true;
+	}
+	if ( function_exists( 'statchasers_team_is_container_page' ) && statchasers_team_is_container_page() ) {
+		return true;
+	}
+	return function_exists( 'statchasers_team_post_has_shortcode' )
+		&& function_exists( 'statchasers_team_current_slug' )
+		&& statchasers_team_post_has_shortcode()
+		&& '' !== statchasers_team_current_slug();
 }
 
 /**
@@ -99,10 +152,11 @@ function statchasers_page_identity_image(): ?array {
 		return null;
 	}
 	/**
-	 * Filters the share image of a schedule or SOS route. Return null for none.
+	 * Filters the share image of a schedule, SOS or team route. Return null
+	 * for none.
 	 *
 	 * @param array  $image  url, width, height, alt, type.
-	 * @param string $family 'schedule' or 'sos'.
+	 * @param string $family 'schedule', 'sos' or 'team'.
 	 */
 	$image = apply_filters( 'statchasers_page_identity_image', STATCHASERS_PAGE_IDENTITY_IMAGE, $family );
 	if ( ! is_array( $image ) || empty( $image['url'] ) || 0 !== strpos( (string) $image['url'], 'https://' ) ) {
@@ -113,7 +167,7 @@ function statchasers_page_identity_image(): ?array {
 
 /*
  * Rank Math's global entities on a valid route. Rank Math answers false here
- * for every Page with no schema of its own; this answers true for these two
+ * for every Page with no schema of its own; this answers true for these
  * families and passes every other page's answer through.
  */
 add_filter(
@@ -218,3 +272,35 @@ function statchasers_sos_breadcrumbs( $crumbs ) {
 	return $crumbs;
 }
 add_filter( 'rank_math/frontend/breadcrumb/items', 'statchasers_sos_breadcrumbs', 20 );
+
+/**
+ * The team hub's crumb as the team's name, on every team route.
+ *
+ * Rank Math's trail names the hub crumb with the page title, which on a team
+ * page is the tab's H1 (statchasers-team-pages.php's the_title filter): the
+ * Schedule tab's trail read "... > Buffalo Bills Schedule > Schedule", with
+ * the first of those two at the hub's address. Matched by URL, so only the
+ * crumb that IS the hub is renamed; the tab crumb that
+ * statchasers_team_breadcrumbs() appends after it keeps its label.
+ *
+ * @param array<int,array<int|string,mixed>> $crumbs Rank Math's crumbs.
+ * @return array<int,array<int|string,mixed>>
+ */
+function statchasers_team_identity_breadcrumbs( $crumbs ) {
+	if ( ! is_array( $crumbs ) || 'team' !== statchasers_page_identity_family() ) {
+		return $crumbs;
+	}
+	$slug = function_exists( 'statchasers_team_current_slug' ) ? statchasers_team_current_slug() : '';
+	$row  = '' === $slug ? null : ( statchasers_team_table()[ $slug ] ?? null );
+	if ( null === $row ) {
+		return $crumbs;
+	}
+	$hub = trailingslashit( (string) get_permalink( get_queried_object() ) );
+	foreach ( $crumbs as $i => $crumb ) {
+		if ( is_array( $crumb ) && isset( $crumb[1] ) && trailingslashit( (string) $crumb[1] ) === $hub ) {
+			$crumbs[ $i ][0] = $row[0];
+		}
+	}
+	return $crumbs;
+}
+add_filter( 'rank_math/frontend/breadcrumb/items', 'statchasers_team_identity_breadcrumbs', 15 );

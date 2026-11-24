@@ -2331,6 +2331,10 @@ function renderMoreLinks(team: NflTeam, options: TeamRenderOptions): string {
   const links: Array<[string, string]> = [
     [sectionPath(prefix, team.slug, HUB_SECTION) + query, `${team.fullName} team page`],
     [sectionPath(prefix, team.slug, "depth-chart") + query, "Depth chart"],
+    // The Matchups page is off the tab strip (hubTab: false) but keeps its
+    // sitemap address; this and the Depth Chart's link list are its doors
+    // (team audit, 2026-11-24).
+    [sectionPath(prefix, team.slug, "matchups") + query, "Matchups and opponents"],
     [sectionPath(prefix, team.slug, "stats") + query, "Team stats"],
     [sectionPath(prefix, team.slug, "usage") + query, "Snap counts and usage"],
     [sectionPath(prefix, team.slug, "news") + query, "News and injuries"],

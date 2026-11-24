@@ -1,7 +1,9 @@
 <?php
 /**
  * WEB-021: page identity on the schedule and SOS routes - share image,
- * canonical, title and the schema graph, checked together per route.
+ * canonical, title and the schema graph, checked together per route. The team
+ * directory, hubs and tabs joined as the 'team' family in the team audit
+ * (2026-11-24).
  *
  * One request per process, for the reason smoke-schedule-titles.php gives (the
  * week, the mount checks and the fetches are memoized). `pageids` is the
@@ -46,7 +48,18 @@ if ( 'pageids' === $group ) {
 		$routes,
 		array( 'sched:99', 'sos:hub' ),
 		array_map( static function ( $p ) { return 'sos:' . $p; }, STATCHASERS_SOS_PAGES ),
-		array( 'sos:hub?tab=player&scoring=half-ppr', 'sos:rb?scoring=std', 'article' )
+		array( 'sos:hub?tab=player&scoring=half-ppr', 'sos:rb?scoring=std', 'article' ),
+		// The team family (team audit, 2026-11-24): the directory, a hub with
+		// no image of its own, a hub whose crest is its featured image, every
+		// tab address, a long name, and a page at a slug that is no team.
+		array( 'team:index', 'team:buffalo-bills', 'team:buffalo-bills+thumb', 'team:buffalo-bills/coaching+thumb' ),
+		array_map(
+			static function ( $t ) {
+				return 'team:buffalo-bills/' . $t;
+			},
+			array( 'usage', 'coaching', 'stats', 'schedule', 'depth-chart', 'matchups', 'news' )
+		),
+		array( 'team:washington-commanders/schedule', 'team:not-a-team' )
 	);
 
 	foreach ( $routes as $route ) {
@@ -215,6 +228,59 @@ if ( 'sched' === $family ) {
 	}
 	$GLOBALS['http_body'] = '<div class="scsos is-embed" data-scsos-root="1" data-season="2026"><h2>Board</h2>' .
 		'<script type="application/json" class="scsos-page-data">' . json_encode( $copy ) . '</script></div>';
+} elseif ( 'team' === $family ) {
+	// $which: "index", "<slug>", "<slug>/<tab>", each optionally "+thumb" (the
+	// page has a featured image, which Rank Math's own add_images finds).
+	$thumb = '+thumb' === substr( $which, -6 );
+	$which = $thumb ? substr( $which, 0, -6 ) : $which;
+	list( $team_slug, $team_tab ) = array_pad( explode( '/', $which, 2 ), 2, '' );
+	$container                    = new WP_Post();
+	$container->ID                = 50;
+	$container->post_name         = 'teams';
+	$container->post_title        = 'NFL Team Hubs';
+	$container->post_content      = '[statchasers_team_index]';
+	$team_hubs_url                = get_permalink( 50 );
+	$crumbs                       = array( array( 'Home', SC_PID_HOME ), array( 'NFL', SC_PID_HOME . '/nfl/' ), array( 'NFL Team Hubs', $team_hubs_url ) );
+	if ( 'index' === $team_slug ) {
+		$post           = $container;
+		$base_canonical = $team_hubs_url;
+	} else {
+		$post->ID           = 51;
+		$post->post_name    = $team_slug;
+		$post->post_title   = 'Team Page';
+		$post->post_content = '[statchasers_team]';
+		$base_canonical     = get_permalink( 51 );
+		$GLOBALS['pages_by_path'][ STATCHASERS_TEAM_PATH . '/' . $team_slug ] = $post;
+		if ( '' !== $team_tab ) {
+			$GLOBALS['query']['sc_section'] = $team_tab;
+		}
+		$GLOBALS['team_faq']  = 'schedule' === $team_tab ? 2 : 3;
+		$faq                  = array();
+		for ( $i = 1; $i <= $GLOBALS['team_faq']; $i++ ) {
+			$faq[] = array( 'q' => "Question $i?", 'a' => "Answer $i." );
+		}
+		$GLOBALS['http_body'] = '<div class="sct" data-sct-root="1"><p>panel</p>' .
+			'<script type="application/json" class="sct-faq-data">' . json_encode( $faq ) . '</script>' .
+			( 'schedule' === $team_tab
+				? '<script type="application/json" class="sct-schedule-data">' . json_encode(
+					array(
+						'@type'           => 'ItemList',
+						'itemListElement' => array( array( '@type' => 'ListItem', 'position' => 1, 'item' => array( '@type' => 'SportsEvent', 'name' => 'Game' ) ) ),
+					)
+				) . '</script>'
+				: '' ) .
+			'</div>';
+		// Rank Math names the page's own crumb with the_title, which the team
+		// pages rewrite to the tab's H1.
+		$GLOBALS['page_post_for_title'] = $post;
+	}
+	if ( $thumb ) {
+		$featured = static function ( $images ) {
+			$images->add_image( array( 'url' => 'https://example.com/wp-content/uploads/BUF.png', 'width' => 512, 'height' => 512, 'alt' => 'Buffalo Bills logo' ) );
+		};
+		$GLOBALS['hooks']['rank_math/opengraph/facebook/add_images'][] = $featured;
+		$GLOBALS['hooks']['rank_math/opengraph/twitter/add_images'][]  = $featured;
+	}
 } else {
 	// An ordinary article carrying the tools' query words.
 	$post->ID           = 92;
@@ -247,6 +313,10 @@ foreach ( $GLOBALS['hooks']['template_redirect'] ?? array() as $fn ) {
 }
 
 $label = $route;
+
+if ( 'team' === $family && isset( $GLOBALS['page_post_for_title'] ) ) {
+	$crumbs[] = array( apply_filters( 'the_title', $post->post_title, $post->ID ), $base_canonical );
+}
 
 // The head, through Rank Math's filters.
 $title     = apply_filters( 'rank_math/frontend/title', $post->post_title );
@@ -310,6 +380,94 @@ if ( 'sched' === $family && '99' === $which ) {
 	// main, 2026-11-24; WEB-021 alone still saw the hub's).
 	is( $canonical, false, "$label: no week canonical (a 404 prints none, WEB-013)" );
 	is( isset( $graph['primaryImage'] ), false, "$label: no primaryImageOfPage" );
+	return;
+}
+
+/* --- the team family --- */
+
+if ( 'team' === $family && 'not-a-team' === $which ) {
+	is( statchasers_page_identity_family(), '', "$label: a [statchasers_team] page at no team's slug is not a team route" );
+	is( apply_filters( 'rank_math/schema/add_global_entities', false ), false, "$label: Rank Math's answer passes through" );
+	is( count( $fb ) + count( $tw ), 0, "$label: no share image added" );
+	return;
+}
+
+if ( 'team' === $family ) {
+	$is_index       = 'index' === $team_slug;
+	$want_canonical = $is_index ? $team_hubs_url : ( '' === $team_tab ? $base_canonical : $base_canonical . $team_tab . '/' );
+	$want_meta      = $is_index ? null : statchasers_team_section_meta( $team_slug, $team_tab );
+	$want_title     = $is_index || '' === $team_tab ? $post->post_title : $want_meta['title'];
+	$want_image     = $thumb ? 'https://example.com/wp-content/uploads/BUF.png' : STATCHASERS_PAGE_IDENTITY_IMAGE['url'];
+
+	is( statchasers_page_identity_family(), 'team', "$label: a team route" );
+	is( $canonical, $want_canonical, "$label: canonical $want_canonical" );
+	is( $og_url, $want_canonical, "$label: og:url matches the canonical" );
+	is( $title, $want_title, "$label: title untouched by this file" );
+	if ( null !== $want_meta ) {
+		$desc = (string) apply_filters( 'rank_math/frontend/description', 'stored' );
+		is( strlen( $desc ) <= 160, true, "$label: description fits 160 (" . strlen( $desc ) . ')' );
+		is( '' === $team_tab ? 'stored' : $want_meta['description'], $desc, "$label: description is the tab's own (the hub keeps its stored one)" );
+	}
+
+	is( count( $fb ), 1, "$label: one og:image" );
+	is( count( $tw ), 1, "$label: one twitter:image" );
+	is( $fb[0]['url'] ?? '', $want_image, $thumb ? "$label: the page's own image is kept" : "$label: og:image is the brand card" );
+	is( ( $tw[0]['url'] ?? '' ) === ( $fb[0]['url'] ?? null ), true, "$label: twitter:image is the same picture" );
+
+	$orgs = $typed( 'Organization' );
+	$site = $typed( 'WebSite' );
+	$bcs  = $typed( 'BreadcrumbList' );
+	is( count( $orgs ), 1, "$label: one Organization" );
+	is( count( $site ), 1, "$label: one WebSite" );
+	is( $site[0]['publisher']['@id'] ?? '', SC_PID_HOME . '/#organization', "$label: WebSite published by the Organization" );
+	is( count( $bcs ), 1, "$label: one BreadcrumbList" );
+	is( count( $pages ), 1, "$label: one page entity (no id-less FAQPage beside it)" );
+	$page = $pages[0] ?? array();
+	is( $page['@id'] ?? '', $want_canonical . '#webpage', "$label: page @id is the route's own" );
+	is( $page['url'] ?? '', $want_canonical, "$label: page url is the canonical" );
+	is( $page['isPartOf']['@id'] ?? '', SC_PID_HOME . '/#website', "$label: isPartOf the WebSite" );
+	is( $page['breadcrumb']['@id'] ?? '', $bcs[0]['@id'] ?? 'none', "$label: breadcrumb connected" );
+	$trail = $bcs[0]['itemListElement'] ?? array();
+	$last  = end( $trail );
+	is( $last['item']['@id'] ?? '', $want_canonical, "$label: the trail ends at the route" );
+	if ( ! $is_index ) {
+		is( $trail[3]['item']['@id'] ?? '', $base_canonical, "$label: the fourth crumb is the hub" );
+		is( $trail[3]['item']['name'] ?? '', statchasers_team_table()[ $team_slug ][0], "$label: named for the team, not the tab's H1" );
+		is( count( $trail ), '' === $team_tab ? 4 : 5, "$label: Home, NFL, NFL Team Hubs, the team" . ( '' === $team_tab ? '' : ', the tab' ) );
+		is( (array) ( $page['@type'] ?? null ), array( 'FAQPage' ), "$label: the FAQ is the page entity" );
+		is( count( $page['mainEntity'] ?? array() ), $GLOBALS['team_faq'], "$label: with every question" );
+		is( count( $typed( 'ItemList' ) ), 'schedule' === $team_tab ? 1 : 0, "$label: the games ItemList only on the Schedule tab" );
+	} else {
+		is( count( $trail ), 3, "$label: the directory's trail is untouched" );
+		is( (array) ( $page['@type'] ?? null ), array( 'WebPage' ), "$label: a WebPage" );
+	}
+	$want_primary = $thumb ? null : STATCHASERS_PAGE_IDENTITY_IMAGE['url'];
+	if ( null !== $want_primary ) {
+		is( $page['primaryImageOfPage']['@id'] ?? '', $want_primary, "$label: primaryImageOfPage is the share image" );
+	}
+
+	$ok_ids = true;
+	foreach ( $nodes as $node ) {
+		if ( empty( $node['@id'] ) && 'ItemList' !== ( $node['@type'] ?? '' ) ) {
+			$ok_ids = false;
+		}
+	}
+	is( $ok_ids, true, "$label: every entity node has an @id" );
+	is( max( array_map( 'count', $by_id ) ), 1, "$label: no @id emitted twice" );
+	$dangling = array();
+	foreach ( $nodes as $node ) {
+		foreach ( array( 'isPartOf', 'publisher', 'breadcrumb', 'primaryImageOfPage' ) as $ref ) {
+			if ( isset( $node[ $ref ]['@id'] ) && ! isset( $by_id[ $node[ $ref ]['@id'] ] ) ) {
+				$dangling[] = $ref . ' -> ' . $node[ $ref ]['@id'];
+			}
+		}
+	}
+	is( $dangling, array(), "$label: every reference resolves" );
+	if ( getenv( 'STATCHASERS_PAGEID_DUMP' ) ) {
+		echo "DUMP title={$title}\nDUMP canonical={$canonical}\n";
+		echo 'DUMP og:image=' . ( $fb[0]['url'] ?? '-' ) . "\n";
+		echo 'DUMP json-ld=' . json_encode( $json, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) . "\n";
+	}
 	return;
 }
 

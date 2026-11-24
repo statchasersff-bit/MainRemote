@@ -1272,6 +1272,11 @@ function statchasers_team_current_slug(): string {
  * rolls over or a phrase is reworded. The season is a constant at the top of
  * this file, so a rollover is one edit.
  *
+ * Every description fits 160 characters for the longest team name (the team
+ * audit of 2026-11-24 found the matchups, news and depth-chart ones, and six
+ * schedule ones, running past it); scripts/team/scanTeamPages.mjs in the API
+ * checks the live pages for it.
+ *
  * @param string $slug    Team slug.
  * @param string $section Section id, or '' for the hub.
  * @return array{title:string,description:string}|null Null for an unknown team.
@@ -1362,7 +1367,7 @@ function statchasers_team_section_meta( string $slug, string $section ): ?array 
 					)
 				),
 				'description' => sprintf(
-					'%1$s schedule for the %2$s NFL season: every game with date, kickoff time, TV network, venue and result, the %3$s bye week, and the next game.',
+					'%1$s %2$s schedule: every game with date, kickoff time, TV network, venue and result, plus the %3$s bye week and next game.',
 					$name,
 					$season,
 					$nick
@@ -1378,7 +1383,7 @@ function statchasers_team_section_meta( string $slug, string $section ): ?array 
 					)
 				),
 				'description' => sprintf(
-					'Every %1$s opponent in %2$s, week by week, with results and a matchup page for each pair: team stats side by side, injuries and the head-to-head record.',
+					'Every %1$s opponent in %2$s, week by week, with results and a matchup page for each: stats side by side, injuries and head-to-head record.',
 					$name,
 					$season
 				),
@@ -1393,7 +1398,7 @@ function statchasers_team_section_meta( string $slug, string $section ): ?array 
 					)
 				),
 				'description' => sprintf(
-					'The latest %1$s news: injury designations, roster moves and depth-chart changes through the %2$s season, each with what it means for %3$s fantasy value.',
+					'Latest %1$s news: injury designations, roster moves and depth-chart changes in %2$s, each with its %3$s fantasy impact.',
 					$name,
 					$season,
 					$nick
@@ -1411,7 +1416,7 @@ function statchasers_team_section_meta( string $slug, string $section ): ?array 
 					)
 				),
 				'description' => sprintf(
-					'View the %1$s depth chart for the %2$s NFL season, including current starters, backups, offense, defense, special teams and fantasy skill-position rankings.',
+					'View the %1$s depth chart for %2$s, including current starters, backups, offense, defense, special teams and fantasy skill-position rankings.',
 					$name,
 					$season
 				),
