@@ -214,8 +214,13 @@ export function currentStatus(input: CurrentStatusInput): CurrentStatus {
       source: a.source,
       injury,
       prior,
-      freshness: reportFreshness(resolved.reportFetchedAt, now),
-      message: `${a.status} for Week ${week}${injury ? ` (${injury})` : ""}.`,
+      freshness: a.source === "nfl-report" ? reportFreshness(resolved.reportFetchedAt, now) : freshness,
+      // A Sleeper Out filed since the last game: real, but not yet on the
+      // official report, and the message says so.
+      message:
+        a.source === "sleeper"
+          ? `${a.status}${injury ? ` (${injury})` : ""}, reported after Week ${a.lastGame?.week ?? week - 1}; not yet on the official Week ${week} injury report.`
+          : `${a.status} for Week ${week}${injury ? ` (${injury})` : ""}.`,
     };
   }
   if (a.status && a.status !== PENDING) {
