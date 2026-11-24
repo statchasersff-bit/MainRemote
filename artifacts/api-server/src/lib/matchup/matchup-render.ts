@@ -4067,7 +4067,7 @@ function recapTabHead(id: RecapTabId, game: ScoreboardGame, overview: boolean): 
       icon: "fantasy",
       title: `${pair} Fantasy Recap`,
       phone: "Fantasy Recap",
-      dek: "The highlights, the fantasy box score, usage and opportunity, actual versus expected points, takeaways and next-week decisions.",
+      dek: "The fantasy box score with the top scorers tagged, usage and opportunity, actual versus expected points, takeaways and next-week decisions.",
     },
     "game-flow": {
       icon: "flow",
