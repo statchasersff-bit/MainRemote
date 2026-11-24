@@ -1110,6 +1110,30 @@ function buildCareerProfile(
   };
 }
 
+/** The stored history with each OPEN current-season entry's count taken from its window. */
+function withOpenWindows(
+  history: PlayerInjuryHistory,
+  season: number,
+  availability: SeasonAvailability,
+): PlayerInjuryHistory {
+  const open = new Map(availability.windows.filter((w) => w.open).map((w) => [w.week, w.missedWeeks.length]));
+  if (!open.size) return history;
+  let changed = false;
+  const nfl = history.nfl.map((e) => {
+    if (e.season !== season || typeof e.week !== "number" || !open.has(e.week)) return e;
+    const n = open.get(e.week)!;
+    if (n === (e.gamesMissed ?? 0)) return e;
+    changed = true;
+    const games = `${n} ${n === 1 ? "game" : "games"}`;
+    return {
+      ...e,
+      gamesMissed: n,
+      description: e.description?.replace(/\(\d+ games? missed so far\)/, `(${games} missed so far)`),
+    };
+  });
+  return changed ? { ...history, nfl } : history;
+}
+
 function buildInjuryProfile(
   playerId: string,
   name: string,
@@ -1117,22 +1141,29 @@ function buildInjuryProfile(
   gameLog: GameLogEntry[],
   designation: RosterPlayer | null,
   teamCode: string | null,
+  stillOut = false,
 ): InjuryProfile | null {
-  const history = getInjuryHistory(playerId);
-  if (!history) return null;
-
-  const summary = summarizeInjuries(history);
+  const stored = getInjuryHistory(playerId);
+  if (!stored) return null;
 
   // Absences in the season on the page, from the one shared definition
   // (games-missed.ts, audit WEB-039): his club's completed games he did not
-  // play, split into injury (an injury record covers the week) and reason
-  // unknown. The same record the Durability Profile reads.
+  // play, split into injury (an injury entry's window covers the week) and
+  // reason unknown. The same record the Durability Profile reads.
   const availability = seasonAvailability({
     season,
     playerId,
     currentTeam: teamCode,
-    injuries: history.nfl,
+    injuries: stored.nfl,
+    stillOut,
   });
+  // An entry still open this season counts its window from the same record,
+  // so the history, the latest-injury card and the season total say one
+  // number (Pacheco: "9 games missed so far" beside "2026 games missed 10",
+  // the builder's count a week old).
+  const history = withOpenWindows(stored, season, availability);
+
+  const summary = summarizeInjuries(history);
   const counted = gameLog.length > 0 || availability.teamGames > 0;
   const seasonMissed = counted ? availability.missedInjury : null;
   const seasonOut = counted ? availability.notPlayed : null;
@@ -1534,6 +1565,9 @@ export async function getPlayerPageData(
       season === leagueSeason ? gameLog : [],
       designation,
       team?.code ?? player.team ?? null,
+      // Still out: a reserve list, an official Out, or pending after a
+      // missed game - his open injury window runs to the last game played.
+      status.kind === "reserve" || status.kind === "pending" || status.kind === "out",
     ),
 
     news,

@@ -19,13 +19,27 @@
  *
  * And it says how old its inputs are, so a stale feed is shown as stale.
  *
+ * Since 2026-11-24 (WEB-039 follow-up) a designation is ONLY an official
+ * game status on the club's report for that week. A Sleeper status filed
+ * since the last game is reported, not designated (the note says so), and
+ * "no designation" reads "No designation yet" until the week's report has
+ * its game statuses: a missing or empty report never reads as cleared.
+ *
  * Every player component reads `PlayerPageData.designation`, which carries
  * displayedStatus(); none may fall back to `player.injury_status` (the raw
  * Sleeper field in players.json), which is what kept Burden "Questionable" in
  * the header after this record had expired it.
  */
 
-import { gameAvailability, PENDING, type AvailabilityKind, type AvailabilityOptions, type PracticeDoc } from "../matchup/availability";
+import {
+  gameAvailability,
+  NO_DESIGNATION_YET,
+  PENDING,
+  type AvailabilityKind,
+  type AvailabilityOptions,
+  type PracticeDoc,
+  type WeekReport,
+} from "../matchup/availability";
 import { dataPath } from "../data-dir";
 import { readDataJson } from "../team/read-json";
 import type { RosterPlayer } from "../team/roster";
@@ -44,6 +58,12 @@ export interface CurrentStatus {
   week: number | null;
   /** The official game designation for `week`, or null when none is reported. */
   designation: string | null;
+  /** True when `designation` is an official game status for `week` (availability.ts `designated`). */
+  designated: boolean;
+  /** What the status slot says: the designation, the reserve list, "No designation (yet)". */
+  label: string;
+  /** The club's official report for `week`: missing, pending (no game statuses yet) or final. */
+  reportState: WeekReport["state"];
   /** IR / PUP / NFI / suspension, when he is on one. */
   rosterStatus: string | null;
   /** Latest practice line this week, e.g. "DNP Wed". */
@@ -54,6 +74,8 @@ export interface CurrentStatus {
   source: "nfl-report" | "sleeper" | "reserve" | "none";
   /** A previous week's designation, kept as history, never as current. */
   prior: { week: number; status: string } | null;
+  /** The club's last game, when he did not play it (a pending status's reason); else null. */
+  missedWeek: number | null;
   /** When the official report for `week` was fetched (ms), or null when none is on file. */
   reportFetchedAt: number | null;
   /** When the roster snapshot (reserve lists) was pulled (ms), or null. */
@@ -65,10 +87,14 @@ export interface CurrentStatus {
 
 /** The club's next regular-season game: the first with no result that is not final. */
 export function nextGameWeek(games: ScheduleGame[] | null | undefined): number | null {
+  return nextGame(games)?.week ?? null;
+}
+
+function nextGame(games: ScheduleGame[] | null | undefined): ScheduleGame | null {
   const open = (games ?? [])
     .filter((g) => g.seasonType === "regular" && g.status !== "final" && g.status !== "canceled" && g.result == null)
     .sort((a, b) => a.week - b.week);
-  return open[0]?.week ?? null;
+  return open[0] ?? null;
 }
 
 function reportFetchedAt(season: number, week: number, injected?: PracticeDoc | null): number | null {
@@ -95,19 +121,24 @@ export interface CurrentStatusInput {
 
 export function currentStatus(input: CurrentStatusInput): CurrentStatus {
   const { playerId, team, season, rosterRow, now } = input;
-  const week = nextGameWeek(input.games);
+  const game = nextGame(input.games);
+  const week = game?.week ?? null;
   const rosterFetchedAt = input.rosterFetchedAt && input.rosterFetchedAt > 0 ? input.rosterFetchedAt : null;
   const base: CurrentStatus = {
     playerId,
     season,
     week,
     designation: null,
+    designated: false,
+    label: NO_DESIGNATION_YET,
+    reportState: "missing",
     rosterStatus: null,
     practice: null,
     injury: null,
     kind: "none",
     source: "none",
     prior: null,
+    missedWeek: null,
     reportFetchedAt: week !== null ? reportFetchedAt(season, week, input.deps?.practice) : null,
     rosterFetchedAt,
     freshness: "unavailable",
@@ -123,22 +154,33 @@ export function currentStatus(input: CurrentStatusInput): CurrentStatus {
     const raw = (rosterRow.injuryStatus ?? "").trim();
     const reserve = gameAvailability(team, season, 99, [rosterRow], { ...input.deps, nextGame: false }).get(rosterRow.id);
     if (reserve?.kind === "reserve") {
-      return { ...base, rosterStatus: raw, kind: "reserve", source: "reserve", freshness, message: `On ${raw}.` };
+      return { ...base, rosterStatus: raw, label: raw, kind: "reserve", source: "reserve", freshness, message: `On ${raw}.` };
     }
-    return { ...base, freshness, message: "No current game designation reported." };
+    return { ...base, label: "No designation", freshness, message: "No current game designation reported." };
   }
 
-  const a = gameAvailability(team, season, week, [rosterRow], { ...input.deps }).get(rosterRow.id);
+  const a = gameAvailability(team, season, week, [rosterRow], { ...input.deps, kickoffMs: game?.kickoffMs ?? null }).get(rosterRow.id);
   if (!a) return { ...base, freshness };
+  const resolved = {
+    label: a.label,
+    reportState: a.report.state,
+    reportFetchedAt: a.report.fetchedAt ?? base.reportFetchedAt,
+    missedWeek: a.lastGame && !a.lastGame.played ? a.lastGame.week : null,
+  };
 
   const priorWeek = a.lastGame?.week ?? null;
-  const priorStatus = a.priorStatus ?? (a.source === "none" && rosterRow.injuryStatus ? rosterRow.injuryStatus : null);
+  // Sleeper's field stands in for last week's status only when no report
+  // for this week is on file (the expired case); once the report has the
+  // club, a Sleeper tag it does not carry is nobody's Week N-1 status.
+  const priorStatus =
+    a.priorStatus ?? (a.source === "none" && a.report.state === "missing" && rosterRow.injuryStatus ? rosterRow.injuryStatus : null);
   const prior = priorWeek !== null && priorStatus ? { week: priorWeek, status: cap(priorStatus) } : null;
   const injury = (rosterRow.injuryBodyPart ?? "").trim().toLowerCase() || null;
 
   if (a.kind === "reserve") {
     return {
       ...base,
+      ...resolved,
       rosterStatus: a.status,
       kind: "reserve",
       source: "reserve",
@@ -151,6 +193,7 @@ export function currentStatus(input: CurrentStatusInput): CurrentStatus {
   if (a.kind === "pending") {
     return {
       ...base,
+      ...resolved,
       practice: a.practice,
       kind: "pending",
       source: a.source,
@@ -160,35 +203,46 @@ export function currentStatus(input: CurrentStatusInput): CurrentStatus {
       message: `No Week ${week} game designation reported yet. ${a.note ?? ""}`.trim(),
     };
   }
-  if (a.status && a.status !== PENDING) {
+  if (a.designated && a.status) {
     return {
       ...base,
+      ...resolved,
       designation: a.status,
+      designated: true,
       practice: a.practice,
       kind: a.kind,
       source: a.source,
       injury,
       prior,
-      freshness: a.source === "nfl-report" ? reportFreshness(base.reportFetchedAt, now) : freshness,
-      // A Sleeper-sourced status is real but not yet the official game
-      // status (designated after the last game, Phase 4): say so.
-      message:
-        a.source === "sleeper"
-          ? `${a.status}${injury ? ` (${injury})` : ""}, reported after Week ${a.lastGame?.week ?? week - 1}; not yet an official Week ${week} game status.`
-          : `${a.status} for Week ${week}${injury ? ` (${injury})` : ""}.`,
+      freshness: reportFreshness(resolved.reportFetchedAt, now),
+      message: `${a.status} for Week ${week}${injury ? ` (${injury})` : ""}.`,
     };
   }
+  if (a.status && a.status !== PENDING) {
+    // A status that is neither a reserve list nor a game designation (an
+    // unfamiliar Sleeper code): shown as it is, never as a game status.
+    return { ...base, ...resolved, designation: a.status, kind: a.kind, source: a.source, injury, prior, freshness, message: `${a.status}.` };
+  }
+  // No designation. "Yet" while this week's report is missing or has no
+  // game statuses: an empty feed is not a clean bill of health.
+  const lead =
+    a.report.state === "final"
+      ? `No game designation for Week ${week}.`
+      : a.report.state === "pending"
+        ? `No Week ${week} game designation yet; game statuses are not out.`
+        : `No Week ${week} game designation yet; the Week ${week} injury report is not on file.`;
   return {
     ...base,
+    ...resolved,
     practice: a.practice,
     kind: "active",
     source: a.source,
     prior,
-    freshness: a.source === "nfl-report" ? reportFreshness(base.reportFetchedAt, now) : freshness,
+    freshness: a.report.state !== "missing" ? reportFreshness(resolved.reportFetchedAt, now) : freshness,
     message:
-      `No current game designation reported for Week ${week}.` +
+      lead +
       (a.practice ? ` Practice: ${a.practice}.` : "") +
-      (prior ? ` Listed ${prior.status} for Week ${prior.week}.` : ""),
+      (a.source === "sleeper" && a.note ? ` ${a.note}` : prior ? ` Listed ${prior.status} for Week ${prior.week}.` : ""),
   };
 }
 

@@ -276,11 +276,18 @@ describe("a designation the player then played through has expired", () => {
  * Team Pages Phase 4 (2026-11-19): the expiry must not clear a designation
  * filed AFTER the last game. Sleeper carries no date, so the previous week's
  * official report dates it: the same status as that report is stale (Vaki),
- * a different status - or a player that report did not list - was designated
+ * a different status - or a player that report did not list - was reported
  * since (Woody Marks Out, A.J. Brown Questionable -> Out, Geno Smith
  * Questionable, all after Week 10, 2026).
+ *
+ * WEB-039 follow-up (2026-11-24): reported is not designated. Only the
+ * official report for the game's week gives a game status, so an Out or
+ * Doubtful reported since the last game reads Pending (still kept out of the
+ * lineup reads), a Questionable is a note, and once this week's report has
+ * the club it alone decides. Luther Burden III's Questionable, filed after
+ * Week 9 and carried across the Bears' Week 10 bye, was this case.
  */
-describe("a designation filed after the last game stands until the official report", () => {
+describe("a designation reported after the last game is not an official game status", () => {
   const row = (name, gameStatus) => ({ name, pos: "RB", injury: null, gameStatus, final: null, days: {} });
   const roster = [
     { id: "stale", name: "Sione Vaki", position: "RB", injuryStatus: "Questionable", injuryBodyPart: "Ankle" },
@@ -298,25 +305,31 @@ describe("a designation filed after the last game stands until the official repo
   const statuses = (practice) =>
     Object.fromEntries(availability.gameRoster(team("det"), 2026, 11, roster, { logs, practice }).map((r) => [r.id, r]));
 
-  test("no Week 11 report: stale expires, new designations stand and say they are not official", () => {
+  test("no Week 11 report: stale expires; reported since is pending or a note, never designated", () => {
     const s = statuses({ weeks: week10() });
     assert.equal(s.stale.injuryStatus, null, "Questionable for Week 10 and played: expired");
-    assert.equal(s.upgraded.injuryStatus, "Out", "Questionable on the Week 10 report, Out since: stands");
-    assert.equal(s.unlisted.injuryStatus, "Questionable", "not on the Week 10 report, designated since: stands");
+    assert.equal(s.upgraded.injuryStatus, "Pending", "Out reported since Week 10: pending, not an official Out");
+    assert.equal(s.upgraded.availability.designated, false);
     assert.equal(s.upgraded.availability.source, "sleeper");
-    assert.match(s.upgraded.availability.note, /Listed Out after Week 10; no official Week 11 injury report yet/);
+    assert.match(s.upgraded.availability.note, /Reported Out after Week 10; not an official Week 11 game status \(no Week 11 injury report yet\)/);
+    assert.equal(s.unlisted.injuryStatus, null, "a reported Questionable is a note, not a status");
+    assert.match(s.unlisted.availability.note, /Reported Questionable after Week 10/);
+    assert.equal(s.unlisted.availability.label, "No designation yet");
     assert.equal(s.missed.injuryStatus, "Pending");
     assert.equal(s.ir.injuryStatus, "IR");
+    assert.equal(s.ir.availability.designated, false, "a reserve list is a roster status, not a game designation");
   });
 
-  test("Week 11 report on file without game statuses yet: the same split, with practice", () => {
+  test("Week 11 report on file without game statuses yet: the report decides, Sleeper is not consulted", () => {
     const weeks = week10();
     weeks[11] = { teams: { Lions: { [availability.availabilityKey("Out Now")]: { ...row("Out Now", null), final: "DNP", days: { "2026-11-18": "DNP" } } } } };
     const s = statuses({ weeks });
     assert.equal(s.stale.injuryStatus, null);
-    assert.equal(s.upgraded.injuryStatus, "Out");
-    assert.match(s.upgraded.availability.note, /no official Week 11 game status yet/);
-    assert.equal(s.unlisted.injuryStatus, "Questionable");
+    assert.equal(s.upgraded.injuryStatus, null, "on the report with no game status yet");
+    assert.equal(s.upgraded.availability.label, "No designation yet");
+    assert.equal(s.upgraded.availability.practice, "DNP Wed", "practice kept apart from the game status");
+    assert.equal(s.upgraded.availability.report.state, "pending");
+    assert.equal(s.unlisted.injuryStatus, null, "not on this week's report: no designation");
   });
 
   test("the official game status wins over Sleeper", () => {
@@ -325,6 +338,9 @@ describe("a designation filed after the last game stands until the official repo
     const s = statuses({ weeks });
     assert.equal(s.upgraded.injuryStatus, "Doubtful");
     assert.equal(s.upgraded.availability.source, "nfl-report");
+    assert.equal(s.upgraded.availability.designated, true);
+    assert.equal(s.upgraded.availability.report.state, "final");
+    assert.equal(s.stale.availability.label, "No designation", "final report, not listed");
   });
 
   test("no previous report to date it against: expires, as before", () => {

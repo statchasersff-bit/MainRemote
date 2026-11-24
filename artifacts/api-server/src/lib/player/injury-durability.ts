@@ -273,8 +273,29 @@ function currentSeasonCounts(episodes: RegionEpisode[], data: PlayerPageData): R
   return episodes.map((ep) => {
     if (ep.season !== avail.season || !ep.ongoing || ep.week == null) return ep;
     const start = ep.week;
-    return { ...ep, gamesMissed: avail.weeksMissedInjury.filter((w) => w >= start).length };
+    // The open window that covers the episode (games-missed.ts), else every
+    // injury week since it began.
+    const win = [...(avail.windows ?? [])].filter((w) => w.open && w.week <= start + 3).pop();
+    return { ...ep, gamesMissed: win ? win.missedWeeks.length : avail.weeksMissedInjury.filter((w) => w >= start).length };
   });
+}
+
+/**
+ * The pack's season count replaced by the page's for the season on the
+ * page, so the "Games Missed" tile adds up the same games the season KPI and
+ * the history count (WEB-039, 2026-11-24: Pacheco's tile carried the pack's
+ * 5 for 2026 beside the history's 10).
+ */
+function seasonDelta(gm: GmPlayer, data: PlayerPageData): number {
+  const avail = data.injury?.availability;
+  // `avail` is the league season's record (player-data), whichever season
+  // the page's tabs show.
+  if (!avail) return 0;
+  // Only a season the tile's total sums (the scored seasons, not `extra`).
+  if (!gm.seasonYears.map(Number).includes(avail.season)) return 0;
+  const pack = (gm.seasons as Record<string, [number, number] | undefined>)[String(avail.season)];
+  if (!pack) return 0;
+  return avail.missedInjury - pack[1];
 }
 
 export function durabilityModel(data: PlayerPageData): DurabilityModel | null {
@@ -286,13 +307,15 @@ export function durabilityModel(data: PlayerPageData): DurabilityModel | null {
   const injuries = [...gm.inj, ...gm.extra.inj];
   const chips = regionChips(riskModel(slice.rows, slice.impacts, slice.unscored));
   const regions: RegionView[] = chips
-    .map(({ region, stat }) => ({
-      region,
-      gamesMissed: stat.gamesMissed,
-      severe: stat.severe,
-      episodes: currentSeasonCounts(regionEpisodes(slice, injuries, region.key), data),
-      color: severityColor(stat.gamesMissed, stat.severe),
-    }))
+    .map(({ region, stat }) => {
+      const raw = regionEpisodes(slice, injuries, region.key);
+      const episodes = currentSeasonCounts(raw, data);
+      // The region's total moves with its open episode, so the pill and the
+      // record under it say the same number.
+      const shift = episodes.reduce((n, ep, i) => n + ep.gamesMissed - raw[i]!.gamesMissed, 0);
+      const gamesMissed = Math.max(0, stat.gamesMissed + shift);
+      return { region, gamesMissed, severe: stat.severe, episodes, color: severityColor(gamesMissed, stat.severe) };
+    })
     .sort((a, b) => b.gamesMissed - a.gamesMissed || b.episodes.length - a.episodes.length);
   let worst: RegionView | null = null;
   for (const r of regions) {
@@ -752,6 +775,7 @@ export function durabilityParts(data: PlayerPageData): DurabilityParts | null {
   const worstView = regions.find((r) => r.region.key === worst) ?? null;
   const highlight = worstView ? regionLostWeeks(worstView.episodes) : null;
   const seasons = gm.seasonYears.length;
+  const gmTot = Math.max(0, gm.gmTot + seasonDelta(gm, data));
   return {
     score: gm.score,
     tier: { key: gm.tier.key, name: gm.tier.name, color: TIER_COLOR[gm.tier.key] },
@@ -760,8 +784,8 @@ export function durabilityParts(data: PlayerPageData): DurabilityParts | null {
     tiles: [
       { value: String(gm.major), label: "Major Injuries", title: null },
       { value: String(gm.soft), label: "Soft-Tissue Events", title: null },
-      { value: String(gm.gmTot), label: "Games Missed", title: `Over ${seasons} season${seasons === 1 ? "" : "s"}` },
-      { value: n1(gm.perYearRate), label: "Missed / Season", title: null },
+      { value: String(gmTot), label: "Games Missed", title: `Over ${seasons} season${seasons === 1 ? "" : "s"}` },
+      { value: n1(seasons ? gmTot / seasons : 0), label: "Missed / Season", title: null },
     ],
     regions: regions.map((r) => ({
       key: r.region.key,

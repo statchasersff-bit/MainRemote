@@ -906,21 +906,35 @@ function compareCard(p: Preview): string {
 
 /* ------------------------------------------------------------ injuries */
 
-/** A designation in words; "Pending" (availability.ts) says what is pending. */
+/** A designation in words; "Pending" (availability.ts) has none for this game yet. */
 function statusLabel(status: string, p: Preview): string {
-  return status === PENDING ? `${p.meeting.weekLabel} status not set yet` : status;
+  return status === PENDING ? `No ${p.meeting.weekLabel} designation yet` : status;
+}
+
+/**
+ * The count beside an Injury Watch heading (WEB-039): only this week's
+ * official game designations are "designated"; reserve lists and players
+ * with no designation yet are listed and counted apart, so the number always
+ * matches the rows it names.
+ */
+function listingCount(rows: Preview["injuries"]["away"]): string {
+  const n = (k: string) => rows.filter((r) => r.listing === k).length;
+  const parts = [`${n("designated")} designated`];
+  if (n("reserve")) parts.push(`${n("reserve")} reserve`);
+  if (n("pending")) parts.push(`${n("pending")} no designation yet`);
+  return parts.join(" · ");
 }
 
 function injuryCard(p: Preview): string {
   const column = (s: PreviewSide) => {
     const rows = p.injuries[s.key];
-    const listed = rows.filter((r) => r.chip !== "OK");
-    const clean = rows.some((r) => r.chip === "OK");
+    const listed = rows.filter((r) => r.listing !== "clean");
+    const clean = rows.some((r) => r.listing === "clean");
     return (
       `<div class="sct-mpp-col is-${s.key}">` +
       `<p class="sct-mpp-colhead">` +
       (s.team.logo ? `<img src="${e(s.team.logo)}" alt="" width="22" height="22" loading="lazy" decoding="async">` : "") +
-      `<span>${e(`${s.team.nickname} Injury Watch`)}</span><small>${listed.length} designated</small></p>` +
+      `<span>${e(`${s.team.nickname} Injury Watch`)}</span><small>${e(listingCount(rows))}</small></p>` +
       (listed.length
         ? `<ul class="sct-mpp-inj-list">` +
           listed
@@ -931,7 +945,7 @@ function injuryCard(p: Preview): string {
                 // Collapsed by default (mak, 2026-11-06): the photo, name,
                 // position and designation; the note opens under them. Native
                 // <details>, so it works without script and from the keyboard.
-                `<li class="sct-mpp-inj"><details class="sct-mpp-inj-d"><summary>${face(r.sleeperId, s.key, 36, r.chip)}` +
+                `<li class="sct-mpp-inj" data-listing="${e(r.listing)}"><details class="sct-mpp-inj-d"><summary>${face(r.sleeperId, s.key, 36, r.chip)}` +
                 `<span class="sct-mpp-inj-top"><span class="sct-mpp-inj-name">${playerLink(r.name, r.sleeperId ? { sleeperId: r.sleeperId } : { team: s.team.abbreviation, pos: r.pos })}</span>` +
                 (r.pos ? `<span class="sct-mpp-slot" data-pos="${e(r.pos)}">${e(r.pos)}</span>` : "") +
                 // The team code, shown only on phones where both teams share
@@ -955,11 +969,11 @@ function injuryCard(p: Preview): string {
   // Phones (mak, 2026-11-11): one container under the main cards' bar, the
   // two team headings hidden and both teams in one list. The bar is CSS-hidden
   // above 560px, where the two team boxes keep their own headings.
-  const total = [p.away, p.home].reduce((n, s) => n + p.injuries[s.key].filter((r) => r.chip !== "OK").length, 0);
+  const total = listingCount([...p.injuries.away, ...p.injuries.home]);
   const bar =
     `<div class="sct-mpp-head sct-mpp-inj-bar"><span class="sct-mpp-icon">${ICON.injury}</span>` +
     `<p class="sct-mpp-h">Injury Watch</p>` +
-    `<span class="sct-mpp-tag">${total} designated</span>` +
+    `<span class="sct-mpp-tag">${e(total)}</span>` +
     `<span class="sct-mpp-slash" aria-hidden="true"></span></div>`;
   return (
     `<section class="sct-mpp-card is-injuries" aria-label="${e(`${pairOf(p)} injury report`)}">` +

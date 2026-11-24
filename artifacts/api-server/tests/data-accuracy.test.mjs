@@ -255,7 +255,11 @@ describe("one injury status (WEB-039)", () => {
     });
     assert.equal(s.designation, null);
     assert.equal(status.displayedStatus(s), null);
-    assert.match(s.message, /^No current game designation reported for Week 11\./);
+    // The fixture's Week 11 report has no Bears rows yet: no designation,
+    // and never read as cleared (WEB-039 follow-up, 2026-11-24).
+    assert.match(s.message, /^No Week 11 game designation yet; the Week 11 injury report is not on file\./);
+    assert.equal(s.label, "No designation yet");
+    assert.equal(s.reportState, "missing");
   });
 
   test("no report yet for the week: a Sleeper Questionable from a game he played is history, not current (Week 9, then the Week 10 bye)", () => {
@@ -347,6 +351,145 @@ describe("one injury status (WEB-039)", () => {
     // never called an injury.
     assert.equal(a.missedInjury, 0);
     assert.ok(a.notPlayedOther > 0);
+  });
+});
+
+/* ------------------------------------------- injuries: resolved per game week */
+
+/*
+ * WEB-039 follow-up (2026-11-24). Replays the stored 2026-11-18 Bears report
+ * (practice-bears-2026-11-18.json): Week 9 on file without Burden, the Week
+ * 10 bye, Week 11 fetched with no Bears rows yet. Through 7c3e646 the Team
+ * Pages Phase 4 rule read Sleeper's Questionable - filed after Week 9 and
+ * carried across the bye - as "designated since the last game", so his
+ * header, Outlook, Injury tab and the Bears-Saints preview all said
+ * Questionable for Week 11 though no Week 11 report ever listed him.
+ */
+describe("one status per game week, official designations only (WEB-039 follow-up)", () => {
+  const chi = () => teams.getTeamByAbbreviation("CHI");
+  const BEARS_1118 = read("practice-bears-2026-11-18.json");
+  const row = (over) => ({ id: BURDEN, name: "Luther Burden III", position: "WR", team: "chi", injuryStatus: null, injuryBodyPart: null, ...over });
+  const week11 = [{ week: 11, seasonType: "regular", status: "scheduled", result: null, kickoffMs: Date.parse("2026-11-22T18:00:00Z") }];
+  const now = Date.parse("2026-11-18T12:00:00Z");
+  const resolve = (practice, injuryStatus = "Questionable") => ({
+    a: availability.gameAvailability(chi(), 2026, 11, [row({ injuryStatus })], { logs: LOGS["2026"], practice, kickoffMs: week11[0].kickoffMs }).get(BURDEN),
+    s: status.currentStatus({
+      playerId: BURDEN, team: chi(), season: 2026, games: week11, rosterRow: row({ injuryStatus }),
+      rosterFetchedAt: now - 3600_000, now, deps: { logs: LOGS["2026"], practice },
+    }),
+  });
+
+  test("Burden on the stored 11-18 data: a Sleeper Questionable from after Week 9, across the bye, is not his Week 11 designation", () => {
+    const { a, s } = resolve(BEARS_1118);
+    assert.equal(a.lastGame.week, 9, "Week 10 was the bye: the last game is Week 9");
+    assert.equal(a.status, null);
+    assert.equal(a.designated, false);
+    assert.equal(a.label, "No designation yet");
+    assert.equal(a.report.state, "missing", "a Week 11 entry with no Bears rows is not a report");
+    assert.match(a.note, /^Reported Questionable after Week 9; not an official Week 11 game status/);
+    // The player page reads the same record: header, Outlook, Injury tab, FAQ.
+    assert.equal(s.designation, null);
+    assert.equal(status.displayedStatus(s), null);
+    assert.equal(s.label, "No designation yet");
+    assert.doesNotMatch(s.message, /\b(active|cleared|healthy)\b/i, "an empty report never reads as cleared");
+    // And the preview's roster for the same game.
+    const g = availability.gameRoster(chi(), 2026, 11, [row({ injuryStatus: "Questionable" })], { logs: LOGS["2026"], practice: BEARS_1118 });
+    assert.equal(g[0].injuryStatus, null, "nothing for the Injury Watch to list or count");
+    assert.equal(availability.notExpected(g[0].injuryStatus), false, "and still in the lineup reads");
+  });
+
+  const withWeek11 = (rows) => ({ ...BEARS_1118, weeks: { ...BEARS_1118.weeks, 11: { fetchedAt: "2026-11-21T22:00:00Z", teams: { Bears: rows } } } });
+  const burdenRow = (over) => ({ "luther-burden-iii": { name: "Luther Burden III", pos: "WR", injury: null, gameStatus: null, final: "FULL", days: { "2026-11-19": "FULL" }, ...over } });
+
+  test("the Week 11 report has him with a full practice and no status: no designation, practice kept apart", () => {
+    const { a, s } = resolve(withWeek11({ ...burdenRow({}), "kyler-gordon": { name: "Kyler Gordon", pos: "CB", injury: "Shoulder", gameStatus: "Out", final: "DNP", days: {} } }));
+    assert.equal(a.status, null);
+    assert.equal(a.practice, "Full Thu");
+    assert.equal(a.report.state, "final", "game statuses are out (Gordon's Out)");
+    assert.equal(a.label, "No designation");
+    assert.equal(s.designation, null);
+    assert.match(s.message, /^No game designation for Week 11\. Practice: Full Thu\./);
+  });
+
+  test("a current-week Questionable on the official report is the designation everywhere", () => {
+    const { a, s } = resolve(withWeek11(burdenRow({ injury: "Concussion", gameStatus: "Questionable", final: "LIMITED" })));
+    assert.equal(a.status, "Questionable");
+    assert.equal(a.designated, true);
+    assert.equal(a.source, "nfl-report");
+    assert.equal(s.designation, "Questionable");
+    assert.equal(s.designated, true);
+    assert.equal(s.reportFetchedAt, Date.parse("2026-11-21T22:00:00Z"), "the report's own timestamp travels with it");
+  });
+
+  test("an official Out stands and keeps him out of the lineup", () => {
+    const { a, s } = resolve(withWeek11(burdenRow({ injury: "Concussion", gameStatus: "Out", final: "DNP" })), "Out");
+    assert.equal(a.status, "Out");
+    assert.equal(a.designated, true);
+    assert.equal(availability.notExpected(a.status), true);
+    assert.equal(status.displayedStatus(s), "Out");
+  });
+
+  test("a delayed report: practice rows on file, game statuses not out yet", () => {
+    const wed = withWeek11(burdenRow({ final: "LIMITED", days: { "2026-11-18": "LIMITED" } }));
+    wed.weeks[11].fetchedAt = "2026-11-18T23:00:00Z"; // Wednesday night, four days out
+    const { a, s } = resolve(wed);
+    assert.equal(a.report.state, "pending");
+    assert.equal(a.label, "No designation yet");
+    assert.match(s.message, /^No Week 11 game designation yet; game statuses are not out\./);
+  });
+
+  test("an unavailable feed: no report at all is 'no designation yet', not active", () => {
+    const { a, s } = resolve({ weeks: {} }, null);
+    assert.equal(a.report.state, "missing");
+    assert.equal(a.label, "No designation yet");
+    assert.equal(s.label, "No designation yet");
+    assert.match(s.message, /injury report is not on file/);
+  });
+
+  test("a final report inside the 30 hours before kickoff, with nobody given a status, is final", () => {
+    const k = Date.parse("2026-11-22T18:00:00Z");
+    const doc = { weeks: { 11: { fetchedAt: new Date(k - 20 * 3600_000).toISOString(), teams: { Bears: burdenRow({}) } } } };
+    assert.equal(availability.weekReport(2026, 11, chi(), doc, k).state, "final");
+    assert.equal(availability.weekReport(2026, 11, chi(), doc, k + 3 * 86400_000).state, "pending", "two days out: still pending");
+  });
+});
+
+describe("one games-missed count per window (WEB-039 follow-up)", () => {
+  const ir = (gm, reports = []) => [{ season: 2026, week: 1, type: "Injured reserve", gamesMissed: gm, reports }];
+  // DET's Week 11 game: a teammate's row makes it a completed club game.
+  const logs11 = () => ({ ...LOGS["2026"], "996": [{ week: 11, opp: "X", team: "DET", stats: { pts_ppr: 1, gp: 1, off_snp: 20 } }] });
+
+  test("Pacheco: still on IR, the open window runs to the last game - one more than the builder's stale 9", () => {
+    const a = missed.seasonAvailability({ season: 2026, playerId: PACHECO, currentTeam: "DET", injuries: ir(9), logs: logs11(), stillOut: true });
+    assert.equal(a.windows.length, 1);
+    assert.equal(a.windows[0].open, true);
+    assert.equal(a.windows[0].recorded, 9);
+    assert.equal(a.windows[0].missedWeeks.length, a.missedInjury, "the history's entry and the season total are one count");
+    assert.equal(a.missedInjury, a.teamGames, "every Detroit game since Week 1");
+    assert.equal(a.notPlayedOther, 0);
+  });
+
+  test("not known to be out: the window stops at the recorded count, the rest is reason unknown", () => {
+    const a = missed.seasonAvailability({ season: 2026, playerId: PACHECO, currentTeam: "DET", injuries: ir(9), logs: logs11() });
+    assert.equal(a.windows[0].open, false);
+    assert.equal(a.missedInjury, 9);
+    assert.equal(a.notPlayedOther, a.teamGames - 9, "never called an injury without a record");
+  });
+
+  test("a bye inside the window is skipped, not charged, and does not cut the window short", () => {
+    // Played Weeks 1-5, hurt in Week 5, missed 6 and 8 around a Week 7 bye.
+    const club = (w) => ({ week: w, opp: "X", team: "ZZZ", stats: { pts_ppr: 1, gp: 1, off_snp: 30 } });
+    const logs = {
+      mate: [1, 2, 3, 4, 5, 6, 8, 9].map(club),
+      hurt: [1, 2, 3, 4, 5, 9].map(club),
+    };
+    const a = missed.seasonAvailability({
+      season: 2026, playerId: "hurt", currentTeam: "ZZZ", logs,
+      injuries: [{ season: 2026, week: 5, type: "Ankle", gamesMissed: 2, reports: [] }],
+    });
+    assert.deepEqual(a.windows[0].missedWeeks, [6, 8]);
+    assert.equal(a.missedInjury, 2);
+    assert.equal(a.notPlayedOther, 0, "Week 8 was the injury's, not reason unknown");
   });
 });
 
