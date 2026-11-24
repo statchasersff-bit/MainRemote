@@ -76,6 +76,7 @@ require_once __DIR__ . '/statchasers-schedule.php';
 require_once __DIR__ . '/statchasers-player-stats.php';
 require_once __DIR__ . '/statchasers-rb-handcuffs.php';
 require_once __DIR__ . '/statchasers-sos.php';
+require_once __DIR__ . '/statchasers-page-identity.php';
 require_once __DIR__ . '/statchasers-rookie-hit-rates.php';
 require_once __DIR__ . '/statchasers-redraft-strategy.php';
 require_once __DIR__ . '/statchasers-injury-impact.php';

@@ -392,6 +392,7 @@ require_once "$dir/statchasers-schedule.php";
 require_once "$dir/statchasers-player-stats.php";
 require_once "$dir/statchasers-rb-handcuffs.php";
 require_once "$dir/statchasers-sos.php";
+require_once "$dir/statchasers-page-identity.php";
 require_once "$dir/statchasers-rookie-hit-rates.php";
 require_once "$dir/statchasers-redraft-strategy.php";
 require_once "$dir/statchasers-injury-impact.php";
@@ -626,6 +627,12 @@ if ( 'sched404s' === $group || 'sched404' === $group ) {
 
 if ( 'route404s' === $group || 'route404' === $group ) {
 	require __DIR__ . '/smoke-route-404.php';
+	echo "\n" . ( $fail ? "$fail FAILED\n" : "all passed\n" );
+	exit( $fail ? 1 : 0 );
+}
+
+if ( 'pageids' === $group || 'pageid' === $group ) {
+	require __DIR__ . '/smoke-page-identity.php';
 	echo "\n" . ( $fail ? "$fail FAILED\n" : "all passed\n" );
 	exit( $fail ? 1 : 0 );
 }
@@ -2419,7 +2426,7 @@ is( statchasers_player_lazyload_exclusions( null ), array( 'class="scp-pwell-img
  * The other groups. Their failures are this run's failures - a split that only
  * reported the half it felt like running would be worse than not splitting.
  */
-foreach ( array( 'containers', 'week', 'weekstray', 'schedtitles', 'sched404s', 'route404s', 'schedlive', 'schedfinal', 'leak', 'headings', 'playersection', 'rules', 'playerlinks', 'playerbuilder', 'sos', 'sosleak', 'sospage', 'sosfallback', 'fpa', 'fpaleak', 'fpaarchive', 'rhr', 'rhrleak', 'rds', 'rdsleak', 'scin', 'scindb', 'scinleak', 'bdp', 'hostcss', 'newsrail' ) as $child_group ) {
+foreach ( array( 'containers', 'week', 'weekstray', 'schedtitles', 'sched404s', 'route404s', 'schedlive', 'schedfinal', 'pageids', 'leak', 'headings', 'playersection', 'rules', 'playerlinks', 'playerbuilder', 'sos', 'sosleak', 'sospage', 'sosfallback', 'fpa', 'fpaleak', 'fpaarchive', 'rhr', 'rhrleak', 'rds', 'rdsleak', 'scin', 'scindb', 'scinleak', 'bdp', 'hostcss', 'newsrail' ) as $child_group ) {
 	$child = array();
 	$code  = 0;
 	exec(
