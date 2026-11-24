@@ -10,10 +10,9 @@
 
 import type { TeamPageMeta } from "../team-seo";
 import type { MatchupData } from "./matchup-data";
-import { matchupHasHighlights, matchupScoreboardGame, matchupShare, matchupTitle, recapDescription, seasonGameLead } from "./matchup-render";
+import { matchupHasHighlights, matchupScoreboardGame, matchupShare, matchupTitle } from "./matchup-render";
 import { SHARE_HEIGHT, SHARE_WIDTH } from "./og-image";
-import { completedGameDescription, completedGameTitleCandidates } from "./game-seo";
-import { gameSeoFacts, scoreboardPageDescription, scoreboardTitleCandidates } from "./scoreboard-hero";
+import { scoreboardPageDescription, scoreboardTitleCandidates } from "./scoreboard-hero";
 import { fitTitle, TITLE_MAX } from "../title-fit";
 
 const SITE_NAME = "StatChasers";
@@ -65,9 +64,9 @@ function nicknames(data: MatchupData): string {
  */
 export function matchupScoreLine(data: MatchupData): string {
   const featured = data.featured;
-  // A game address always has a score to lead with; the pair's address only
-  // while it is leading with a result - just played, or any of this season's.
-  if (!data.pinned && data.matchupState !== "recently_completed" && !seasonGameLead(data)) return "";
+  // A game address only: the pair's address is the series page (WEB-001),
+  // whose title and description are about the series, not one result.
+  if (!data.pinned) return "";
   if (!featured?.score || !featured.winner) return "";
   const high = Math.max(featured.score.home, featured.score.away);
   const low = Math.min(featured.score.home, featured.score.away);
@@ -81,11 +80,11 @@ export function matchupScoreLine(data: MatchupData): string {
  */
 function withRecap(meta: TeamPageMeta, data: MatchupData, canonical: string): TeamPageMeta {
   const share = matchupShare(data);
-  // A game address and the pair's page leading with a season game both wrote
-  // their own description (completedGameDescription: "{Away} vs {Home} match
-  // player stats from Week N, YYYY: ..."); only the evergreen pair page whose
-  // last meeting was an earlier season takes the recap's.
-  const description = data.pinned || seasonGameLead(data) ? meta.description : recapDescription(data);
+  // A game address wrote its own description (completedGameDescription:
+  // "{Away} vs {Home} match player stats from Week N, YYYY: ..."), and the
+  // pair's address is the series page with the series description (WEB-001,
+  // 2026-11-24; until then a pair page took the led game's recap).
+  const description = meta.description;
   if (!share || !description) return meta;
   let url: string | null = null;
   try {
@@ -180,42 +179,12 @@ function baseMeta(data: MatchupData, canonical: string): TeamPageMeta {
     };
   }
 
-  // The pair's page while it leads with one of this season's played games,
-  // whether just played or back in Week 2: "Titans vs Colts Match Player
-  // Stats & Box Score (Week 6, 2026)" (the Search Console brief of
-  // 2026-10-30), away then home from the same game object the hero draws, the
-  // description from the same fact sheet. The game page under it wears the
-  // same template, so the two cannot disagree about the order or the round.
-  // MIRRORED by statchasers_matchup_meta() in the plugin for an API that
-  // sends no title header. Was "{a} vs {b} Player Stats & Fantasy Points
-  // (Week N, YYYY)" in the pair's alphabetical order from 2026-10-09. The
-  // head-to-head wording below is only for a pair that has not met this
-  // season.
-  const lead = seasonGameLead(data);
-  if (lead) {
-    const game = matchupScoreboardGame(data);
-    const facts = game ? gameSeoFacts(game) : null;
-    const scored = matchupScoreLine(data);
-    return {
-      title: fitMatchupTitle(
-        facts
-          ? completedGameTitleCandidates({ ...facts, highlights: matchupHasHighlights(data) })
-          : [
-              `${short} Player Stats & Box Score | ${lead.weekLabel}, ${lead.season}`,
-              `${short} Player Stats & Box Score | ${lead.weekLabel}`,
-              `${short} Player Stats | ${lead.weekLabel}`,
-            ],
-        COMPLETED_TITLE_MAX,
-      ),
-      description: facts
-        ? completedGameDescription(facts)
-        : `${scored ? `${scored} ` : ""}${a.nickname} vs ${b.nickname} match player stats from ${lead.weekLabel}, ` +
-          `${lead.season}: passing, rushing and receiving, box score, fantasy points and usage.`,
-      canonical,
-      siteName: SITE_NAME,
-    };
-  }
-
+  // The pair's address is the head-to-head series page (WEB-001, 2026-11-24):
+  // every finished game is self-canonical at its dated page, which carries
+  // the "{Away} vs {Home} Player Stats & Box Score" title the pair page wore
+  // for this season's games from 2026-10-09 (the Search Console briefs of
+  // 10-09 and 10-30). Only the upcoming states below keep their own wording.
+  // MIRRORED by statchasers_matchup_meta() in the plugin.
   switch (data.matchupState) {
     case "upcoming":
       title = fitMatchupTitle([
@@ -228,23 +197,6 @@ function baseMeta(data: MatchupData, canonical: string): TeamPageMeta {
         `${a.nickname} vs ${b.nickname} in ${season}: kickoff time, TV, venue, ` +
         `team stats side by side, injury designations and the head-to-head record.`;
       break;
-    case "recently_completed": {
-      title = fitMatchupTitle([
-        `${names} ${season}: Score, Player Stats & Fantasy Recap`,
-        `${names} ${season}: Score & Fantasy Recap`,
-        `${names} ${season} Score & Stats`,
-        `${short} ${season}: Score & Fantasy Recap`,
-      ]);
-      // The score itself when the page has one. A snippet that already carries
-      // the number answers the search on the results page, which is the point:
-      // the reader who clicks through after that is the one who wants the
-      // player stats under it, and those are what this page now leads with.
-      const scored = matchupScoreLine(data);
-      description =
-        `${scored ? `${scored} ` : ""}${a.nickname} vs ${b.nickname} ${season} final score, quarter-by-quarter ` +
-        `scoring, full player stats and the fantasy takeaways from the game.`;
-      break;
-    }
     default:
       title = fitMatchupTitle([
         `${names}: Head-to-Head Record & History`,

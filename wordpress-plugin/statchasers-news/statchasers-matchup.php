@@ -683,18 +683,11 @@ function statchasers_matchup_heading(): string {
 	$parsed = statchasers_matchup_parse_game( statchasers_matchup_game() );
 
 	if ( null === $parsed ) {
-		// The pair's page leading with one of this season's played games
-		// (X-Matchup-Week set) is headed "{Away} vs {Home} Match Player
-		// Stats", MIRRORING seasonGameHeading() in the API's
-		// matchup-render.ts - the pair's order here, since only the API
-		// knows which side was away. The pair's two names otherwise.
-		$data = '' !== statchasers_news_origin() ? statchasers_matchup_fetch( $pair['slug'], '' ) : null;
-		$week = is_array( $data ) ? (string) ( $data['week'] ?? '' ) : '';
-		$state = is_array( $data ) ? (string) ( $data['state'] ?? '' ) : '';
-		if ( '' !== $week && in_array( $state, array( 'recently_completed', 'historical' ), true ) ) {
-			return "$names Match Player Stats";
-		}
-		return $names;
+		// The pair's address is the series page (WEB-001, 2026-11-24),
+		// MIRRORING seriesPageHeading() in the API's matchup-render.ts. Only
+		// reached when the API sent no heading (the preview's own heading
+		// comes from the API).
+		return "$names Head-to-Head Series";
 	}
 
 	// A game page's H1 (the Search Console brief of 2026-10-30): "{Away} vs
@@ -841,15 +834,13 @@ function statchasers_matchup_meta( string $a, string $b, string $state, string $
 	$short  = $nick_a . ' vs ' . $nick_b;
 	$season = '' === $season ? STATCHASERS_TEAM_SEASON : $season;
 
-	// A pair that has played this season leads with that game, just played or
-	// back in Week 2: "Titans vs Colts Match Player Stats & Box Score (Week 6,
-	// 2026)" (the Search Console brief of 2026-10-30). MIRRORS the
-	// seasonGameLead() branch of matchupPageMeta(), through the completed-game
-	// ladder both the pair page and the dated game page share. Head-to-head
-	// wording is only for a pair that has not met this season.
-	if ( '' !== $week && ( 'recently_completed' === $state || 'historical' === $state ) ) {
-		return statchasers_matchup_completed_meta( $name_a, $name_b, $nick_a, $nick_b, $week, $season, $score );
-	}
+	// The pair's address is the head-to-head series page (WEB-001,
+	// 2026-11-24): every finished game is self-canonical at its dated page,
+	// which carries the player-stats title the pair page wore for this
+	// season's games from 2026-10-09. MIRRORS matchupPageMeta(): only the
+	// upcoming state keeps its own wording. $score and $week are kept in the
+	// signature for callers; an API from before WEB-001 may still send a week.
+	unset( $score, $week );
 
 	switch ( $state ) {
 		case 'upcoming':
@@ -863,21 +854,6 @@ function statchasers_matchup_meta( string $a, string $b, string $state, string $
 					)
 				),
 				'description' => sprintf( '%1$s vs %2$s in %3$s: kickoff time, TV, venue, team stats side by side, injury designations and the head-to-head record.', $nick_a, $nick_b, $season ),
-			);
-		case 'recently_completed':
-			// The score leads the description when the API sent one, exactly as
-			// matchupScoreLine() wrote it. Absent header, same sentence without it.
-			$lead = '' === trim( $score ) ? '' : trim( $score ) . ' ';
-			return array(
-				'title'       => statchasers_matchup_fit_title(
-					array(
-						"$names $season: Score, Player Stats & Fantasy Recap",
-						"$names $season: Score & Fantasy Recap",
-						"$names $season Score & Stats",
-						"$short $season: Score & Fantasy Recap",
-					)
-				),
-				'description' => sprintf( '%1$s%2$s vs %3$s %4$s final score, quarter-by-quarter scoring, full player stats and the fantasy takeaways from the game.', $lead, $nick_a, $nick_b, $season ),
 			);
 	}
 	return array(
@@ -1573,6 +1549,45 @@ function statchasers_matchup_games(): array {
 	}
 	return $rows;
 }
+
+/**
+ * Is this request one of the sitemaps that list the game pages - the index
+ * or a /game-sitemap*.xml page? Pure, for the smoke test.
+ *
+ * @param string $path The request path, without the query string.
+ */
+function statchasers_matchup_is_game_sitemap_path( string $path ): bool {
+	return 1 === preg_match( '#/(?:sitemap_index|game-sitemap[0-9]*)\.xml$#', $path );
+}
+
+/**
+ * Refresh the game list at `init` on a sitemap request, before Rank Math
+ * reads its cached file (WEB-001, 2026-11-24).
+ *
+ * Rank Math calls the provider below only on a cache miss, and its cache of
+ * /game-sitemap*.xml lasts until something invalidates the 'game' type
+ * (files: indefinitely; transients: 100 days). Saving a post clears the
+ * post's own type and the index, not 'game'. So without this a newly final
+ * game, or a corrected lastmod, waited behind the cached file until some
+ * unrelated index rebuild happened to call the provider. Here the list's
+ * own hour-long transient decides when the API is asked, and
+ * statchasers_matchup_games() clears Rank Math's 'game' and index caches
+ * when the rows changed, so this request already serves the new list. A
+ * warm transient costs one option read.
+ */
+add_action(
+	'init',
+	function () {
+		if ( ! statchasers_matchup_urls_enabled() ) {
+			return;
+		}
+		$path = (string) wp_parse_url( (string) ( $_SERVER['REQUEST_URI'] ?? '' ), PHP_URL_PATH );
+		if ( statchasers_matchup_is_game_sitemap_path( $path ) ) {
+			statchasers_matchup_games();
+		}
+	},
+	20
+);
 
 /** The Rank Math sitemap type the game pages are published under: /game-sitemap.xml. */
 const STATCHASERS_MATCHUP_SITEMAP_TYPE = 'game';

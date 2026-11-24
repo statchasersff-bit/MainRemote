@@ -176,7 +176,7 @@ describe("the dated preview around the six-day switch (real data, real HTTP)", (
   test("before the switch: the pair page is the series page, the earlier meeting its own (WEB-001)", async () => {
     const pairPage = await get(early, `/nfl/${PAIR_SLUG}/`);
     assert.equal(canonicalOf(pairPage.body), `/nfl/${PAIR_SLUG}/`);
-    assert.match(titleOf(pairPage.body), /Box Score/);
+    assert.match(titleOf(pairPage.body), /Head-to-Head (Record|History)/, "the series title, not the game's");
     assert.ok(pairPage.body.includes(`/nfl/${PAIR_SLUG}/2026-week-5/`), "the pair page links the Week 5 box score");
     const prior = await get(early, `/embed/matchup/${PAIR_SLUG}?game=2026-week-5`, { "x-sc-matchup-preview": "1" });
     assert.equal(prior.headers.get("x-matchup-game"), "archived", "the Week 5 recap is canonical at its own address");

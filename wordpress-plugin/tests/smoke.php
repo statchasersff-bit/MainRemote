@@ -710,7 +710,7 @@ $sc_holder->post_content  = '[statchasers_matchup]';
 $GLOBALS['pages_by_path'] = array_merge( $GLOBALS['pages_by_path'] ?? array(), array( STATCHASERS_MATCHUP_HOLDER => $sc_holder ) );
 $GLOBALS['page']['post']  = $sc_holder;
 $GLOBALS['query']['sc_matchup'] = 'new-england-patriots-vs-philadelphia-eagles';
-is( statchasers_matchup_heading(), 'New England Patriots vs Philadelphia Eagles', 'pair' );
+is( statchasers_matchup_heading(), 'New England Patriots vs Philadelphia Eagles Head-to-Head Series', 'pair: the series page (WEB-001)' );
 
 echo "\nmatchup recap: description, share image and video from the API\n";
 $GLOBALS['query']['sc_matchup']      = 'arizona-cardinals-vs-los-angeles-rams';
@@ -1885,34 +1885,23 @@ is(
 	'Chargers vs Commanders: Head-to-Head Record & History',
 	'head-to-head: nicknames when the full names leave no room'
 );
-// A pair that has played this season (X-Matchup-Week set) leads with that
-// game's player stats, in either postgame state, mak's wording first.
+// WEB-001 (2026-11-24): the pair's address is the series page in every
+// postgame state; a week header (from an API before WEB-001) no longer
+// retitles it with a game. The game's player-stats title is the dated page's.
 is(
 	statchasers_matchup_meta( 'cleveland-browns', 'tampa-bay-buccaneers', 'historical', '2026', 'Buccaneers won 24-17.', 'Week 2' )['title'],
-	'Browns vs Buccaneers Player Stats & Box Score | Week 2, 2026',
-	'season game: the spec wording is 66 characters for this pair, so the year goes first (60)'
+	statchasers_matchup_meta( 'cleveland-browns', 'tampa-bay-buccaneers', 'historical', '2026' )['title'],
+	'series page: a week header from an old API does not turn it into a game page'
 );
 is(
 	statchasers_matchup_meta( 'new-york-jets', 'los-angeles-rams', 'recently_completed', '2026', '', 'Week 2' )['title'],
-	'Jets vs Rams Player Stats & Box Score | Week 2, 2026',
-	'season game: the spec wording as written when it fits'
+	'New York Jets vs Los Angeles Rams: Head-to-Head History',
+	'series page: just after a game it is still the series'
 );
 is(
-	statchasers_matchup_meta( 'tampa-bay-buccaneers', 'washington-commanders', 'historical', '2026', '', 'Week 18' )['title'],
-	'Buccaneers vs Commanders Player Stats & Box Score | Week 18, 2026',
-	'season game: the longest nicknames and round pass the year-less box-score rung too (65) and drop the box score'
-);
-$season_desc = statchasers_matchup_meta( 'cleveland-browns', 'tampa-bay-buccaneers', 'historical', '2026', 'Buccaneers won 24-17.', 'Week 2' )['description'];
-is(
-	$season_desc,
-	"Browns vs Buccaneers match player stats from Week 2, 2026: passing, rushing and receiving, box score, fantasy points and usage from the Buccaneers' 24\xE2\x80\x9317 win.",
-	'season game: both teams, "match player stats", the week and year, what the page holds and the result read from X-Matchup-Score'
-);
-is( mb_strlen( $season_desc ) <= 165, true, 'and it fits a results page' );
-is(
-	statchasers_matchup_meta( 'new-york-jets', 'los-angeles-rams', 'recently_completed', '2026', '', 'Week 2' )['description'],
-	'New York Jets vs Los Angeles Rams match player stats from Week 2, 2026: passing, rushing and receiving stats, box score, fantasy points, snaps, targets and usage.',
-	'season game: no score header, no result clause, and the full names when they fit (162)'
+	statchasers_matchup_meta( 'new-york-jets', 'los-angeles-rams', 'recently_completed', '2026', 'Rams won 24-17.' )['description'],
+	'Jets vs Rams: the regular-season head-to-head record, recent meetings, and 2026 team stats side by side.',
+	'series page: the series description, no single result'
 );
 is(
 	statchasers_matchup_meta( 'cleveland-browns', 'tampa-bay-buccaneers', 'upcoming', '2026', '', 'Week 2' )['title'],
@@ -2016,6 +2005,12 @@ $rows = statchasers_matchup_games_rows( array(
 is( count( $rows ), 2, 'rows: a pair slug and a game segment of the right shape, nothing else' );
 is( $rows[0], array( 'cleveland-browns-vs-tampa-bay-buccaneers', '2026-week-2', '2026-09-20' ), 'the kickoff date is kept for lastmod' );
 is( statchasers_matchup_games_rows( array( 'games' => array() ) ), null, 'a body without ok is not the index' );
+// The list refreshes on a sitemap request, before Rank Math's cached file is read (WEB-001).
+is( statchasers_matchup_is_game_sitemap_path( '/sitemap_index.xml' ), true, 'the index refreshes the game list' );
+is( statchasers_matchup_is_game_sitemap_path( '/game-sitemap.xml' ), true, 'game sitemap page 1 refreshes it' );
+is( statchasers_matchup_is_game_sitemap_path( '/game-sitemap2.xml' ), true, 'and page 2' );
+is( statchasers_matchup_is_game_sitemap_path( '/page-sitemap.xml' ), false, 'another sitemap does not' );
+is( statchasers_matchup_is_game_sitemap_path( '/nfl/a-vs-b/2026-week-5/' ), false, 'nor a page' );
 is( statchasers_matchup_games_rows( array( 'ok' => true, 'games' => array() ) ), array(), 'an empty index is a valid answer' );
 $links = statchasers_matchup_games_links( $rows );
 is( count( $links ), 2, 'one link per game' );

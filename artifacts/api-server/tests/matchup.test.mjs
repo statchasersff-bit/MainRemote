@@ -94,7 +94,7 @@ describe("one address per pair", () => {
     assert.equal(root.getAttribute("data-matchup"), "new-england-patriots-vs-philadelphia-eagles");
     const h1 = doc.querySelectorAll("h1");
     assert.equal(h1.length, 1);
-    assert.equal(h1[0].textContent.trim(), "New England Patriots vs Philadelphia Eagles");
+    assert.equal(h1[0].textContent.trim(), "New England Patriots vs Philadelphia Eagles Head-to-Head Series", "the series H1 (WEB-001)");
   });
 
   test("every other spelling of the pair is a 301 to it", async () => {
@@ -305,14 +305,19 @@ describe("the page follows its state", () => {
     const { doc } = await dom(CANON);
     const state = doc.querySelector("[data-sct-root]").getAttribute("data-matchup-state");
     const title = doc.querySelector("title").textContent;
-    // A pair that has played this season leads with that game's player stats
-    // (mak, 2026-10-09) whichever of the two postgame states it is in; the
-    // head-to-head wording is for a pair that has not met this season.
+    // The pair's address is the series page in both postgame states
+    // (WEB-001, 2026-11-24); the game's player-stats title is its dated
+    // page's. Only the upcoming preview keeps its own wording.
     const phrase = {
-      upcoming: /Where to Watch|Matchup Preview/,
-      recently_completed: /Player Stats/,
-      historical: /Head-to-Head (Record|History)|Player Stats/,
+      upcoming: /Where to Watch|Matchup Preview|Preview:/,
+      recently_completed: /Head-to-Head (Record|History)/,
+      historical: /Head-to-Head (Record|History)/,
     }[state];
+    if (state !== "upcoming") {
+      const h1 = [...doc.querySelectorAll("h1")].map((h) => h.textContent.trim());
+      assert.deepEqual(h1, ["New England Patriots vs Philadelphia Eagles Head-to-Head Series"], "the series H1");
+      assert.equal(doc.querySelector(".sct-mu-intro"), null, "no single game's 'match player stats' sentence");
+    }
     assert.match(title, phrase);
     // Site audits flag anything longer, and Google truncates it anyway.
     assert.ok(title.length <= 70, `${title.length} characters: ${title}`);

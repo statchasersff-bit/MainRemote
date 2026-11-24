@@ -263,7 +263,10 @@ async function writeOne(id) {
     if (issues.length) return { id, status: "rejected", issues };
     const words = recap.paragraphs.join(" ").split(/\s+/).length;
     if (checkOnly) return { id, status: "passes", words, attempts: 1 };
-    store.games[id] = { headline: recap.headline, paragraphs: recap.paragraphs, hash, model: "claude-code-session", writtenAt: new Date().toISOString(), words, checked: "house checks + checker agent" };
+    // The sitemap's lastmod reads writtenAt (game-index.ts): an import that
+    // brings back the same text is not a change to the page.
+    const same = have && have.headline === recap.headline && JSON.stringify(have.paragraphs) === JSON.stringify(recap.paragraphs);
+    store.games[id] = { headline: recap.headline, paragraphs: recap.paragraphs, hash, model: "claude-code-session", writtenAt: same && have.writtenAt ? have.writtenAt : new Date().toISOString(), words, checked: "house checks + checker agent" };
     save();
     return { id, status: "written", words, attempts: 1 };
   }

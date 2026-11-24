@@ -221,34 +221,16 @@ export function gamePath(prefix: string, slug: string, ref: MatchupGameRef): str
 }
 
 /**
- * The game the pair's own address leads with, when it is one of this season's
- * and already played: the Week 2 game in October as much as the one just
- * played. The title and the H1 name it (mak, 2026-10-09), because the search
- * these pages get is "browns vs buccaneers player stats" and not the rivalry:
- * 62k impressions at position 10 and seven clicks under the head-to-head
- * wording. Null on a game address (its own heading), before the pair has met
- * this season, and on the evergreen page whose last meeting was an earlier
- * season, which keeps the head-to-head title.
+ * The pair's own address is the head-to-head series page (WEB-001,
+ * 2026-11-24): "Arizona Cardinals vs Los Angeles Rams Head-to-Head Series".
+ * Every finished game has its own self-canonical dated page now, so the pair
+ * page no longer wears the game it leads with as its H1 (mak's 2026-10-09 /
+ * 2026-10-30 "Match Player Stats" wording moved to the game pages, which carry
+ * it already); the latest result stays on the page with a link to its box
+ * score.
  */
-export function seasonGameLead(data: MatchupData): Meeting | null {
-  if (data.pinned) return null;
-  const meeting = data.featured;
-  if (!meeting || meeting.status !== "final" || meeting.score === null) return null;
-  return meeting.season === data.state.season ? meeting : null;
-}
-
-/**
- * "Tennessee Titans vs Indianapolis Colts Match Player Stats": the pair page's
- * H1 while it leads with one of this season's games (the Search Console brief
- * of 2026-10-30), away then home as the searches say it. The week and the
- * final follow in the context line under it, not in the heading. Was
- * "{a} vs {b} Player Stats & Fantasy Points (Week N, YYYY)", in the pair's
- * alphabetical order, from 2026-10-09.
- */
-export function seasonGameHeading(data: MatchupData, meeting: Meeting): string {
-  const game = matchupScoreboardGame(data);
-  if (game) return completedGameHeading(gameSeoFacts(game));
-  return `${meeting.away.fullName} vs ${meeting.home.fullName} Match Player Stats`;
+export function seriesPageHeading(data: MatchupData): string {
+  return `${matchupTitle(data)} Head-to-Head Series`;
 }
 
 /**
@@ -265,11 +247,11 @@ function heroContext(data: MatchupData): string {
  * The sentence under the scoreboard that says what the page is: "Tennessee
  * Titans vs Indianapolis Colts match player stats from Week 6 of the 2026 NFL
  * season. The Titans defeated the Colts 26–20 on October 18, 2026." Only on
- * the pages whose title and H1 make that claim - the pair's page leading with
- * a season game and a dated game page - and only once the game is final.
+ * the page whose title and H1 make that claim - a dated game page - and only
+ * once the game is final. The pair's page is the series page (WEB-001).
  */
 function renderIntro(data: MatchupData): string {
-  if (!data.pinned && !seasonGameLead(data)) return "";
+  if (!data.pinned) return "";
   const game = matchupScoreboardGame(data);
   if (!game || game.status !== "final" || !scoreboardResult(game)) return "";
   return `<p class="sct-mu-intro">${escapeHtml(completedGameIntro(gameSeoFacts(game)))}</p>`;
@@ -277,16 +259,15 @@ function renderIntro(data: MatchupData): string {
 
 /**
  * The page's H1, which the hero prints and the plugin copies into the holder
- * page's title: the game's own heading on a game address, the season game's
- * on a pair page leading with one, the pair's two names otherwise.
+ * page's title: the game's own heading on a game address, the preview's on an
+ * upcoming preview, the series heading on the pair's address otherwise.
  */
 export function matchupPageHeading(data: MatchupData): string {
   const game = data.pinned ? matchupScoreboardGame(data) : null;
   if (game) return scoreboardPageHeading(game);
   // The upcoming preview targets the general game search (mak, 2026-11-06).
   if (data.matchupState === "upcoming" && data.preview) return previewPageHeading(data.preview);
-  const lead = seasonGameLead(data);
-  return lead ? seasonGameHeading(data, lead) : matchupTitle(data);
+  return seriesPageHeading(data);
 }
 
 /**
@@ -498,10 +479,9 @@ const HERO_HEADING_ID = "sct-mu-title";
  * The hero: the scoreboard for the featured meeting.
  *
  * A game address is headed by its game, in the scoreboard's own wording. The
- * pair's address is headed by the season game it leads with when it has one
- * (seasonGameLead, mak's 2026-10-09 wording), and by the pair's name
- * otherwise. Under the scoreboard on the pair's address, a line to the box
- * score at the led game's own dated page (renderSeasonGameLink).
+ * pair's address is headed as the series (seriesPageHeading, WEB-001). Under
+ * the scoreboard on the pair's address, a line to the box score at the led
+ * game's own dated page (renderSeasonGameLink).
  *
  * Embedded, the heading is an H2 marked `data-sct-hero-heading`: the plugin
  * promotes it to the page's H1 when it is the one supplying the heading, and
@@ -533,7 +513,7 @@ function renderHero(data: MatchupData, options: MatchupRenderOptions): string {
     ]) +
     `>` +
     `<${headingTag} class="sct-sbh-title" id="${HERO_HEADING_ID}" data-sct-hero-heading>` +
-    `${escapeHtml(matchupTitle(data))}</${headingTag}>` +
+    `${escapeHtml(matchupPageHeading(data))}</${headingTag}>` +
     `<p class="sct-sbh-note">` +
     escapeHtml("Head-to-head record, team stats, injuries and recent meetings") +
     `</p>` +

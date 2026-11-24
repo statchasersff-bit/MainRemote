@@ -16,16 +16,20 @@
  * itself as its canonical, and a game outside the window (a 404) is never
  * listed. Each game is listed once, keyed on its pair and segment.
  *
- * `modified` (the sitemap's lastmod) is always null, so the sitemap prints no
- * lastmod (WEB-001 follow-up, 2026-11-24). The only stamp stored per game is
- * the box score's `fetchedAt`, and buildBoxscores.mjs rewrites it on every
- * re-fetch inside the seven-day settle window whether or not anything changed
- * (ATL @ GB, Week 3 2026: refetched 09-30 00:09 and 13:37 with an identical
- * summary), so it cannot tell an unchanged refresh from a stat correction.
- * The page also draws on stores (play-by-play, recap prose, videos, odds)
- * that keep no per-game change stamp at all. A kickoff is not a modification
- * time either. Until a stamp exists that moves only when the rendered game
- * data changes, an absent lastmod is the accurate one.
+ * `modified` (the sitemap's lastmod) is the newer of two stored stamps that
+ * move only when the page's content does (2026-11-24, replacing c1948cd's
+ * always-null):
+ *   - the box score's `modifiedAt` (boxscore.ts contentStamp):
+ *     buildBoxscores.mjs advances it only when a re-pull brings a different
+ *     summary, so a stat correction moves it and an identical re-pull inside
+ *     the settle window does not. A record stored before that field uses its
+ *     in-season `fetchedAt`; the 2021-2025 archive, pulled in one bulk run
+ *     long after those games, has no stamp.
+ *   - the written recap's `writtenAt` (recap_prose_<season>.json), which
+ *     writeRecaps.mjs keeps when an import brings back the same text.
+ * A game with neither prints no lastmod. The kickoff is never used: it is
+ * not a modification time. Play-by-play, videos and odds keep no per-game
+ * change stamp and do not move it.
  *
  * The WordPress plugin reads this at /embed/matchup-games.json and serves
  * each path from /game-sitemap.xml (paginated by Rank Math's per-page limit).
@@ -35,6 +39,8 @@ import { TEAMS, type NflTeam } from "../team/teams";
 import { getTeamPostseason, getTeamSchedule, type ScheduleGame } from "../team/schedule";
 import { nflState } from "../team/nfl-state";
 import { HISTORY_SEASONS } from "./matchup-data";
+import { storedBoxscoreModifiedAt } from "./boxscore";
+import { writtenRecapAt } from "./recap-overview";
 import {
   canonicalizeMatchupPair,
   gameSegment,
@@ -55,8 +61,8 @@ export interface ArchivedGame {
   /** Kickoff, ISO. */
   kickoff: string;
   /**
-   * The sitemap's lastmod, ISO, or null for none. Always null today: no stored
-   * stamp moves only when the game's data changes (see the file comment).
+   * The sitemap's lastmod, ISO, or null for none: the newer of the stored box
+   * score's content stamp and the written recap's (see the file comment).
    */
   modified: string | null;
 }
@@ -73,6 +79,14 @@ async function fixturesOf(team: NflTeam, season: number): Promise<Fixture[]> {
     getTeamPostseason(team, season).catch(() => null),
   ]);
   return [...(regular?.games ?? []), ...(post?.games ?? [])].map((game) => ({ team, game }));
+}
+
+/** The newer of the game's stored content stamps, ISO, or null. */
+function gameModified(season: number, game: ScheduleGame): string | null {
+  const stamps = [storedBoxscoreModifiedAt(game.espnEventId), writtenRecapAt(season, game.gameId)]
+    .filter((x): x is string => x !== null)
+    .map((x) => new Date(Date.parse(x)).toISOString());
+  return stamps.length ? stamps.sort().at(-1)! : null;
 }
 
 /** The dated pages of one season, unsorted. */
@@ -103,7 +117,7 @@ async function seasonGames(prefix: string, season: number): Promise<ArchivedGame
       week: game.week,
       seasonType: game.seasonType,
       kickoff: new Date(game.kickoffMs!).toISOString(),
-      modified: null,
+      modified: gameModified(season, game),
     });
   }
   return games;

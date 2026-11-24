@@ -461,8 +461,8 @@ export function gameSeoFacts(game: ScoreboardGame): GameSeoFacts {
  * A dated game page's H1: "Tennessee Titans vs Indianapolis Colts Match
  * Player Stats: Week 6, 2026" - away then home like the scoreboard, the
  * round after the colon so two meetings of one pair in one season do not
- * share a heading (the pair's own page prints the same words without the
- * round; see seasonGameHeading). scoreboardHeading() stays the SportsEvent's
+ * share a heading (the pair's own page is the series page since WEB-001;
+ * see seriesPageHeading). scoreboardHeading() stays the SportsEvent's
  * name. Was "{Away} vs {Home} Box Score & Player Stats: Week N, YYYY" from
  * 2026-10-10 to 2026-10-30.
  */

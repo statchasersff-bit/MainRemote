@@ -607,7 +607,7 @@ const cache = createKeyedCache<GameBoxscore>({
 const STORE_DIR = dataPath("matchup", "boxscores");
 let storeStamp = "";
 let storedSummaries = new Map<string, EspnSummary>();
-let storedFetchedAt = new Map<string, string>();
+let storedModifiedAt = new Map<string, string>();
 const storedParsed = new Map<string, GameBoxscore | null>();
 
 function storeFiles(): Array<{ file: string; stamp: string }> {
@@ -629,37 +629,76 @@ function storedSummary(eventId: string): EspnSummary | undefined {
   const stamp = files.map((f) => f.stamp).join("|");
   if (stamp !== storeStamp) {
     const next = new Map<string, EspnSummary>();
-    const fetched = new Map<string, string>();
+    const modified = new Map<string, string>();
     for (const { file } of files) {
       try {
         const games = (JSON.parse(fs.readFileSync(file, "utf8")) as {
-          games?: Record<string, { summary?: EspnSummary; fetchedAt?: string }>;
+          games?: Record<string, StoredRecord>;
         }).games;
         for (const [id, game] of Object.entries(games ?? {})) {
           if (game.summary) next.set(id, game.summary);
-          if (typeof game.fetchedAt === "string") fetched.set(id, game.fetchedAt);
+          const stamp = contentStamp(game);
+          if (stamp) modified.set(id, stamp);
         }
       } catch {
         // An unreadable season falls through to ESPN, the same as a missing one.
       }
     }
     storedSummaries = next;
-    storedFetchedAt = fetched;
+    storedModifiedAt = modified;
     storedParsed.clear();
     storeStamp = stamp;
   }
   return storedSummaries.get(eventId);
 }
 
+/** One game as buildBoxscores.mjs stores it. */
+interface StoredRecord {
+  summary?: EspnSummary;
+  date?: string;
+  fetchedAt?: string;
+  modifiedAt?: string;
+}
+
 /**
- * When the stored copy of a game's stats was last pulled, ISO, or null for a
- * game not in the store. The sitemap's lastmod for a dated page: a box score
- * changes only when the builder re-pulls it after a stat correction.
+ * How long after kickoff a legacy record's `fetchedAt` still counts as the
+ * time its content was settled. The in-season pulls of 2026 land 0.5 to 20
+ * days after kickoff; the 2021-2025 archive was pulled in one bulk run on
+ * 2026-09-30, months or years after those games, and that run is not a
+ * change to the game.
  */
-export function storedBoxscoreFetchedAt(eventId: string | null): string | null {
+const LEGACY_STAMP_MAX_DAYS = 30;
+
+/**
+ * When a stored game's content last changed, ISO, or null when no stored
+ * stamp can say (WEB-001 lastmod, 2026-11-24).
+ *
+ * `modifiedAt` is written by buildBoxscores.mjs and moves only when a re-pull
+ * brings a different summary (a stat correction), never on an identical
+ * re-pull. A record from before that field fell back on `fetchedAt`, which
+ * is stable once the game is settled (the builder stops re-pulling it), but
+ * only when the pull happened in season (LEGACY_STAMP_MAX_DAYS); the bulk
+ * archive pull gets no stamp at all.
+ */
+export function contentStamp(game: StoredRecord): string | null {
+  if (typeof game.modifiedAt === "string" && Number.isFinite(Date.parse(game.modifiedAt))) {
+    return game.modifiedAt;
+  }
+  const fetched = Date.parse(game.fetchedAt ?? "");
+  const kickoff = Date.parse(game.date ?? "");
+  if (!Number.isFinite(fetched) || !Number.isFinite(kickoff)) return null;
+  return fetched - kickoff <= LEGACY_STAMP_MAX_DAYS * 24 * 60 * 60 * 1000 ? game.fetchedAt! : null;
+}
+
+/**
+ * When the stored box score of a game last changed (contentStamp), or null
+ * for a game not in the store or with no trustworthy stamp. Half of a dated
+ * page's sitemap lastmod; the other half is the written recap's writtenAt.
+ */
+export function storedBoxscoreModifiedAt(eventId: string | null): string | null {
   if (!eventId) return null;
   storedSummary(eventId);
-  return storedFetchedAt.get(eventId) ?? null;
+  return storedModifiedAt.get(eventId) ?? null;
 }
 
 /** Exposed for tests: the summary document as the page reads it. */
