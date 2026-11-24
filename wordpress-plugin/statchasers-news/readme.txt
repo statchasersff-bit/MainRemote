@@ -2,7 +2,7 @@
 Contributors: statchasers
 Requires at least: 6.3
 Requires PHP: 7.4
-Stable tag: 1.10.61
+Stable tag: 1.10.62
 License: GPL-2.0-or-later
 
 Mounts the StatChasers NFL news tool, the 32 team hubs, the player pages, the Fantasy Points Allowed table, the rest-of-season rankings, the NFL schedule, the advanced player stats, the RB handcuff rankings, the fantasy football strength of schedule, the dynasty rookie hit rates and the redraft draft strategy analysis into WordPress pages.
@@ -19,6 +19,9 @@ answers that question directly, with a Last-Modified header that says when the
 upload landed. Keep "Stable tag" in step with the Version header.
 
 == Changelog ==
+
+= 1.10.62 =
+* Divi late CSS on matchup pages (WEB-024, 2026-11-24): Divi's footer loader treats its list of "late" stylesheet files as one URL. On a game address answered with a 404 the list held two files, and the browser requested "a.css,b.css" (a 404); on every matchup page the late file, already enqueued with ?ver=, was downloaded a second time. On matchup requests the loader is now replaced by one that adds one link per file and skips a file already linked (query string ignored). Other pages are untouched. Includes 1.10.61 (WEB-001) and 1.10.60 unchanged. The matchup page trims (WEB-041) and recap accuracy (WEB-037) are API changes and ship with the API deploy. Clear WP Rocket's cache (mobile included) and purge Rocket.net after uploading.
 
 = 1.10.61 =
 * Game pages (WEB-001, 2026-11-24): every completed game is canonical at its own season/week address (/nfl/<a>-vs-<b>/2026-week-11/). The canonical and the game sitemap come from the API (X-Matchup-Game "archived" and /embed/matchup-games.json), so that part ships with the API deploy and works with 1.10.59 too. This version adds the two plugin-side pieces: a numbered spelling of a named playoff round (/2025-postseason-week-5/) now 301s to the named address (/2025-super-bowl/) instead of rendering a second self-canonical copy, and a game the API sends with `modified: null` is listed in /game-sitemap.xml with no lastmod (the API no longer sends one it cannot vouch for; 1.10.59 would fall back to the kickoff date), with no lastmod on the index entry either. When the game list changes the plugin now clears Rank Math's cached sitemap index as well as the game files (it cleared only the game files, so the cached index kept advertising the old page count and lastmods until some post was saved). A game segment the validator refuses (/2026-week-30/, /2026-week-02/) is now noindex with no canonical, like every other game 404 (it printed index and the pair's canonical on its 404 page). Builds on 1.10.60 (cache reliability, live since 2026-11-20), which this version includes unchanged. Clear WP Rocket's cache (mobile included) and purge Rocket.net after uploading.
