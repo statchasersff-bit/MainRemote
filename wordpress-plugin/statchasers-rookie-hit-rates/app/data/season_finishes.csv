@@ -178,7 +178,7 @@ terron-ward,Terron Ward,2017,RB,4,15.3,13.8,12.3,104,105,103
 lance-dunbar,Lance Dunbar,2017,RB,2,12.2,11.7,11.2,111,107,104
 cj-prosise,C.J. Prosise,2017,RB,4,17.0,14.0,11.0,100,103,105
 branden-oliver,Branden Oliver,2017,RB,8,16.9,13.9,10.9,101,104,106
-de-angelo-henderson-sr,De'Angelo Henderson Sr.,2017,RB,3,12.9,11.9,10.9,109,106,107
+de-angelo-henderson,De'Angelo Henderson Sr.,2017,RB,3,12.9,11.9,10.9,109,106,107
 trey-edmunds,Trey Edmunds,2017,RB,1,10.8,10.8,10.8,112,108,108
 zach-zenner,Zach Zenner,2017,RB,7,8.6,8.6,8.6,115,113,109
 bobby-rainey,Bobby Rainey,2017,RB,3,13.0,10.5,8.0,107,109,110
@@ -700,46 +700,46 @@ ronald-jones,Ronald Jones,2018,RB,6,20.7,17.2,13.7,91,91,95
 darrel-williams,Darrel Williams,2018,RB,3,16.1,14.6,13.1,95,96,96
 stevan-ridley,Stevan Ridley,2018,RB,9,14.8,13.3,11.8,100,98,97
 corey-grant,Corey Grant,2018,RB,5,19.7,15.2,10.7,92,94,98
-deandre-washington,DeAndre Washington,2018,RB,8,11.4,10.9,10.4,105,104,99
-john-kelly,John Kelly,2018,RB,3,12.1,11.1,10.1,103,103,100
+deandre-washington,DeAndre Washington,2018,RB,8,11.4,10.9,10.4,106,104,99
+john-kelly,John Kelly,2018,RB,3,12.1,11.1,10.1,104,103,100
 keith-ford,Keith Ford,2018,RB,2,13.0,11.5,10.0,102,101,101
-charcandrick-west,Charcandrick West,2018,RB,2,11.6,10.6,9.6,104,105,102
+charcandrick-west,Charcandrick West,2018,RB,2,11.6,10.6,9.6,105,105,102
 devonta-freeman,Devonta Freeman,2018,RB,2,14.1,11.6,9.1,101,100,103
-d-onta-foreman,D'Onta Foreman,2018,RB,1,10.7,9.7,8.7,107,106,104
+d-onta-foreman,D'Onta Foreman,2018,RB,1,10.7,9.7,8.7,108,107,104
 dontrell-hilliard,Dontrell Hilliard,2018,RB,6,17.5,13.0,8.5,93,99,105
 elijhaa-penny,Elijhaa Penny,2018,RB,9,15.5,11.5,7.5,97,102,106
-kenjon-barner,Kenjon Barner,2018,RB,6,8.4,7.9,7.4,109,107,107
-detrez-newsome,Detrez Newsome,2018,RB,3,8.8,7.8,6.8,108,108,108
-roc-thomas,Roc Thomas,2018,RB,5,7.1,6.1,5.1,111,110,109
-mike-boone,Mike Boone,2018,RB,6,6.8,5.8,4.8,112,112,110
-tj-logan,T.J. Logan,2018,RB,4,10.9,7.4,3.9,106,109,111
-byron-marshall,Byron Marshall,2018,RB,4,7.9,5.9,3.9,110,111,112
-samaje-perine,Samaje Perine,2018,RB,4,6.7,5.2,3.7,113,113,113
-dave-williams,Dave Williams,2018,RB,3,3.6,3.6,3.6,122,118,114
-tyler-ervin,Tyler Ervin,2018,RB,3,6.5,5.0,3.5,114,114,115
-shaun-wilson,Shaun Wilson,2018,RB,5,6.4,4.9,3.4,115,115,116
-mike-gillislee,Mike Gillislee,2018,RB,4,4.2,3.7,3.2,118,117,117
-jeremy-hill,Jeremy Hill,2018,RB,1,4.1,3.6,3.1,120,119,118
-benny-cunningham,Benny Cunningham,2018,RB,5,3.9,3.4,2.9,121,121,119
-ameer-abdullah,Ameer Abdullah,2018,RB,4,5.9,4.4,2.9,116,116,120
-jeremy-langford,Jeremy Langford,2018,RB,1,2.5,2.5,2.5,125,124,121
-travaris-cadet,Travaris Cadet,2018,RB,1,3.2,2.7,2.2,124,123,122
-de-lance-turner,De'Lance Turner,2018,RB,2,4.1,3.1,2.1,119,122,123
-cj-prosise,C.J. Prosise,2018,RB,2,4.9,3.4,1.9,117,120,124
-justin-davis,Justin Davis,2018,RB,2,1.9,1.9,1.9,126,126,125
-jonathan-stewart,Jonathan Stewart,2018,RB,3,1.7,1.7,1.7,127,127,126
-david-fluellen,David Fluellen,2018,RB,2,1.6,1.6,1.6,128,128,127
-darius-jackson,Darius Jackson,2018,RB,1,1.6,1.6,1.6,129,129,128
-brandon-wilds,Brandon Wilds,2018,RB,3,1.5,1.5,1.5,130,130,129
-jamaal-charles,Jamaal Charles,2018,RB,2,3.4,2.4,1.4,123,125,130
-christine-michael,Christine Michael,2018,RB,1,0.9,0.9,0.9,132,131,131
-rob-kelley,Rob Kelley,2018,RB,2,0.8,0.8,0.8,133,132,132
-jd-mckissic,J.D. McKissic,2018,RB,3,0.8,0.8,0.8,134,133,133
-jeremy-mcnichols,Jeremy McNichols,2018,RB,1,0.4,0.4,0.4,135,135,134
-jonathan-williams,Jonathan Williams,2018,RB,3,1.1,0.6,0.1,131,134,135
-taiwan-jones,Taiwan Jones,2018,RB,2,0.0,0.0,0.0,137,136,136
-de-angelo-henderson-sr,De'Angelo Henderson Sr.,2018,RB,1,-0.1,-0.1,-0.1,138,137,137
-robert-turbin,Robert Turbin,2018,RB,2,0.3,-0.2,-0.7,136,138,138
+kenjon-barner,Kenjon Barner,2018,RB,6,8.4,7.9,7.4,110,108,108
+detrez-newsome,Detrez Newsome,2018,RB,3,8.8,7.8,6.8,109,109,109
+roc-thomas,Roc Thomas,2018,RB,5,7.1,6.1,5.1,112,111,110
+mike-boone,Mike Boone,2018,RB,6,6.8,5.8,4.8,113,113,111
+tj-logan,T.J. Logan,2018,RB,4,10.9,7.4,3.9,107,110,112
+byron-marshall,Byron Marshall,2018,RB,4,7.9,5.9,3.9,111,112,113
+samaje-perine,Samaje Perine,2018,RB,4,6.7,5.2,3.7,114,114,114
+dave-williams,Dave Williams,2018,RB,3,3.6,3.6,3.6,123,119,115
+tyler-ervin,Tyler Ervin,2018,RB,3,6.5,5.0,3.5,115,115,116
+shaun-wilson,Shaun Wilson,2018,RB,5,6.4,4.9,3.4,116,116,117
+mike-gillislee,Mike Gillislee,2018,RB,4,4.2,3.7,3.2,119,118,118
+jeremy-hill,Jeremy Hill,2018,RB,1,4.1,3.6,3.1,121,120,119
+benny-cunningham,Benny Cunningham,2018,RB,5,3.9,3.4,2.9,122,122,120
+ameer-abdullah,Ameer Abdullah,2018,RB,4,5.9,4.4,2.9,117,117,121
+jeremy-langford,Jeremy Langford,2018,RB,1,2.5,2.5,2.5,126,125,122
+travaris-cadet,Travaris Cadet,2018,RB,1,3.2,2.7,2.2,125,124,123
+de-lance-turner,De'Lance Turner,2018,RB,2,4.1,3.1,2.1,120,123,124
+cj-prosise,C.J. Prosise,2018,RB,2,4.9,3.4,1.9,118,121,125
+justin-davis,Justin Davis,2018,RB,2,1.9,1.9,1.9,127,127,126
+jonathan-stewart,Jonathan Stewart,2018,RB,3,1.7,1.7,1.7,128,128,127
+david-fluellen,David Fluellen,2018,RB,2,1.6,1.6,1.6,129,129,128
+darius-jackson,Darius Jackson,2018,RB,1,1.6,1.6,1.6,130,130,129
+brandon-wilds,Brandon Wilds,2018,RB,3,1.5,1.5,1.5,131,131,130
+jamaal-charles,Jamaal Charles,2018,RB,2,3.4,2.4,1.4,124,126,131
+christine-michael,Christine Michael,2018,RB,1,0.9,0.9,0.9,133,132,132
+rob-kelley,Rob Kelley,2018,RB,2,0.8,0.8,0.8,134,133,133
+jd-mckissic,J.D. McKissic,2018,RB,3,0.8,0.8,0.8,135,134,134
+jeremy-mcnichols,Jeremy McNichols,2018,RB,1,0.4,0.4,0.4,136,136,135
+jonathan-williams,Jonathan Williams,2018,RB,3,1.1,0.6,0.1,132,135,136
+taiwan-jones,Taiwan Jones,2018,RB,2,0.0,0.0,0.0,138,137,137
+de-angelo-henderson,De'Angelo Henderson Sr.,2018,RB,1,-0.1,-0.1,-0.1,139,138,138
+robert-turbin,Robert Turbin,2018,RB,2,0.3,-0.2,-0.7,137,139,139
 travis-kelce,Travis Kelce,2018,TE,16,294.6,243.1,191.6,1,1,1
 george-kittle,George Kittle,2018,TE,16,258.7,214.7,170.7,3,3,2
 zach-ertz,Zach Ertz,2018,TE,16,280.3,222.3,164.3,2,2,3
@@ -755,7 +755,7 @@ vance-mcdonald,Vance McDonald,2018,TE,15,133.0,108.0,83.0,10,10,12
 evan-engram,Evan Engram,2018,TE,11,126.3,103.8,81.3,13,12,13
 devin-funchess,Devin Funchess,2018,TE,14,122.9,100.9,78.9,14,15,14
 jimmy-graham,Jimmy Graham,2018,TE,16,130.6,103.1,75.6,12,14,15
-christopher-herndon,Christopher Herndon,2018,TE,14,113.2,93.7,74.2,17,16,16
+chris-herndon,Christopher Herndon,2018,TE,14,113.2,93.7,74.2,17,16,16
 mark-andrews,Mark Andrews,2018,TE,16,107.2,90.2,73.2,18,18,17
 jordan-reed,Jordan Reed,2018,TE,13,119.8,92.8,65.8,16,17,18
 cameron-brate,Cameron Brate,2018,TE,15,92.9,77.9,62.9,20,20,19
@@ -1079,6 +1079,7 @@ riley-mccarron,Riley McCarron,2018,WR,1,0.0,0.0,0.0,212,212,212
 stacy-coley,Stacy Coley,2018,WR,1,0.0,0.0,0.0,213,213,213
 chris-lacy,Chris Lacy,2018,WR,1,0.0,0.0,0.0,214,214,214
 rod-streater,Rod Streater,2018,WR,1,-1.1,-1.1,-1.1,215,215,215
+mark-walton,Mark Walton,2018,RB,10,12.5,10,7.5,103,106,106
 lamar-jackson,Lamar Jackson,2019,QB,15,415.7,415.7,415.7,1,1,1
 dak-prescott,Dak Prescott,2019,QB,16,337.8,337.8,337.8,2,2,2
 russell-wilson,Russell Wilson,2019,QB,16,328.6,328.6,328.6,3,3,3
@@ -1200,7 +1201,7 @@ kerryon-johnson,Kerryon Johnson,2019,RB,8,85.0,80.0,75.0,54,53,47
 boston-scott,Boston Scott,2019,RB,8,98.9,86.9,74.9,49,49,48
 tony-pollard,Tony Pollard,2019,RB,14,89.2,81.7,74.2,53,51,49
 rex-burkhead,Rex Burkhead,2019,RB,13,101.1,87.6,74.1,48,48,50
-nyheim-miller-hines,Nyheim Miller-Hines,2019,RB,16,117.9,95.9,73.9,42,44,51
+nyheim-hines,Nyheim Miller-Hines,2019,RB,16,117.9,95.9,73.9,42,44,51
 chase-edmonds,Chase Edmonds,2019,RB,10,82.8,76.8,70.8,56,54,52
 rashaad-penny,Rashaad Penny,2019,RB,9,75.3,71.3,67.3,59,56,53
 kareem-hunt,Kareem Hunt,2019,RB,8,101.4,82.9,64.4,47,50,54
@@ -1228,62 +1229,62 @@ kalen-ballage,Kalen Ballage,2019,RB,12,51.8,44.8,37.8,71,75,75
 ryquell-armstead,Ryquell Armstead,2019,RB,14,51.2,44.2,37.2,72,76,76
 wayne-gallman,Wayne Gallman,2019,RB,9,48.2,42.7,37.2,76,78,77
 ty-johnson,Ty Johnson,2019,RB,15,60.2,48.2,36.2,66,71,78
-jonathan-williams,Jonathan Williams,2019,RB,4,40.4,37.9,35.4,80,79,79
-qadree-ollison,Qadree Ollison,2019,RB,6,30.7,30.2,29.7,88,83,80
-ameer-abdullah,Ameer Abdullah,2019,RB,11,41.3,33.8,26.3,79,80,81
-bilal-powell,Bilal Powell,2019,RB,12,33.2,29.7,26.2,84,85,82
-dontrell-hilliard,Dontrell Hilliard,2019,RB,6,38.1,32.1,26.1,81,81,83
-ito-smith,Ito Smith,2019,RB,7,36.3,30.8,25.3,82,82,84
-cordarrelle-patterson,Cordarrelle Patterson,2019,RB,12,35.6,30.1,24.6,83,84,85
-myles-gaskin,Myles Gaskin,2019,RB,7,31.4,27.9,24.4,86,86,86
-reggie-bonnafon,Reggie Bonnafon,2019,RB,8,29.3,26.3,23.3,90,89,87
-darwin-thompson,Darwin Thompson,2019,RB,10,32.1,27.6,23.1,85,87,88
-justin-jackson,Justin Jackson,2019,RB,7,31.2,26.7,22.2,87,88,89
-cj-prosise,C.J. Prosise,2019,RB,8,28.8,23.8,18.8,91,90,90
-darrell-henderson,Darrell Henderson,2019,RB,7,22.4,20.4,18.4,94,93,91
-travis-homer,Travis Homer,2019,RB,4,28.0,22.5,17.0,92,92,92
-tj-yeldon,T.J. Yeldon,2019,RB,4,29.7,23.2,16.7,89,91,93
-wendell-smallwood,Wendell Smallwood,2019,RB,11,23.5,19.0,14.5,93,94,94
-wes-hills,Wes Hills,2019,RB,1,16.2,15.2,14.2,98,96,95
-trey-edmunds,Trey Edmunds,2019,RB,6,20.0,17.0,14.0,95,95,96
-kerrith-whyte,Kerrith Whyte,2019,RB,6,14.1,13.6,13.1,100,99,97
-kenjon-barner,Kenjon Barner,2019,RB,8,17.1,14.1,11.1,96,97,98
-darren-sproles,Darren Sproles,2019,RB,6,17.0,14.0,11.0,97,98,99
-elijhaa-penny,Elijhaa Penny,2019,RB,8,12.8,11.8,10.8,101,101,100
-javorius-allen,Javorius Allen,2019,RB,3,11.5,11.0,10.5,105,102,101
-marshawn-lynch,Marshawn Lynch,2019,RB,1,9.4,9.4,9.4,109,106,102
-troymaine-pope,Troymaine Pope,2019,RB,2,11.4,10.4,9.4,106,103,103
-d-ernest-johnson,D'Ernest Johnson,2019,RB,3,15.2,12.2,9.2,99,100,104
-alex-armah,Alex Armah,2019,RB,6,9.7,8.7,7.7,108,107,105
-spencer-ware,Spencer Ware,2019,RB,3,12.3,9.8,7.3,103,104,106
-devontae-booker,Devontae Booker,2019,RB,6,12.6,9.6,6.6,102,105,107
-tra-carson,Tra Carson,2019,RB,2,10.6,8.6,6.6,107,108,108
-dwayne-washington,Dwayne Washington,2019,RB,4,7.6,7.1,6.6,112,110,109
-jon-hilliman,Jon Hilliman,2019,RB,3,8.2,6.7,5.2,110,111,110
-devine-ozigbo,Devine Ozigbo,2019,RB,1,8.0,6.5,5.0,111,112,111
-mike-davis,Mike Davis,2019,RB,5,11.9,8.4,4.9,104,109,112
-taiwan-jones,Taiwan Jones,2019,RB,1,5.9,5.4,4.9,113,113,113
-cj-anderson,C.J. Anderson,2019,RB,2,4.3,4.3,4.3,116,114,114
-paul-perkins,Paul Perkins,2019,RB,3,4.8,4.3,3.8,115,115,115
-anthony-sherman,Anthony Sherman,2019,RB,4,5.1,4.1,3.1,114,116,116
-jay-ajayi,Jay Ajayi,2019,RB,3,3.0,3.0,3.0,120,119,117
-dalyn-dawkins,Dalyn Dawkins,2019,RB,2,2.6,2.6,2.6,121,121,118
-tj-logan,T.J. Logan,2019,RB,5,4.3,3.3,2.3,117,117,119
-tyler-ervin,Tyler Ervin,2019,RB,2,4.1,3.1,2.1,118,118,120
-zach-zenner,Zach Zenner,2019,RB,3,3.7,2.7,1.7,119,120,121
-samaje-perine,Samaje Perine,2019,RB,1,1.6,1.6,1.6,122,122,122
-josh-adams,Josh Adams,2019,RB,2,1.2,1.2,1.2,124,123,123
-damien-harris,Damien Harris,2019,RB,1,1.2,1.2,1.2,125,124,124
-dexter-williams,Dexter Williams,2019,RB,2,1.1,1.1,1.1,126,125,125
-buddy-howell,Buddy Howell,2019,RB,2,1.0,1.0,1.0,127,126,126
-josh-ferguson,Josh Ferguson,2019,RB,1,0.9,0.9,0.9,128,127,127
-john-kelly,John Kelly,2019,RB,1,0.9,0.9,0.9,129,128,128
-jordan-scarlett,Jordan Scarlett,2019,RB,1,0.9,0.9,0.9,130,129,129
-ryan-nall,Ryan Nall,2019,RB,1,0.8,0.8,0.8,131,131,130
-tony-brooks-james,Tony Brooks-James,2019,RB,3,0.7,0.7,0.7,132,132,131
-de-lance-turner,De'Lance Turner,2019,RB,1,0.6,0.6,0.6,133,133,132
-senorise-perry,Senorise Perry,2019,RB,1,1.4,0.9,0.4,123,130,133
-alfred-morris,Alfred Morris,2019,RB,1,0.4,0.4,0.4,134,134,134
+jonathan-williams,Jonathan Williams,2019,RB,4,40.4,37.9,35.4,81,79,79
+qadree-ollison,Qadree Ollison,2019,RB,6,30.7,30.2,29.7,89,84,80
+ameer-abdullah,Ameer Abdullah,2019,RB,11,41.3,33.8,26.3,80,81,82
+bilal-powell,Bilal Powell,2019,RB,12,33.2,29.7,26.2,85,86,83
+dontrell-hilliard,Dontrell Hilliard,2019,RB,6,38.1,32.1,26.1,82,82,84
+ito-smith,Ito Smith,2019,RB,7,36.3,30.8,25.3,83,83,85
+cordarrelle-patterson,Cordarrelle Patterson,2019,RB,12,35.6,30.1,24.6,84,85,86
+myles-gaskin,Myles Gaskin,2019,RB,7,31.4,27.9,24.4,87,87,87
+reggie-bonnafon,Reggie Bonnafon,2019,RB,8,29.3,26.3,23.3,91,90,88
+darwin-thompson,Darwin Thompson,2019,RB,10,32.1,27.6,23.1,86,88,89
+justin-jackson,Justin Jackson,2019,RB,7,31.2,26.7,22.2,88,89,90
+cj-prosise,C.J. Prosise,2019,RB,8,28.8,23.8,18.8,92,91,91
+darrell-henderson,Darrell Henderson,2019,RB,7,22.4,20.4,18.4,95,94,92
+travis-homer,Travis Homer,2019,RB,4,28.0,22.5,17.0,93,93,93
+tj-yeldon,T.J. Yeldon,2019,RB,4,29.7,23.2,16.7,90,92,94
+wendell-smallwood,Wendell Smallwood,2019,RB,11,23.5,19.0,14.5,94,95,95
+wes-hills,Wes Hills,2019,RB,1,16.2,15.2,14.2,99,97,96
+trey-edmunds,Trey Edmunds,2019,RB,6,20.0,17.0,14.0,96,96,97
+kerrith-whyte,Kerrith Whyte,2019,RB,6,14.1,13.6,13.1,101,100,98
+kenjon-barner,Kenjon Barner,2019,RB,8,17.1,14.1,11.1,97,98,99
+darren-sproles,Darren Sproles,2019,RB,6,17.0,14.0,11.0,98,99,100
+elijhaa-penny,Elijhaa Penny,2019,RB,8,12.8,11.8,10.8,102,102,101
+javorius-allen,Javorius Allen,2019,RB,3,11.5,11.0,10.5,106,103,102
+marshawn-lynch,Marshawn Lynch,2019,RB,1,9.4,9.4,9.4,110,107,103
+troymaine-pope,Troymaine Pope,2019,RB,2,11.4,10.4,9.4,107,104,104
+d-ernest-johnson,D'Ernest Johnson,2019,RB,3,15.2,12.2,9.2,100,101,105
+alex-armah,Alex Armah,2019,RB,6,9.7,8.7,7.7,109,108,106
+spencer-ware,Spencer Ware,2019,RB,3,12.3,9.8,7.3,104,105,107
+devontae-booker,Devontae Booker,2019,RB,6,12.6,9.6,6.6,103,106,108
+tra-carson,Tra Carson,2019,RB,2,10.6,8.6,6.6,108,109,109
+dwayne-washington,Dwayne Washington,2019,RB,4,7.6,7.1,6.6,113,111,110
+jon-hilliman,Jon Hilliman,2019,RB,3,8.2,6.7,5.2,111,112,111
+devine-ozigbo,Devine Ozigbo,2019,RB,1,8.0,6.5,5.0,112,113,112
+mike-davis,Mike Davis,2019,RB,5,11.9,8.4,4.9,105,110,113
+taiwan-jones,Taiwan Jones,2019,RB,1,5.9,5.4,4.9,114,114,114
+cj-anderson,C.J. Anderson,2019,RB,2,4.3,4.3,4.3,117,115,115
+paul-perkins,Paul Perkins,2019,RB,3,4.8,4.3,3.8,116,116,116
+anthony-sherman,Anthony Sherman,2019,RB,4,5.1,4.1,3.1,115,117,117
+jay-ajayi,Jay Ajayi,2019,RB,3,3.0,3.0,3.0,121,120,118
+dalyn-dawkins,Dalyn Dawkins,2019,RB,2,2.6,2.6,2.6,122,122,119
+tj-logan,T.J. Logan,2019,RB,5,4.3,3.3,2.3,118,118,120
+tyler-ervin,Tyler Ervin,2019,RB,2,4.1,3.1,2.1,119,119,121
+zach-zenner,Zach Zenner,2019,RB,3,3.7,2.7,1.7,120,121,122
+samaje-perine,Samaje Perine,2019,RB,1,1.6,1.6,1.6,123,123,123
+josh-adams,Josh Adams,2019,RB,2,1.2,1.2,1.2,125,124,124
+damien-harris,Damien Harris,2019,RB,1,1.2,1.2,1.2,126,125,125
+dexter-williams,Dexter Williams,2019,RB,2,1.1,1.1,1.1,127,126,126
+buddy-howell,Buddy Howell,2019,RB,2,1.0,1.0,1.0,128,127,127
+josh-ferguson,Josh Ferguson,2019,RB,1,0.9,0.9,0.9,129,128,128
+john-kelly,John Kelly,2019,RB,1,0.9,0.9,0.9,130,129,129
+jordan-scarlett,Jordan Scarlett,2019,RB,1,0.9,0.9,0.9,131,130,130
+ryan-nall,Ryan Nall,2019,RB,1,0.8,0.8,0.8,132,132,131
+tony-brooks-james,Tony Brooks-James,2019,RB,3,0.7,0.7,0.7,133,133,132
+de-lance-turner,De'Lance Turner,2019,RB,1,0.6,0.6,0.6,134,134,133
+senorise-perry,Senorise Perry,2019,RB,1,1.4,0.9,0.4,124,131,134
+alfred-morris,Alfred Morris,2019,RB,1,0.4,0.4,0.4,135,135,135
 travis-kelce,Travis Kelce,2019,TE,16,254.3,205.8,157.3,1,1,1
 mark-andrews,Mark Andrews,2019,TE,15,207.2,175.2,143.2,5,4,2
 george-kittle,George Kittle,2019,TE,14,222.5,180.0,137.5,2,2,3
@@ -1398,7 +1399,7 @@ antony-auclair,Antony Auclair,2019,TE,2,2.1,1.6,1.1,112,112,111
 levine-toilolo,Levine Toilolo,2019,TE,2,3.0,2.0,1.0,109,109,112
 ben-koyack,Ben Koyack,2019,TE,3,1.9,1.4,0.9,113,113,113
 jordan-thomas,Jordan Thomas,2019,TE,1,1.8,1.3,0.8,114,114,114
-christopher-herndon,Christopher Herndon,2019,TE,1,1.7,1.2,0.7,115,115,115
+chris-herndon,Christopher Herndon,2019,TE,1,1.7,1.2,0.7,115,115,115
 dalton-schultz,Dalton Schultz,2019,TE,2,1.6,1.1,0.6,116,116,116
 tyrone-swoopes,Tyrone Swoopes,2019,TE,1,1.5,1.0,0.5,117,117,117
 charles-jones,Charles Jones,2019,TE,1,1.5,1.0,0.5,118,118,118
@@ -1627,6 +1628,7 @@ lil-jordan-humphrey,Lil'Jordan Humphrey,2019,WR,1,0.0,0.0,0.0,217,217,217
 jalen-guyton,Jalen Guyton,2019,WR,1,0.0,0.0,0.0,218,218,218
 travis-fulgham,Travis Fulgham,2019,WR,2,0.0,0.0,0.0,219,219,219
 quincy-enunwa,Quincy Enunwa,2019,WR,1,-1.4,-1.9,-2.4,220,220,220
+mark-walton,Mark Walton,2019,RB,7,42,34.5,27,79,80,81
 josh-allen,Josh Allen,2020,QB,16,396.1,395.6,395.1,1,1,1
 aaron-rodgers,Aaron Rodgers,2020,QB,16,383.3,382.8,382.3,2,2,2
 kyler-murray,Kyler Murray,2020,QB,16,378.7,378.7,378.7,3,3,3
@@ -1731,7 +1733,7 @@ d-andre-swift,D'Andre Swift,2020,RB,13,189.8,166.8,143.8,18,18,20
 miles-sanders,Miles Sanders,2020,RB,12,170.4,156.4,142.4,23,23,21
 clyde-edwards-helaire,Clyde Edwards-Helaire,2020,RB,13,176.0,158.0,140.0,22,22,22
 todd-gurley,Todd Gurley,2020,RB,15,163.2,150.7,138.2,29,25,23
-nyheim-miller-hines,Nyheim Miller-Hines,2020,RB,16,193.2,161.7,130.2,15,20,24
+nyheim-hines,Nyheim Miller-Hines,2020,RB,16,193.2,161.7,130.2,15,20,24
 james-conner,James Conner,2020,RB,13,164.6,147.1,129.6,27,26,25
 jeffery-wilson,Jeffery Wilson,2020,RB,11,142.3,135.8,129.3,32,30,26
 myles-gaskin,Myles Gaskin,2020,RB,10,164.2,143.7,123.2,28,27,27
@@ -1780,7 +1782,7 @@ cordarrelle-patterson,Cordarrelle Patterson,2020,RB,15,69.4,58.9,48.4,64,67,69
 ty-johnson,Ty Johnson,2020,RB,10,63.3,55.3,47.3,69,70,70
 mark-ingram,Mark Ingram,2020,RB,10,52.9,49.9,46.9,76,72,71
 justin-jackson,Justin Jackson,2020,RB,8,65.3,55.8,46.3,68,68,72
-la-mical-perine,La'Mical Perine,2020,RB,9,52.5,47.0,41.5,77,76,73
+lamical-perine,La'Mical Perine,2020,RB,9,52.5,47.0,41.5,77,76,73
 ito-smith,Ito Smith,2020,RB,14,57.3,48.8,40.3,72,74,74
 dion-lewis,Dion Lewis,2020,RB,16,59.2,49.7,40.2,71,73,75
 deejay-dallas,DeeJay Dallas,2020,RB,8,56.9,48.4,39.9,73,75,76
@@ -1893,7 +1895,7 @@ richard-rodgers,Richard Rodgers,2020,TE,8,70.5,58.5,46.5,37,36,32
 anthony-firkser,Anthony Firkser,2020,TE,15,83.7,64.2,44.7,26,31,33
 n-keal-harry,N'Keal Harry,2020,TE,13,75.9,59.4,42.9,34,34,34
 dawson-knox,Dawson Knox,2020,TE,11,66.8,54.8,42.8,39,38,35
-christopher-herndon,Christopher Herndon,2020,TE,11,73.7,58.2,42.7,35,37,36
+chris-herndon,Christopher Herndon,2020,TE,11,73.7,58.2,42.7,35,37,36
 zach-ertz,Zach Ertz,2020,TE,11,77.5,59.5,41.5,32,33,37
 jack-doyle,Jack Doyle,2020,TE,13,64.1,52.6,41.1,42,41,38
 jacob-hollister,Jacob Hollister,2020,TE,13,65.9,53.4,40.9,40,40,39
@@ -2035,7 +2037,7 @@ devante-parker,DeVante Parker,2020,WR,14,166.3,134.8,103.3,40,42,46
 gabe-davis,Gabe Davis,2020,WR,16,136.9,119.4,101.9,57,54,47
 dj-chark,D.J. Chark,2020,WR,13,153.6,127.1,100.6,49,49,48
 keelan-cole,Keelan Cole,2020,WR,16,155.4,127.9,100.4,47,48,49
-laviska-shenault-jr,Laviska Shenault Jr.,2020,WR,14,157.1,128.1,99.1,46,47,50
+laviska-shenault,Laviska Shenault Jr.,2020,WR,14,157.1,128.1,99.1,46,47,50
 christian-kirk,Christian Kirk,2020,WR,14,146.4,122.4,98.4,51,50,51
 sterling-shepard,Sterling Shepard,2020,WR,12,162.5,129.5,96.5,43,46,52
 julio-jones,Julio Jones,2020,WR,9,146.1,120.6,95.1,52,53,53
@@ -2415,7 +2417,7 @@ jason-huntley,Jason Huntley,2021,RB,1,5.1,5.1,5.1,128,126,123
 rodney-smith,Rodney Smith,2021,RB,1,9.8,7.3,4.8,116,120,124
 wendell-smallwood,Wendell Smallwood,2021,RB,2,8.7,6.7,4.7,121,121,125
 kalen-ballage,Kalen Ballage,2021,RB,8,6.4,5.4,4.4,124,125,126
-la-mical-perine,La'Mical Perine,2021,RB,2,3.1,3.1,3.1,136,132,127
+lamical-perine,La'Mical Perine,2021,RB,2,3.1,3.1,3.1,136,132,127
 kylin-hill,Kylin Hill,2021,RB,4,3.9,3.4,2.9,132,130,128
 dwayne-washington,Dwayne Washington,2021,RB,3,4.8,3.8,2.8,129,127,129
 jaylen-samuels,Jaylen Samuels,2021,RB,2,5.3,3.8,2.3,126,128,130
@@ -2518,7 +2520,7 @@ eric-saubert,Eric Saubert,2021,TE,7,18.7,14.7,10.7,75,75,74
 antony-auclair,Antony Auclair,2021,TE,4,15.7,13.2,10.7,79,78,75
 kylen-granson,Kylen Granson,2021,TE,10,21.6,16.1,10.6,68,69,76
 tommy-sweeney,Tommy Sweeney,2021,TE,7,19.4,14.9,10.4,71,74,77
-christopher-herndon,Christopher Herndon,2021,TE,5,14.0,12.0,10.0,82,81,78
+chris-herndon,Christopher Herndon,2021,TE,5,14.0,12.0,10.0,82,81,78
 blake-bell,Blake Bell,2021,TE,11,18.7,14.2,9.7,76,76,79
 noah-gray,Noah Gray,2021,TE,7,16.6,13.1,9.6,77,79,80
 sean-mckeon,Sean McKeon,2021,TE,4,12.7,10.7,8.7,83,83,81
@@ -3052,7 +3054,7 @@ tyler-conklin,Tyler Conklin,2022,TE,17,131.5,102.5,73.5,15,15,16
 noah-fant,Noah Fant,2022,TE,17,122.6,97.6,72.6,16,17,17
 zach-ertz,Zach Ertz,2022,TE,10,115.6,92.1,68.6,18,18,18
 mike-gesicki,Mike Gesicki,2022,TE,17,98.2,82.2,66.2,22,21,19
-chigoziem-okonkwo,Chigoziem Okonkwo,2022,TE,15,97.2,81.2,65.2,24,22,20
+chig-okonkwo,Chigoziem Okonkwo,2022,TE,15,97.2,81.2,65.2,24,22,20
 hunter-henry,Hunter Henry,2022,TE,16,103.9,83.4,62.9,21,20,21
 robert-tonyan,Robert Tonyan,2022,TE,17,112.0,85.5,59.0,19,19,22
 darren-waller,Darren Waller,2022,TE,8,84.8,70.8,56.8,30,27,23
@@ -3473,7 +3475,7 @@ bijan-robinson,Bijan Robinson,2023,RB,17,246.3,217.3,188.3,9,9,12
 saquon-barkley,Saquon Barkley,2023,RB,14,223.2,202.7,182.2,13,12,13
 gus-edwards,Gus Edwards,2023,RB,17,187.0,181.0,175.0,25,21,14
 james-conner,James Conner,2023,RB,13,201.5,188.0,174.5,18,18,15
-kenneth-walker-iii,Kenneth Walker III,2023,RB,15,199.4,184.9,170.4,19,19,16
+kenneth-walker,Kenneth Walker III,2023,RB,15,199.4,184.9,170.4,19,19,16
 isiah-pacheco,Isiah Pacheco,2023,RB,14,213.9,191.9,169.9,15,16,17
 jerome-ford,Jerome Ford,2023,RB,17,213.2,191.2,169.2,16,17,18
 tony-pollard,Tony Pollard,2023,RB,17,222.6,195.1,167.6,14,15,19
@@ -3524,7 +3526,7 @@ jordan-mason,Jordan Mason,2023,RB,9,44.7,43.2,41.7,68,66,63
 elijah-mitchell,Elijah Mitchell,2023,RB,11,47.5,44.5,41.5,64,65,64
 chase-brown,Chase Brown,2023,RB,10,53.5,46.5,39.5,63,63,65
 pierre-strong,Pierre Strong,2023,RB,13,42.8,40.3,37.8,72,68,66
-chris-rodriguez-jr,Chris Rodriguez Jr.,2023,RB,8,37.9,36.9,35.9,77,72,67
+chris-rodriguez,Chris Rodriguez Jr.,2023,RB,8,37.9,36.9,35.9,77,72,67
 cam-akers,Cam Akers,2023,RB,7,46.7,41.2,35.7,66,67,68
 michael-carter,Michael Carter,2023,RB,15,58.8,46.8,34.8,62,62,69
 darrell-henderson,Darrell Henderson,2023,RB,4,43.5,38.5,33.5,69,69,70
@@ -3555,14 +3557,14 @@ tyler-goodson,Tyler Goodson,2023,RB,6,18.1,15.1,12.1,94,94,94
 israel-abanikanda,Israel Abanikanda,2023,RB,6,18.3,14.8,11.3,93,95,95
 brandon-bolden,Brandon Bolden,2023,RB,3,11.1,11.1,11.1,107,102,96
 raheem-blackshear,Raheem Blackshear,2023,RB,8,17.1,14.1,11.1,96,96,97
-la-mical-perine,La'Mical Perine,2023,RB,2,14.0,12.5,11.0,100,98,98
+lamical-perine,La'Mical Perine,2023,RB,2,14.0,12.5,11.0,100,98,98
 emanuel-wilson,Emanuel Wilson,2023,RB,5,14.8,12.8,10.8,99,97,99
 chris-brooks,Chris Brooks,2023,RB,3,10.6,10.6,10.6,109,104,100
 keaontay-ingram,Keaontay Ingram,2023,RB,7,14.0,12.0,10.0,101,99,101
 jk-dobbins,J.K. Dobbins,2023,RB,1,11.7,10.7,9.7,105,103,102
 deuce-vaughn,Deuce Vaughn,2023,RB,6,15.0,11.5,8.0,97,100,103
 trayveon-williams,Trayveon Williams,2023,RB,14,14.9,11.4,7.9,98,101,104
-velus-jones-jr,Velus Jones Jr.,2023,RB,10,11.1,9.1,7.1,108,109,105
+velus-jones,Velus Jones Jr.,2023,RB,10,11.1,9.1,7.1,108,109,105
 eric-gray,Eric Gray,2023,RB,5,13.0,10.0,7.0,103,105,106
 gary-brightwell,Gary Brightwell,2023,RB,3,11.6,9.1,6.6,106,108,107
 mike-boone,Mike Boone,2023,RB,7,13.3,9.8,6.3,102,106,108
@@ -3716,7 +3718,7 @@ amon-ra-st-brown,Amon-Ra St. Brown,2023,WR,16,330.9,271.4,211.9,3,3,3
 mike-evans,Mike Evans,2023,WR,17,282.5,243.0,203.5,7,5,4
 puka-nacua,Puka Nacua,2023,WR,17,298.5,246.0,193.5,4,4,5
 dj-moore,DJ Moore,2023,WR,17,286.5,238.5,190.5,6,6,6
-deebo-samuel-sr,Deebo Samuel Sr.,2023,WR,15,243.7,213.7,183.7,15,12,7
+deebo-samuel,Deebo Samuel Sr.,2023,WR,15,243.7,213.7,183.7,15,12,7
 aj-brown,A.J. Brown,2023,WR,17,289.6,236.6,183.6,5,7,8
 nico-collins,Nico Collins,2023,WR,15,260.4,220.4,180.4,12,9,9
 brandon-aiyuk,Brandon Aiyuk,2023,WR,16,249.2,211.7,174.2,14,14,10
@@ -3791,7 +3793,7 @@ quentin-johnston,Quentin Johnston,2023,WR,17,94.0,75.0,56.0,74,75,78
 brandon-johnson,Brandon Johnson,2023,WR,10,73.4,63.9,54.4,87,82,79
 michael-gallup,Michael Gallup,2023,WR,16,87.8,70.8,53.8,78,78,80
 tre-tucker,Tre Tucker,2023,WR,13,71.8,62.3,52.8,89,86,81
-marvin-mims-jr,Marvin Mims Jr.,2023,WR,15,74.7,63.7,52.7,86,83,82
+marvin-mims,Marvin Mims Jr.,2023,WR,15,74.7,63.7,52.7,86,83,82
 michael-thomas,Michael Thomas,2023,WR,10,89.8,70.3,50.8,75,79,83
 robert-woods,Robert Woods,2023,WR,13,89.3,69.3,49.3,76,80,84
 at-perry,A.T. Perry,2023,WR,8,60.6,54.6,48.6,99,93,85
@@ -3812,7 +3814,7 @@ jake-bobo,Jake Bobo,2023,WR,14,56.9,47.4,37.9,105,102,99
 trenton-irwin,Trenton Irwin,2023,WR,10,62.6,50.1,37.6,95,97,100
 jalin-hyatt,Jalin Hyatt,2023,WR,13,60.3,48.8,37.3,100,100,101
 allen-lazard,Allen Lazard,2023,WR,13,60.1,48.6,37.1,101,101,102
-calvin-austin-iii,Calvin Austin III,2023,WR,14,52.7,44.2,35.7,109,107,103
+calvin-austin,Calvin Austin III,2023,WR,14,52.7,44.2,35.7,109,107,103
 andrei-iosivas,Andrei Iosivas,2023,WR,9,50.6,43.1,35.6,111,109,104
 marquez-valdes-scantling,Marquez Valdes-Scantling,2023,WR,16,56.5,46.0,35.5,106,104,105
 david-bell,David Bell,2023,WR,9,48.7,41.7,34.7,113,111,106
@@ -3852,14 +3854,14 @@ kyle-philips,Kyle Philips,2023,WR,8,33.1,25.6,18.1,136,138,139
 river-cracraft,River Cracraft,2023,WR,6,27.1,22.6,18.1,148,143,140
 deven-thompkins,Deven Thompkins,2023,WR,12,34.9,26.4,17.9,134,136,141
 ray-ray-mccloud,Ray-Ray McCloud,2023,WR,7,28.5,22.5,16.5,144,144,142
-john-metchie-iii,John Metchie III,2023,WR,14,32.2,24.2,16.2,139,140,143
+john-metchie,John Metchie III,2023,WR,14,32.2,24.2,16.2,139,140,143
 byron-pringle,Byron Pringle,2023,WR,12,30.1,23.1,16.1,142,142,144
 donovan-peoples-jones,Donovan Peoples-Jones,2023,WR,12,28.5,22.0,15.5,145,145,145
 david-moore,David Moore,2023,WR,6,20.4,17.9,15.4,161,152,146
 jalen-guyton,Jalen Guyton,2023,WR,7,24.9,19.9,14.9,150,151,147
 trent-sherfield,Trent Sherfield,2023,WR,9,25.6,20.1,14.6,149,150,148
 tyquan-thornton,Tyquan Thornton,2023,WR,9,27.2,20.7,14.2,147,146,149
-terrace-marshall-jr,Terrace Marshall Jr.,2023,WR,8,32.9,23.4,13.9,137,141,150
+terrace-marshall,Terrace Marshall Jr.,2023,WR,8,32.9,23.4,13.9,137,141,150
 xavier-hutchinson,Xavier Hutchinson,2023,WR,11,21.9,17.9,13.9,154,153,151
 chase-claypool,Chase Claypool,2023,WR,7,21.7,17.7,13.7,155,154,152
 charlie-jones,Charlie Jones,2023,WR,5,20.7,17.2,13.7,159,157,153
@@ -3870,7 +3872,7 @@ randall-cobb,Randall Cobb,2023,WR,9,16.9,14.4,11.9,164,162,157
 jason-brownlee,Jason Brownlee,2023,WR,4,16.6,14.1,11.6,165,163,158
 dj-montgomery,D.J. Montgomery,2023,WR,2,14.6,13.1,11.6,167,166,159
 lynn-bowden,Lynn Bowden,2023,WR,8,22.5,17.0,11.5,152,158,160
-laviska-shenault-jr,Laviska Shenault Jr.,2023,WR,8,21.5,16.5,11.5,156,159,161
+laviska-shenault,Laviska Shenault Jr.,2023,WR,8,21.5,16.5,11.5,156,159,161
 richie-james,Richie James,2023,WR,8,21.4,16.4,11.4,158,160,162
 parris-campbell,Parris Campbell,2023,WR,8,30.4,20.4,10.4,141,148,163
 marquise-goodwin,Marquise Goodwin,2023,WR,10,14.0,12.0,10.0,168,168,164
@@ -4008,7 +4010,7 @@ josh-jacobs,Josh Jacobs,2024,RB,17,293.1,275.1,257.1,6,5,5
 kyren-williams,Kyren Williams,2024,RB,16,272.1,255.1,238.1,7,7,6
 james-cook,James Cook,2024,RB,16,266.7,250.7,234.7,8,8,7
 jonathan-taylor,Jonathan Taylor,2024,RB,14,246.7,237.7,228.7,12,9,8
-devon-achane,Devon Achane,2024,RB,17,299.9,260.9,221.9,5,6,9
+de-von-achane,Devon Achane,2024,RB,17,299.9,260.9,221.9,5,6,9
 james-conner,James Conner,2024,RB,16,253.8,230.3,206.8,11,11,10
 joe-mixon,Joe Mixon,2024,RB,14,240.5,222.5,204.5,17,13,11
 chase-brown,Chase Brown,2024,RB,16,255.0,228.0,201.0,10,12,12
@@ -4072,7 +4074,7 @@ dare-ogunbowale,Dare Ogunbowale,2024,RB,15,56.0,46.5,37.0,64,65,69
 isaiah-davis,Isaiah Davis,2024,RB,9,45.9,41.4,36.9,70,70,70
 tyler-goodson,Tyler Goodson,2024,RB,9,44.4,38.9,33.4,71,72,71
 christian-mccaffrey,Christian McCaffrey,2024,RB,4,47.8,40.3,32.8,68,71,72
-christopher-brooks,Christopher Brooks,2024,RB,11,42.2,36.7,31.2,73,73,73
+chris-brooks,Christopher Brooks,2024,RB,11,42.2,36.7,31.2,73,73,73
 chris-rodriguez,Chris Rodriguez,2024,RB,6,31.5,31.0,30.5,83,77,74
 hassan-haskins,Hassan Haskins,2024,RB,11,32.8,31.3,29.8,80,76,75
 jamaal-williams,Jamaal Williams,2024,RB,13,37.1,32.6,28.1,75,74,76
@@ -4160,7 +4162,7 @@ tyler-conklin,Tyler Conklin,2024,TE,16,121.9,96.4,70.9,18,19,22
 dalton-schultz,Dalton Schultz,2024,TE,17,118.2,91.7,65.2,20,21,23
 austin-hooper,Austin Hooper,2024,TE,17,108.6,86.1,63.6,24,25,24
 dallas-goedert,Dallas Goedert,2024,TE,10,103.6,82.6,61.6,27,27,25
-chigoziem-okonkwo,Chigoziem Okonkwo,2024,TE,16,113.6,87.6,61.6,21,23,26
+chig-okonkwo,Chigoziem Okonkwo,2024,TE,16,113.6,87.6,61.6,21,23,26
 will-dissly,Will Dissly,2024,TE,15,110.1,85.1,60.1,23,26,27
 dalton-kincaid,Dalton Kincaid,2024,TE,13,100.8,78.8,56.8,30,29,28
 noah-fant,Noah Fant,2024,TE,14,104.0,80.0,56.0,26,28,29
@@ -4404,7 +4406,7 @@ simi-fehoko,Simi Fehoko,2024,WR,5,16.6,13.6,10.6,148,147,147
 xavier-gipson,Xavier Gipson,2024,WR,7,16.4,13.4,10.4,150,148,148
 mason-tipton,Mason Tipton,2024,WR,9,23.9,16.9,9.9,137,141,149
 johnny-wilson,Johnny Wilson,2024,WR,9,14.8,12.3,9.8,154,154,150
-laviska-shenault-jr,Laviska Shenault Jr.,2024,WR,6,14.7,12.2,9.7,155,155,151
+laviska-shenault,Laviska Shenault Jr.,2024,WR,6,14.7,12.2,9.7,155,155,151
 bryce-oliver,Bryce Oliver,2024,WR,5,15.5,12.5,9.5,152,152,152
 marquise-brown,Marquise Brown,2024,WR,2,18.1,13.6,9.1,146,146,153
 dj-chark,D.J. Chark,2024,WR,4,13.1,11.1,9.1,165,160,154
@@ -4772,7 +4774,7 @@ ian-thomas,Ian Thomas,2025,TE,15,24.4,17.9,11.4,73,75,76
 tank-bigsby,Tank Bigsby,2025,RB,17,53.8,52.3,50.8,68,63,60
 aj-barner,AJ Barner,2025,TE,17,147.3,121.3,95.3,14,14,14
 kendre-miller,Kendre Miller,2025,RB,7,33.3,30.8,28.3,78,73,72
-joshua-palmer,Joshua Palmer,2025,WR,12,52.3,41.3,30.3,106,109,114
+josh-palmer,Joshua Palmer,2025,WR,12,52.3,41.3,30.3,106,109,114
 rhamondre-stevenson,Rhamondre Stevenson,2025,RB,14,178.8,162.8,146.8,25,25,25
 kyle-williams,Kyle Williams,2025,WR,17,49.2,44.2,39.2,112,106,96
 kyren-williams,Kyren Williams,2025,RB,17,263.3,245.3,227.3,9,9,8
@@ -4995,7 +4997,7 @@ jaleel-mclaughlin,Jaleel McLaughlin,2025,RB,8,31.4,29.4,27.4,80,75,73
 ke-shawn-williams,Ke'Shawn Williams,2025,WR,11,0.5,0.0,-0.5,219,220,248
 efton-chism,Efton Chism,2025,WR,8,16.5,15.0,13.5,161,158,154
 ja-corey-brooks,Ja'Corey Brooks,2025,WR,1,0,0,0,232,232,230
-nyheim-miller-hines,Nyheim Miller-Hines,2025,RB,4,-0.2,-0.2,-0.2,153,153,153
+nyheim-hines,Nyheim Miller-Hines,2025,RB,4,-0.2,-0.2,-0.2,153,153,153
 tyler-huntley,Tyler Huntley,2025,QB,5,40.1,40.1,40.1,47,47,47
 lil-jordan-humphrey,Lil'Jordan Humphrey,2025,WR,10,34.6,28.1,21.6,128,129,128
 owen-wright,Owen Wright,2025,RB,3,0.6,0.6,0.6,132,132,132

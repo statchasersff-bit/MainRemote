@@ -46,9 +46,13 @@ The iframe automatically resizes to fit the tool's content as you switch tabs.
 * Prints a "How We Count a Hit" methodology section and a hit-rate-by-position
   table in the page itself, under the tool, from summary/hit-rates-summary.json.
   The summary is computed at build time by the tool's own calculation from the
-  bundled app/data CSVs (wordpress-plugin/scripts/rhr/build-summary.mjs), so it
-  needs no request or calculation per page view. With JavaScript off the
+  bundled app/data CSVs (script/build-wp-summary.mjs, step 4 of
+  script/build-wp-plugin.sh), so it needs no request or calculation per page
+  view. With JavaScript off the
   iframe is hidden and the section remains. `summary="0"` leaves it out.
+* Data: every rookie now links to all of his seasons (player-id-links.json:
+  name-variant aliases, Frank Gore Jr. split from his father's id, Mark
+  Walton's 2018-2019 seasons added).
 
 = 1.0.0 =
 * Initial release.

@@ -99,10 +99,10 @@ add_shortcode( 'statchasers_rookie_hit_rates', 'scff_rhr_shortcode' );
 /**
  * The default view's numbers, computed at build time by the tool's own code.
  *
- * summary/hit-rates-summary.json is written by
- * wordpress-plugin/scripts/rhr/build-summary.mjs (run by build-zip-rhr.sh before
- * every zip) from app/data/*.csv, the same two files the iframe loads. Reading
- * it is one small file per request, once; no network and no calculation here.
+ * summary/hit-rates-summary.json is written by script/build-wp-summary.mjs in
+ * the app repository (step 4 of script/build-wp-plugin.sh, every build) from
+ * app/data/*.csv, the same two files the iframe loads. Reading it is one small
+ * file per request, once; no network and no calculation here.
  *
  * Returns null when the file is missing or unreadable, or when the CSVs beside
  * it are not the ones it was computed from (a dataset refreshed without

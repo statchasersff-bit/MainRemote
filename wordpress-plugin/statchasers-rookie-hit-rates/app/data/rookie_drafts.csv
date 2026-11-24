@@ -296,7 +296,7 @@ rasheen-ali,Rasheen Ali,RB,17,2024,1qb,ppr,5,6,BAL,25,5'11,206
 malik-washington,Malik Washington,WR,21,2024,1qb,ppr,5,7,MIA,25,5'8,191
 aj-barner,AJ Barner,TE,9,2024,1qb,ppr,5,8,SEA,23,6'6,251
 brevyn-spann-ford,Brevyn Spann-Ford,TE,10,2024,1qb,ppr,5,9,DAL,26,6'6,260
-frank-gore,Frank Gore Jr,RB,18,2024,1qb,ppr,5,10,BUF,23,5'7,201
+frank-gore-jr,Frank Gore Jr,RB,18,2024,1qb,ppr,5,10,BUF,23,5'7,201
 marcus-rosemy-jacksaint,Marcus Rosemy-Jacksaint,WR,22,2024,1qb,ppr,5,11,FA,24,6'1,195
 dallin-holker,Dallin Holker,TE,11,2024,1qb,ppr,5,12,FA,25,6'3,241
 marvin-harrison,Marvin Harrison Jr,WR,1,2024,1qb,hppr,1,1,ARI,23,6'3,209
@@ -353,7 +353,7 @@ brenden-rice,Brenden Rice,WR,22,2024,1qb,hppr,5,3,FA,23,6'2,208
 jared-wiley,Jared Wiley,TE,8,2024,1qb,hppr,5,4,KC,25,6'6,249
 ryan-flournoy,Ryan Flournoy,WR,23,2024,1qb,hppr,5,5,DAL,26,6'1,202
 ainias-smith,Ainias Smith,WR,24,2024,1qb,hppr,5,6,FA,24,5'9,190
-frank-gore,Frank Gore Jr,RB,16,2024,1qb,hppr,5,7,BUF,23,5'7,201
+frank-gore-jr,Frank Gore Jr,RB,16,2024,1qb,hppr,5,7,BUF,23,5'7,201
 sione-vaki,Sione Vaki,RB,17,2024,1qb,hppr,5,8,DET,24,5'11,213
 jamari-thrash,Jamari Thrash,WR,25,2024,1qb,hppr,5,9,CLE,25,5'11,188
 blake-watson,Blake Watson,RB,18,2024,1qb,hppr,5,10,FA,26,5'9,195
@@ -417,7 +417,7 @@ dallin-holker,Dallin Holker,TE,9,2024,sf,ppr,5,7,FA,25,6'3,241
 jacob-cowing,Jacob Cowing,WR,22,2024,sf,ppr,5,8,SF,25,5'8,168
 jaden-shirden,Jaden Shirden,RB,17,2024,sf,ppr,5,9,FA,,5'8,187
 taulia-tagovailoa,Taulia Tagovailoa,QB,10,2024,sf,ppr,5,10,FA,26,5'11,214
-frank-gore,Frank Gore Jr,RB,18,2024,sf,ppr,5,11,BUF,23,5'7,201
+frank-gore-jr,Frank Gore Jr,RB,18,2024,sf,ppr,5,11,BUF,23,5'7,201
 blake-watson,Blake Watson,RB,19,2024,sf,ppr,5,12,FA,26,5'9,195
 caleb-williams,Caleb Williams,QB,1,2024,sf,hppr,1,1,CHI,23,6'1,214
 marvin-harrison,Marvin Harrison Jr,WR,1,2024,sf,hppr,1,2,ARI,23,6'3,209
@@ -477,7 +477,7 @@ jacob-cowing,Jacob Cowing,WR,23,2024,sf,hppr,5,7,SF,25,5'8,168
 ainias-smith,Ainias Smith,WR,24,2024,sf,hppr,5,8,FA,24,5'9,190
 isaiah-davis,Isaiah Davis,RB,17,2024,sf,hppr,5,9,NYJ,24,6'0,218
 dillon-johnson,Dillon Johnson,RB,18,2024,sf,hppr,5,10,TEN,24,5'11,217
-frank-gore,Frank Gore Jr,RB,19,2024,sf,hppr,5,11,BUF,23,5'7,201
+frank-gore-jr,Frank Gore Jr,RB,19,2024,sf,hppr,5,11,BUF,23,5'7,201
 johnny-wilson,Johnny Wilson,WR,25,2024,sf,hppr,5,12,PHI,24,6'6,231
 bijan-robinson,Bijan Robinson,RB,1,2023,1qb,ppr,1,1,ATL,24,5'11,215
 jahmyr-gibbs,Jahmyr Gibbs,RB,2,2023,1qb,ppr,1,2,DET,23,5'9,199

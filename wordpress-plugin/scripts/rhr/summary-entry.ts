@@ -1,42 +1,28 @@
 /**
- * Rookie Hit Rates: the default-view summary printed into the WordPress page.
+ * Rookie Hit Rates: the default-view summary printed into the WordPress page
+ * under the tool (wordpress-plugin/.../summary/hit-rates-summary.json).
  *
- * Bundled by build-summary.mjs and run once per plugin build, never per page
- * view. Everything numeric comes from the tool's own code, vendored verbatim in
- * ./upstream from statchasersff-bit/Rookie-Hit-Rate at the commit the plugin's
- * app/ bundle was built from (see UPSTREAM_COMMIT). This file only does what the
- * app's data-context.tsx does around that code:
+ * Vendored copy of the app repository's script/wp-summary-entry.ts (imports
+ * repointed at ./upstream). Bundled and run by build-summary.mjs,
+ * once per plugin build, never per page view. Every number comes from the app's
+ * own code in client/src/lib; this file only does what data-context.tsx does
+ * around it for the Overview tab:
  *
  *   filteredDrafts = drafts filtered to the selected format + scoring
  *   rankMap        = buildRankMap(computeRanks(finishes, scoring))
  *   cohorts        = computeCohorts(filteredDrafts, rankMap,
- *                      { ...filters, positions: [], rounds: [] })   // Overview
+ *                      { ...filters, positions: [], rounds: [] })
  *
  * and then sums cohorts by position the way overview.tsx's
  * generateOverviewInsights() does for its "Overall" and "Highest/Lowest
- * Position Hit Rate" cards. The fetch() the loaders call is stubbed by the
- * runner to read the plugin's own app/data/*.csv, so the summary and the
- * iframe always read the same files.
+ * Position Hit Rate" cards. fetch() is stubbed by the runner to read the
+ * plugin's app/data/*.csv, the same files the iframe loads.
  */
 import { loadRookieDrafts, loadSeasonFinishes } from "./upstream/loaders";
 import { computeRanks, buildRankMap } from "./upstream/ranks";
 import { computeCohorts, LATEST_SEASON_WITH_DATA } from "./upstream/cohort";
-import type { Filters, Pos } from "./upstream/types";
-
-export const UPSTREAM_COMMIT = "9c69b00";
-
-/** data-context.tsx `defaultFilters` at UPSTREAM_COMMIT. */
-export const DEFAULT_FILTERS: Filters = {
-  yearStart: 2017,
-  yearEnd: 2025,
-  format: "sf",
-  scoring: "ppr",
-  outcome: "elite",
-  positions: ["QB", "RB", "WR", "TE"],
-  rounds: [1, 2, 3, 4, 5],
-  minGames: 8,
-  showConfidence: false,
-};
+import { defaultFilters } from "./upstream/default-filters";
+import type { Pos } from "./upstream/types";
 
 /** cohort.ts getThreshold(): the same for every position. */
 const THRESHOLD = { elite: 12, starter: 24, flex: 36 } as const;
@@ -58,7 +44,7 @@ export interface SummaryRow {
 }
 
 export async function buildSummary() {
-  const filters = DEFAULT_FILTERS;
+  const filters = defaultFilters;
   const drafts = await loadRookieDrafts();
   const finishes = await loadSeasonFinishes();
 
@@ -111,7 +97,6 @@ export async function buildSummary() {
   ).length;
 
   return {
-    upstream_commit: UPSTREAM_COMMIT,
     settings: {
       format: filters.format,
       scoring: filters.scoring,

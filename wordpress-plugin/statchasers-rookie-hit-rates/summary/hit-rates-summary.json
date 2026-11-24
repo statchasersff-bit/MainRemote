@@ -1,5 +1,4 @@
 {
-  "upstream_commit": "9c69b00",
   "settings": {
     "format": "sf",
     "scoring": "ppr",
@@ -64,7 +63,7 @@
       "seasons_observed": 1
     }
   ],
-  "rookies_without_seasons": 52,
+  "rookies_without_seasons": 50,
   "rows": [
     {
       "group": "QB",
@@ -226,12 +225,12 @@
   ],
   "sources": {
     "rookie_drafts.csv": {
-      "sha256": "8f883701e88ee3cbc9c786846eeeb194b34fb8abe644201d77f4f0b43831b033",
-      "bytes": 140063
+      "sha256": "a39bb50715ba34ecb8fbadfd693fc13e9963aaf812d5a5f749f64ffb05003fe5",
+      "bytes": 140076
     },
     "season_finishes.csv": {
-      "sha256": "9b99c4021a551c8547982ce6704d73cf859e5534532c13c05f442dacbb90cd4f",
-      "bytes": 327758
+      "sha256": "5eaf244345fd29349e31cd1778a33b21109465bac4cd1c52d57b9f75678b156f",
+      "bytes": 327769
     }
   }
 }
