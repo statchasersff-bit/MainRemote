@@ -2,7 +2,7 @@
 Contributors: statchasers
 Requires at least: 6.3
 Requires PHP: 7.4
-Stable tag: 1.10.69
+Stable tag: 1.10.70
 License: GPL-2.0-or-later
 
 Mounts the StatChasers NFL news tool, the 32 team hubs, the player pages, the Fantasy Points Allowed table, the rest-of-season rankings, the NFL schedule, the advanced player stats, the RB handcuff rankings, the fantasy football strength of schedule, the dynasty rookie hit rates and the redraft draft strategy analysis into WordPress pages.
@@ -19,6 +19,9 @@ answers that question directly, with a Last-Modified header that says when the
 upload landed. Keep "Stable tag" in step with the Version header.
 
 == Changelog ==
+
+= 1.10.70 =
+* Rest-of-season rankings, 2026-11-25 (mak): the overall board and /qb/, /rb/, /wr/, /te/ join page identity (Organization, WebSite, a WebPage per address with the FAQ merged in, the brand card as og:image and primaryImageOfPage; a position page gets its own last crumb). The board says what its ranks measure. /fantasy-football-rankings/ and /nfl/rest-of-season-rankings/ answer with a 301 to the overall board when WordPress has nothing there; /fantasy-football/ (page 5831, an empty placeholder) 301s to /nfl/fantasy-football-tools/, its breadcrumb crumb links that hub, and it leaves the sitemap (WEB-028, WEB-029, WEB-021, WEB-006). Includes 1.10.69 unchanged.
 
 = 1.10.69 =
 * Team pages, 2026-11-25 (mak): each team hub and tab shares its own card. The API draws a 1200x630 PNG per club (/og/team/<slug>.png, crest on the club's colors), and it is now og:image, twitter:image and primaryImageOfPage, replacing the brand-card fallback; the hubs' AVIF crests, which social networks cannot show, are no longer the schema's primary image. The directory keeps the brand card. New hub description wording (no season, no "offensive depth chart") for pages built from now on; the 32 stored hub descriptions and the directory's were rewritten in the same release. Needs the matching API deploy for the image route. Includes 1.10.68 unchanged.
