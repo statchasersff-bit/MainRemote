@@ -1,6 +1,6 @@
 # NFL Depth Charts audit, 2026-11-25: integration
 
-Branch `fix/depth-charts-audit-2026-11-25`, rebased onto main efbe131 (plugin
+Branch `fix/depth-charts-audit-2026-11-25`, rebased onto main 2f9d4f8 (= efbe131, plugin
 1.10.70, not yet installed). Versions: **statchasers-news 1.10.71**,
 **SCDC_VERSION 1.7.6**. Four audit branches plus two additions asked for during
 integration (startup restore, first-poll load). Nothing here was pushed,
@@ -161,7 +161,7 @@ deployed, installed or purged.
 - Packaging: `node build.mjs` (asset version d09d66ec6807), then
   `build-zip.sh`: `wordpress-plugin/dist/statchasers-news.zip`, 2,560,817
   bytes, sha256
-  `d7fef236df369dd2ddd62257af79a1511059819d586f680dc84fa01e841872ac`;
+  `f2a6e0e23fbfbc95410ab7f270cf063742f70d2ff8af789b816495fc6e3ffa72`;
   contains `depth-charts/assets/img/nfl-depth-charts-og.png`,
   `assets/api/{manifest.json,team.css,dist/statchasers-team.js}`,
   `statchasers-{edge-cache,depth-charts-cache,local-assets,legacy-routes}.php`,
