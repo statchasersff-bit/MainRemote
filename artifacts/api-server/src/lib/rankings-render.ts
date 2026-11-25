@@ -259,10 +259,40 @@ function renderControls(
       joinPath(base, "/download.csv"),
     )}" rel="nofollow" download>Download CSV</a>` +
     `</div>` +
-    (updated === ""
-      ? ""
-      : `<p class="scr-updated">Rankings updated ${updated}</p>`)
+    renderUpdatedLine(data, updated)
   );
+}
+
+/** Redraft Command's weekly projections: where a this-week lineup call belongs. */
+export const WEEKLY_PROJECTIONS_URL =
+  "https://statchasers.com/redraft-command/fantasy-football-projections";
+
+/**
+ * The line under the controls: the board's date and, on the rest-of-season
+ * board, what its ranks measure (audit WEB-029, 2026-11-24: this board, the
+ * homepage's weekly table and Redraft Command's projections were all
+ * "rankings", and a reader could not tell which one answered the question).
+ *
+ * Every claim is the data's: the ranks are positional (the CSV's rank column,
+ * per position), the tiers are the board's tier rules, the scoring is the
+ * meta's, and "as of that date" points at the date printed beside it, so a
+ * board that has aged does not read as this week's.
+ */
+function renderUpdatedLine(data: RankingsData, updated: string): string {
+  const date = updated === "" ? "" : `Rankings updated ${updated}`;
+  if (data.board !== "ros") {
+    return date === "" ? "" : `<p class="scr-updated">${date}</p>`;
+  }
+  const about =
+    `<strong>What these rankings measure:</strong> ` +
+    escapeHtml(
+      `rest-of-season value in ${data.scoring} scoring${date === "" ? "" : " as of that date"}, ` +
+        `each player ranked within his own position (RB12 is the 12th running back) ` +
+        `and grouped into tiers. The All view lines the four positions up side by side; ` +
+        `it is not one overall order. For this week's lineup, see `,
+    ) +
+    `<a href="${escapeHtml(WEEKLY_PROJECTIONS_URL)}" target="_top">weekly projections</a>.`;
+  return `<p class="scr-updated">${date === "" ? "" : `${date}. `}${about}</p>`;
 }
 
 /* ------------------------------------------------------------ player cells */

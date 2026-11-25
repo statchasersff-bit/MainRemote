@@ -450,6 +450,13 @@ describe("the forward-looking rebuild (the brief, 2026-11-05)", () => {
     // Off the board: the season rank, and the note says so.
     const off = render(wr({ rosRank: null }));
     assert.match(off.querySelector(".scp-olr-fit-note").textContent, /^Based on his PPR points-per-game rank this season, WR24\./);
+    // Audit WEB-029: a rank quoted from the board links that position's board;
+    // no rank quoted, no link.
+    const link = doc.querySelector(".scp-olr-fit-note a");
+    assert.equal(link.getAttribute("href"), "https://statchasers.com/fantasy-football/rest-of-season-rankings/wr/");
+    assert.equal(link.textContent, "See the WR rest-of-season rankings.");
+    assert.match(note, /See the WR rest-of-season rankings\.$/);
+    assert.equal(off.querySelector(".scp-olr-fit-note a"), null);
   });
 
   test("the FAQ answers from the same model: buy low on the gap, the schedule's verdict, the quarterback", () => {
