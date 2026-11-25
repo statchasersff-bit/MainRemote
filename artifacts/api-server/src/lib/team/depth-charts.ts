@@ -12,7 +12,8 @@
  *     the plugin's own preview reads (lib/depth-charts-preview.ts), so the hub
  *     and the tool preview always show one snapshot;
  *   - a row in Postgres, because every publish ships the committed snapshot
- *     over the file. The newer of the two wins (restoreDepthCharts()).
+ *     over the file. The row is put back only when it was pushed on top of
+ *     the snapshot now on disk (restoreDepthCharts(), storedPushWins()).
  *
  * Until the first push arrives the committed snapshot is what renders; it was
  * written by the plugin's own refresh (tests/depth-charts/snapshot.php).
@@ -74,6 +75,14 @@ export interface DepthChartsDoc {
   season: number;
   fetchedAt: string;
   teams: ToolTeam[];
+  /**
+   * Set on a push only (ingestDepthCharts()): the publication of record it was
+   * pushed on top of - the fingerprint of the committed snapshot that was on
+   * disk, carried along a chain of pushes. A committed snapshot has none.
+   * restoreDepthCharts() puts a stored push back only over that same
+   * snapshot (2026-11-25).
+   */
+  basedOn?: string;
 }
 
 /* ------------------------------------------------------------------ views */
@@ -273,7 +282,11 @@ function teamHash(entry: ToolTeam): string {
 /** Computed once per document read (readDataJson keeps the object until the file changes). */
 function publication(): Publication | null {
   const doc = readDoc();
-  if (!doc) return null;
+  return doc ? publicationOf(doc) : null;
+}
+
+/** The fingerprint and club hashes of any document (basedOn is not content). */
+function publicationOf(doc: DepthChartsDoc): Publication {
   const known = publications.get(doc);
   if (known) return known;
   const teams = new Map<string, string>();
@@ -733,7 +746,11 @@ export interface IngestResult {
  */
 export async function ingestDepthCharts(doc: DepthChartsDoc): Promise<IngestResult> {
   const result: IngestResult = { stored: false, saved: false, fetchedAt: doc.fetchedAt, teams: doc.teams.length };
-  if (time(doc.fetchedAt) <= time(readDoc()?.fetchedAt)) return result;
+  const current = readDoc();
+  if (time(doc.fetchedAt) <= time(current?.fetchedAt)) return result;
+  // Record what this push sits on: the publication of record (see restore).
+  const basedOn = current ? publicationRoot(current) : undefined;
+  doc = basedOn ? { ...doc, basedOn } : doc;
   writeFile(doc);
   result.stored = true;
   try {
@@ -755,8 +772,43 @@ export async function ingestDepthCharts(doc: DepthChartsDoc): Promise<IngestResu
 let restoring: Promise<void> | null = null;
 
 /**
- * Put the last push back over the committed snapshot, once per process. A
- * failure costs only freshness: the snapshot still renders.
+ * The publication of record a document belongs to: a push names the snapshot
+ * it was pushed on top of (basedOn, carried down a chain of pushes); a
+ * committed snapshot is its own.
+ */
+export function publicationRoot(doc: DepthChartsDoc): string {
+  return typeof doc.basedOn === "string" && doc.basedOn ? doc.basedOn : publicationOf(doc).fingerprint;
+}
+
+/**
+ * Should a stored push replace the document on disk at startup?
+ *
+ * The committed snapshot is the publication of record: a manual snapshot
+ * (docs/DEPTH-CHART-MANUAL-UPDATE.md) ships with a Replit publish, which puts
+ * the file back. fetchedAt is when WordPress FETCHED the sources, not when a
+ * chart was published here, so "the row's fetchedAt is later" does not make
+ * a row newer: a push stored before the publish can carry a later fetchedAt
+ * than the snapshot that replaced it (a snapshot chosen from an earlier
+ * fetch, a hand-corrected file, clock skew), and the old rule put that push
+ * back over the new chart at every boot.
+ *
+ * So a row wins only when it was pushed ON TOP OF the publication on disk
+ * (its basedOn is that file's root) and is a strictly later fetch. A row from
+ * before basedOn existed, or pushed over any other snapshot, never wins: a
+ * newer committed snapshot is a newer publication by construction. The cost
+ * of the rule is only freshness - a push older than the current publish
+ * stays in the table, unused.
+ */
+export function storedPushWins(stored: DepthChartsDoc | null | undefined, onDisk: DepthChartsDoc | null): boolean {
+  if (!stored || !Array.isArray(stored.teams) || !stored.basedOn) return false;
+  if (!onDisk) return true;
+  return stored.basedOn === publicationRoot(onDisk) && time(stored.fetchedAt) > time(onDisk.fetchedAt);
+}
+
+/**
+ * Put the last push back over the committed snapshot, once per process, when
+ * it was pushed on top of that very snapshot (storedPushWins()). A failure
+ * costs only freshness: the snapshot still renders.
  */
 export function restoreDepthCharts(): Promise<void> {
   restoring ??= (async () => {
@@ -771,9 +823,15 @@ export function restoreDepthCharts(): Promise<void> {
         [season],
       );
       const stored = res.rows[0]?.doc;
-      if (stored && time(stored.fetchedAt) > time(readDoc()?.fetchedAt)) {
-        writeFile(stored);
-        logger.info({ fetchedAt: stored.fetchedAt }, "Depth charts: restored the last push");
+      const onDisk = readDoc();
+      if (storedPushWins(stored, onDisk)) {
+        writeFile(stored as DepthChartsDoc);
+        logger.info({ fetchedAt: stored?.fetchedAt }, "Depth charts: restored the last push");
+      } else if (stored) {
+        logger.info(
+          { stored: stored.fetchedAt, basedOn: stored.basedOn ?? null, file: onDisk?.fetchedAt ?? null },
+          "Depth charts: kept the committed snapshot over the stored push",
+        );
       }
     } catch (err) {
       logger.warn({ err }, "Depth charts: store not read");
