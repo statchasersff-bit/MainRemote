@@ -221,6 +221,26 @@
 	box-sizing: border-box;
 }
 
+/* ---- When the data was updated ----
+   One quiet line above the view buttons, printed by the shortcode (so it is
+   in the server HTML) and kept in step by the script with the file it
+   renders. The selectors carry .scdc-page so a theme's bare p rules (Divi's
+   padding-bottom) do not reach it. */
+.scdc-page > .scdc-updated {
+	margin: 0 0 10px;
+	padding: 0 5px; /* the root's own side padding, so it lines up with the tool */
+	font-size: 13px;
+	font-weight: 500;
+	line-height: 1.45;
+	color: var(--sc-muted);
+	font-variant-numeric: tabular-nums;
+}
+.scdc-page > .scdc-updated time {
+	color: var(--sc-ink);
+	font: inherit;
+	font-weight: 600;
+}
+
 /* ---- Imagery-capable select (team + position filters) -------------------
    Native <option> elements are rendered by the OS and can't hold an image or
    a per-row color, so these two filters are a button + listbox instead. The
@@ -759,6 +779,19 @@
 	font-weight: 500;
 	color: var(--prm-muted);
 	font-variant-numeric: tabular-nums;
+}
+/* When this team's chart was fetched (team.updatedAt), under the counts. */
+.scdc-prm-team-updated {
+	margin-top: 2px;
+	font-size: 12px;
+	font-weight: 500;
+	line-height: 1.35;
+	color: var(--prm-muted);
+	font-variant-numeric: tabular-nums;
+}
+.scdc-prm-team-updated time {
+	color: inherit;
+	font: inherit;
 }
 
 /* ---- Position groups: N equal columns, hairline separators ----

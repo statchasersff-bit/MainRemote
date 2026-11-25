@@ -18,6 +18,10 @@ php render-url.php /nfl/nfl-depth-charts/ body                      # full marku
   301 and where it goes), the route and the server-rendered markup.
 - `checks.php` - the assertions: the 301s and 404s, the refresh, the store, the
   lock, the push, the scrapers and the hub.
+- `stamp-checks.php` - the hub's "updated" time: parsing, Eastern time and DST,
+  the rendered line (known, missing, invalid), a partial refresh's kept team,
+  a hard failure, and a second publication. `php stamp-checks.php <dir>` also
+  saves the rendered HTML of each case to `<dir>`.
 - `fixtures/statchasers/depth-charts.json` - three teams of sample cached data.
 
 This is a harness, not the live site: it proves the plugin's own logic. After

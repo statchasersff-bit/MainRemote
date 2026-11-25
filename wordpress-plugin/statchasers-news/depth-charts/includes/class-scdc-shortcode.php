@@ -335,21 +335,18 @@ class SCDC_Shortcode {
 		wp_enqueue_script( self::HANDLE );
 
 		$endpoint = SCDC_Store::file_url();
-		$meta     = SCDC_Store::get_meta();
 
-		$last_updated = '';
-		if ( ! empty( $meta['last_refreshed_ts'] ) ) {
-			$last_updated = wp_date(
-				get_option( 'date_format' ) . ' ' . get_option( 'time_format' ),
-				(int) $meta['last_refreshed_ts']
-			);
-		}
+		// When the data in the file was updated - the file the script is about
+		// to load, not the clock - in Eastern time. No valid time, no line.
+		$stamp        = SCDC_Stamp::for_file( SCDC_Store::file_path() );
+		$last_updated = $stamp ? $stamp['text'] : '';
 
 		$id = 'scdc-' . wp_rand( 1000, 9999 );
 
 		ob_start();
 		?>
 		<div class="scdc-page"<?php echo $this->max_width_style(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
+			<?php echo SCDC_Stamp::html( $stamp ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in html(). ?>
 			<div
 				id="<?php echo esc_attr( $id ); ?>"
 				class="scdc-root"

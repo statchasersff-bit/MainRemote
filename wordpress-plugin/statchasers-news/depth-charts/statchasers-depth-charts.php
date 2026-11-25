@@ -55,6 +55,7 @@ define( 'SCDC_META_OPTION', 'scdc_refresh_meta' );
 define( 'SCDC_REFRESH_ACTION', 'scdc_refresh_depth_charts' );
 
 require_once SCDC_PLUGIN_DIR . 'includes/class-scdc-store.php';
+require_once SCDC_PLUGIN_DIR . 'includes/class-scdc-stamp.php';
 require_once SCDC_PLUGIN_DIR . 'includes/class-scdc-teams.php';
 require_once SCDC_PLUGIN_DIR . 'includes/class-scdc-espn.php';
 require_once SCDC_PLUGIN_DIR . 'includes/class-scdc-footballguys.php';

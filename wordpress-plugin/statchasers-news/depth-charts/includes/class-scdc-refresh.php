@@ -199,11 +199,13 @@ class SCDC_Refresh {
 			if ( null === $normalized ) {
 				$teams_failed[] = $abbr;
 				if ( isset( $prev_teams[ $abbr ] ) ) {
-					$teams_out[]  = $prev_teams[ $abbr ];
+					$teams_out[]  = self::with_kept_time( $prev_teams[ $abbr ], $previous );
 					$teams_kept[] = $abbr;
 				}
 				continue;
 			}
+			// When this team's chart was fetched: the hub card's "Updated" time.
+			$updated_at = gmdate( 'c' );
 			if ( ! empty( $normalized['season'] ) ) {
 				$season = (int) $normalized['season'];
 			}
@@ -243,6 +245,7 @@ class SCDC_Refresh {
 
 			$teams_out[] = array(
 				'team'       => $normalized['team'],
+				'updatedAt'  => $updated_at,
 				'positions'  => $positions,
 				'slots'      => $slots,
 				'formations' => isset( $normalized['formations'] ) && is_array( $normalized['formations'] ) ? $normalized['formations'] : array(),
@@ -276,12 +279,19 @@ class SCDC_Refresh {
 			$error  = '';
 		}
 
+		// The top-level fields stay ahead of "teams": SCDC_Stamp reads them
+		// from the head of the file without decoding the charts.
 		$payload = array(
 			'version'   => 1,
 			'season'    => $season,
 			'fetchedAt' => gmdate( 'c' ),
+			'updatedAt' => self::newest_time( $teams_out ),
+			'teamsKept' => $teams_kept,
 			'teams'     => $teams_out,
 		);
+		if ( null === $payload['updatedAt'] ) {
+			unset( $payload['updatedAt'] );
+		}
 
 		return array(
 			'payload'      => $payload,
@@ -291,6 +301,45 @@ class SCDC_Refresh {
 			'status'       => $status,
 			'error'        => $error,
 		);
+	}
+
+	/**
+	 * A carried-over team keeps the time its chart was fetched: its own
+	 * updatedAt, or, from a file written before teams carried one, that
+	 * file's fetchedAt. With neither it carries no time (the card shows none).
+	 *
+	 * @param array      $entry    The team's entry in the previous payload.
+	 * @param array|null $previous The previous payload.
+	 * @return array
+	 */
+	private static function with_kept_time( $entry, $previous ) {
+		if ( isset( $entry['updatedAt'] ) && null !== SCDC_Stamp::parse( $entry['updatedAt'] ) ) {
+			return $entry;
+		}
+		unset( $entry['updatedAt'] );
+		if ( is_array( $previous ) && isset( $previous['fetchedAt'] ) && null !== SCDC_Stamp::parse( $previous['fetchedAt'] ) ) {
+			$entry = array( 'team' => $entry['team'], 'updatedAt' => $previous['fetchedAt'] ) + $entry;
+		}
+		return $entry;
+	}
+
+	/**
+	 * The newest team updatedAt, as written, or null when no team has one.
+	 *
+	 * @param array $teams Team entries.
+	 * @return string|null
+	 */
+	private static function newest_time( $teams ) {
+		$best    = null;
+		$best_ts = null;
+		foreach ( $teams as $team ) {
+			$ts = isset( $team['updatedAt'] ) ? SCDC_Stamp::parse( $team['updatedAt'] ) : null;
+			if ( null !== $ts && ( null === $best_ts || $ts > $best_ts ) ) {
+				$best    = $team['updatedAt'];
+				$best_ts = $ts;
+			}
+		}
+		return $best;
 	}
 
 	/**

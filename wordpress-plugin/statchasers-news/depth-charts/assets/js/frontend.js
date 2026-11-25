@@ -157,6 +157,88 @@
 		return node;
 	}
 
+	// ---- Update times -------------------------------------------------------
+	// Mirrors SCDC_Stamp (PHP): an ISO 8601 date-time with an explicit zone,
+	// 2000-2099, no rolled-over dates; shown in Eastern time with "ET". A
+	// missing or invalid time is omitted, never guessed.
+	var STAMP_RE = /^(\d{4})-(\d{2})-(\d{2})T\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+-]\d{2}:?\d{2})$/;
+	function parseStamp(value) {
+		if (typeof value !== "string") return null;
+		var v = value.trim();
+		var m = STAMP_RE.exec(v);
+		if (!m) return null;
+		var y = +m[1];
+		if (y < 2000 || y > 2099) return null;
+		var check = new Date(Date.UTC(y, +m[2] - 1, +m[3]));
+		if (check.getUTCMonth() !== +m[2] - 1 || check.getUTCDate() !== +m[3]) return null;
+		var ms = Date.parse(v.replace(/([+-]\d{2})(\d{2})$/, "$1:$2"));
+		return isNaN(ms) ? null : new Date(ms);
+	}
+	var ET_FORMAT = null;
+	function formatStamp(date) {
+		try {
+			if (!ET_FORMAT) {
+				ET_FORMAT = new Intl.DateTimeFormat("en-US", {
+					timeZone: "America/New_York",
+					month: "short",
+					day: "numeric",
+					year: "numeric",
+					hour: "numeric",
+					minute: "2-digit",
+					hour12: true
+				});
+			}
+			var p = {};
+			ET_FORMAT.formatToParts(date).forEach(function (part) {
+				p[part.type] = part.value;
+			});
+			if (!p.month || !p.day || !p.year || !p.hour || !p.minute || !p.dayPeriod) return "";
+			return p.month + " " + p.day + ", " + p.year + " at " + p.hour + ":" + p.minute + " " + p.dayPeriod.toUpperCase() + " ET";
+		} catch (e) {
+			return "";
+		}
+	}
+	function isoUtc(date) {
+		return date.toISOString().replace(/\.\d{3}Z$/, "Z");
+	}
+	// The hub's stamp for a loaded payload, the way SCDC_Stamp::from_payload()
+	// builds it for the server line.
+	function hubStamp(data) {
+		var d = parseStamp(data && data.updatedAt) || parseStamp(data && data.fetchedAt);
+		if (!d) return null;
+		var text = formatStamp(d);
+		if (!text) return null;
+		var mixed = Array.isArray(data.teamsKept) && data.teamsKept.length > 0;
+		return { iso: isoUtc(d), text: text, label: mixed ? "Latest team update" : "Depth charts updated" };
+	}
+	// Bring the line above the tool (printed by the shortcode) in step with the
+	// payload actually rendered: set it, add it, or drop it.
+	function syncUpdatedLine(root, stamp) {
+		var page = root.parentNode;
+		if (!page) return;
+		var line = null;
+		for (var i = 0; i < page.children.length; i++) {
+			if (/(^|\s)scdc-updated(\s|$)/.test(page.children[i].className)) {
+				line = page.children[i];
+				break;
+			}
+		}
+		if (!stamp) {
+			if (line) page.removeChild(line);
+			return;
+		}
+		var fresh = el("p", { class: "scdc-updated" }, [
+			el("span", { class: "scdc-updated-label", text: stamp.label }),
+			" ",
+			el("time", { datetime: stamp.iso, text: stamp.text })
+		]);
+		if (line) {
+			page.replaceChild(fresh, line);
+		} else {
+			page.insertBefore(fresh, root);
+		}
+	}
+
 	// A select that can show imagery. Native <option> elements render as OS
 	// widgets and cannot contain an <img> or per-option color, so the team and
 	// position filters use this instead - same behavior as a <select> (value,
@@ -772,9 +854,12 @@
 
 		root.innerHTML = "";
 
+		var stamp = hubStamp(data);
+		syncUpdatedLine(root, stamp);
+
 		var browser = renderBrowser(root, {
 			teams: teams,
-			lastUpdated: ctx.lastUpdated,
+			lastUpdated: stamp ? stamp.text : "",
 			initial: resolveSlugs(parseHash()),
 			// A view, team or position change records the new state in the
 			// fragment (a new history entry); typing in the search box does not.
@@ -975,12 +1060,21 @@
 			.map(function (x) { return x.n + " " + x.label; })
 			.join(" · ");
 
+		// When this team's chart was fetched; none shown without a valid time.
+		var updated = parseStamp(team.updatedAt);
+		var updatedText = updated ? formatStamp(updated) : "";
 		var head = el("div", { class: "scdc-prm-team" }, [
 			el("div", { class: "scdc-prm-logo" }, [logo]),
 			el("div", { class: "scdc-prm-team-bar", "aria-hidden": "true" }),
 			el("div", { class: "scdc-prm-team-id" }, [
 				el("h3", { class: "scdc-prm-team-name", text: team.team.name }),
-				summary ? el("div", { class: "scdc-prm-team-summary", text: summary }) : null
+				summary ? el("div", { class: "scdc-prm-team-summary", text: summary }) : null,
+				updatedText
+					? el("div", { class: "scdc-prm-team-updated" }, [
+						"Updated ",
+						el("time", { datetime: isoUtc(updated), text: updatedText })
+					])
+					: null
 			])
 		]);
 		var cols = el("div", { class: "scdc-prm-cols" }, columns.map(function (col) {

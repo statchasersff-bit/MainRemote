@@ -30,3 +30,11 @@ done
 
 echo "=== Assertions ==="
 php checks.php
+checks=$?
+
+echo
+echo "=== Updated time ==="
+php stamp-checks.php
+stamp=$?
+
+exit $(( checks || stamp ))
