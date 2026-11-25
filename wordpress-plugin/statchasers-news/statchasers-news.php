@@ -81,6 +81,8 @@ require_once __DIR__ . '/statchasers-player-stats.php';
 require_once __DIR__ . '/statchasers-edge-cache.php';
 require_once __DIR__ . '/statchasers-player-stats-cache.php';
 require_once __DIR__ . '/statchasers-depth-charts-cache.php';
+// The hub Draft tabs and matchup previews that read the same snapshot.
+require_once __DIR__ . '/statchasers-depth-consumers-cache.php';
 require_once __DIR__ . '/statchasers-rb-handcuffs.php';
 require_once __DIR__ . '/statchasers-sos.php';
 require_once __DIR__ . '/statchasers-page-identity.php';
@@ -1186,6 +1188,7 @@ register_deactivation_hook(
 		wp_clear_scheduled_hook( 'statchasers_player_auto_build' );
 		// And the depth-chart publication check (WEB-003).
 		wp_clear_scheduled_hook( 'statchasers_depth_charts_publish_check' );
+		wp_clear_scheduled_hook( 'statchasers_depth_consumers_warm' );
 	}
 );
 

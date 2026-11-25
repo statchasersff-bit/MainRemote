@@ -46,6 +46,8 @@ import {
   depthTeamVersion,
 } from "../lib/team/depth-charts";
 import { getLeagueStandings, type LeagueStandings } from "../lib/team/profile";
+import { draftPosHashes, hubPath, previewPages } from "../lib/team/depth-consumers";
+import { getSeasonSlate } from "../lib/schedule/schedule-data";
 
 /**
  * The league table for the index of 32, or null.
@@ -472,33 +474,71 @@ router.get("/og/team/:file", (req, res) => {
  * served by this router (mounted after requireEmbedKey) and not by
  * routes/depth-charts.ts, which is mounted ahead of it for the ingest body.
  *
- * Cheap: the hashes are computed once per snapshot read, nothing renders.
+ * Cheap: the hashes are computed once per snapshot read (the Draft hashes
+ * once per snapshot + draft files), the slate is the in-memory one, nothing
+ * renders.
  */
 router.get("/embed/depth-charts/version", (_req, res) => {
+  void depthChartsVersionDoc().then(
+    (doc) => {
+      if (!doc) {
+        res.status(503).set("Cache-Control", "no-store").json({ error: "No depth-chart snapshot" });
+        return;
+      }
+      res.set("Cache-Control", "no-store").set("X-Robots-Tag", "noindex").json(doc);
+    },
+    (err) => {
+      logger.warn({ err }, "Depth charts version failed");
+      res.status(503).set("Cache-Control", "no-store").json({ error: "Depth charts version failed" });
+    },
+  );
+});
+
+/**
+ * The version document. Besides the 32 Depth Chart tabs (WEB-003), two other
+ * pages print the snapshot (docs/DEPTH-SNAPSHOT-CONSUMERS-2026-11-25.md), and
+ * each gets a hash of what it prints from it:
+ *
+ * - `teams.<slug>.draft` / `.hub`: the hub's Draft tab Pos column (the hub's
+ *   own address; a hash tab);
+ * - `previews`: `{ <path>: { hash, kickoff } }` for every matchup address
+ *   printing a preview with Player Battles now, or null when the slate cannot
+ *   be read (the plugin then leaves the matchup pages alone).
+ */
+async function depthChartsVersionDoc(): Promise<Record<string, unknown> | null> {
   const stamp = depthChartsStamp();
-  if (!stamp) {
-    res.status(503).set("Cache-Control", "no-store").json({ error: "No depth-chart snapshot" });
-    return;
-  }
-  const teams: Record<string, { abbr: string; hash: string; version: string; updatedAt: string | null }> = {};
+  if (!stamp) return null;
+  const state = await nflState();
+  const now = Date.now();
+  const draft = draftPosHashes(state.season);
+  const teams: Record<
+    string,
+    { abbr: string; hash: string; version: string; updatedAt: string | null; hub: string; draft: string }
+  > = {};
   for (const team of TEAMS) {
     teams[team.slug] = {
       abbr: team.code,
       hash: depthTeamHash(team.abbreviation),
       version: depthTeamVersion(team.abbreviation),
       updatedAt: depthTeamUpdatedAt(team.abbreviation),
+      hub: hubPath(team),
+      draft: draft.get(team.abbreviation.toUpperCase()) ?? "none",
     };
   }
-  res
-    .set("Cache-Control", "no-store")
-    .set("X-Robots-Tag", "noindex")
-    .json({
-      version: depthChartsFingerprint(),
-      fetchedAt: stamp.fetchedAt,
-      season: stamp.season,
-      teams,
-    });
-});
+  const slate = await getSeasonSlate(state.season, now).catch(() => null);
+  const previews = slate
+    ? Object.fromEntries(
+        previewPages(slate.games, state.season, now).map((page) => [page.path, { hash: page.hash, kickoff: page.kickoff }]),
+      )
+    : null;
+  return {
+    version: depthChartsFingerprint(),
+    fetchedAt: stamp.fetchedAt,
+    season: stamp.season,
+    teams,
+    previews,
+  };
+}
 
 router.get("/embed/team/:slug", (req, res) => {
   void (async () => {
