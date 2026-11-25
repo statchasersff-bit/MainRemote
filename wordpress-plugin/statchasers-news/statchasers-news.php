@@ -72,6 +72,8 @@ require_once __DIR__ . '/statchasers-matchup.php';
 require_once __DIR__ . '/statchasers-player.php';
 require_once __DIR__ . '/statchasers-fpa.php';
 require_once __DIR__ . '/statchasers-rankings.php';
+// Legacy rankings addresses and the /fantasy-football/ breadcrumb parent (WEB-028, WEB-006).
+require_once __DIR__ . '/statchasers-legacy-routes.php';
 require_once __DIR__ . '/statchasers-schedule.php';
 require_once __DIR__ . '/statchasers-player-stats.php';
 require_once __DIR__ . '/statchasers-player-stats-cache.php';
