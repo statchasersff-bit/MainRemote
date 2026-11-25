@@ -1,13 +1,16 @@
 # Depth-chart snapshot: the other pages that read it (2026-11-25)
 
 Follow-up to WEB-003 depth charts (docs/WEB-003-DEPTH-CHARTS-CACHE.md), kept
-separate from that release. Branch `fix/depth-snapshot-consumers-2026-11-25`,
-based on main efbe131, with the release's API + plugin commit 5cfed15
-cherry-picked under it (22bc9fc here) because this change reuses its version
-endpoint, its five-minute WP-cron event and its edge helpers. **Merge the
-depth-chart release first**; this branch then adds one commit on top. Local
-only: nothing pushed, deployed, purged or written to production; no plugin
-version bump.
+separate from that release. Written on `fix/depth-snapshot-consumers-2026-11-25`
+(main efbe131 with a cherry-pick of the release's 5cfed15 under it); now
+rebased onto main f3c6dd7 (the depth charts audit, plugin 1.10.71, which
+carries that release in its final form) as the first commit of
+`fix/depth-followups-2026-11-25`, the cherry-pick dropped. It reuses the
+release's version endpoint, five-minute WP-cron event and edge helpers. The
+same branch adds the edge purge retry (docs/EDGE-PURGE-RETRY-2026-11-25.md),
+which this check also uses. Local only: nothing pushed, deployed, purged or
+written to production; no plugin version bump (assigned at release, 1.10.72
+or later).
 
 The release's own residual note named two pages that also print the team
 snapshot (`artifacts/api-server/data/depth-charts/statchasers/depth-charts.json`)
@@ -200,5 +203,6 @@ data/schedule/espn-layer-2026.json) were reverted before committing.
    WP Rocket's `rocket_clean_files()` removing the mobile file (modeled here).
 5. Step 5 of docs/DEPTH-CHART-MANUAL-UPDATE.md (site-wide purge) can then be
    dropped for these pages too; until both ship, keep it.
-6. Optional, not required for this fix: the WEB-040 Rocket.net rule so the
-   preview's own 6 h / until-kickoff lifetime is honored as a fallback.
+6. No Rocket.net rule: mak cannot change the edge rules, so the preview's
+   own 6 h / until-kickoff header will never be honored. The purges (and their
+   retry) are the only freshness mechanism for these pages.

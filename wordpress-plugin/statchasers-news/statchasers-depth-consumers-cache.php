@@ -28,7 +28,14 @@
  *   3. WP Rocket's files for exactly those URLs are cleared;
  *   4. exactly those paths are purged at the edge;
  *   5. the record is stored; a minute later the hubs and the previews of
- *      games in the next seven days are warmed, desktop and phone.
+ *      games in the next seven days are warmed, desktop and phone, the ones
+ *      whose purge landed.
+ *
+ * A path whose edge purge fails stays pending in the record's retry ledger
+ * and is retried on later runs of this check (5, 10, 20, 40, 80 minutes
+ * apart, six attempts in all; statchasers-edge-cache.php), without asking the
+ * API again or cleaning WP Rocket again, and warmed once it lands. A new
+ * publication purges its paths together with the pending ones, once.
  *
  * The first run after install records a baseline and purges nothing. An API
  * that cannot read its slate sends `previews: null`: the hubs still publish,
@@ -163,13 +170,26 @@ function statchasers_depth_consumers_check( bool $force = false ): array {
 	$now    = time();
 	$stored = get_option( STATCHASERS_DEPTH_CONSUMERS_OPTION );
 	$stored = is_array( $stored ) ? $stored : array();
+	$filter = 'statchasers_depth_charts_pre_purge_edge';
+
+	// What an earlier publication's purge left pending (a 1.10.71-era record's
+	// failed purge is adopted: its pages, due now).
+	$ledger = statchasers_edge_ledger(
+		$stored,
+		isset( $stored['changed'] ) && is_array( $stored['changed'] ) ? $stored['changed'] : array(),
+		isset( $stored['to_warm'] ) && is_array( $stored['to_warm'] ) ? $stored['to_warm'] : array(),
+		$now
+	);
+	$quiet = static function ( array $published, array $check ) use ( $ledger, $filter, $now ): array {
+		return statchasers_depth_consumers_record( $published, $check + statchasers_edge_retry_fields( $ledger, $filter, STATCHASERS_DEPTH_CONSUMERS_OPTION, 'StatChasers-DepthWarm/1', $now ) );
+	};
 
 	$remote = statchasers_depth_consumers_remote();
 	if ( null === $remote ) {
-		return statchasers_depth_consumers_record( $stored, array( 'checked_at' => $now, 'result' => 'version unavailable; nothing changed' ) );
+		return $quiet( $stored, array( 'checked_at' => $now, 'result' => 'version unavailable; nothing changed' ) );
 	}
 	if ( ! $force && isset( $stored['version'] ) && $stored['version'] === $remote['version'] ) {
-		return statchasers_depth_consumers_record( $stored, array( 'checked_at' => $now, 'result' => 'unchanged' ) );
+		return $quiet( $stored, array( 'checked_at' => $now, 'result' => 'unchanged' ) );
 	}
 
 	$known_hubs     = isset( $stored['hubs'] ) && is_array( $stored['hubs'] ) ? $stored['hubs'] : array();
@@ -203,7 +223,7 @@ function statchasers_depth_consumers_check( bool $force = false ): array {
 	);
 
 	if ( $baseline ) {
-		return statchasers_depth_consumers_record(
+		return $quiet(
 			$base + array( 'changed' => array(), 'wp_rocket' => false, 'edge' => 'not needed' ),
 			array( 'checked_at' => $now, 'result' => 'baseline recorded' )
 		);
@@ -218,8 +238,8 @@ function statchasers_depth_consumers_check( bool $force = false ): array {
 	$paths = array_values( array_unique( array_filter( array_map( 'statchasers_depth_consumers_path', (array) apply_filters( 'statchasers_depth_consumers_purge_paths', array_merge( $hubs, $previews ), $remote['version'] ) ) ) ) );
 
 	if ( ! $paths ) {
-		return statchasers_depth_consumers_record(
-			$base + array( 'changed' => array(), 'wp_rocket' => false, 'edge' => 'not needed' ),
+		return $quiet(
+			$base + array( 'changed' => array(), 'to_warm' => array(), 'wp_rocket' => false, 'edge' => 'not needed' ),
 			array( 'checked_at' => $now, 'result' => 'no page changed' )
 		);
 	}
@@ -237,10 +257,7 @@ function statchasers_depth_consumers_check( bool $force = false ): array {
 		$rocket = true;
 	}
 
-	// 4. The edge, exactly these paths.
-	$edge = statchasers_edge_purge_paths( $paths, 'statchasers_depth_charts_pre_purge_edge' );
-
-	// 5. Record; warm in a minute.
+	// 5. Which of them to warm: the hubs and the near previews.
 	$warm = array();
 	foreach ( $paths as $path ) {
 		$kickoff = isset( $remote['previews'][ $path ] ) ? (int) $remote['previews'][ $path ]['kickoff'] : 0;
@@ -249,17 +266,24 @@ function statchasers_depth_consumers_check( bool $force = false ): array {
 			$warm[] = $path;
 		}
 	}
-	if ( $warm && ! wp_next_scheduled( STATCHASERS_DEPTH_CONSUMERS_WARM_HOOK ) ) {
+
+	// 4. The edge, exactly these paths, with whatever an earlier publication
+	//    left pending or gave up on, once.
+	$pub = statchasers_edge_publish( $paths, $warm, $ledger, $filter, $now );
+
+	// 5. Record; warm in a minute the ones whose purge landed. The rest are
+	//    retried on later runs and warmed when they land.
+	if ( $pub['landed'] && ! wp_next_scheduled( STATCHASERS_DEPTH_CONSUMERS_WARM_HOOK ) ) {
 		wp_schedule_single_event( $now + MINUTE_IN_SECONDS, STATCHASERS_DEPTH_CONSUMERS_WARM_HOOK );
 	}
 
 	return statchasers_depth_consumers_record(
 		$base + array(
 			'changed'   => $paths,
-			'to_warm'   => $warm,
+			'to_warm'   => $pub['landed'],
 			'wp_rocket' => $rocket,
-			'edge'      => $edge,
-		),
+			'edge'      => $pub['purge']['text'],
+		) + statchasers_edge_ledger_fields( $pub['ledger'] ),
 		array(
 			'checked_at' => $now,
 			'result'     => $force ? 'republished (forced)' : 'published',

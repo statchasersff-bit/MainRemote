@@ -1189,6 +1189,10 @@ register_deactivation_hook(
 		// And the depth-chart publication check (WEB-003).
 		wp_clear_scheduled_hook( 'statchasers_depth_charts_publish_check' );
 		wp_clear_scheduled_hook( 'statchasers_depth_consumers_warm' );
+		// The edge purge retry's warm-ups carry arguments: every one of them.
+		if ( function_exists( 'wp_unschedule_hook' ) ) {
+			wp_unschedule_hook( 'statchasers_edge_retry_warm' );
+		}
 	}
 );
 

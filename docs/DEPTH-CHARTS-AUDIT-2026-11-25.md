@@ -38,8 +38,10 @@ deployed, installed or purged.
   surface=hub|team; published=<id>`. Freshness comes from the purges: league
   page on `scdc_published` (WP Rocket desktop+mobile, Rocket.net path purge,
   warm a minute later); team tabs from the 5-minute WP-cron poll of the API
-  version (only changed clubs). Until Rocket.net adds the rule below, the
-  platform's 30-day edge TTL still applies and the 6 h is only a request.
+  version (only changed clubs). The platform's 30-day edge TTL applies and
+  the 6 h is only a request: mak cannot change Rocket.net's edge rules, so
+  the targeted purges are the only freshness mechanism (a failed purge is
+  retried from the follow-up release on; see "Edge rules" below).
 - `data-endpoint` stays `.../depth-charts.json?v=<last_refreshed_ts>`
   (`SCDC_Store::file_url()`, untouched by the stamp change).
 
@@ -175,13 +177,15 @@ deployed, installed or purged.
   poll 8 warm events at +55s..+475s; second poll 0 purges, 0 events. All three
   ACCEPTANCE lines PASS.
 
-## Rocket.net rule request
+## Edge rules (no request)
 
-As in docs/WEB-003-DEPTH-CHARTS-CACHE.md: a Cloudflare cache rule for
-`/nfl/nfl-depth-charts/` and `^/nfl/teams/[a-z0-9-]+/depth-chart/$`, eligible
-for cache, edge TTL fixed 21600 s ignoring origin, browser TTL respect origin,
-cache key unchanged (desktop/phone split kept), placed after the site-wide
-30-day rule. Can share a ticket with the stats and schedule rules.
+mak cannot change Rocket.net's edge rules (updated 2026-11-25). The edge keeps
+every page 30 days and ignores origin headers, so the `s-maxage=21600` these
+pages send never applies, and there is no rule request to send. Targeted
+purges are the only thing that keeps the pages fresh. In 1.10.71 a purge that
+fails is recorded but never retried (the next check says `unchanged`); the
+follow-up branch `fix/depth-followups-2026-11-25` retries failed purges
+(docs/EDGE-PURGE-RETRY-2026-11-25.md).
 
 ## Release order
 
@@ -193,7 +197,8 @@ cache key unchanged (desktop/phone split kept), placed after the site-wide
    `build-zip.sh`) if anything changed since this build; install 1.10.71; run
    `wp eval 'statchasers_news_run_upgrade_now();'`.
 4. Clear WP Rocket (mobile included), then purge the Rocket.net edge.
-5. Send the Rocket.net rule request.
+
+(No Rocket.net rule request: the edge rules cannot be changed.)
 
 ## After release
 
@@ -211,4 +216,7 @@ cache key unchanged (desktop/phone split kept), placed after the site-wide
 - After the next daily league refresh: hub record `version` =
   `last_refreshed_ts`, the `<time>` line moved.
 - Needs production: the real Rocket.net purge per path, WP Rocket mobile
-  files, the edge honoring 6 h (only after the rule), Rank Math output.
+  files, Rank Math output. The edge keeps its 30 days whatever the pages
+  send; check `edge` in the records is `rocket.net ok` after each
+  publication (until the retry ships, a failed purge needs a by-hand forced
+  check: `wp eval 'print_r( statchasers_depth_charts_publish_check( true ) );'`).

@@ -49,12 +49,22 @@
  * purge cannot be rendered from the old fragment; 3 before 4 so the edge
  * cannot refill from WP Rocket's old file.
  *
+ * ## A purge that fails
+ *
+ * Both surfaces keep the paths whose edge purge failed in the record's retry
+ * ledger (statchasers-edge-cache.php) and retry them on the five-minute event
+ * (5, 10, 20, 40, 80 minutes apart, six attempts in all), warming each page
+ * only once its purge landed. The league page's publication fires during a
+ * refresh, not on a schedule, so its retry rides on the same event
+ * (statchasers_depth_charts_hub_retry, priority 5). A new publication purges
+ * its paths together with the pending ones, once.
+ *
  * ## The edge lifetime
  *
- * As a fallback for a missed purge both surfaces ask for six hours
- * (STATCHASERS_EDGE_TTL), with X-SC-Depth-Cache naming what was published.
- * The platform replaces it with its 30 days until the route-scoped Rocket.net
- * rule in the doc is in place.
+ * Both surfaces ask for six hours (STATCHASERS_EDGE_TTL), with
+ * X-SC-Depth-Cache naming what was published. The platform replaces it with
+ * its 30 days and its edge rules cannot be changed from our side, so the
+ * purges and their retry are what keep these pages fresh.
  *
  * By hand:
  *   wp eval 'print_r( statchasers_depth_charts_publish_check( true ) );'   (teams, forced)
@@ -102,6 +112,8 @@ add_action(
 		statchasers_depth_charts_publish_check();
 	}
 );
+// The league page's purge retry has no schedule of its own: it rides here.
+add_action( STATCHASERS_DEPTH_PUBLISH_HOOK, 'statchasers_depth_charts_hub_retry', 5, 0 );
 add_action( STATCHASERS_DEPTH_TEAM_WARM_HOOK, 'statchasers_depth_charts_team_warm', 10, 2 );
 add_action( STATCHASERS_DEPTH_HUB_WARM_HOOK, 'statchasers_depth_charts_hub_warm' );
 add_action( 'scdc_published', 'statchasers_depth_charts_on_published', 10, 2 );
@@ -143,6 +155,15 @@ function statchasers_depth_charts_team_url( string $slug ): string {
 	return user_trailingslashit( home_url( '/' . trim( STATCHASERS_TEAM_PATH, '/' ) . '/' . $slug . '/' . STATCHASERS_DEPTH_SECTION ) );
 }
 
+/**
+ * One club's Depth Chart tab, the edge path.
+ *
+ * @param string $slug Team slug.
+ */
+function statchasers_depth_charts_team_path( string $slug ): string {
+	return (string) wp_parse_url( statchasers_depth_charts_team_url( $slug ), PHP_URL_PATH );
+}
+
 /* ------------------------------------------------------ the league page */
 
 /**
@@ -166,9 +187,11 @@ function statchasers_depth_charts_hub_publish( array $meta = array() ): array {
 	if ( ! $meta && class_exists( 'SCDC_Store' ) ) {
 		$meta = SCDC_Store::get_meta();
 	}
-	$now   = time();
-	$url   = statchasers_depth_charts_hub_url();
-	$paths = statchasers_depth_charts_hub_paths();
+	$now    = time();
+	$url    = statchasers_depth_charts_hub_url();
+	$paths  = statchasers_depth_charts_hub_paths();
+	$stored = get_option( STATCHASERS_DEPTH_HUB_OPTION );
+	$stored = is_array( $stored ) ? $stored : array();
 
 	// 1. WP Rocket, desktop and mobile.
 	$rocket = false;
@@ -177,26 +200,68 @@ function statchasers_depth_charts_hub_publish( array $meta = array() ): array {
 		$rocket = true;
 	}
 
-	// 2. The edge, exactly this page.
-	$edge = statchasers_edge_purge_paths( $paths, 'statchasers_depth_charts_pre_purge_edge' );
+	// 2. The edge, exactly this page (with any path an earlier publication's
+	//    purge left pending, once).
+	$pub = statchasers_edge_publish( $paths, $paths, statchasers_depth_charts_hub_ledger( $stored, $now ), 'statchasers_depth_charts_pre_purge_edge', $now );
 
-	// 3. Record; refill in a minute.
-	if ( ! wp_next_scheduled( STATCHASERS_DEPTH_HUB_WARM_HOOK ) ) {
+	// 3. Record; refill in a minute, once the purge has landed. A failed purge
+	//    is retried on the five-minute event (statchasers_depth_charts_hub_retry).
+	if ( $pub['landed'] && ! wp_next_scheduled( STATCHASERS_DEPTH_HUB_WARM_HOOK ) ) {
 		wp_schedule_single_event( $now + MINUTE_IN_SECONDS, STATCHASERS_DEPTH_HUB_WARM_HOOK );
 	}
-	$stored = get_option( STATCHASERS_DEPTH_HUB_OPTION );
 	$record = array(
 		'version'      => isset( $meta['last_refreshed_ts'] ) ? (int) $meta['last_refreshed_ts'] : 0,
 		'status'       => isset( $meta['status'] ) ? (string) $meta['status'] : '',
-		'previous'     => is_array( $stored ) && isset( $stored['version'] ) ? (int) $stored['version'] : 0,
+		'previous'     => isset( $stored['version'] ) ? (int) $stored['version'] : 0,
 		'published_at' => $now,
 		'url'          => $url,
 		'wp_rocket'    => $rocket,
-		'edge'         => $edge,
-		'paths'        => $paths,
-	);
+		'edge'         => $pub['purge']['text'],
+		'paths'        => $pub['paths'],
+	) + statchasers_edge_ledger_fields( $pub['ledger'] );
 	update_option( STATCHASERS_DEPTH_HUB_OPTION, $record, false );
 	return $record;
+}
+
+/**
+ * The league page's retry ledger (a 1.10.71 record's failed purge is adopted).
+ *
+ * @param array<string,mixed> $stored The record.
+ * @param int                 $now    Now.
+ * @return array<string,mixed>
+ */
+function statchasers_depth_charts_hub_ledger( array $stored, int $now ): array {
+	$paths = isset( $stored['paths'] ) && is_array( $stored['paths'] ) ? $stored['paths'] : array();
+	return statchasers_edge_ledger( $stored, $paths, $paths, $now );
+}
+
+/**
+ * The league page's purge retry. `scdc_published` fires during a refresh, not
+ * on a schedule, so the retry rides on the team tabs' five-minute event
+ * (before their check). Writes the record only when a retry ran.
+ *
+ * @return array<string,mixed> The record.
+ */
+function statchasers_depth_charts_hub_retry(): array {
+	$stored = get_option( STATCHASERS_DEPTH_HUB_OPTION );
+	if ( ! is_array( $stored ) ) {
+		return array();
+	}
+	$now   = time();
+	$retry = statchasers_edge_retry( statchasers_depth_charts_hub_ledger( $stored, $now ), 'statchasers_depth_charts_pre_purge_edge', STATCHASERS_DEPTH_HUB_OPTION, 'StatChasers-DepthWarm/1', $now );
+	if ( ! $retry['ran'] ) {
+		return $stored;
+	}
+	$stored = array_merge(
+		$stored,
+		statchasers_edge_ledger_fields( $retry['ledger'] ),
+		array(
+			'retry'      => $retry['summary'],
+			'retried_at' => $now,
+		)
+	);
+	update_option( STATCHASERS_DEPTH_HUB_OPTION, $stored, false );
+	return $stored;
 }
 
 /**
@@ -300,13 +365,27 @@ function statchasers_depth_charts_publish_check( bool $force = false ): array {
 	$now    = time();
 	$stored = get_option( STATCHASERS_DEPTH_TEAM_OPTION );
 	$stored = is_array( $stored ) ? $stored : array();
+	$filter = 'statchasers_depth_charts_pre_purge_edge';
+
+	// What an earlier publication's purge left pending (a 1.10.71 record's
+	// failed purge is adopted: its clubs' tabs, due now).
+	$legacy = array();
+	foreach ( isset( $stored['changed'] ) && is_array( $stored['changed'] ) ? $stored['changed'] : array() as $slug ) {
+		$legacy[] = statchasers_depth_charts_team_path( (string) $slug );
+	}
+	$ledger = statchasers_edge_ledger( $stored, $legacy, $legacy, $now );
+
+	// A run that publishes nothing retries what is pending, when it is due.
+	$quiet = static function ( array $published, array $check ) use ( $ledger, $filter, $now ): array {
+		return statchasers_depth_charts_team_record( $published, $check + statchasers_edge_retry_fields( $ledger, $filter, STATCHASERS_DEPTH_TEAM_OPTION, 'StatChasers-DepthWarm/1', $now ) );
+	};
 
 	$remote = statchasers_depth_charts_remote_version();
 	if ( null === $remote ) {
-		return statchasers_depth_charts_team_record( $stored, array( 'checked_at' => $now, 'result' => 'version unavailable; nothing changed' ) );
+		return $quiet( $stored, array( 'checked_at' => $now, 'result' => 'version unavailable; nothing changed' ) );
 	}
 	if ( ! $force && isset( $stored['version'] ) && $stored['version'] === $remote['version'] ) {
-		return statchasers_depth_charts_team_record( $stored, array( 'checked_at' => $now, 'result' => 'unchanged' ) );
+		return $quiet( $stored, array( 'checked_at' => $now, 'result' => 'unchanged' ) );
 	}
 
 	// The clubs whose chart moved. The first check after an install has no
@@ -331,8 +410,8 @@ function statchasers_depth_charts_publish_check( bool $force = false ): array {
 
 	if ( ! $changed ) {
 		// A new stamp over the same charts: nothing a reader sees moved.
-		return statchasers_depth_charts_team_record(
-			$base + array( 'changed' => array(), 'paths' => 0, 'wp_rocket' => false, 'edge' => 'not needed' ),
+		return $quiet(
+			$base + array( 'changed' => array(), 'to_warm' => array(), 'paths' => 0, 'wp_rocket' => false, 'edge' => 'not needed' ),
 			array( 'checked_at' => $now, 'result' => 'no club changed' )
 		);
 	}
@@ -342,10 +421,10 @@ function statchasers_depth_charts_publish_check( bool $force = false ): array {
 	foreach ( $changed as $slug ) {
 		$payload = statchasers_depth_charts_remote_fragment( $slug );
 		if ( null === $payload ) {
-			return statchasers_depth_charts_team_record( $stored, array( 'checked_at' => $now, 'result' => "fetch failed for {$slug}; previous snapshot kept" ) );
+			return $quiet( $stored, array( 'checked_at' => $now, 'result' => "fetch failed for {$slug}; previous snapshot kept" ) );
 		}
 		if ( $payload['depth'] !== $remote['teams'][ $slug ]['version'] ) {
-			return statchasers_depth_charts_team_record( $stored, array( 'checked_at' => $now, 'result' => "{$slug} moved during the check; retrying next run" ) );
+			return $quiet( $stored, array( 'checked_at' => $now, 'result' => "{$slug} moved during the check; retrying next run" ) );
 		}
 		$fresh[ $slug ] = $payload;
 	}
@@ -371,10 +450,7 @@ function statchasers_depth_charts_publish_check( bool $force = false ): array {
 	}
 
 	// 4. The edge, exactly those paths.
-	$paths = array();
-	foreach ( $urls as $url ) {
-		$paths[] = (string) wp_parse_url( $url, PHP_URL_PATH );
-	}
+	$paths = array_map( 'statchasers_depth_charts_team_path', $changed );
 
 	/**
 	 * Filters the edge paths purged when clubs' depth charts publish.
@@ -383,18 +459,32 @@ function statchasers_depth_charts_publish_check( bool $force = false ): array {
 	 * @param string[] $changed The clubs' slugs.
 	 */
 	$paths = array_values( array_unique( (array) apply_filters( 'statchasers_depth_charts_team_purge_paths', $paths, $changed ) ) );
-	$edge  = statchasers_edge_purge_paths( $paths, 'statchasers_depth_charts_pre_purge_edge' );
+	// With whatever an earlier publication left pending or gave up on, once.
+	$pub = statchasers_edge_publish( $paths, $paths, $ledger, $filter, $now );
 
-	// 5. Record, then refill in batches, one a minute from a minute on.
-	statchasers_depth_charts_schedule_team_warm( (string) $remote['version'], count( $changed ), $now );
+	// 5. Record, then refill in batches, one a minute from a minute on: the
+	//    clubs whose purge landed. The rest are retried on later runs and
+	//    warmed when they land.
+	$by_path = array();
+	foreach ( array_keys( statchasers_team_table() ) as $slug ) {
+		$by_path[ statchasers_depth_charts_team_path( $slug ) ] = $slug;
+	}
+	$to_warm = array();
+	foreach ( $pub['landed'] as $path ) {
+		if ( isset( $by_path[ $path ] ) ) {
+			$to_warm[] = $by_path[ $path ];
+		}
+	}
+	statchasers_depth_charts_schedule_team_warm( (string) $remote['version'], count( $to_warm ), $now );
 
 	return statchasers_depth_charts_team_record(
 		$base + array(
 			'changed'   => $changed,
-			'paths'     => count( $paths ),
+			'to_warm'   => $to_warm,
+			'paths'     => count( $pub['paths'] ),
 			'wp_rocket' => $rocket,
-			'edge'      => $edge,
-		),
+			'edge'      => $pub['purge']['text'],
+		) + statchasers_edge_ledger_fields( $pub['ledger'] ),
 		array(
 			'checked_at' => $now,
 			'result'     => $force && isset( $stored['version'] ) && $stored['version'] === $remote['version'] ? 'republished (forced)' : 'published',
@@ -439,12 +529,15 @@ function statchasers_depth_charts_schedule_team_warm( string $version, int $coun
 }
 
 /**
- * The team tabs' warm-up: the clubs the last publication changed.
+ * The team tabs' warm-up: the clubs the last publication purged
+ * (`to_warm`: changed, and whose edge purge landed; a 1.10.71 record has
+ * only `changed`).
  *
  * From WP-cron it gets the publication and an offset and warms that batch
  * only; an event for a publication that is no longer the recorded one does
  * nothing (its clubs were purged; the newer publication warms its own).
- * Called with no arguments (by hand, the bench) it warms every changed club.
+ * Called with no arguments (by hand, the bench) it warms every such club.
+ * A club whose purge is retried later is warmed by the retry's own warm-up.
  *
  * @param string|null $version The publication the event was scheduled for.
  * @param int|null    $offset  The batch's first club.
@@ -452,7 +545,8 @@ function statchasers_depth_charts_schedule_team_warm( string $version, int $coun
  */
 function statchasers_depth_charts_team_warm( $version = null, $offset = null ): array {
 	$stored  = get_option( STATCHASERS_DEPTH_TEAM_OPTION );
-	$changed = is_array( $stored ) && isset( $stored['changed'] ) && is_array( $stored['changed'] ) ? array_values( $stored['changed'] ) : array();
+	$key     = is_array( $stored ) && isset( $stored['to_warm'] ) && is_array( $stored['to_warm'] ) ? 'to_warm' : 'changed';
+	$changed = is_array( $stored ) && isset( $stored[ $key ] ) && is_array( $stored[ $key ] ) ? array_values( $stored[ $key ] ) : array();
 	$batch   = null !== $version && null !== $offset;
 	if ( $batch ) {
 		if ( ! is_array( $stored ) || ! isset( $stored['version'] ) || (string) $stored['version'] !== (string) $version ) {
@@ -489,7 +583,7 @@ function statchasers_depth_charts_cache_surface(): string {
 }
 
 /**
- * The six-hour fallback lifetime on the league page and the 32 Depth Chart
+ * The six-hour requested lifetime on the league page and the 32 Depth Chart
  * tabs, sent before output. `published=` names the publication the page was
  * rendered after: the league page's `?v=`, or the club's content hash.
  */

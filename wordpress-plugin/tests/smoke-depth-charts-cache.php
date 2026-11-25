@@ -187,6 +187,230 @@ is( false !== strpos( (string) ( $GLOBALS['remote_args'][ count( $GLOBALS['remot
 $w = statchasers_depth_charts_hub_warm();
 is( array_keys( $w ), array( 'https://example.com/nfl/nfl-depth-charts/ desktop', 'https://example.com/nfl/nfl-depth-charts/ phone' ), 'hub warm: the league page, desktop and phone' );
 
+// ------------------------------------------------------------ a purge that fails (retry)
+echo "\nEdge purge retry\n";
+
+// The edge's answer, set per case: 'fail' (every path), 'ok', an array (a
+// structured answer), or null (the 'test edge' string above: skipped).
+$GLOBALS['sc_test_edge_answer'] = null;
+add_filter(
+	'statchasers_depth_charts_pre_purge_edge',
+	static function ( $result, $paths = array() ) {
+		$answer = $GLOBALS['sc_test_edge_answer'] ?? null;
+		if ( 'fail' === $answer ) {
+			return array( 'failed' => $paths, 'text' => 'rocket.net refused' );
+		}
+		if ( 'ok' === $answer ) {
+			return array( 'failed' => array(), 'text' => 'rocket.net ok' );
+		}
+		return is_array( $answer ) ? $answer : $result;
+	}
+);
+// Time passing: move the record's ledger back.
+$age = static function ( string $option, int $secs ): void {
+	$r = get_option( $option );
+	foreach ( array( 'next_at', 'first_at', 'last_at' ) as $k ) {
+		if ( ! empty( $r['edge_retry'][ $k ] ) ) {
+			$r['edge_retry'][ $k ] -= $secs;
+		}
+	}
+	update_option( $option, $r );
+};
+$team_warms = static fn(): array => array_values( array_filter( $GLOBALS['scheduled'], static fn( $e ) => STATCHASERS_DEPTH_TEAM_WARM_HOOK === $e[0] ) );
+$retry_warms = static fn(): array => array_values( array_filter( $GLOBALS['scheduled'], static fn( $e ) => STATCHASERS_EDGE_RETRY_WARM_HOOK === $e[0] ) );
+$bills_tab   = '/nfl/teams/buffalo-bills/depth-chart/';
+$fins_tab    = '/nfl/teams/miami-dolphins/depth-chart/';
+$jets_tab    = '/nfl/teams/new-york-jets/depth-chart/';
+$publish     = static function ( string $fp, array $hashes ) use ( $doc ): array {
+	$GLOBALS['http_code']    = 200;
+	$GLOBALS['http_body']    = json_encode( $doc( $fp, $hashes, $fp . '~v' ) );
+	$GLOBALS['http_headers'] = array( 'x-sc-depth-version' => $fp . '~v', 'etag' => 'W/"' . $fp . '"' );
+	return statchasers_depth_charts_publish_check();
+};
+
+// The purge itself: what each answer means.
+$p = statchasers_edge_purge( array( '/a/', '/b/' ), 'statchasers_test_no_such_filter' );
+is( array( $p['state'], $p['text'], $p['failed'] ), array( 'skipped', 'no edge purge available', array() ), 'purge: no mu-plugin, skipped (not failed)' );
+$GLOBALS['sc_test_cdn'] = array();
+if ( ! class_exists( 'CDN_Clear_Cache_Api' ) ) {
+	// The mu-plugin's call, answering from a queue: an object with success, [] (its guard file), null (a timeout).
+	class CDN_Clear_Cache_Api {
+		public static function cache_api_call( $files, $action = 'purge' ) {
+			$GLOBALS['sc_test_cdn'][] = $files;
+			return array_shift( $GLOBALS['sc_test_cdn_answers'] );
+		}
+	}
+}
+$many = array();
+for ( $i = 0; $i < 35; $i++ ) {
+	$many[] = "/p{$i}/";
+}
+$GLOBALS['sc_test_cdn_answers'] = array( (object) array( 'success' => true ), (object) array( 'success' => false ) );
+$p = statchasers_edge_purge( $many, 'statchasers_test_no_such_filter' );
+is( array( count( $GLOBALS['sc_test_cdn'][0] ), count( $GLOBALS['sc_test_cdn'][1] ) ), array( 30, 5 ), 'purge: 30 paths a call' );
+is( array( $p['state'], $p['text'], count( $p['purged'] ), $p['failed'] ), array( 'failed', 'rocket.net ok,refused', 30, array_slice( $many, 30 ) ), 'purge: the refused call\'s paths, and only those, failed' );
+$GLOBALS['sc_test_cdn_answers'] = array( array() );
+$p = statchasers_edge_purge( array( '/a/' ), 'statchasers_test_no_such_filter' );
+is( array( $p['state'], $p['text'] ), array( 'failed', 'rocket.net sent' ), 'purge: no readable answer (guard file, timeout) is a failure' );
+$GLOBALS['sc_test_cdn_answers'] = array( (object) array( 'success' => true ) );
+$p = statchasers_edge_purge( array( '/a/' ), 'statchasers_test_no_such_filter' );
+is( array( $p['state'], $p['text'], $p['purged'] ), array( 'ok', 'rocket.net ok', array( '/a/' ) ), 'purge: success' );
+is( statchasers_edge_purge_paths( array( '/a/' ), 'statchasers_depth_charts_pre_purge_edge' ), 'test edge', 'purge: the 1.10.71 string helper is unchanged' );
+
+// A record 1.10.71 wrote: read as it is. Its purge landed: nothing to retry.
+$reset();
+update_option( STATCHASERS_DEPTH_TEAM_OPTION, array( 'version' => 'fpL', 'teams' => array(), 'changed' => array( 'buffalo-bills' ), 'paths' => 1, 'wp_rocket' => true, 'edge' => 'rocket.net ok', 'published_at' => time() - 600 ) );
+$GLOBALS['sc_test_edge_answer'] = 'ok';
+$GLOBALS['http_body']           = json_encode( $doc( 'fpL', array(), 'L~v' ) );
+$r = statchasers_depth_charts_publish_check();
+is( array( $r['result'], count( $GLOBALS['sc_test_edge'] ), isset( $r['edge_retry'] ) ), array( 'unchanged', 0, false ), 'upgrade: a 1.10.71 record whose purge landed, unchanged and quiet' );
+// Its purge did not land: adopted, retried once on the first run.
+$reset();
+update_option( STATCHASERS_DEPTH_TEAM_OPTION, array( 'version' => 'fpL', 'teams' => array(), 'changed' => array( 'buffalo-bills' ), 'paths' => 1, 'wp_rocket' => true, 'edge' => 'rocket.net refused', 'published_at' => time() - 600 ) );
+$r = statchasers_depth_charts_publish_check();
+is( array( $r['result'], $GLOBALS['sc_test_edge'] ), array( 'unchanged', array( array( $bills_tab ) ) ), 'upgrade: a 1.10.71 record whose purge failed, its tab purged on the first run' );
+is( array( $r['edge_state'], $r['edge_pending'], $r['edge_attempts'] ), array( 'ok', 0, 2 ), 'upgrade: landed on attempt 2' );
+is( count( $retry_warms() ), 1, 'upgrade: then warmed' );
+is( count( $GLOBALS['sc_test_rocket'] ), 0, 'upgrade: WP Rocket not cleaned again' );
+
+// Case 1: the purge fails once, then succeeds.
+$reset();
+update_option( STATCHASERS_DEPTH_TEAM_OPTION, array() );
+$GLOBALS['sc_test_edge_answer'] = null;
+$publish( 'fpR0', array() ); // A baseline publication of all 32 (skipped edge).
+$reset();
+$GLOBALS['sc_test_edge_answer'] = 'fail';
+$r = $publish( 'fpR1', array( 'buffalo-bills' => 'r1' ) );
+is( $r['result'], 'published', 'fail once: the publication is recorded' );
+is( array( $r['edge'], $r['edge_state'], $r['edge_pending'], $r['edge_failed'], $r['edge_attempts'] ), array( 'rocket.net refused', 'pending', 1, 0, 1 ), 'fail once: one path pending, attempt 1' );
+is( $r['edge_retry']['pending'], array( $bills_tab ), 'fail once: the failed path is named' );
+is( $r['edge_retry']['next_at'] - time() >= 299 && $r['edge_retry']['next_at'] - time() <= 301, true, 'fail once: next attempt in 5 minutes' );
+is( array( $r['to_warm'], count( $team_warms() ) ), array( array(), 0 ), 'fail once: nothing warmed while the edge holds the old page' );
+is( count( $GLOBALS['sc_test_rocket'] ), 1, 'fail once: WP Rocket cleaned once, at the publication' );
+
+$reset();
+$r = statchasers_depth_charts_publish_check();
+is( array( $r['result'], count( $GLOBALS['sc_test_edge'] ), $r['edge_pending'] ), array( 'unchanged', 0, 1 ), 'fail once: not due yet, no purge, still pending' );
+
+$reset();
+$age( STATCHASERS_DEPTH_TEAM_OPTION, 300 );
+$GLOBALS['sc_test_edge_answer'] = 'ok';
+$r = statchasers_depth_charts_publish_check();
+is( array( $r['result'], $GLOBALS['sc_test_edge'] ), array( 'unchanged', array( array( $bills_tab ) ) ), 'fail once: retried once, exactly the pending path' );
+is( array( $r['edge_state'], $r['edge_pending'], $r['edge_attempts'], $r['retry'] ), array( 'ok', 0, 2, 'attempt 2 of 6: rocket.net ok' ), 'fail once: landed on attempt 2, recorded' );
+is( count( $GLOBALS['remote_urls'] ), 1, 'fail once: the retry fetches nothing (the version read only)' );
+is( count( $GLOBALS['sc_test_rocket'] ), 0, 'fail once: WP Rocket not cleaned again' );
+$rw = $retry_warms();
+is( count( $rw ), 1, 'fail once: then warmed (one event)' );
+is( $rw[0][3], array( STATCHASERS_DEPTH_TEAM_OPTION, 'StatChasers-DepthWarm/1', array( 'https://example.com' . $bills_tab ) ), 'fail once: the warm-up names the record and the landed tab' );
+is( $rw[0][1] - time() >= 59 && $rw[0][1] - time() <= 61, true, 'fail once: warmed a minute after the purge' );
+$GLOBALS['http_body'] = '';
+$w = statchasers_edge_retry_warm( ...$rw[0][3] );
+is( array_keys( $w ), array( 'https://example.com' . $bills_tab . ' desktop', 'https://example.com' . $bills_tab . ' phone' ), 'fail once: the warm-up, desktop and phone' );
+is( isset( get_option( STATCHASERS_DEPTH_TEAM_OPTION )['retry_warm'] ), true, 'fail once: the warm-up is on record' );
+is( statchasers_edge_retry_warm( 'siteurl', 'x', array( 'https://example.com/' ) ), array(), 'retry warm: only a publication record' );
+
+$reset();
+$GLOBALS['http_body'] = json_encode( $doc( 'fpR1', array( 'buffalo-bills' => 'r1' ), 'fpR1~v' ) );
+$age( STATCHASERS_DEPTH_TEAM_OPTION, 3600 );
+$r = statchasers_depth_charts_publish_check();
+is( array( $r['result'], count( $GLOBALS['sc_test_edge'] ), count( $GLOBALS['scheduled'] ), $r['edge_state'] ), array( 'unchanged', 0, 0, 'ok' ), 'fail once: then quiet' );
+
+// Case 2: the purge keeps failing: bounded, recorded, never warmed.
+$reset();
+$GLOBALS['sc_test_edge_answer'] = 'fail';
+$r = $publish( 'fpR2', array( 'buffalo-bills' => 'r2' ) );
+$gaps = array( $r['edge_retry']['next_at'] - $r['edge_retry']['last_at'] );
+$purges = count( $GLOBALS['sc_test_edge'] );
+for ( $i = 0; $i < 7; $i++ ) {
+	$age( STATCHASERS_DEPTH_TEAM_OPTION, 6 * 3600 );
+	$r = statchasers_depth_charts_publish_check();
+	if ( $r['edge_retry']['next_at'] ) {
+		$gaps[] = $r['edge_retry']['next_at'] - $r['edge_retry']['last_at'];
+	}
+}
+is( count( $GLOBALS['sc_test_edge'] ), 6, 'keeps failing: six attempts in all (the publication + 5 retries), then no more' );
+is( $gaps, array( 300, 600, 1200, 2400, 4800 ), 'keeps failing: waits of 5, 10, 20, 40, 80 minutes' );
+is( array( $r['edge_state'], $r['edge_pending'], $r['edge_failed'], $r['edge_attempts'] ), array( 'failed', 0, 1, 6 ), 'keeps failing: given up on, recorded as failed' );
+is( $r['edge_retry']['abandoned'], array( $bills_tab ), 'keeps failing: the given-up path is named' );
+is( count( $team_warms() ) + count( $retry_warms() ), 0, 'keeps failing: never warmed' );
+is( count( $GLOBALS['sc_test_rocket'] ), 1, 'keeps failing: WP Rocket cleaned once' );
+
+// A new publication carries the given-up path: purged together, once.
+$reset();
+$GLOBALS['sc_test_edge_answer'] = 'ok';
+$r = $publish( 'fpR3', array( 'buffalo-bills' => 'r2', 'miami-dolphins' => 'r3' ) );
+is( $GLOBALS['sc_test_edge'], array( array( $fins_tab, $bills_tab ) ), 'given up, then a new publication: one purge of the new tab and the given-up one' );
+is( array( $r['changed'], $r['to_warm'], $r['edge_state'], $r['edge_failed'], $r['paths'] ), array( array( 'miami-dolphins' ), array( 'miami-dolphins', 'buffalo-bills' ), 'ok', 0, 2 ), 'given up, then a new publication: both warmed, nothing left' );
+
+// Case 3: a new publication arrives while a retry is pending: the union, once.
+$reset();
+$GLOBALS['sc_test_edge_answer'] = array( 'failed' => array( $fins_tab ), 'text' => 'rocket.net refused' );
+$r = $publish( 'fpR4', array( 'buffalo-bills' => 'r2', 'miami-dolphins' => 'r4' ) );
+is( $r['edge_retry']['pending'], array( $fins_tab ), 'union: the Dolphins tab pending' );
+$reset();
+$GLOBALS['sc_test_edge_answer'] = 'ok';
+$r = $publish( 'fpR5', array( 'buffalo-bills' => 'r2', 'miami-dolphins' => 'r4', 'new-york-jets' => 'r5' ) );
+is( $GLOBALS['sc_test_edge'], array( array( $jets_tab, $fins_tab ) ), 'union: one purge of the new tab and the pending one (not due yet, purged anyway, once)' );
+is( array( $r['changed'], $r['to_warm'], $r['edge_state'], $r['edge_pending'], $r['edge_attempts'] ), array( array( 'new-york-jets' ), array( 'new-york-jets', 'miami-dolphins' ), 'ok', 0, 1 ), 'union: both warmed, the count starts again' );
+is( count( $GLOBALS['remote_urls'] ), 2, 'union: the pending club is not fetched again (version + the new club only)' );
+is( $GLOBALS['sc_test_rocket'], array( array( 'https://example.com' . $jets_tab ) ), 'union: WP Rocket cleaned for the new club only' );
+
+// Case 4: skipped is not failed: no retry loop.
+$reset();
+$GLOBALS['sc_test_edge_answer'] = null;
+$r = $publish( 'fpR6', array( 'buffalo-bills' => 'r6', 'miami-dolphins' => 'r4', 'new-york-jets' => 'r5' ) );
+is( array( $r['edge'], $r['edge_state'], $r['edge_pending'], $r['to_warm'] ), array( 'test edge', 'skipped', 0, array( 'buffalo-bills' ) ), 'skipped: recorded as skipped, nothing pending, warmed' );
+$reset();
+$age( STATCHASERS_DEPTH_TEAM_OPTION, 6 * 3600 );
+$r = statchasers_depth_charts_publish_check();
+is( array( count( $GLOBALS['sc_test_edge'] ), count( $GLOBALS['scheduled'] ) ), array( 0, 0 ), 'skipped: the next run purges nothing' );
+// Pending, then the mu-plugin is gone: the retry is skipped and the ledger clears.
+$reset();
+$GLOBALS['sc_test_edge_answer'] = 'fail';
+$publish( 'fpR7', array( 'buffalo-bills' => 'r7', 'miami-dolphins' => 'r4', 'new-york-jets' => 'r5' ) );
+$age( STATCHASERS_DEPTH_TEAM_OPTION, 300 );
+$GLOBALS['sc_test_edge_answer'] = array( 'state' => 'skipped', 'text' => 'no edge purge available' );
+$r = statchasers_depth_charts_publish_check();
+is( array( $r['edge_state'], $r['edge_pending'], $r['retry'] ), array( 'skipped', 0, 'attempt 2: skipped (no edge purge available); not retried' ), 'skipped on retry: cleared, not retried' );
+$reset();
+$age( STATCHASERS_DEPTH_TEAM_OPTION, 6 * 3600 );
+statchasers_depth_charts_publish_check();
+is( count( $GLOBALS['sc_test_edge'] ), 0, 'skipped on retry: no loop' );
+
+// An old warm-up event (a 1.10.71 record: no to_warm) still warms `changed`.
+$reset();
+$GLOBALS['http_body'] = '';
+update_option( STATCHASERS_DEPTH_TEAM_OPTION, array( 'version' => 'old', 'changed' => array( 'buffalo-bills' ) ) );
+is( count( statchasers_depth_charts_team_warm( 'old', 0 ) ), 2, 'upgrade: a 1.10.71 warm-up event warms its changed club' );
+
+// The league page: the hook fires once, its retry rides on the five-minute event.
+is( in_array( 'statchasers_depth_charts_hub_retry', $GLOBALS['hooks'][ STATCHASERS_DEPTH_PUBLISH_HOOK ] ?? array(), true ), true, 'hub retry: on the five-minute event' );
+$reset();
+$GLOBALS['sc_test_edge_answer'] = 'fail';
+$r = statchasers_depth_charts_hub_publish( array( 'status' => 'success', 'last_refreshed_ts' => 1795560000 ) );
+is( array( $r['version'], $r['edge_state'], $r['edge_pending'] ), array( 1795560000, 'pending', 1 ), 'hub fail: recorded, pending' );
+is( in_array( STATCHASERS_DEPTH_HUB_WARM_HOOK, array_column( $GLOBALS['scheduled'], 0 ), true ), false, 'hub fail: not warmed' );
+$reset();
+statchasers_depth_charts_hub_retry();
+is( count( $GLOBALS['sc_test_edge'] ), 0, 'hub fail: not due, no purge' );
+// A second refresh while pending: the page once.
+$r = statchasers_depth_charts_hub_publish( array( 'status' => 'success', 'last_refreshed_ts' => 1795560300 ) );
+is( $GLOBALS['sc_test_edge'], array( array( '/nfl/nfl-depth-charts/' ) ), 'hub union: one purge, the page once' );
+is( $r['edge_attempts'], 1, 'hub union: the count starts again' );
+$reset();
+$age( STATCHASERS_DEPTH_HUB_OPTION, 300 );
+$GLOBALS['sc_test_edge_answer'] = 'ok';
+$r = statchasers_depth_charts_hub_retry();
+is( array( $GLOBALS['sc_test_edge'], $r['edge_state'], $r['edge_attempts'], $r['version'] ), array( array( array( '/nfl/nfl-depth-charts/' ) ), 'ok', 2, 1795560300 ), 'hub retry: landed on attempt 2, the publication kept' );
+is( $retry_warms()[0][3] ?? null, array( STATCHASERS_DEPTH_HUB_OPTION, 'StatChasers-DepthWarm/1', array( 'https://example.com/nfl/nfl-depth-charts/' ) ), 'hub retry: then warmed' );
+is( count( $GLOBALS['sc_test_rocket'] ), 0, 'hub retry: WP Rocket not cleaned again' );
+$reset();
+$age( STATCHASERS_DEPTH_HUB_OPTION, 3600 );
+statchasers_depth_charts_hub_retry();
+is( count( $GLOBALS['sc_test_edge'] ) + count( $GLOBALS['scheduled'] ), 0, 'hub retry: then quiet' );
+$GLOBALS['sc_test_edge_answer'] = null;
+
 // ------------------------------------------------------------ which pages get the 6 h policy
 $post            = new WP_Post();
 $post->post_name = 'buffalo-bills';

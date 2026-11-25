@@ -49,13 +49,18 @@
  * the purge cannot be rendered from the old fragment; step 3 comes before 4
  * so it cannot be served WP Rocket's old file either.
  *
+ * A path whose edge purge fails stays pending in the record's retry ledger
+ * and is retried on later runs of this check (5, 10, 20, 40, 80 minutes
+ * apart, six attempts in all; statchasers-edge-cache.php), with no API fetch
+ * and no second WP Rocket clean; a page is warmed only once its purge landed.
+ *
  * ## The edge lifetime
  *
- * As a fallback for a missed purge, the pages ask for a six-hour edge
- * lifetime the same three ways the schedule does (Cache-Control s-maxage,
- * CDN-Cache-Control, Cloudflare-CDN-Cache-Control). Today the platform
- * replaces all of that with its 30 days; honoring it needs the route-scoped
- * hosting change written up in docs/WEB-003-STATS-FRESHNESS.md.
+ * The pages ask for a six-hour edge lifetime the same three ways the schedule
+ * does (Cache-Control s-maxage, CDN-Cache-Control,
+ * Cloudflare-CDN-Cache-Control). The platform replaces all of that with its
+ * 30 days and its edge rules cannot be changed from our side, so the purges
+ * and their retry are what keep these pages fresh.
  *
  * `wp eval 'print_r( statchasers_player_stats_publish_check( true ) );'`
  * runs a check by hand and forces the purge even when nothing changed.
@@ -200,13 +205,24 @@ function statchasers_player_stats_publish_check( bool $force = false ): array {
 	$now    = time();
 	$stored = get_option( STATCHASERS_PLAYER_STATS_PUBLISHED_OPTION );
 	$stored = is_array( $stored ) ? $stored : array();
+	$filter = 'statchasers_player_stats_pre_purge_edge';
 
 	$remote = statchasers_player_stats_remote_version();
+
+	// What an earlier publication's purge left pending. A 1.10.71 record
+	// whose purge failed is adopted: its paths (rebuilt from the seasons the
+	// API names now, the canonical five when it cannot be read), due now.
+	$warm_paths = array_map( static fn( string $url ): string => (string) wp_parse_url( $url, PHP_URL_PATH ), array_values( statchasers_player_stats_public_urls() ) );
+	$ledger     = statchasers_edge_ledger( $stored, statchasers_player_stats_purge_paths( null === $remote ? array() : $remote['seasons'] ), $warm_paths, $now );
+	$quiet      = static function ( array $check ) use ( $stored, $ledger, $filter, $now ): array {
+		return statchasers_player_stats_publish_record( $stored, $check + statchasers_edge_retry_fields( $ledger, $filter, STATCHASERS_PLAYER_STATS_PUBLISHED_OPTION, 'StatChasers-StatsWarm/1', $now ) );
+	};
+
 	if ( null === $remote ) {
-		return statchasers_player_stats_publish_record( $stored, array( 'checked_at' => $now, 'result' => 'version unavailable; nothing changed' ) );
+		return $quiet( array( 'checked_at' => $now, 'result' => 'version unavailable; nothing changed' ) );
 	}
 	if ( ! $force && isset( $stored['version'] ) && $stored['version'] === $remote['version'] ) {
-		return statchasers_player_stats_publish_record( $stored, array( 'checked_at' => $now, 'result' => 'unchanged' ) );
+		return $quiet( array( 'checked_at' => $now, 'result' => 'unchanged' ) );
 	}
 
 	// 1. The four fragments of the announced snapshot, all of them or none.
@@ -218,10 +234,10 @@ function statchasers_player_stats_publish_check( bool $force = false ): array {
 		);
 		$payload = statchasers_player_stats_remote( $args );
 		if ( null === $payload ) {
-			return statchasers_player_stats_publish_record( $stored, array( 'checked_at' => $now, 'result' => "fetch failed for {$pos}; previous snapshot kept" ) );
+			return $quiet( array( 'checked_at' => $now, 'result' => "fetch failed for {$pos}; previous snapshot kept" ) );
 		}
 		if ( $payload['version'] !== $remote['positions'][ $pos ]['etag'] ) {
-			return statchasers_player_stats_publish_record( $stored, array( 'checked_at' => $now, 'result' => "{$pos} moved during the check; retrying next run" ) );
+			return $quiet( array( 'checked_at' => $now, 'result' => "{$pos} moved during the check; retrying next run" ) );
 		}
 		$fresh[ $pos ] = array( $args, $payload );
 	}
@@ -242,11 +258,14 @@ function statchasers_player_stats_publish_check( bool $force = false ): array {
 		$rocket = true;
 	}
 
-	// 4. The edge, for exactly these paths.
+	// 4. The edge, for exactly these paths (with whatever an earlier
+	//    publication left pending or gave up on, once).
 	$paths = statchasers_player_stats_purge_paths( $remote['seasons'] );
-	$edge  = statchasers_player_stats_purge_edge( $paths );
+	$pub   = statchasers_edge_publish( $paths, $warm_paths, $ledger, $filter, $now );
 
-	// 5. Record, then refill in a minute (the purge takes a moment to land).
+	// 5. Record, then refill in a minute (the purge takes a moment to land):
+	//    the pages whose purge landed. The rest are retried on later runs and
+	//    warmed when they land.
 	$weeks = array();
 	foreach ( STATCHASERS_PLAYER_STATS_POSITIONS as $pos ) {
 		$info          = $remote['positions'][ $pos ];
@@ -256,7 +275,8 @@ function statchasers_player_stats_publish_check( bool $force = false ): array {
 			'etag'       => (string) $info['etag'],
 		);
 	}
-	if ( ! wp_next_scheduled( STATCHASERS_PLAYER_STATS_WARM_HOOK ) ) {
+	$to_warm = array_values( array_filter( array_values( statchasers_player_stats_public_urls() ), static fn( string $url ): bool => in_array( (string) wp_parse_url( $url, PHP_URL_PATH ), $pub['landed'], true ) ) );
+	if ( $to_warm && ! wp_next_scheduled( STATCHASERS_PLAYER_STATS_WARM_HOOK ) ) {
 		wp_schedule_single_event( $now + MINUTE_IN_SECONDS, STATCHASERS_PLAYER_STATS_WARM_HOOK );
 	}
 
@@ -268,9 +288,10 @@ function statchasers_player_stats_publish_check( bool $force = false ): array {
 			'previous'     => isset( $stored['version'] ) ? (string) $stored['version'] : '',
 			'positions'    => $weeks,
 			'wp_rocket'    => $rocket,
-			'edge'         => $edge,
-			'paths'        => count( $paths ),
-		),
+			'edge'         => $pub['purge']['text'],
+			'paths'        => count( $pub['paths'] ),
+			'to_warm'      => $to_warm,
+		) + statchasers_edge_ledger_fields( $pub['ledger'] ),
 		array(
 			'checked_at' => $now,
 			'result'     => $force && isset( $stored['version'] ) && $stored['version'] === $remote['version'] ? 'republished (forced)' : 'published',
@@ -312,13 +333,16 @@ function statchasers_player_stats_purge_edge( array $paths ): string {
  * Request each address once as a desktop and once as a phone, so the edge and
  * WP Rocket hold the new snapshot before a visitor asks. Sequential and
  * blocking: it runs in cron, and parallel cold renders are what the warm-up
- * exists to spare the origin.
+ * exists to spare the origin. Only the pages whose edge purge landed
+ * (`to_warm`; a 1.10.71 record has none, so all four); a page whose purge is
+ * retried is warmed by the retry's own warm-up.
  *
  * @return array<string,string> URL and agent => status and cache status.
  */
 function statchasers_player_stats_warm(): array {
-	$out    = statchasers_edge_warm( array_values( statchasers_player_stats_public_urls() ), 'StatChasers-StatsWarm/1' );
 	$stored = get_option( STATCHASERS_PLAYER_STATS_PUBLISHED_OPTION );
+	$urls   = is_array( $stored ) && isset( $stored['to_warm'] ) && is_array( $stored['to_warm'] ) ? $stored['to_warm'] : array_values( statchasers_player_stats_public_urls() );
+	$out    = statchasers_edge_warm( $urls, 'StatChasers-StatsWarm/1' );
 	if ( is_array( $stored ) ) {
 		$stored['warmed_at'] = time();
 		$stored['warm']      = $out;

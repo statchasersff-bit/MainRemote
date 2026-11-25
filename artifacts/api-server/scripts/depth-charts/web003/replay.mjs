@@ -77,6 +77,15 @@ const edgeServer = http.createServer((req, res) => {
     let body = "";
     req.on("data", (d) => (body += d)).on("end", () => {
       const { files } = JSON.parse(body);
+      if (refuseNext > 0) {
+        // A purge that fails (step 6b): Rocket.net answering success: false.
+        refuseNext--;
+        purgeCount++;
+        log(`EDGE purge REFUSED: ${files.join(" ")} -> nothing dropped`);
+        res.setHeader("content-type", "application/json");
+        res.end(JSON.stringify({ success: false }));
+        return;
+      }
       let n = 0;
       for (const key of [...edge.keys()]) if (files.includes(key.split(" ")[1])) { edge.delete(key); n++; }
       purgeCount++;
@@ -211,6 +220,8 @@ let stampA = "";
 let firstPollEvents = [];
 let secondPollQuiet = false;
 let purgeCount = 0;
+let refuseNext = 0;
+let retryOk = false;
 let stampB = "";
 /** The file's ISO time as the page prints it in datetime: UTC with Z, seconds. */
 const isoZ = (s) => (s && !Number.isNaN(Date.parse(s)) ? new Date(Date.parse(s)).toISOString().replace(/\.\d{3}Z$/, "Z") : "");
@@ -221,13 +232,21 @@ function writeSnapshot(doc) {
   fs.writeFileSync(`${file}.tmp`, JSON.stringify(doc));
   fs.renameSync(`${file}.tmp`, file);
 }
-function snapshotB() {
+function snapshotB(name = TEAM_B) {
   const doc = JSON.parse(fs.readFileSync(SNAPSHOT, "utf8"));
   const buf = doc.teams.find((t) => t.team.abbr === "BUF");
-  buf.positions.QB[0].name = TEAM_B;
-  for (const slot of buf.slots ?? []) if (slot.slot === "QB" && slot.players[0]) slot.players[0].name = TEAM_B;
+  buf.positions.QB[0].name = name;
+  for (const slot of buf.slots ?? []) if (slot.slot === "QB" && slot.players[0]) slot.players[0].name = name;
   return doc;
 }
+const TEAM_C = "Snapshot Charlie QB";
+/** Run the edge-retry warm-up events now, as WP-cron would at their time. */
+const runRetryWarms = () => wp("eval", "$n = 0; foreach ( (array) _get_cron_array() as $ts => $hooks ) { foreach ( (array) ( $hooks['statchasers_edge_retry_warm'] ?? array() ) as $e ) { do_action_ref_array( 'statchasers_edge_retry_warm', $e['args'] ); wp_unschedule_event( $ts, 'statchasers_edge_retry_warm', $e['args'] ); $n++; } } echo $n;");
+/** Time passing: move a record's retry ledger back (the bench cannot wait five minutes). */
+const ageLedger = (option, secs) => wp("eval", `$r = get_option('${option}'); foreach ( array('next_at','first_at','last_at') as $k ) { if ( ! empty( $r['edge_retry'][ $k ] ) ) { $r['edge_retry'][ $k ] -= ${secs}; } } update_option('${option}', $r, false);`);
+const ledgerOf = (option) => evalJson(`$r = get_option('${option}'); echo wp_json_encode(array_intersect_key($r, array_flip(array('result','edge','edge_state','edge_pending','edge_failed','edge_attempts','retry','to_warm')))), ' pending=', wp_json_encode($r['edge_retry']['pending'] ?? null);`);
+/** Whose name opens the Bills' QB row, for the C step. */
+const qbC = (r) => (r.body.includes(TEAM_C) ? TEAM_C : readTeam(r).qb1);
 
 async function both(label, which) {
   await show(`${label}`, which, DESKTOP);
@@ -363,7 +382,59 @@ try {
   secondPollQuiet = purgeCount === purgesBefore && secondEvents.length === 0;
   log(`second poll: ${purgeCount - purgesBefore} edge purges, ${secondEvents.length} warm-up events scheduled`);
 
-  log("--- 7. the API goes down: the check changes nothing, the public pages keep B");
+  log("--- 6b. a purge that fails: snapshot C (team tab and league page), the edge refuses the first purge of each");
+  {
+    const checks = [];
+    // Team tab.
+    writeSnapshot(snapshotB(TEAM_C));
+    await api.stop();
+    api = await startServer(API_ENV());
+    await clearWarmEvents();
+    refuseNext = 1;
+    log("check: " + await evalJson("$r = statchasers_depth_charts_publish_check(); echo wp_json_encode(array_intersect_key($r, array_flip(array('result','changed','edge','edge_state','edge_pending','edge_attempts','to_warm'))));"));
+    const teamWarmsAfterFail = (await warmEvents()).split(" ").filter(Boolean).length;
+    log(`team warm-up events after the refused purge: ${teamWarmsAfterFail} (expect 0: nothing is warmed while the edge holds the old page)`);
+    const stale = await get(TEAM, DESKTOP);
+    log(`public team desktop: ${stale.headers["cf-cache-status"]} BUF QB1: ${qbC(stale)}  (stale until the retry)`);
+    const before = purgeCount;
+    log("check, not due yet: " + await evalJson("echo statchasers_depth_charts_publish_check()['result'];") + ` (${purgeCount - before} purges)`);
+    checks.push(purgeCount === before);
+    await ageLedger("statchasers_depth_charts_team_published", 300);
+    log("check, five minutes on (the retry): " + await evalJson("$r = statchasers_depth_charts_publish_check(); echo $r['result'], ' / ', $r['retry'] ?? '-', ' / edge_state ', $r['edge_state'] ?? '-';"));
+    log("team record: " + await ledgerOf("statchasers_depth_charts_team_published"));
+    log(`retry warm-up events run: ${await runRetryWarms()}`);
+    for (const ua of [DESKTOP, PHONE]) {
+      const r = await get(TEAM, ua);
+      const who = qbC(r);
+      log(`public C team ${ua === PHONE ? "phone  " : "desktop"} ${r.headers["cf-cache-status"]} BUF QB1: ${who}`);
+      checks.push(who === TEAM_C && r.headers["cf-cache-status"] === "HIT");
+    }
+    const quietBefore = purgeCount;
+    log("check, then: " + await evalJson("echo statchasers_depth_charts_publish_check()['result'];") + ` (${purgeCount - quietBefore} purges)`);
+    checks.push(purgeCount === quietBefore);
+
+    // League page: the hook fires during a refresh; its retry rides on the five-minute event.
+    await sleep(1100);
+    await wp("option", "update", "dc_bench_qb1", "Hub Charlie QB");
+    refuseNext = 1;
+    await wp("eval", "do_action( SCDC_Refresh::CRON_HOOK );");
+    log("hub record after the refused purge: " + await ledgerOf("statchasers_depth_charts_hub_published"));
+    const hubStale = await readHub(await get(HUB, DESKTOP), DESKTOP);
+    log(`public hub desktop: BUF QB1 ${hubStale.qb1} (stale until the retry)`);
+    await ageLedger("statchasers_depth_charts_hub_published", 300);
+    await wp("eval", "do_action( STATCHASERS_DEPTH_PUBLISH_HOOK );");
+    log("hub record after the five-minute event: " + await ledgerOf("statchasers_depth_charts_hub_published"));
+    log(`retry warm-up events run: ${await runRetryWarms()}`);
+    for (const ua of [DESKTOP, PHONE]) {
+      const h = await readHub(await get(HUB, ua), ua);
+      log(`public C hub  ${ua === PHONE ? "phone  " : "desktop"} BUF QB1: ${h.qb1}`);
+      checks.push(h.qb1 === "Hub Charlie QB");
+    }
+    checks.push(teamWarmsAfterFail === 0);
+    retryOk = checks.every(Boolean);
+  }
+
+  log("--- 7. the API goes down: the check changes nothing, the public pages keep the last publication");
   await api.stop();
   api = null;
   log("check: " + await evalJson("$r = statchasers_depth_charts_publish_check(); echo $r['result'], ' (published version still ', $r['version'], ')';"));
@@ -385,7 +456,8 @@ try {
   log(`ACCEPTANCE (timestamp): ${stampOk ? "PASS" : "FAIL"} - hub <time datetime> A=${isoZ(stampA)} with Hub Alpha QB (${hubA.length} requests), B=${isoZ(stampB)} with Hub Bravo QB (${hubB.length} requests), advanced with the lineup: ${stampOk}`);
   const staggerOk = firstPollEvents.length === 8;
   log(`ACCEPTANCE (rollout): ${staggerOk && secondPollQuiet ? "PASS" : "FAIL"} - first poll ${firstPollEvents.length} warm-up events (expect 8 x 4 clubs, a minute apart); second poll quiet: ${secondPollQuiet}`);
-  process.exitCode = ok && stampOk && staggerOk && secondPollQuiet ? 0 : 1;
+  log(`ACCEPTANCE (edge retry): ${retryOk ? "PASS" : "FAIL"} - a refused purge left the page stale and unwarmed, the next due run retried it once, the page then showed C desktop + phone, and the run after was quiet`);
+  process.exitCode = ok && stampOk && staggerOk && secondPollQuiet && retryOk ? 0 : 1;
 } finally {
   stopWp();
   await api?.stop?.().catch(() => {});

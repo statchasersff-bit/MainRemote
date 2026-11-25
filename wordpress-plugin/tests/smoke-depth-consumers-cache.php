@@ -148,3 +148,105 @@ $GLOBALS['http_body'] = '';
 update_option( STATCHASERS_DEPTH_CONSUMERS_OPTION, array( 'to_warm' => array( '/nfl/teams/buffalo-bills/' ) ) );
 $w = statchasers_depth_consumers_warm();
 is( array_keys( $w ), array( 'https://example.com/nfl/teams/buffalo-bills/ desktop', 'https://example.com/nfl/teams/buffalo-bills/ phone' ), 'warm: desktop and phone' );
+
+// ------------------------------------------------------------ a purge that fails (retry)
+echo "\nEdge purge retry (consumers)\n";
+
+$GLOBALS['sc_test_edge_answer'] = null;
+add_filter(
+	'statchasers_depth_charts_pre_purge_edge',
+	static function ( $result, $paths = array() ) {
+		$answer = $GLOBALS['sc_test_edge_answer'] ?? null;
+		if ( 'fail' === $answer ) {
+			return array( 'failed' => $paths, 'text' => 'rocket.net refused' );
+		}
+		if ( 'ok' === $answer ) {
+			return array( 'failed' => array(), 'text' => 'rocket.net ok' );
+		}
+		return is_array( $answer ) ? $answer : $result;
+	}
+);
+$age = static function ( int $secs ): void {
+	$r = get_option( STATCHASERS_DEPTH_CONSUMERS_OPTION );
+	foreach ( array( 'next_at', 'first_at', 'last_at' ) as $k ) {
+		if ( ! empty( $r['edge_retry'][ $k ] ) ) {
+			$r['edge_retry'][ $k ] -= $secs;
+		}
+	}
+	update_option( STATCHASERS_DEPTH_CONSUMERS_OPTION, $r );
+};
+$check = static function ( string $fp, array $draft, array $previews ) use ( $doc ): array {
+	$GLOBALS['http_code'] = 200;
+	$GLOBALS['http_body'] = json_encode( $doc( $fp, $draft, $previews ) );
+	return statchasers_depth_consumers_check();
+};
+$events = static fn( string $hook ): array => array_values( array_filter( $GLOBALS['scheduled'], static fn( $e ) => $hook === $e[0] ) );
+$hub    = '/nfl/teams/buffalo-bills/';
+$kc     = '/nfl/buffalo-bills-vs-kansas-city-chiefs/2026-week-12/';
+$ne     = '/nfl/buffalo-bills-vs-new-england-patriots/2026-week-13/';
+
+// Baseline.
+$reset();
+update_option( STATCHASERS_DEPTH_CONSUMERS_OPTION, array() );
+$GLOBALS['sc_test_edge_answer'] = null;
+$check( 'fpR0', array(), $pv( array() ) );
+
+// Case 1: the purge fails once, then succeeds; the near pages are then warmed, the far one is not.
+$reset();
+$GLOBALS['sc_test_edge_answer'] = 'fail';
+$r = $check( 'fpR1', array( 'buffalo-bills' => 'r1' ), $pv( array( 'kc' => 'r1', 'ne' => 'r1' ) ) );
+is( array( $r['result'], $r['edge_state'], $r['edge_pending'], $r['to_warm'] ), array( 'published', 'pending', 4, array() ), 'fail once: published, the hub and three Bills previews pending, nothing warmed' );
+is( count( $events( STATCHASERS_DEPTH_CONSUMERS_WARM_HOOK ) ), 0, 'fail once: no warm-up scheduled' );
+is( in_array( $ne, $r['edge_retry']['pending'], true ) && ! in_array( $ne, $r['edge_retry']['warm'], true ), true, 'fail once: the far preview pending, not to be warmed' );
+$reset();
+$age( 300 );
+$GLOBALS['sc_test_edge_answer'] = 'ok';
+$r = $check( 'fpR1', array( 'buffalo-bills' => 'r1' ), $pv( array( 'kc' => 'r1', 'ne' => 'r1' ) ) );
+is( array( $r['result'], count( $GLOBALS['sc_test_edge'] ), count( $GLOBALS['sc_test_edge'][0] ?? array() ) ), array( 'unchanged', 1, 4 ), 'fail once: retried once, the four paths' );
+is( array( $r['edge_state'], $r['edge_pending'], $r['edge_attempts'] ), array( 'ok', 0, 2 ), 'fail once: landed on attempt 2' );
+is( count( $GLOBALS['sc_test_rocket'] ), 0, 'fail once: WP Rocket not cleaned again' );
+$warmed = array_merge( ...array_map( static fn( $e ) => $e[3][2], $events( STATCHASERS_EDGE_RETRY_WARM_HOOK ) ) );
+is( in_array( 'https://example.com' . $hub, $warmed, true ) && in_array( 'https://example.com' . $kc, $warmed, true ), true, 'fail once: then the hub and this week\'s preview are warmed' );
+is( in_array( 'https://example.com' . $ne, $warmed, true ), false, 'fail once: not the preview three weeks out' );
+$reset();
+$age( 3600 );
+$r = $check( 'fpR1', array( 'buffalo-bills' => 'r1' ), $pv( array( 'kc' => 'r1', 'ne' => 'r1' ) ) );
+is( array( count( $GLOBALS['sc_test_edge'] ), count( $GLOBALS['scheduled'] ) ), array( 0, 0 ), 'fail once: then quiet' );
+
+// Case 2: the purge keeps failing: bounded, recorded, never warmed.
+$reset();
+$GLOBALS['sc_test_edge_answer'] = 'fail';
+$check( 'fpR2', array( 'buffalo-bills' => 'r2' ), $pv( array( 'kc' => 'r1', 'ne' => 'r1' ) ) );
+for ( $i = 0; $i < 7; $i++ ) {
+	$age( 6 * 3600 );
+	$r = $check( 'fpR2', array( 'buffalo-bills' => 'r2' ), $pv( array( 'kc' => 'r1', 'ne' => 'r1' ) ) );
+}
+is( count( $GLOBALS['sc_test_edge'] ), 6, 'keeps failing: six attempts, then no more' );
+is( array( $r['edge_state'], $r['edge_pending'], $r['edge_failed'] ), array( 'failed', 0, 1 ), 'keeps failing: the hub given up on, recorded' );
+is( count( $GLOBALS['scheduled'] ), 0, 'keeps failing: never warmed' );
+
+// Case 3: a new publication while a retry is pending: the union, once.
+$reset();
+$GLOBALS['sc_test_edge_answer'] = 'fail';
+$check( 'fpR3', array( 'buffalo-bills' => 'r2' ), $pv( array( 'kc' => 'r3', 'ne' => 'r1' ) ) );
+$reset();
+$GLOBALS['sc_test_edge_answer'] = 'ok';
+$r = $check( 'fpR4', array( 'buffalo-bills' => 'r4' ), $pv( array( 'kc' => 'r3', 'ne' => 'r1' ) ) );
+$want = array( $hub, '/nfl/buffalo-bills-vs-kansas-city-chiefs/', $kc );
+sort( $want );
+$got = $GLOBALS['sc_test_edge'][0] ?? array();
+sort( $got );
+is( array( count( $GLOBALS['sc_test_edge'] ), $got ), array( 1, $want ), 'union: one purge of the new hub and the two pending previews, each once' );
+is( array( $r['changed'], $r['edge_state'], $r['edge_pending'] ), array( array( $hub ), 'ok', 0 ), 'union: landed, nothing left' );
+is( count( $r['to_warm'] ), 3, 'union: the hub and both near previews warmed' );
+
+// Case 4: skipped: no retry loop.
+$reset();
+$GLOBALS['sc_test_edge_answer'] = null;
+$r = $check( 'fpR5', array( 'buffalo-bills' => 'r5' ), $pv( array( 'kc' => 'r3', 'ne' => 'r1' ) ) );
+is( array( $r['edge'], $r['edge_state'], $r['edge_pending'], $r['to_warm'] ), array( 'test edge', 'skipped', 0, array( $hub ) ), 'skipped: not pending, warmed' );
+$reset();
+$age( 6 * 3600 );
+$check( 'fpR5', array( 'buffalo-bills' => 'r5' ), $pv( array( 'kc' => 'r3', 'ne' => 'r1' ) ) );
+is( count( $GLOBALS['sc_test_edge'] ), 0, 'skipped: the next run purges nothing' );
+$GLOBALS['sc_test_edge_answer'] = null;

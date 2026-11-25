@@ -27,7 +27,8 @@
  *   SC_WP_DIR=<dir holding ./wordpress, ./router.php, ./wp-cli.phar> SC_PHP=<php> node replay.mjs
  *   SC_POLL_MIN=7 (minutes of ordinary requests after publication B, default 7)
  *
- * Ports 18150 (WordPress), 18151 (edge = WP_HOME), 18152 (API origin).
+ * Ports 18150 (WordPress), 18151 (edge = WP_HOME), 18152 (API origin); SC_BENCH_PORT_BASE
+ * moves all three (the bench wp-config must name base+1 and base+2).
  */
 import http from "node:http";
 import fs from "node:fs";
@@ -45,9 +46,10 @@ const { startUpstreamReplay } = await import(path.join(APP, "tests", "helpers", 
 const WP_DIR = process.env.SC_WP_DIR;
 const PHP = process.env.SC_PHP || "php";
 const POLL_MIN = Number(process.env.SC_POLL_MIN || 7);
-const WP_PORT = 18150;
-const EDGE_PORT = 18151;
-const ORIGIN_PORT = 18152;
+const PORT_BASE = Number(process.env.SC_BENCH_PORT_BASE || 18150);
+const WP_PORT = PORT_BASE;
+const EDGE_PORT = PORT_BASE + 1;
+const ORIGIN_PORT = PORT_BASE + 2;
 const KEY = "bench-embed-key";
 const HUB = "/nfl/teams/buffalo-bills/";
 const PAIR = "/nfl/buffalo-bills-vs-kansas-city-chiefs/";
