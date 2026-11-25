@@ -886,6 +886,14 @@ function statchasers_rankings_faq_items(): array {
  * shortcode is about to make. A page passing a season gets the same questions:
  * they describe the rankings, not the open panel.
  *
+ * The rest-of-season board only (WEB-029, 2026-11-25). On /redraft-rankings/
+ * the visible board is the StatChasers Tools plugin's preseason board (August
+ * 3), which wins the [statchasers_rankings] tag, while this file's schema hooks
+ * still ran and printed an FAQPage and four ItemLists from the API's redraft
+ * file ("updated September 20", rest-of-season wording, mostly other players).
+ * Structured data has to describe what the page shows, and that page shows
+ * neither, so it gets none.
+ *
  * @return string
  */
 function statchasers_rankings_page_html(): string {
@@ -897,7 +905,7 @@ function statchasers_rankings_page_html(): string {
 
 	$html = '';
 
-	if ( ! statchasers_rankings_post_has_shortcode() ) {
+	if ( ! statchasers_rankings_page_is_ros() ) {
 		return $html;
 	}
 

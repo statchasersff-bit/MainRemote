@@ -658,6 +658,11 @@ if ( 'redraft' === $family ) {
 	is( count( $graph['BreadcrumbList']['itemListElement'] ), 3, "$label: breadcrumb untouched" );
 	is( count( $typed( 'Organization' ) ) + count( $typed( 'WebSite' ) ), 0, "$label: no Organization or WebSite opted in" );
 	is( isset( $graph['primaryImage'] ), false, "$label: no primaryImageOfPage" );
+	// WEB-029: the page shows the StatChasers Tools preseason board, so the
+	// API redraft file's FAQ and lists (another date, other players) are not it.
+	is( count( $typed( 'ItemList' ) ), 0, "$label: no board lists from the API's redraft file" );
+	is( count( $typed( 'FAQPage' ) ), 0, "$label: no FAQ the page does not show" );
+	is( $ros_fallback( false ), array(), "$label: the fallback printer prints nothing either" );
 	return;
 }
 
