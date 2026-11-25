@@ -77,25 +77,14 @@ const STATCHASERS_PLAYER_STATS_WARM_HOOK = 'statchasers_player_stats_warm';
 const STATCHASERS_PLAYER_STATS_PUBLISHED_OPTION = 'statchasers_player_stats_published';
 
 /** The fallback edge lifetime of a stats page: hours, not 30 days. */
-const STATCHASERS_PLAYER_STATS_EDGE_TTL = 6 * HOUR_IN_SECONDS;
+const STATCHASERS_PLAYER_STATS_EDGE_TTL = STATCHASERS_EDGE_TTL;
 
 /** Seconds a fetch claim is honored before another request may take it over. */
 const STATCHASERS_PLAYER_STATS_FETCH_LEASE = 20;
 
 /* ------------------------------------------------------------- the schedule */
 
-add_filter(
-	'cron_schedules',
-	static function ( $schedules ) {
-		if ( is_array( $schedules ) && ! isset( $schedules['statchasers_five_minutes'] ) ) {
-			$schedules['statchasers_five_minutes'] = array(
-				'interval' => 5 * MINUTE_IN_SECONDS,
-				'display'  => 'Every five minutes (StatChasers)',
-			);
-		}
-		return $schedules;
-	}
-);
+// The 'statchasers_five_minutes' schedule is registered in statchasers-edge-cache.php.
 
 add_action(
 	'init',
@@ -316,16 +305,7 @@ function statchasers_player_stats_purge_edge( array $paths ): string {
 	 * @param string|null $result Null to purge through Rocket.net.
 	 * @param string[]    $paths  The paths.
 	 */
-	$short = apply_filters( 'statchasers_player_stats_pre_purge_edge', null, $paths );
-	if ( is_string( $short ) ) {
-		return $short;
-	}
-	if ( ! class_exists( 'CDN_Clear_Cache_Api' ) || ! method_exists( 'CDN_Clear_Cache_Api', 'cache_api_call' ) ) {
-		return 'no edge purge available';
-	}
-	$result = CDN_Clear_Cache_Api::cache_api_call( $paths, 'purge' );
-	$ok     = is_object( $result ) && isset( $result->success ) ? ( $result->success ? 'ok' : 'refused' ) : 'sent';
-	return 'rocket.net ' . $ok;
+	return statchasers_edge_purge_paths( $paths, 'statchasers_player_stats_pre_purge_edge' );
 }
 
 /**
@@ -337,26 +317,7 @@ function statchasers_player_stats_purge_edge( array $paths ): string {
  * @return array<string,string> URL and agent => status and cache status.
  */
 function statchasers_player_stats_warm(): array {
-	$agents = array(
-		'desktop' => 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36 StatChasers-StatsWarm/1',
-		'phone'   => 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1 StatChasers-StatsWarm/1',
-	);
-	$out = array();
-	foreach ( statchasers_player_stats_public_urls() as $url ) {
-		foreach ( $agents as $kind => $agent ) {
-			$response = wp_remote_get(
-				$url,
-				array(
-					'timeout'     => 30,
-					'redirection' => 0,
-					'user-agent'  => $agent,
-				)
-			);
-			$out[ $url . ' ' . $kind ] = is_wp_error( $response )
-				? 'error'
-				: (int) wp_remote_retrieve_response_code( $response ) . ' ' . (string) wp_remote_retrieve_header( $response, 'cf-cache-status' );
-		}
-	}
+	$out    = statchasers_edge_warm( array_values( statchasers_player_stats_public_urls() ), 'StatChasers-StatsWarm/1' );
 	$stored = get_option( STATCHASERS_PLAYER_STATS_PUBLISHED_OPTION );
 	if ( is_array( $stored ) ) {
 		$stored['warmed_at'] = time();
@@ -376,16 +337,10 @@ function statchasers_player_stats_cache_headers(): void {
 	if ( is_admin() || headers_sent() || ! statchasers_player_stats_post_has_shortcode() ) {
 		return;
 	}
-	$ttl = (int) apply_filters( 'statchasers_player_stats_edge_ttl', STATCHASERS_PLAYER_STATS_EDGE_TTL );
-	if ( $ttl < 1 ) {
-		return;
-	}
-	header( 'Cache-Control: public, max-age=0, s-maxage=' . $ttl );
-	header( 'CDN-Cache-Control: public, max-age=' . $ttl );
-	header( 'Cloudflare-CDN-Cache-Control: public, max-age=' . $ttl );
+	$ttl    = (int) apply_filters( 'statchasers_player_stats_edge_ttl', STATCHASERS_PLAYER_STATS_EDGE_TTL );
 	$stored = get_option( STATCHASERS_PLAYER_STATS_PUBLISHED_OPTION );
 	$ver    = is_array( $stored ) && isset( $stored['version'] ) ? (string) $stored['version'] : 'none';
-	header( 'X-SC-Stats-Cache: edge-ttl=' . $ttl . '; published=' . preg_replace( '/[^A-Za-z0-9]/', '', $ver ) );
+	statchasers_edge_ttl_headers( $ttl, 'X-SC-Stats-Cache', 'published=' . preg_replace( '/[^A-Za-z0-9]/', '', $ver ) );
 }
 add_action( 'template_redirect', 'statchasers_player_stats_cache_headers', 20 );
 

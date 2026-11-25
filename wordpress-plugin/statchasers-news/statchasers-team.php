@@ -103,38 +103,16 @@ function statchasers_team_fetch( string $slug, string $section = '' ): ?array {
 		return null;
 	}
 
-	// The section is part of the identity of what comes back - one panel or
-	// five, a different heading - so it is part of the cache key. Left out, the
-	// first request to any section address would serve its markup to the hub
-	// and to every other section on that team for the rest of the TTL.
-	// The heading mode joins it for the same reason: it changes the markup the
-	// API returns - the panel's opening <h2> comes back as the page's <h1> -
-	// and a fragment cached under one mode must not be served under the other.
-	$own_heading = function_exists( 'statchasers_h1_tool_supplies_heading' )
-		&& statchasers_h1_tool_supplies_heading();
-
-	$key        = md5(
-		$origin . '|' . $slug . '|' . $section . '|' . ( $own_heading ? 'h1' : '' )
-	);
-	$cache_key  = 'sc_team_ssr_' . $key;
-	$backup_key = 'sc_team_ssr_bak_' . $key;
+	// Section and heading mode are part of the key: see the function.
+	list( $cache_key, $backup_key ) = statchasers_team_fragment_keys( $slug, $section );
 
 	$cached = statchasers_cache_get( $cache_key );
 	if ( is_array( $cached ) && isset( $cached['html'] ) ) {
 		return $cached;
 	}
 
-	$query = array();
-	if ( '' !== $section ) {
-		$query['section'] = $section;
-	}
-	if ( $own_heading ) {
-		$query['h1'] = '1';
-	}
-
 	$response = wp_remote_get(
-		$origin . '/embed/team/' . rawurlencode( $slug ) .
-			( $query ? '?' . http_build_query( $query ) : '' ),
+		statchasers_team_fragment_url( $slug, $section ),
 		array(
 			'timeout' => STATCHASERS_TEAM_TIMEOUT,
 			'headers' => array( 'Accept' => 'text/html' ),
@@ -168,10 +146,75 @@ function statchasers_team_fetch( string $slug, string $section = '' ): ?array {
 		'version' => trim( (string) wp_remote_retrieve_header( $response, 'etag' ) ),
 	);
 
-	set_transient( $cache_key, $payload, STATCHASERS_TEAM_CACHE_TTL );
-	set_transient( $backup_key, $payload, STATCHASERS_TEAM_BACKUP_TTL );
+	statchasers_team_store_fragment( $slug, $section, $payload );
 
 	return $payload;
+}
+
+/**
+ * Whether the host has emptied its page title, so the API promotes the
+ * panel's heading to the page's <h1>. A site option, not request state, so a
+ * WP-cron run (the depth-chart publication check) asks for the same variant
+ * a visitor's render does.
+ */
+function statchasers_team_own_heading(): bool {
+	return function_exists( 'statchasers_h1_tool_supplies_heading' )
+		&& statchasers_h1_tool_supplies_heading();
+}
+
+/**
+ * The fresh and backup transient names of one team render.
+ *
+ * The section is part of the identity of what comes back - one panel or five,
+ * a different heading - so it is part of the key. Left out, the first request
+ * to any section address would serve its markup to the hub and to every other
+ * section on that team for the rest of the TTL. The heading mode joins it for
+ * the same reason: it changes the markup the API returns - the panel's opening
+ * <h2> comes back as the page's <h1> - and a fragment cached under one mode
+ * must not be served under the other.
+ *
+ * @param string $slug    Team slug.
+ * @param string $section Section id, or '' for the hub.
+ * @return array{0:string,1:string} Fresh key, backup key.
+ */
+function statchasers_team_fragment_keys( string $slug, string $section ): array {
+	$key = md5(
+		statchasers_news_origin() . '|' . $slug . '|' . $section . '|' . ( statchasers_team_own_heading() ? 'h1' : '' )
+	);
+	return array( 'sc_team_ssr_' . $key, 'sc_team_ssr_bak_' . $key );
+}
+
+/**
+ * The API address of one team render.
+ *
+ * @param string $slug    Team slug.
+ * @param string $section Section id, or '' for the hub.
+ */
+function statchasers_team_fragment_url( string $slug, string $section ): string {
+	$query = array();
+	if ( '' !== $section ) {
+		$query['section'] = $section;
+	}
+	if ( statchasers_team_own_heading() ) {
+		$query['h1'] = '1';
+	}
+	return statchasers_news_origin() . '/embed/team/' . rawurlencode( $slug ) .
+		( $query ? '?' . http_build_query( $query ) : '' );
+}
+
+/**
+ * Keep one render: the fresh copy for the TTL, the backup for an outage.
+ * Also how the depth-chart publication check (WEB-003) puts a new snapshot in
+ * place before it purges the page caches.
+ *
+ * @param string                           $slug    Team slug.
+ * @param string                           $section Section id, or ''.
+ * @param array{html:string,version:string} $payload The render.
+ */
+function statchasers_team_store_fragment( string $slug, string $section, array $payload ): void {
+	list( $cache_key, $backup_key ) = statchasers_team_fragment_keys( $slug, $section );
+	set_transient( $cache_key, $payload, STATCHASERS_TEAM_CACHE_TTL );
+	set_transient( $backup_key, $payload, STATCHASERS_TEAM_BACKUP_TTL );
 }
 
 /**

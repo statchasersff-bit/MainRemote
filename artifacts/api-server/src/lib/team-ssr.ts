@@ -19,6 +19,7 @@ import { contentVersion, ensureFreshness } from "./freshness";
 import { logger } from "./logger";
 import { renderTeamPage, type TeamRenderOptions } from "./team-render";
 import { dataVersion, getTeamPageData } from "./team/team-data";
+import { depthTeamVersion } from "./team/depth-charts";
 import { renderTeamHeadTags, teamPageMeta } from "./team-seo";
 import type { NflTeam } from "./team/teams";
 import { LruCache } from "./lru";
@@ -30,6 +31,13 @@ export interface TeamSsrResult {
   /** Fingerprint of everything rendered - the response ETag. */
   version: string;
   season: number;
+  /**
+   * The depth-chart snapshot this render read for the club, as
+   * GET /embed/depth-charts/version announces it (`<fetchedAt>~<hash>`).
+   * Sent as X-SC-Depth-Version so WordPress can tell that the fragment it
+   * fetched after a publication is the announced one (WEB-003).
+   */
+  depthVersion: string;
 }
 
 /**
@@ -79,6 +87,11 @@ export async function renderTeamFragment(
   // the page. The version then keys on the last value loaded, or the empty one.
   await ensureFreshness().catch(() => undefined);
 
+  // Read before the data, which reads the same document: the render cache key
+  // below carries the document's content hash, so a hit is a render of this
+  // very snapshot. (A file swap mid-render can only make the header older than
+  // the markup, and an older header is refused, never trusted.)
+  const depthVersion = depthTeamVersion(team.abbreviation);
   const data = await getTeamPageData(team);
   const version = `${dataVersion(data, contentVersion())}-${hash(optionKey(options))}`;
   // The origin is printed into every image and logo URL (lib/asset-origin.ts),
@@ -89,12 +102,13 @@ export async function renderTeamFragment(
   const key = `${team.abbreviation}:${currentAssetOrigin()}:${optionKey(options)}`;
 
   const hit = fragmentCache.get(key);
-  if (hit && hit.version === version) return hit;
+  if (hit && hit.version === version && hit.depthVersion === depthVersion) return hit;
 
   const result: TeamSsrResult = {
     html: renderTeamPage(data, options),
     version,
     season: data.state.season,
+    depthVersion,
   };
   fragmentCache.set(key, result);
   return result;

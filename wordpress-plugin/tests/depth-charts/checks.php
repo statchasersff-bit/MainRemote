@@ -286,6 +286,65 @@ check( 'player links: the backup list stands in when the cache is cold', 'dj-moo
 unset( $GLOBALS['wp_transients']['sc_player_roster_bak'] );
 check( 'player links: no list, no links', array() === SCDC_Shortcode::player_pages() );
 
+// ------------------------------------------- 3e. publication (WEB-003)
+// `scdc_published` fires once per publication (file written + meta stored,
+// success or partial) and never otherwise: statchasers-depth-charts-cache.php
+// purges the league page's caches on it.
+
+$tmp_dir = sys_get_temp_dir() . '/scdc-pub-' . getmypid();
+$GLOBALS['scdc_test_basedir'] = $tmp_dir;
+$GLOBALS['scdc_published']    = array();
+add_action(
+	'scdc_published',
+	function ( $meta, $payload ) {
+		$GLOBALS['scdc_published'][] = array( $meta, $payload, SCDC_Store::read(), SCDC_Store::get_meta() );
+	},
+	10,
+	2
+);
+delete_option( SCDC_META_OPTION );
+
+$GLOBALS['http_espn_ok'] = array( 'ari', 'bal' );
+$status = SCDC_Refresh::run_and_store( 0 );
+$fired  = $GLOBALS['scdc_published'];
+check( 'published: a partial refresh fires scdc_published once', 'partial' === $status && 1 === count( $fired ), count( $fired ) . " fired, status $status" );
+check( 'published: with the stored meta (the ?v= id)', isset( $fired[0] ) && $fired[0][0] === SCDC_Store::get_meta() && $fired[0][0]['last_refreshed_ts'] > 0 );
+check( 'published: after the file is in place (the payload is what is on disk)', isset( $fired[0] ) && $fired[0][1] === $fired[0][2] );
+check( 'published: after the meta is stored', isset( $fired[0] ) && $fired[0][3]['last_refreshed_ts'] === $fired[0][0]['last_refreshed_ts'] );
+$ts_before = SCDC_Store::get_meta()['last_refreshed_ts'];
+
+$GLOBALS['http_espn_ok'] = array();
+$status = SCDC_Refresh::run_and_store( 0 );
+check( 'published: a hard failure does not fire', 'error' === $status && 1 === count( $GLOBALS['scdc_published'] ) );
+check( 'published: a hard failure keeps the publication id', $ts_before === SCDC_Store::get_meta()['last_refreshed_ts'] );
+
+update_option( SCDC_Refresh::LOCK_OPTION, time() );
+$GLOBALS['http_espn_ok'] = array( 'ari', 'bal' );
+check( 'published: a locked run does not fire', 'locked' === SCDC_Refresh::run_and_store( 0 ) && 1 === count( $GLOBALS['scdc_published'] ) );
+delete_option( SCDC_Refresh::LOCK_OPTION );
+
+// The file cannot be written: an error, nothing fires.
+array_map( 'unlink', glob( SCDC_Store::dir_path() . '/*' ) );
+@rmdir( SCDC_Store::dir_path() );
+file_put_contents( SCDC_Store::dir_path(), 'not a directory' );
+$level  = error_reporting( E_ALL & ~E_WARNING ); // the stub's mkdir() says "File exists"
+$status = SCDC_Refresh::run_and_store( 0 );
+error_reporting( $level );
+check( 'published: a write failure does not fire', 'error' === $status && 1 === count( $GLOBALS['scdc_published'] ), "status $status" );
+@unlink( SCDC_Store::dir_path() );
+
+// A page view is not a publication.
+$GLOBALS['scdc_published'] = array();
+SCDC_Store::get_meta();
+SCDC_Store::file_url();
+check( 'published: reading the meta and the ?v= URL fires nothing', array() === $GLOBALS['scdc_published'] );
+
+unset( $GLOBALS['wp_filters']['scdc_published'] );
+array_map( 'unlink', (array) glob( SCDC_Store::dir_path() . '/*' ) );
+@rmdir( SCDC_Store::dir_path() );
+@rmdir( $tmp_dir );
+unset( $GLOBALS['scdc_test_basedir'] );
+
 // ------------------------------------------------------------------ 4. hub
 
 add_filter( 'scdc_nfl_article_count', function () { return 0; } );

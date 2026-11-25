@@ -137,6 +137,24 @@ class SCDC_Refresh {
 			$meta['push'] = $push;
 		}
 		SCDC_Store::set_meta( $meta );
+		if ( 'error' !== $status ) {
+			/**
+			 * A new depth-chart snapshot is published: the file was written
+			 * (atomic rename) and the meta says success or partial, so the
+			 * page's `?v=` (meta last_refreshed_ts, the publication's id) and
+			 * the data it points at are both readable now. Fires here and
+			 * nowhere else: a page view, a cache refill, a plugin upgrade or a
+			 * page save is not a publication, and a hard failure (previous
+			 * file and timestamp kept) does not fire it.
+			 *
+			 * statchasers-depth-charts-cache.php hooks it to clear WP Rocket
+			 * and purge the edge for the league page, then warm it (WEB-003).
+			 *
+			 * @param array $meta    The stored meta (status, last_refreshed_ts, teams_*).
+			 * @param array $payload The document just written.
+			 */
+			do_action( 'scdc_published', $meta, $result['payload'] );
+		}
 		return $status;
 	}
 

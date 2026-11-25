@@ -42,6 +42,7 @@ import { contractsVersion } from "./contracts";
 import { outlookVersion } from "./outlook";
 import { gameLogUpdatedMs } from "../player/data";
 import {
+  depthChartsFingerprint,
   depthChartsVersion,
   getTeamDepthCharts,
   restoreDepthCharts,
@@ -348,8 +349,11 @@ export function dataVersion(data: TeamPageData, contentVersion: string): string 
     contractsVersion(data.state.season),
     // The Outlook tab reads one committed file, written by hand.
     outlookVersion(),
-    // The depth-charts plugin's push rewrites its file in place.
+    // The depth-charts plugin's push rewrites its file in place; a snapshot
+    // committed by hand replaces it. The content hash too, so a file swapped
+    // without a new fetchedAt still re-renders (WEB-003).
     depthChartsVersion(),
+    depthChartsFingerprint(),
     // The overview's key contributors read the player pages' game logs,
     // which the live refresh rewrites after each game window.
     gameLogUpdatedMs(data.state.season) ?? 0,

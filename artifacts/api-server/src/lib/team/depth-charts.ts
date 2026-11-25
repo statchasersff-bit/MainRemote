@@ -25,6 +25,7 @@
  * team, as the tool's search does.
  */
 
+import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { dataPath } from "../data-dir";
@@ -229,6 +230,94 @@ function readDoc(): DepthChartsDoc | null {
 /** Changes whenever a push lands - part of the team page's cache key. */
 export function depthChartsVersion(): string {
   return readDoc()?.fetchedAt ?? "";
+}
+
+/* ------------------------------------------------------------ publication */
+
+/**
+ * What a publication of the snapshot is, for the caches between this process
+ * and a reader (WEB-003, docs/WEB-003-DEPTH-CHARTS-CACHE.md).
+ *
+ * The snapshot changes by hand (docs/DEPTH-CHART-MANUAL-UPDATE.md) and a
+ * Replit publish: a new file, a new process. readDataJson() re-reads the file
+ * when its mtime moves, so this process serves the new document at once; the
+ * render cache keys on depthChartsFingerprint(), a hash of the document's
+ * content, so a file swapped without a new fetchedAt still re-renders.
+ *
+ * Per club, the version is `<fetchedAt>~<hash of that club's entry>`. The
+ * WordPress plugin polls GET /embed/depth-charts/version, re-fetches only the
+ * clubs whose hash moved, checks each fragment's X-SC-Depth-Version against
+ * the announced one, and purges only those clubs' depth-chart addresses
+ * (statchasers-depth-charts-cache.php).
+ *
+ * KEEP IN STEP: the hash covers the club's entry and nothing else. If the
+ * Depth Chart tab ever prints something from outside the entry (the
+ * document's own fetchedAt, say), fold it into teamHash() below, or a change
+ * to it would never reach the edge.
+ */
+interface Publication {
+  fingerprint: string;
+  teams: Map<string, string>;
+}
+
+const publications = new WeakMap<DepthChartsDoc, Publication>();
+
+function sha(value: string): string {
+  return crypto.createHash("sha1").update(value).digest("hex").slice(0, 16);
+}
+
+function teamHash(entry: ToolTeam): string {
+  return sha(JSON.stringify(entry));
+}
+
+/** Computed once per document read (readDataJson keeps the object until the file changes). */
+function publication(): Publication | null {
+  const doc = readDoc();
+  if (!doc) return null;
+  const known = publications.get(doc);
+  if (known) return known;
+  const teams = new Map<string, string>();
+  for (const entry of doc.teams) {
+    const abbr = entry.team?.abbr;
+    if (abbr) teams.set(abbr.toUpperCase(), teamHash(entry));
+  }
+  const fingerprint = sha(
+    `${doc.fetchedAt}|${doc.season}|${[...teams.entries()].map(([abbr, hash]) => `${abbr}:${hash}`).join(",")}`,
+  );
+  const result = { fingerprint, teams };
+  publications.set(doc, result);
+  return result;
+}
+
+/** A hash of the whole document's content, for the render cache key. "" without a document. */
+export function depthChartsFingerprint(): string {
+  return publication()?.fingerprint ?? "";
+}
+
+/** One club's content hash, or "none" when the document has no entry for it. */
+export function depthTeamHash(abbreviation: string): string {
+  return publication()?.teams.get(abbreviation.toUpperCase()) ?? "none";
+}
+
+/** One club's published version, `<fetchedAt>~<hash>`; "" without a document. */
+export function depthTeamVersion(abbreviation: string): string {
+  const doc = readDoc();
+  return doc ? `${doc.fetchedAt}~${depthTeamHash(abbreviation)}` : "";
+}
+
+/** The document's own stamps, for the version endpoint; null without a document. */
+export function depthChartsStamp(): { fetchedAt: string; season: number } | null {
+  const doc = readDoc();
+  return doc ? { fetchedAt: doc.fetchedAt, season: doc.season } : null;
+}
+
+/** A club's own `updatedAt`, when the document carries one; else null. */
+export function depthTeamUpdatedAt(abbreviation: string): string | null {
+  const abbr = abbreviation.toUpperCase();
+  const entry = readDoc()?.teams.find((team) => team.team?.abbr === abbr) as
+    | (ToolTeam & { updatedAt?: unknown })
+    | undefined;
+  return typeof entry?.updatedAt === "string" ? entry.updatedAt : null;
 }
 
 const STATUS_WORDS: Record<string, string> = {
@@ -448,7 +537,9 @@ function looseKey(name: string): string | null {
  */
 function readSlotIndex(): SlotIndex {
   const doc = readDoc();
-  const version = doc?.fetchedAt ?? "";
+  // The content, not fetchedAt: a snapshot swapped by hand under the same
+  // stamp must still rebuild the index (WEB-003).
+  const version = depthChartsFingerprint();
   if (doc && slotIndex && version === slotIndexFor) return slotIndex;
   const next: SlotIndex = { exact: new Map(), loose: new Map() };
   for (const team of doc?.teams ?? []) {

@@ -410,7 +410,9 @@ require_once "$dir/statchasers-h1.php";
 require_once "$dir/statchasers-fpa.php";
 require_once "$dir/statchasers-schedule.php";
 require_once "$dir/statchasers-player-stats.php";
+require_once "$dir/statchasers-edge-cache.php";
 require_once "$dir/statchasers-player-stats-cache.php";
+require_once "$dir/statchasers-depth-charts-cache.php";
 require_once "$dir/statchasers-rb-handcuffs.php";
 require_once "$dir/statchasers-sos.php";
 require_once "$dir/statchasers-page-identity.php";
@@ -695,6 +697,12 @@ if ( 'mucache' === $group ) {
 
 if ( 'statscache' === $group ) {
 	require __DIR__ . '/smoke-stats-cache.php';
+	echo "\n" . ( $fail ? "$fail FAILED\n" : "all passed\n" );
+	exit( $fail ? 1 : 0 );
+}
+
+if ( 'dccache' === $group ) {
+	require __DIR__ . '/smoke-depth-charts-cache.php';
 	echo "\n" . ( $fail ? "$fail FAILED\n" : "all passed\n" );
 	exit( $fail ? 1 : 0 );
 }
@@ -2487,7 +2495,7 @@ is( statchasers_player_lazyload_exclusions( null ), array( 'class="scp-pwell-img
  * The other groups. Their failures are this run's failures - a split that only
  * reported the half it felt like running would be worse than not splitting.
  */
-foreach ( array( 'containers', 'week', 'weekstray', 'schedtitles', 'sched404s', 'route404s', 'legacyroutes', 'schedlive', 'schedfinal', 'mucache', 'statscache', 'pageids', 'leak', 'headings', 'playersection', 'rules', 'playerlinks', 'playerbuilder', 'sos', 'sosleak', 'sospage', 'sosfallback', 'fpa', 'fpaleak', 'fpaarchive', 'rhr', 'rhrleak', 'rds', 'rdsleak', 'scin', 'scindb', 'scinleak', 'bdp', 'hostcss', 'newsrail' ) as $child_group ) {
+foreach ( array( 'containers', 'week', 'weekstray', 'schedtitles', 'sched404s', 'route404s', 'legacyroutes', 'schedlive', 'schedfinal', 'mucache', 'statscache', 'dccache', 'pageids', 'leak', 'headings', 'playersection', 'rules', 'playerlinks', 'playerbuilder', 'sos', 'sosleak', 'sospage', 'sosfallback', 'fpa', 'fpaleak', 'fpaarchive', 'rhr', 'rhrleak', 'rds', 'rdsleak', 'scin', 'scindb', 'scinleak', 'bdp', 'hostcss', 'newsrail' ) as $child_group ) {
 	$child = array();
 	$code  = 0;
 	exec(

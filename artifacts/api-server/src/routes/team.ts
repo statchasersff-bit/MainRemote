@@ -38,6 +38,13 @@ import {
 } from "../lib/team/teams";
 import { nflState } from "../lib/team/nfl-state";
 import { renderTeamShareImage } from "../lib/team/og-image";
+import {
+  depthChartsFingerprint,
+  depthChartsStamp,
+  depthTeamHash,
+  depthTeamUpdatedAt,
+  depthTeamVersion,
+} from "../lib/team/depth-charts";
 import { getLeagueStandings, type LeagueStandings } from "../lib/team/profile";
 
 /**
@@ -453,6 +460,46 @@ router.get("/og/team/:file", (req, res) => {
   })();
 });
 
+/**
+ * GET /embed/depth-charts/version - what the 32 Depth Chart tabs would print
+ * from the snapshot this process holds (audit WEB-003).
+ *
+ * The WordPress plugin polls it from WP-cron (statchasers-depth-charts-cache
+ * .php). When `version` moves it re-fetches the clubs whose `hash` moved,
+ * checks each fragment's X-SC-Depth-Version against the `version` announced
+ * here, replaces its copies, and purges only those clubs' depth-chart
+ * addresses. Under /embed/, so the embed key guards it like every fragment;
+ * served by this router (mounted after requireEmbedKey) and not by
+ * routes/depth-charts.ts, which is mounted ahead of it for the ingest body.
+ *
+ * Cheap: the hashes are computed once per snapshot read, nothing renders.
+ */
+router.get("/embed/depth-charts/version", (_req, res) => {
+  const stamp = depthChartsStamp();
+  if (!stamp) {
+    res.status(503).set("Cache-Control", "no-store").json({ error: "No depth-chart snapshot" });
+    return;
+  }
+  const teams: Record<string, { abbr: string; hash: string; version: string; updatedAt: string | null }> = {};
+  for (const team of TEAMS) {
+    teams[team.slug] = {
+      abbr: team.code,
+      hash: depthTeamHash(team.abbreviation),
+      version: depthTeamVersion(team.abbreviation),
+      updatedAt: depthTeamUpdatedAt(team.abbreviation),
+    };
+  }
+  res
+    .set("Cache-Control", "no-store")
+    .set("X-Robots-Tag", "noindex")
+    .json({
+      version: depthChartsFingerprint(),
+      fetchedAt: stamp.fetchedAt,
+      season: stamp.season,
+      teams,
+    });
+});
+
 router.get("/embed/team/:slug", (req, res) => {
   void (async () => {
     const team = normalizeTeamName(String(req.params.slug ?? ""));
@@ -479,6 +526,10 @@ router.get("/embed/team/:slug", (req, res) => {
         matchupPathPrefix: (process.env["SC_MATCHUP_PATH_PREFIX"] ?? "/nfl/").trim(),
       });
       res.set("ETag", `W/"${result.version}"`);
+      // The depth-chart snapshot this markup was rendered from (WEB-003):
+      // the WordPress publication check compares it with what
+      // /embed/depth-charts/version announced before replacing its copy.
+      if (result.depthVersion) res.set("X-SC-Depth-Version", result.depthVersion);
       if (req.fresh) {
         res.status(304).end();
         return;
