@@ -1141,7 +1141,7 @@ function readParagraphs(data: PlayerPageData, c: Career, options: PlayerRenderOp
   // 3. The forward call.
   paragraphs.push(
     escapeHtml("Career numbers describe the past; for what he is worth from here, ") +
-      a(redraft, `see ${possessive(last)} rest-of-season rank and trade value in Redraft Command`, ` data-cta="redraft-command-stats-prose"`) +
+      a(redraft, `see ${possessive(last)} projected rest-of-season rank and trade value in Redraft Command`, ` data-cta="redraft-command-stats-prose"`) +
       ".",
   );
   return paragraphs;

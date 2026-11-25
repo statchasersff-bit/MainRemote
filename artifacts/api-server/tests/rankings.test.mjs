@@ -362,6 +362,28 @@ describe("the rankings page", () => {
     assert.match(doc.title, /Rest of Season Fantasy Football Rankings/);
   });
 
+  test("says what the rest-of-season ranks measure, and points weekly questions elsewhere", async (t) => {
+    // Audit WEB-029: positional PPR ranks as of the board's date, the All
+    // view is not an overall order, and a this-week call is a projections job.
+    if (!hasData) return t.skip("no rankings file");
+    for (const path of ["/rest-of-season-rankings", "/rest-of-season-rankings/rb"]) {
+      const { doc } = await page(path);
+      const line = doc.querySelector(".scr-updated");
+      assert.match(
+        line.textContent,
+        /^Rankings updated .+\. What these rankings measure: rest-of-season value in PPR scoring as of that date, each player ranked within his own position \(RB12 is the 12th running back\) and grouped into tiers\. The All view .+ not one overall order\. For this week's lineup, see weekly projections\.$/,
+      );
+      const link = line.querySelector("a");
+      assert.equal(link.getAttribute("href"), "https://statchasers.com/redraft-command/fantasy-football-projections");
+      assert.equal(link.textContent, "weekly projections");
+      assert.doesNotMatch(line.textContent, /\u2014/, "no em dashes");
+    }
+    // The preseason board keeps its date line alone.
+    const { doc } = await page("/rankings");
+    const line = doc.querySelector(".scr-updated");
+    if (line) assert.match(line.textContent, /^Rankings updated [^.]+$/);
+  });
+
   test("the tab strip is links to each board's address, with no ARIA roles", async (t) => {
     if (!hasData) return t.skip("no rankings file");
     const { doc } = await page("/rest-of-season-rankings/wr");
