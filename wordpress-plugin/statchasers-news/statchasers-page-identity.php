@@ -1,7 +1,7 @@
 <?php
 /**
- * Page identity for the NFL schedule, strength of schedule and player stats
- * pages (WEB-021).
+ * Page identity for the NFL schedule, strength of schedule, team, player
+ * stats and rest-of-season rankings pages (WEB-021).
  *
  * ## What was missing, and why
  *
@@ -80,6 +80,39 @@
  * page, so the position is appended as the last crumb, as an SOS sub-page is.
  * /qb/ is a 301 to the bare page before anything prints and is not a route.
  *
+ * ## The rest-of-season rankings (2026-11-25)
+ *
+ * The same gap again on the rest-of-season board: the page that mounts
+ * [statchasers_ros_rankings] (page 5835, /fantasy-football/rest-of-season-rankings/)
+ * and its /qb/, /rb/, /wr/ and /te/ addresses, which the rewrite in
+ * statchasers-rankings.php resolves to that same page with sc_rank_pos set.
+ * Live on 2026-11-25 the hub's graph was a BreadcrumbList, four ItemLists
+ * with no @id and an FAQPage with no @id, /rb/'s the same with one list, and
+ * neither printed an og:image. They join as a fifth family, 'ros', on the
+ * same terms as the others:
+ *
+ * - Global entities on, so Rank Math builds the Organization, the WebSite and
+ *   a WebPage at the canonical statchasers-rankings.php already filters per
+ *   position (Rank Math's BreadcrumbList on /rb/ was already at
+ *   /rb/#breadcrumb, which is the same Paper canonical the WebPage reads).
+ * - The board's FAQPage (statchasers_rankings_rank_math_schema, priority 20)
+ *   folds into that WebPage at priority 99, as the team FAQ does: one page
+ *   entity typed FAQPage at the position's own #webpage. Its ItemLists
+ *   (statchasers_rankings_rank_math_lists) already point isPartOf at
+ *   whatever page node the graph has, which they could not do while there
+ *   was none; now they hang off the WebPage the way the team Schedule tab's
+ *   game list does. statchasers-rankings.php needs no change for any of it,
+ *   and its fallback printer still prints only the FAQPage and the lists,
+ *   and only when no schema-graph plugin is present, so it can never add a
+ *   second page, Organization or WebSite beside Rank Math's.
+ * - The brand card as the fallback image, and a position appended as the last
+ *   crumb at its own address, named with the board's H1
+ *   (statchasers_ros_rankings_breadcrumbs).
+ *
+ * The redraft board ([statchasers_rankings], /redraft-rankings/) is not part
+ * of this family, and an address the rewrite does not know (/xyz/) is a 404
+ * that keeps its noindex and gets none of this.
+ *
  * @package StatChasers\News
  */
 
@@ -89,7 +122,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /**
  * The share image for every family: the StatChasers brand card. There is no
- * schedule, SOS, team or player stats graphic in the media library; this one
+ * schedule, SOS, team, player stats or rankings graphic in the media library; this one
  * names the site and what it does, which is true of all of them. A team hub
  * with a featured image (its crest) keeps it: this is only ever the fallback. Real pixels (checked 2026-11-24:
  * 200, image/png, 1200 x 630).
@@ -103,8 +136,8 @@ const STATCHASERS_PAGE_IDENTITY_IMAGE = array(
 );
 
 /**
- * Which family this request is a valid route of: 'schedule', 'sos', 'stats', 'team'
- * or ''.
+ * Which family this request is a valid route of: 'schedule', 'sos', 'stats',
+ * 'ros', 'team' or ''.
  *
  * Valid means the page that mounts the tool, rendered as a page: a week the
  * season does not have is a 404 (statchasers-schedule.php's
@@ -114,6 +147,11 @@ const STATCHASERS_PAGE_IDENTITY_IMAGE = array(
  * 'team' is the directory at /nfl/teams/ (the index shortcode, or the
  * container page the plugin fills) and a page carrying [statchasers_team]
  * whose slug is a team, on its hub address or a tab the rewrite serves.
+ *
+ * 'ros' is the page mounting the rest-of-season board, bare or at a position
+ * the rewrite serves (statchasers_rankings_page_is_ros(), memoized off the
+ * queried page, so the redraft board's page and `?sc_rank_pos=` on an article
+ * answer '').
  */
 function statchasers_page_identity_family(): string {
 	if ( is_404() || ! is_singular() ) {
@@ -129,6 +167,9 @@ function statchasers_page_identity_family(): string {
 		// /qb/ redirects to the bare page on template_redirect; it never
 		// renders, so it is not a route of its own.
 		return 'qb' === strtolower( trim( (string) get_query_var( 'sc_stats_pos' ) ) ) ? '' : 'stats';
+	}
+	if ( function_exists( 'statchasers_rankings_page_is_ros' ) && statchasers_rankings_page_is_ros() ) {
+		return 'ros';
 	}
 	if ( statchasers_page_identity_is_team() ) {
 		return 'team';
@@ -169,11 +210,11 @@ function statchasers_page_identity_image(): ?array {
 		return null;
 	}
 	/**
-	 * Filters the share image of a schedule, SOS, team or player stats route.
-	 * Return null for none.
+	 * Filters the share image of a schedule, SOS, team, player stats or
+	 * rest-of-season rankings route. Return null for none.
 	 *
 	 * @param array  $image  url, width, height, alt, type.
-	 * @param string $family 'schedule', 'sos', 'team' or 'stats'.
+	 * @param string $family 'schedule', 'sos', 'team', 'stats' or 'ros'.
 	 */
 	$image = apply_filters( 'statchasers_page_identity_image', STATCHASERS_PAGE_IDENTITY_IMAGE, $family );
 	if ( ! is_array( $image ) || empty( $image['url'] ) || 0 !== strpos( (string) $image['url'], 'https://' ) ) {
@@ -352,3 +393,34 @@ function statchasers_player_stats_breadcrumbs( $crumbs ) {
 	return $crumbs;
 }
 add_filter( 'rank_math/frontend/breadcrumb/items', 'statchasers_player_stats_breadcrumbs', 20 );
+
+/**
+ * A rest-of-season position as the last breadcrumb, at its own address.
+ *
+ * /rb/ resolves to the rankings page, so Rank Math's trail ended at "Rest of
+ * Season Rankings" while the page's canonical, title and H1 said running
+ * backs. Same fix as statchasers_sos_breadcrumbs(), scoped by
+ * statchasers_rankings_request_pos(): the rest-of-season page only (the
+ * redraft board has no position addresses), a position address only. The
+ * bare page keeps its trail as it is. The crumb is the board's H1, the
+ * heading the visitor sees, as an SOS sub-page's is.
+ *
+ * @param array<int,array<int|string,mixed>> $crumbs Rank Math's crumbs.
+ * @return array<int,array<int|string,mixed>>
+ */
+function statchasers_ros_rankings_breadcrumbs( $crumbs ) {
+	if ( ! is_array( $crumbs ) || is_404() || ! function_exists( 'statchasers_rankings_request_pos' ) ) {
+		return $crumbs;
+	}
+	$pos = statchasers_rankings_request_pos();
+	if ( '' === $pos ) {
+		return $crumbs;
+	}
+	$name = function_exists( 'statchasers_rankings_h1' ) ? statchasers_rankings_h1() : '';
+	if ( '' === $name ) {
+		$name = sprintf( 'Rest of Season Rankings: %s', STATCHASERS_RANKINGS_POSITION_NAMES[ $pos ] ?? strtoupper( $pos ) );
+	}
+	$crumbs[] = array( $name, statchasers_rankings_position_url( $pos ), 'hide_in_schema' => false );
+	return $crumbs;
+}
+add_filter( 'rank_math/frontend/breadcrumb/items', 'statchasers_ros_rankings_breadcrumbs', 20 );

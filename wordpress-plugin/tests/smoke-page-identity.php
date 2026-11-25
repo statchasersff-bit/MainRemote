@@ -3,7 +3,9 @@
  * WEB-021: page identity on the schedule, SOS and player stats routes - share image,
  * canonical, title and the schema graph, checked together per route. The team
  * directory, hubs and tabs joined as the 'team' family in the team audit
- * (2026-11-24).
+ * (2026-11-24), the rest-of-season rankings as the 'ros' family on 2026-11-25
+ * (the hub, its four position addresses, an address the rewrite does not
+ * know, and the redraft board's page as the family it is not).
  *
  * One request per process, for the reason smoke-schedule-titles.php gives (the
  * week, the mount checks and the fetches are memoized). `pageids` is the
@@ -36,6 +38,7 @@ if ( ! function_exists( 'statchasers_page_identity_family' ) ) {
 const SC_PID_SCHED_TITLE = '2026 NFL Schedule – Weekly Games, Teams & Matchups';
 const SC_PID_SOS_TITLE   = '2026 Fantasy Football Strength of Schedule (SOS) Rankings';
 const SC_PID_HOME        = 'https://example.com';
+const SC_PID_ROS_URL     = SC_PID_HOME . '/fantasy-football/rest-of-season-rankings/';
 const SC_PID_STATS_NAMES = array(
 	'hub' => 'Player',
 	'rb'  => 'Running Back',
@@ -44,7 +47,7 @@ const SC_PID_STATS_NAMES = array(
 );
 
 if ( 'pageids' === $group ) {
-	echo "\npage identity on the schedule, SOS and player stats routes (WEB-021)\n";
+	echo "\npage identity on the schedule, SOS, team, player stats and rest-of-season rankings routes (WEB-021)\n";
 
 	$routes = array( 'sched:hub' );
 	for ( $w = 1; $w <= STATCHASERS_SCHEDULE_WEEKS; $w++ ) {
@@ -66,7 +69,13 @@ if ( 'pageids' === $group ) {
 			array( 'usage', 'coaching', 'stats', 'schedule', 'depth-chart', 'matchups', 'news' )
 		),
 		array( 'team:washington-commanders/schedule', 'team:not-a-team' ),
-		array( 'stats:hub', 'stats:rb', 'stats:wr', 'stats:te', 'stats:qb' )
+		array( 'stats:hub', 'stats:rb', 'stats:wr', 'stats:te', 'stats:qb' ),
+		// The rest-of-season rankings (2026-11-25): the hub, every position
+		// address, an address the rewrite does not serve (a 404), the hub and
+		// a position with an image an editor set, and the redraft board's
+		// page, which is not part of the family even with a position in the
+		// query.
+		array( 'ros:hub', 'ros:qb', 'ros:rb', 'ros:wr', 'ros:te', 'ros:xyz', 'ros:hub+thumb', 'ros:rb+thumb', 'redraft' )
 	);
 
 	foreach ( $routes as $route ) {
@@ -334,6 +343,62 @@ if ( 'sched' === $family ) {
 			}
 		);
 	}
+} elseif ( 'ros' === $family || 'redraft' === $family ) {
+	// Page 5835 on the live site, and the redraft board's page beside it. The
+	// fragment carries the three islands the API ships: the FAQ, the board
+	// lists (four on the All board, one on a position) and the page copy.
+	$thumb = '+thumb' === substr( $which, -6 );
+	$which = $thumb ? substr( $which, 0, -6 ) : $which;
+	if ( 'ros' === $family ) {
+		$post->ID           = 5835;
+		$post->post_title   = 'Rest of Season Rankings';
+		$post->post_content = '[statchasers_ros_rankings]';
+		$base_canonical     = SC_PID_ROS_URL;
+		$crumbs             = array( array( 'Home', SC_PID_HOME ), array( 'Fantasy Football', SC_PID_HOME . '/fantasy-football/' ), array( 'Rest of Season Rankings', $base_canonical ) );
+		if ( 'hub' !== $which && 'xyz' !== $which ) {
+			$GLOBALS['query']['sc_rank_pos'] = $which;
+		}
+	} else {
+		$post->ID                        = 5834;
+		$post->post_title                = 'Redraft Rankings';
+		$post->post_content              = '[statchasers_rankings]';
+		$base_canonical                  = SC_PID_HOME . '/fantasy-football/redraft-rankings/';
+		$crumbs                          = array( array( 'Home', SC_PID_HOME ), array( 'Fantasy Football', SC_PID_HOME . '/fantasy-football/' ), array( 'Redraft Rankings', $base_canonical ) );
+		$GLOBALS['query']['sc_rank_pos'] = 'rb';
+	}
+	$ros_on_pos = 'ros' === $family && in_array( $which, array( 'qb', 'rb', 'wr', 'te' ), true );
+	$ros_lists  = array();
+	foreach ( $ros_on_pos ? array( strtoupper( $which ) ) : array( 'QB', 'RB', 'WR', 'TE' ) as $p ) {
+		$ros_lists[] = array(
+			'@type'           => 'ItemList',
+			'name'            => "2026 Rest of Season Fantasy Football $p Rankings",
+			'itemListElement' => array( array( '@type' => 'ListItem', 'position' => 1, 'item' => array( '@type' => 'Person', 'name' => "$p One" ) ) ),
+		);
+	}
+	$ros_board = $ros_on_pos ? strtoupper( $which ) . ' ' : '';
+	$copy      = array(
+		'title'       => "2026 Rest of Season Fantasy Football {$ros_board}Rankings",
+		'h1'          => "2026 Rest of Season Fantasy Football {$ros_board}Rankings",
+		'description' => "Rest-of-season {$ros_board}rankings.",
+	);
+	$faq = array();
+	for ( $i = 1; $i <= 4; $i++ ) {
+		$faq[] = array( 'q' => "Rankings question $i?", 'a' => "Answer $i." );
+	}
+	$GLOBALS['http_body'] = '<div class="scr" data-scr-root="1"><p>board</p>' .
+		'<script type="application/json" class="scr-faq-data">' . json_encode( $faq ) . '</script>' .
+		'<script type="application/json" class="scr-list-data">' . json_encode( $ros_lists ) . '</script>' .
+		'<script type="application/json" class="scr-page-data">' . json_encode( $copy ) . '</script></div>';
+	// The rewrite serves qb|rb|wr|te only, so WordPress finds no page at
+	// /xyz/ and the request is a 404 (live 2026-11-25: 404, "follow, noindex").
+	$GLOBALS['ros_404'] = 'ros' === $family && 'xyz' === $which;
+	if ( $thumb ) {
+		$featured = static function ( $images ) {
+			$images->add_image( array( 'url' => 'https://example.com/wp-content/uploads/ros-card.png', 'width' => 1200, 'height' => 630, 'alt' => 'Rest of season rankings' ) );
+		};
+		$GLOBALS['hooks']['rank_math/opengraph/facebook/add_images'][] = $featured;
+		$GLOBALS['hooks']['rank_math/opengraph/twitter/add_images'][]  = $featured;
+	}
 } else {
 	// An ordinary article carrying the tools' query words.
 	$post->ID           = 92;
@@ -341,7 +406,7 @@ if ( 'sched' === $family ) {
 	$post->post_content = '<p>Pick up these players.</p>';
 	$base_canonical     = SC_PID_HOME . '/waiver-wire-week-5/';
 	$crumbs             = array( array( 'Home', SC_PID_HOME ), array( 'Waiver Wire Week 5', $base_canonical ) );
-	$GLOBALS['query']   = array( 'sc_sched_week' => '12', 'sc_sos_page' => 'rb', 'sc_stats_pos' => 'wr' );
+	$GLOBALS['query']   = array( 'sc_sched_week' => '12', 'sc_sos_page' => 'rb', 'sc_stats_pos' => 'wr', 'sc_rank_pos' => 'rb' );
 	$_GET               = array( 'tab' => 'player', 'scoring' => 'std' );
 }
 
@@ -351,6 +416,10 @@ $GLOBALS['page'] = array(
 	'admin'    => false,
 	'post'     => $post,
 );
+if ( ! empty( $GLOBALS['ros_404'] ) ) {
+	$GLOBALS['page']['is404']    = true;
+	$GLOBALS['page']['singular'] = false;
+}
 $GLOBALS['wp_query'] = new class() {
 	public function set_404() {
 		$GLOBALS['page']['is404']    = true;
@@ -421,6 +490,7 @@ $typed = static function ( string $type ) use ( $nodes ): array {
 if ( 'article' === $family ) {
 	is( statchasers_page_identity_family(), '', "$label: not a schedule, SOS or stats route" );
 	is( statchasers_player_stats_canonical(), '', "$label: sc_stats_pos does not opt it in" );
+	is( statchasers_rankings_request_pos(), '', "$label: nor does sc_rank_pos" );
 	is( apply_filters( 'rank_math/schema/add_global_entities', false ), false, "$label: Rank Math's answer for it passes through" );
 	is( count( $fb ) + count( $tw ), 0, "$label: no share image added" );
 	is( $canonical, $base_canonical, "$label: canonical untouched" );
@@ -530,6 +600,66 @@ if ( 'team' === $family ) {
 	return;
 }
 
+/* --- the rest-of-season rankings: what is not a route --- */
+
+// The fallback printer for a site with no schema-graph plugin: what it prints
+// on this request, as decoded nodes. With Rank Math present it must print
+// nothing at all, or the page carries a second FAQPage beside the merged one.
+$ros_fallback = static function ( bool $provider ): array {
+	$GLOBALS['hooks']['statchasers_news_graph_provider_present'] = array(
+		static function () use ( $provider ) {
+			return $provider;
+		},
+	);
+	ob_start();
+	statchasers_rankings_print_fallback_schema();
+	$out = (string) ob_get_clean();
+	unset( $GLOBALS['hooks']['statchasers_news_graph_provider_present'] );
+	preg_match_all( '#<script type="application/ld\+json">(.*?)</script>#s', $out, $m );
+	return array_map(
+		static function ( $j ) {
+			return json_decode( $j, true );
+		},
+		$m[1]
+	);
+};
+
+if ( 'redraft' === $family ) {
+	is( statchasers_rankings_page_board(), 'redraft', "$label: the redraft board's page" );
+	is( statchasers_page_identity_family(), '', "$label: not a rest-of-season route" );
+	is( statchasers_rankings_request_pos(), '', "$label: sc_rank_pos means nothing here" );
+	is( apply_filters( 'rank_math/schema/add_global_entities', false ), false, "$label: Rank Math's answer passes through" );
+	is( count( $fb ) + count( $tw ), 0, "$label: no share image added" );
+	is( $canonical, $base_canonical, "$label: canonical untouched" );
+	is( count( $graph['BreadcrumbList']['itemListElement'] ), 3, "$label: breadcrumb untouched" );
+	is( count( $typed( 'Organization' ) ) + count( $typed( 'WebSite' ) ), 0, "$label: no Organization or WebSite opted in" );
+	is( isset( $graph['primaryImage'] ), false, "$label: no primaryImageOfPage" );
+	return;
+}
+
+if ( 'ros' === $family && 'xyz' === $which ) {
+	is( (bool) ( $GLOBALS['page']['is404'] ?? false ), true, "$label: still a 404" );
+	is( statchasers_page_identity_family(), '', "$label: not a valid route" );
+	is( apply_filters( 'rank_math/schema/add_global_entities', false ), false, "$label: the plugin does not opt it in" );
+	is( count( $fb ) + count( $tw ), 0, "$label: no share image" );
+	is( isset( $graph['primaryImage'] ), false, "$label: no primaryImageOfPage" );
+	is( count( $graph['BreadcrumbList']['itemListElement'] ), 3, "$label: no position crumb" );
+	is( count( $typed( 'ItemList' ) ), 0, "$label: no board lists" );
+	is( count( $typed( 'FAQPage' ) ), 0, "$label: no FAQ" );
+	is( $canonical, $base_canonical, "$label: no position canonical" );
+	is( $ros_fallback( false ), array(), "$label: the fallback printer prints nothing either" );
+	return;
+}
+
+if ( 'ros' === $family && $thumb ) {
+	is( statchasers_page_identity_family(), 'ros', "$label: a rest-of-season route" );
+	is( count( $fb ), 1, "$label: one og:image" );
+	is( count( $tw ), 1, "$label: one twitter:image" );
+	is( $fb[0]['url'] ?? '', 'https://example.com/wp-content/uploads/ros-card.png', "$label: the image an editor set wins" );
+	is( $tw[0]['url'] ?? '', 'https://example.com/wp-content/uploads/ros-card.png', "$label: on both networks" );
+	return;
+}
+
 /* --- a valid route --- */
 
 if ( 'sched' === $family ) {
@@ -540,6 +670,11 @@ if ( 'sched' === $family ) {
 	$want_canonical = 'hub' === $which ? $base_canonical : SC_PID_HOME . "/nfl/fantasy-football-strength-of-schedule/$which/";
 	$want_title     = $copy['title'];
 	$want_faq       = 0;
+} elseif ( 'ros' === $family ) {
+	$want_canonical = 'hub' === $which ? $base_canonical : SC_PID_ROS_URL . "$which/";
+	$want_title     = $copy['title'] . ' | StatChasers';
+	$want_faq       = 4;
+	is( statchasers_page_identity_family(), 'ros', "$label: a rest-of-season route" );
 } else {
 	$want_canonical = 'hub' === $which ? $base_canonical : SC_PID_HOME . "/nfl/nfl-player-stats/$which/";
 	$want_title     = $copy['title'] . ' | StatChasers';
@@ -580,11 +715,15 @@ is( $page['breadcrumb']['@id'] ?? '', $bcs[0]['@id'] ?? 'none', "$label: breadcr
 is( $bcs[0]['@id'] ?? '', $want_canonical . '#breadcrumb', "$label: breadcrumb @id is the route's" );
 $last = end( $bcs[0]['itemListElement'] );
 is( $last['item']['@id'] ?? '', $want_canonical, "$label: the trail ends at the route" );
-is( count( $bcs[0]['itemListElement'] ), 'hub' === $which ? 3 : 4, "$label: the trail keeps Home, NFL and the page" );
+is( count( $bcs[0]['itemListElement'] ), 'hub' === $which ? 3 : 4, "$label: the trail keeps Home, its section and the page" );
 if ( 'stats' === $family && 'hub' !== $which ) {
 	$want_crumb = 'NFL ' . SC_PID_STATS_NAMES[ $which ] . ' Stats';
 	is( $last['item']['name'] ?? '', $want_crumb, "$label: the last crumb is \"$want_crumb\"" );
 	is( $bcs[0]['itemListElement'][2]['item']['@id'] ?? '', $base_canonical, "$label: after the bare page" );
+}
+if ( 'ros' === $family && 'hub' !== $which ) {
+	is( $last['item']['name'] ?? '', $copy['h1'], "$label: the last crumb is the board's H1" );
+	is( $bcs[0]['itemListElement'][2]['item']['@id'] ?? '', $base_canonical, "$label: after the rankings page" );
 }
 is( $page['primaryImageOfPage']['@id'] ?? '', STATCHASERS_PAGE_IDENTITY_IMAGE['url'], "$label: primaryImageOfPage is the share image" );
 is( isset( $by_id[ STATCHASERS_PAGE_IDENTITY_IMAGE['url'] ] ), true, "$label: and that ImageObject is in the graph" );
@@ -597,10 +736,36 @@ if ( $want_faq > 0 ) {
 	is( (array) ( $page['@type'] ?? null ), array( 'WebPage' ), "$label: a WebPage (no FAQ schema on SOS)" );
 }
 
-// Every node has an @id, no @id is used twice, every reference resolves.
+// The board lists hang off the page entity, as the team Schedule tab's game
+// list does; and the fallback printer stays out of a Rank Math page.
+if ( 'ros' === $family ) {
+	$lists = $typed( 'ItemList' );
+	is( count( $lists ), 'hub' === $which ? 4 : 1, "$label: " . ( 'hub' === $which ? 'four board lists' : 'the one board list' ) );
+	$hung = array_filter(
+		$lists,
+		static function ( $l ) use ( $want_id ) {
+			return ( $l['isPartOf']['@id'] ?? '' ) === $want_id;
+		}
+	);
+	is( count( $hung ), count( $lists ), "$label: every list isPartOf the page" );
+	is( count( $typed( 'FAQPage' ) ), 1, "$label: one FAQ entity" );
+	is( count( $typed( 'WebPage' ) ), 0, "$label: and no second WebPage beside it" );
+	is( $ros_fallback( true ), array(), "$label: the fallback printer prints nothing with Rank Math present" );
+	$types = array_map(
+		static function ( $n ) {
+			return implode( ',', (array) ( $n['@type'] ?? '' ) );
+		},
+		$ros_fallback( false )
+	);
+	is( $types, array_merge( array( 'FAQPage' ), array_fill( 0, count( $lists ), 'ItemList' ) ), "$label: without one, only the FAQPage and the lists (no WebPage, Organization or WebSite)" );
+}
+
+// Every node has an @id, no @id is used twice, every reference resolves. The
+// board lists are the exception the team Schedule tab's is: no @id of their
+// own, tied to the page by isPartOf.
 $ok_ids = true;
 foreach ( $nodes as $node ) {
-	if ( empty( $node['@id'] ) ) {
+	if ( empty( $node['@id'] ) && ! ( 'ros' === $family && 'ItemList' === ( $node['@type'] ?? '' ) ) ) {
 		$ok_ids = false;
 	}
 }

@@ -246,7 +246,27 @@ function statchasers_news_origin() { return 'https://api.example.com'; }
 function statchasers_public_origin() { return 'https://news.example.com'; }
 function statchasers_news_flush() {}
 function statchasers_news_asset_version() { return '1'; }
-function statchasers_news_schema_page_id( $d ) { return ''; }
+// statchasers-news.php is not loaded, so its two graph helpers are copied
+// here as they are there: the first node typed *Page with an @id, and
+// whether a schema-graph plugin (Rank Math, or the filter) is present. The
+// page identity checks need the real answers to see the rankings lists and
+// FAQ tie themselves to Rank Math's WebPage, and its fallback stay quiet.
+function statchasers_news_schema_page_id( $d ) {
+	foreach ( (array) $d as $node ) {
+		if ( ! is_array( $node ) || empty( $node['@type'] ) || empty( $node['@id'] ) ) {
+			continue;
+		}
+		foreach ( (array) $node['@type'] as $type ) {
+			if ( is_string( $type ) && false !== strpos( $type, 'Page' ) ) {
+				return (string) $node['@id'];
+			}
+		}
+	}
+	return '';
+}
+function statchasers_news_graph_provider_present() {
+	return (bool) apply_filters( 'statchasers_news_graph_provider_present', function_exists( 'rank_math' ) || class_exists( 'RankMath' ) );
+}
 function statchasers_news_schema_node() { return array(); }
 function wp_enqueue_script() {}
 // Enqueues are recorded and dequeues forget them, so a test can read the
