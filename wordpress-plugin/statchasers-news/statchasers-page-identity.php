@@ -1,7 +1,7 @@
 <?php
 /**
  * Page identity for the NFL schedule, strength of schedule, team, player
- * stats and rest-of-season rankings pages (WEB-021).
+ * stats, rest-of-season rankings and depth charts pages (WEB-021).
  *
  * ## What was missing, and why
  *
@@ -113,6 +113,19 @@
  * of this family, and an address the rewrite does not know (/xyz/) is a 404
  * that keeps its noindex and gets none of this.
  *
+ * The NFL depth charts hub (/nfl/nfl-depth-charts/, page 2068, 2026-11-25) is
+ * the sixth family, 'depth', on the same terms: BreadcrumbList only, no
+ * og:image, no featured or Rank Math social image. It is the route
+ * SCDC_Route::is_main() names (the page SCDC_Pages records, by ID or by path),
+ * so the pre-1.7.0 nested addresses (301s) and junk under the path (404s) are
+ * not it. Unlike the others it has a picture of its own: a "NFL Depth Charts"
+ * card in the brand card's style, shipped in the plugin
+ * (depth-charts/assets/img/nfl-depth-charts-og.png, source
+ * wordpress-plugin/assets/social/nfl-depth-charts-og.html) rather than
+ * uploaded, so it is served from the WordPress origin with the plugin. The
+ * hub prints no FAQ schema, so its page entity stays a WebPage. Its trail
+ * (Home > NFL > the page) is Rank Math's own and is left as it is.
+ *
  * @package StatChasers\News
  */
 
@@ -136,8 +149,21 @@ const STATCHASERS_PAGE_IDENTITY_IMAGE = array(
 );
 
 /**
+ * The depth charts hub's own card (same brand style as the one above), served
+ * from the plugin directory. Real pixels: 1200 x 630 PNG, checked by
+ * tests/smoke-page-identity.php against the file this URL names.
+ */
+const STATCHASERS_PAGE_IDENTITY_DEPTH_IMAGE = array(
+	'url'    => 'https://statchasers.com/wp-content/plugins/statchasers-news/depth-charts/assets/img/nfl-depth-charts-og.png',
+	'width'  => 1200,
+	'height' => 630,
+	'alt'    => 'NFL depth charts for all 32 teams on StatChasers',
+	'type'   => 'image/png',
+);
+
+/**
  * Which family this request is a valid route of: 'schedule', 'sos', 'stats',
- * 'ros', 'team' or ''.
+ * 'ros', 'depth', 'team' or ''.
  *
  * Valid means the page that mounts the tool, rendered as a page: a week the
  * season does not have is a 404 (statchasers-schedule.php's
@@ -170,6 +196,11 @@ function statchasers_page_identity_family(): string {
 	}
 	if ( function_exists( 'statchasers_rankings_page_is_ros' ) && statchasers_rankings_page_is_ros() ) {
 		return 'ros';
+	}
+	// The depth charts hub: its one address only (legacy routes 301 and junk
+	// 404s on `wp`, before the head).
+	if ( class_exists( 'SCDC_Route' ) && SCDC_Route::is_main() ) {
+		return 'depth';
 	}
 	if ( statchasers_page_identity_is_team() ) {
 		return 'team';
@@ -210,13 +241,17 @@ function statchasers_page_identity_image(): ?array {
 		return null;
 	}
 	/**
-	 * Filters the share image of a schedule, SOS, team, player stats or
-	 * rest-of-season rankings route. Return null for none.
+	 * Filters the share image of a schedule, SOS, team, player stats,
+	 * rest-of-season rankings or depth charts route. Return null for none.
 	 *
 	 * @param array  $image  url, width, height, alt, type.
-	 * @param string $family 'schedule', 'sos', 'team', 'stats' or 'ros'.
+	 * @param string $family 'schedule', 'sos', 'team', 'stats', 'ros' or 'depth'.
 	 */
-	$image = apply_filters( 'statchasers_page_identity_image', STATCHASERS_PAGE_IDENTITY_IMAGE, $family );
+	$image = apply_filters(
+		'statchasers_page_identity_image',
+		'depth' === $family ? STATCHASERS_PAGE_IDENTITY_DEPTH_IMAGE : STATCHASERS_PAGE_IDENTITY_IMAGE,
+		$family
+	);
 	if ( ! is_array( $image ) || empty( $image['url'] ) || 0 !== strpos( (string) $image['url'], 'https://' ) ) {
 		return null;
 	}

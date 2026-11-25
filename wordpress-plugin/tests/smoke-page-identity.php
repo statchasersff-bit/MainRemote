@@ -5,7 +5,10 @@
  * directory, hubs and tabs joined as the 'team' family in the team audit
  * (2026-11-24), the rest-of-season rankings as the 'ros' family on 2026-11-25
  * (the hub, its four position addresses, an address the rewrite does not
- * know, and the redraft board's page as the family it is not).
+ * know, and the redraft board's page as the family it is not). The NFL depth
+ * charts hub joined as 'depth' (2026-11-25), with the depth charts' real route
+ * classes loaded into every child, so each other family's route is also a
+ * check that it is not mistaken for the hub.
  *
  * One request per process, for the reason smoke-schedule-titles.php gives (the
  * week, the mount checks and the fetches are memoized). `pageids` is the
@@ -36,7 +39,8 @@ if ( ! function_exists( 'statchasers_page_identity_family' ) ) {
 }
 
 const SC_PID_SCHED_TITLE = '2026 NFL Schedule – Weekly Games, Teams & Matchups';
-const SC_PID_SOS_TITLE   = '2026 Fantasy Football Strength of Schedule (SOS) Rankings';
+const SC_PID_DEPTH_TITLE = 'NFL Depth Charts for Fantasy Football | All 32 Teams';
+const SC_PID_SOS_TITLE   ='2026 Fantasy Football Strength of Schedule (SOS) Rankings';
 const SC_PID_HOME        = 'https://example.com';
 const SC_PID_ROS_URL     = SC_PID_HOME . '/fantasy-football/rest-of-season-rankings/';
 const SC_PID_STATS_NAMES = array(
@@ -75,7 +79,12 @@ if ( 'pageids' === $group ) {
 		// a position with an image an editor set, and the redraft board's
 		// page, which is not part of the family even with a position in the
 		// query.
-		array( 'ros:hub', 'ros:qb', 'ros:rb', 'ros:wr', 'ros:te', 'ros:xyz', 'ros:hub+thumb', 'ros:rb+thumb', 'redraft' )
+		array( 'ros:hub', 'ros:qb', 'ros:rb', 'ros:wr', 'ros:te', 'ros:xyz', 'ros:hub+thumb', 'ros:rb+thumb', 'redraft' ),
+		// The depth charts hub (2026-11-25): its one address, the same with an
+		// unrelated query argument, with an image an editor set, a pre-1.7.0
+		// team route (a 301), junk under the path (a 404), and the /nfl/ hub
+		// page the same plugin provisions (not the tool).
+		array( 'depth:hub', 'depth:hub?utm_source=x', 'depth:hub+thumb', 'depth:legacy', 'depth:invalid', 'depth:nfl-hub' )
 	);
 
 	foreach ( $routes as $route ) {
@@ -98,6 +107,21 @@ if ( 'pageids' === $group ) {
 		}
 	}
 	return;
+}
+
+/* ------------------------------------------------------ the depth charts */
+
+// The depth charts' own route classes, so SCDC_Route::is_main() is the real
+// predicate in every child. Two WordPress conditionals they ask that the rest
+// of the plugin never does.
+if ( ! function_exists( 'is_feed' ) ) {
+	function is_feed() { return false; }
+}
+if ( ! function_exists( 'is_robots' ) ) {
+	function is_robots() { return false; }
+}
+foreach ( array( 'teams', 'rewrite', 'pages', 'route' ) as $scdc_class ) {
+	require_once __DIR__ . "/../statchasers-news/depth-charts/includes/class-scdc-{$scdc_class}.php";
 }
 
 /* ------------------------------------------------------------ Rank Math */
@@ -415,6 +439,37 @@ if ( 'sched' === $family ) {
 		$GLOBALS['hooks']['rank_math/opengraph/facebook/add_images'][] = $featured;
 		$GLOBALS['hooks']['rank_math/opengraph/twitter/add_images'][]  = $featured;
 	}
+} elseif ( 'depth' === $family ) {
+	// Page 2068 on the live site, under the /nfl/ hub page (1137). Rank Math
+	// names the last crumb with the page title, as it does live.
+	$thumb              = '+thumb' === substr( $which, -6 );
+	$which              = $thumb ? substr( $which, 0, -6 ) : $which;
+	$post->ID           = 2068;
+	$post->post_name    = 'nfl-depth-charts';
+	$post->post_title   = SC_PID_DEPTH_TITLE;
+	$post->post_content = '[statchasers_depth_charts]';
+	$base_canonical     = SC_PID_HOME . '/nfl/nfl-depth-charts/';
+	$crumbs             = array( array( 'Home', SC_PID_HOME ), array( 'NFL', SC_PID_HOME . '/nfl/' ), array( SC_PID_DEPTH_TITLE, $base_canonical ) );
+	$GLOBALS['options'][ SCDC_Pages::OPT_DC_PAGE ] = 2068;
+	if ( 'legacy' === $which ) {
+		$GLOBALS['query'] = array( 'sc_view' => 'fantasy', 'sc_team' => 'houston-texans' );
+	} elseif ( 'invalid' === $which ) {
+		$GLOBALS['query'] = array( 'sc_view' => 'not-a-view' );
+	} elseif ( 'nfl-hub' === $which ) {
+		$post->ID           = 1137;
+		$post->post_name    = 'nfl';
+		$post->post_title   = 'NFL';
+		$post->post_content = '[statchasers_nfl_hub]';
+		$base_canonical     = SC_PID_HOME . '/nfl/';
+		$crumbs             = array( array( 'Home', SC_PID_HOME ), array( 'NFL', $base_canonical ) );
+	}
+	if ( $thumb ) {
+		$featured = static function ( $images ) {
+			$images->add_image( array( 'url' => 'https://example.com/wp-content/uploads/depth.png', 'width' => 1200, 'height' => 630, 'alt' => 'Editor image' ) );
+		};
+		$GLOBALS['hooks']['rank_math/opengraph/facebook/add_images'][] = $featured;
+		$GLOBALS['hooks']['rank_math/opengraph/twitter/add_images'][]  = $featured;
+	}
 } else {
 	// An ordinary article carrying the tools' query words.
 	$post->ID           = 92;
@@ -442,6 +497,11 @@ $GLOBALS['wp_query'] = new class() {
 		$GLOBALS['page']['singular'] = false;
 	}
 };
+// SCDC_Route turns junk under the tool's path into a 404 on `wp`
+// (send_404(), which needs a real WP_Query); the same outcome here.
+if ( 'depth' === $family && 'invalid' === $which && 'invalid' === SCDC_Route::type() ) {
+	$GLOBALS['wp_query']->set_404();
+}
 foreach ( $GLOBALS['hooks']['template_redirect'] ?? array() as $fn ) {
 	try {
 		$fn();
@@ -504,7 +564,8 @@ $typed = static function ( string $type ) use ( $nodes ): array {
 /* --- the 404 and the article: nothing of this --- */
 
 if ( 'article' === $family ) {
-	is( statchasers_page_identity_family(), '', "$label: not a schedule, SOS or stats route" );
+	is( statchasers_page_identity_family(), '', "$label: not a schedule, SOS, stats or depth charts route" );
+	is( SCDC_Route::type(), 'none', "$label: not the depth charts page" );
 	is( statchasers_player_stats_canonical(), '', "$label: sc_stats_pos does not opt it in" );
 	is( statchasers_rankings_request_pos(), '', "$label: nor does sc_rank_pos" );
 	is( apply_filters( 'rank_math/schema/add_global_entities', false ), false, "$label: Rank Math's answer for it passes through" );
@@ -525,6 +586,111 @@ if ( 'sched' === $family && '99' === $which ) {
 	// main, 2026-11-24; WEB-021 alone still saw the hub's).
 	is( $canonical, false, "$label: no week canonical (a 404 prints none, WEB-013)" );
 	is( isset( $graph['primaryImage'] ), false, "$label: no primaryImageOfPage" );
+	return;
+}
+
+/* --- the depth charts hub --- */
+
+if ( 'depth' === $family && in_array( $which, array( 'legacy', 'invalid', 'nfl-hub' ), true ) ) {
+	$want_type = array( 'legacy' => 'legacy', 'invalid' => 'invalid', 'nfl-hub' => 'none' )[ $which ];
+	is( SCDC_Route::type(), $want_type, "$label: the depth charts route is '$want_type'" );
+	is( statchasers_page_identity_family(), '', "$label: not the depth charts hub" );
+	is( apply_filters( 'rank_math/schema/add_global_entities', false ), false, "$label: Rank Math's answer passes through" );
+	is( count( $fb ) + count( $tw ), 0, "$label: no share image added" );
+	is( isset( $graph['primaryImage'] ), false, "$label: no primaryImageOfPage" );
+	if ( 'invalid' !== $which ) {
+		// A 404 is not singular, so Rank Math adds its own entities there.
+		is( isset( $graph['WebPage'] ) || isset( $graph['publisher'] ), false, "$label: no page entity or publisher added" );
+	}
+	return;
+}
+
+if ( 'depth' === $family ) {
+	$want_image = $thumb ? 'https://example.com/wp-content/uploads/depth.png' : STATCHASERS_PAGE_IDENTITY_DEPTH_IMAGE['url'];
+
+	is( SCDC_Route::type(), 'main', "$label: the depth charts route is 'main'" );
+	is( statchasers_page_identity_family(), 'depth', "$label: the depth charts hub" );
+	is( $canonical, $base_canonical, "$label: canonical $base_canonical (untouched)" );
+	is( $og_url, $base_canonical, "$label: og:url matches the canonical" );
+	is( $title, SC_PID_DEPTH_TITLE, "$label: title untouched" );
+	is( (string) apply_filters( 'rank_math/frontend/description', 'stored' ), 'stored', "$label: description untouched" );
+
+	is( count( $fb ), 1, "$label: one og:image" );
+	is( count( $tw ), 1, "$label: one twitter:image" );
+	is( $fb[0]['url'] ?? '', $want_image, $thumb ? "$label: the editor's image wins, no second og:image" : "$label: og:image is the depth charts card" );
+	is( ( $tw[0]['url'] ?? '' ) === ( $fb[0]['url'] ?? null ), true, "$label: twitter:image is the same picture" );
+	is( 0 === strpos( (string) ( $fb[0]['url'] ?? '' ), 'https://' ), true, "$label: an absolute https URL" );
+	if ( ! $thumb ) {
+		is( array( $fb[0]['width'] ?? 0, $fb[0]['height'] ?? 0, $fb[0]['type'] ?? '' ), array( 1200, 630, 'image/png' ), "$label: 1200 x 630 image/png" );
+		is( '' !== ( $fb[0]['alt'] ?? '' ), true, "$label: with alt text" );
+		// The URL names a file the plugin ships, and the file is what it says.
+		$prefix = 'https://statchasers.com/wp-content/plugins/statchasers-news/';
+		$rel    = substr( STATCHASERS_PAGE_IDENTITY_DEPTH_IMAGE['url'], strlen( $prefix ) );
+		$file   = __DIR__ . '/../statchasers-news/' . $rel;
+		$size   = is_file( $file ) ? getimagesize( $file ) : false;
+		is( 0 === strpos( STATCHASERS_PAGE_IDENTITY_DEPTH_IMAGE['url'], $prefix ), true, "$label: the card is served from the plugin directory" );
+		is( is_array( $size ) ? array( $size[0], $size[1], $size['mime'] ) : null, array( 1200, 630, 'image/png' ), "$label: statchasers-news/$rel is a 1200 x 630 PNG" );
+	}
+
+	$orgs = $typed( 'Organization' );
+	$site = $typed( 'WebSite' );
+	$bcs  = $typed( 'BreadcrumbList' );
+	is( count( $orgs ), 1, "$label: one Organization" );
+	is( $orgs[0]['@id'] ?? '', SC_PID_HOME . '/#organization', "$label: the site's Organization @id" );
+	is( count( $site ), 1, "$label: one WebSite" );
+	is( $site[0]['@id'] ?? '', SC_PID_HOME . '/#website', "$label: the site's WebSite @id" );
+	is( $site[0]['publisher']['@id'] ?? '', SC_PID_HOME . '/#organization', "$label: WebSite published by the Organization" );
+	is( count( $bcs ), 1, "$label: one BreadcrumbList" );
+	is( count( $pages ), 1, "$label: one page entity" );
+	$page = $pages[0] ?? array();
+	is( (array) ( $page['@type'] ?? null ), array( 'WebPage' ), "$label: a WebPage (the hub prints no FAQ schema)" );
+	is( $page['@id'] ?? '', $base_canonical . '#webpage', "$label: page @id is the canonical's" );
+	is( $page['url'] ?? '', $base_canonical, "$label: page url is the canonical" );
+	is( $page['name'] ?? '', SC_PID_DEPTH_TITLE, "$label: page name is the title" );
+	is( $page['isPartOf']['@id'] ?? '', SC_PID_HOME . '/#website', "$label: isPartOf the WebSite" );
+	is( $page['breadcrumb']['@id'] ?? '', $base_canonical . '#breadcrumb', "$label: breadcrumb connected" );
+	is( $bcs[0]['@id'] ?? '', $base_canonical . '#breadcrumb', "$label: breadcrumb @id is the canonical's" );
+	is(
+		array_map(
+			static function ( $li ) {
+				return array( $li['item']['name'], $li['item']['@id'] );
+			},
+			$bcs[0]['itemListElement'] ?? array()
+		),
+		array( array( 'Home', SC_PID_HOME ), array( 'NFL', SC_PID_HOME . '/nfl/' ), array( SC_PID_DEPTH_TITLE, $base_canonical ) ),
+		"$label: the trail is Rank Math's own, untouched"
+	);
+	// With a featured image Rank Math builds primaryImage from it itself (not
+	// modeled here), and the plugin leaves that one alone, as on a team crest.
+	if ( ! $thumb ) {
+		is( $page['primaryImageOfPage']['@id'] ?? '', $want_image, "$label: primaryImageOfPage is the share image" );
+		is( $by_id[ $want_image ][0]['@type'] ?? '', 'ImageObject', "$label: and that ImageObject is in the graph" );
+		is( array( $by_id[ $want_image ][0]['width'] ?? 0, $by_id[ $want_image ][0]['height'] ?? 0 ), array( 1200, 630 ), "$label: at 1200 x 630" );
+	}
+
+	$ok_ids = true;
+	foreach ( $nodes as $node ) {
+		if ( empty( $node['@id'] ) ) {
+			$ok_ids = false;
+		}
+	}
+	is( $ok_ids, true, "$label: every node has an @id" );
+	is( max( array_map( 'count', $by_id ) ), 1, "$label: no @id emitted twice" );
+	$dangling = array();
+	foreach ( $nodes as $node ) {
+		foreach ( array( 'isPartOf', 'publisher', 'breadcrumb', 'primaryImageOfPage' ) as $ref ) {
+			if ( isset( $node[ $ref ]['@id'] ) && ! isset( $by_id[ $node[ $ref ]['@id'] ] ) ) {
+				$dangling[] = $ref . ' -> ' . $node[ $ref ]['@id'];
+			}
+		}
+	}
+	is( $dangling, array(), "$label: every reference resolves" );
+	if ( getenv( 'STATCHASERS_PAGEID_DUMP' ) ) {
+		echo "DUMP title={$title}\nDUMP canonical={$canonical}\nDUMP og:url={$og_url}\n";
+		echo 'DUMP og:image=' . ( $fb[0]['url'] ?? '-' ) . ' ' . ( $fb[0]['width'] ?? '' ) . 'x' . ( $fb[0]['height'] ?? '' ) . ' ' . ( $fb[0]['type'] ?? '' ) . ' alt="' . ( $fb[0]['alt'] ?? '' ) . "\"\n";
+		echo 'DUMP twitter:image=' . ( $tw[0]['url'] ?? '-' ) . "\n";
+		echo 'DUMP json-ld=' . json_encode( $json, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) . "\n";
+	}
 	return;
 }
 

@@ -1,0 +1,124 @@
+<!doctype html>
+<!--
+  Source of nfl-depth-charts-og.png, the 1200x630 share image (og:image /
+  twitter:image) for https://statchasers.com/nfl/nfl-depth-charts/ (WP page
+  2068). Same look as the site brand card (media 7458) and
+  rookie-hit-rates-og.png: navy gradient, white logo, gold accents, gold bottom
+  stripe. Fonts and logo are read from the repo.
+
+  The PNG ships INSIDE the plugin (statchasers-news/depth-charts/assets/img/),
+  so it is served from the WordPress origin with no media upload; this source
+  stays out of the zip.
+
+  Regenerate (Bash sandbox off; run from the repo root):
+    TMPDIR=/tmp/hp /repl/tools/bin/chromium --headless --no-sandbox --disable-gpu \
+      --hide-scrollbars --window-size=1200,630 \
+      --screenshot=wordpress-plugin/statchasers-news/depth-charts/assets/img/nfl-depth-charts-og.png \
+      file://$PWD/wordpress-plugin/assets/social/nfl-depth-charts-og.html
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>NFL Depth Charts share image</title>
+<style>
+  @font-face { font-family: "BarlowC"; font-weight: 800; src: url("../../../artifacts/api-server/assets/fonts/BarlowCondensed-ExtraBold.ttf"); }
+  @font-face { font-family: "BarlowC"; font-weight: 700; src: url("../../../artifacts/api-server/assets/fonts/BarlowCondensed-Bold.ttf"); }
+  @font-face { font-family: "Barlow"; font-weight: 600; src: url("../../../artifacts/api-server/assets/fonts/Barlow-SemiBold.ttf"); }
+
+  :root {
+    --navy-top: #0e2347;
+    --navy-bot: #060f22;
+    --gold: #d4af37;
+    --ink: #ffffff;
+    --muted: #c9d3e3;
+    --tile: #13264a;
+    --tile-line: #233a66;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1200px; height: 630px; overflow: hidden; }
+  body {
+    background: linear-gradient(180deg, var(--navy-top) 0%, var(--navy-bot) 100%);
+    color: var(--ink);
+    font-family: "Barlow", "DejaVu Sans", sans-serif;
+    position: relative;
+  }
+  .stripe { position: absolute; left: 0; right: 0; bottom: 0; height: 10px; background: var(--gold); }
+
+  /* Left column: logo, kicker, title, rule, line */
+  .left { position: absolute; left: 72px; top: 46px; width: 560px; }
+  .logo { width: 186px; height: 106px; overflow: hidden; position: relative; }
+  .logo img { position: absolute; width: 210px; left: -12px; top: -50px; }
+  .kicker {
+    margin-top: 30px;
+    font-family: "BarlowC", sans-serif; font-weight: 700;
+    font-size: 28px; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--gold);
+  }
+  h1 {
+    margin-top: 6px;
+    font-family: "BarlowC", sans-serif; font-weight: 800;
+    font-size: 112px; line-height: 0.92; letter-spacing: 1px; text-transform: uppercase;
+  }
+  .rule { margin-top: 22px; width: 84px; height: 7px; background: var(--gold); }
+  .line { margin-top: 18px; font-size: 27px; line-height: 1.25; color: var(--muted); }
+  .domain {
+    position: absolute; right: 64px; bottom: 38px;
+    font-family: "BarlowC", sans-serif; font-weight: 700;
+    font-size: 28px; letter-spacing: 2px; color: var(--gold);
+  }
+
+  /* Right column: a depth chart motif (no names, shading only) */
+  .grid {
+    position: absolute; right: 64px; top: 96px;
+    display: grid; grid-template-columns: 74px repeat(3, 128px); gap: 12px;
+    align-items: center;
+  }
+  .hd {
+    font-family: "BarlowC", sans-serif; font-weight: 700; font-size: 22px;
+    letter-spacing: 1px; color: var(--muted); text-align: center;
+  }
+  .pos {
+    height: 40px; border-radius: 20px; display: flex; align-items: center; justify-content: center;
+    font-family: "BarlowC", sans-serif; font-weight: 800; font-size: 24px; color: #fff;
+  }
+  .qb { background: #e5484d; } .rb { background: #2fb36d; } .wr { background: #4c7dff; } .te { background: var(--gold); color: #0b1f3a; }
+  .t {
+    height: 76px; border-radius: 10px; border: 2px solid var(--tile-line); background: var(--tile);
+    position: relative;
+  }
+  /* A name line and a shorter team line inside each slot */
+  .t::before, .t::after {
+    content: ""; position: absolute; left: 14px; height: 10px; border-radius: 5px;
+    background: rgba(255,255,255,0.32);
+  }
+  .t::before { top: 22px; width: 70%; }
+  .t::after  { top: 42px; width: 42%; background: rgba(255,255,255,0.16); }
+  .s1 { background: #2a4f9a; border-color: #3d66b8; }
+  .s1::before { background: rgba(255,255,255,0.78); }
+  .s2 { background: #1e3c78; border-color: #2f5394; }
+  .s2::before { background: rgba(255,255,255,0.5); }
+  .g  { background: rgba(212,175,55,0.82); border-color: var(--gold); }
+  .g::before { background: rgba(11,31,58,0.7); }
+  .g::after  { background: rgba(11,31,58,0.4); }
+</style>
+</head>
+<body>
+  <div class="left">
+    <div class="logo"><img src="../../../attached_assets/statchasers_logo_transparent_dark_1787155995954.png" alt=""></div>
+    <div class="kicker">Fantasy Football &middot; All 32 Teams</div>
+    <h1>NFL Depth<br>Charts</h1>
+    <div class="rule"></div>
+    <p class="line">Starters, backups, rookies and handcuffs for every NFL team.</p>
+  </div>
+  <div class="domain">STATCHASERS.COM</div>
+
+  <div class="grid" aria-hidden="true">
+    <div></div><div class="hd">STARTER</div><div class="hd">2ND</div><div class="hd">3RD</div>
+    <div class="pos qb">QB</div><div class="t s1"></div><div class="t s2"></div><div class="t"></div>
+    <div class="pos rb">RB</div><div class="t s1"></div><div class="t g"></div><div class="t"></div>
+    <div class="pos wr">WR</div><div class="t s1"></div><div class="t s2"></div><div class="t"></div>
+    <div class="pos te">TE</div><div class="t s1"></div><div class="t s2"></div><div class="t"></div>
+  </div>
+  <div class="stripe"></div>
+</body>
+</html>
