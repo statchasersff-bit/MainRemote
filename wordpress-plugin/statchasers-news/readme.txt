@@ -2,7 +2,7 @@
 Contributors: statchasers
 Requires at least: 6.3
 Requires PHP: 7.4
-Stable tag: 1.10.71
+Stable tag: 1.10.72
 License: GPL-2.0-or-later
 
 Mounts the StatChasers NFL news tool, the 32 team hubs, the player pages, the Fantasy Points Allowed table, the rest-of-season rankings, the NFL schedule, the advanced player stats, the RB handcuff rankings, the fantasy football strength of schedule, the dynasty rookie hit rates and the redraft draft strategy analysis into WordPress pages.
@@ -19,6 +19,9 @@ answers that question directly, with a Last-Modified header that says when the
 upload landed. Keep "Stable tag" in step with the Version header.
 
 == Changelog ==
+
+= 1.10.72 =
+* Depth-chart follow-ups (2026-11-25, mak), on top of 1.10.71 (publish the matching API first). Edge purge retry: a Rocket.net purge that is refused, times out or errors keeps its paths pending and is retried on the five-minute runs after 5, 10, 20, 40 and 80 minutes (6 attempts, then recorded as failed and retried with the next publication); a page is warmed only after its purge lands; a skipped purge (no CDN plugin) is never retried. Applies to the league depth-chart page, the 32 team Depth Chart tabs, the NFL Player Stats pages and the consumers below. Records gain edge_state, edge_pending, edge_failed and edge_attempts. Snapshot consumers: when a depth-chart publication changes a club, the five-minute check also refreshes and purges the team hubs whose Draft tab Pos column changed and the matchup previews (dated pages and pair pages) whose Player Battles changed; the first run records a baseline only. Needs the API's new version fields. Upload after the API publish, run `wp eval 'statchasers_news_run_upgrade_now();'`, clear WP Rocket (mobile included), then purge Rocket.net.
 
 = 1.10.71 =
 * NFL Depth Charts audit (2026-11-25; depth charts 1.7.6), on top of 1.10.70 (install 1.10.69/1.10.70 and publish their API first). WEB-003: a new league snapshot fires `scdc_published`, which clears WP Rocket (desktop and mobile) for /nfl/nfl-depth-charts/, purges it at the Rocket.net edge and warms it a minute later; a WP-cron check every five minutes reads the API's depth-chart version (GET /embed/depth-charts/version, needs the matching API deploy) and refreshes and purges only the team Depth Chart tabs whose chart changed, then warms them 4 clubs a minute (the first check after install publishes all 32 once: purges at once, 64 warm requests over ~8 minutes); a check that finds the same snapshot purges and warms nothing. Both surfaces send a six-hour edge lifetime and X-SC-Depth-Cache (needs the Rocket.net rule in docs/WEB-003-DEPTH-CHARTS-CACHE.md). Shared edge helpers move to statchasers-edge-cache.php. Timestamp: every team in the stored snapshot carries updatedAt, the file carries the newest one, and the league page prints "Depth charts updated" (or "Latest team update" when some teams were carried over) with a <time> element, re-synced by the script; card "Updated" stamps too. WEB-023: the team Depth Chart tab loads the hub stylesheet and script bundled in this zip (assets/api/) when they are the API's current build, else news.statchasers.com as before. WEB-021: the league page gets the Organization/WebSite/WebPage graph and its own 1200x630 share image. The matching API publish also stops a stored depth-chart push from replacing a newer committed snapshot at startup. Upload after the API publish, run `wp eval 'statchasers_news_run_upgrade_now();'`, clear WP Rocket (mobile included), then purge Rocket.net.
