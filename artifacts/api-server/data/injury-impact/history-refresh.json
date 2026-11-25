@@ -1,9 +1,9 @@
 {
   "season": 2026,
-  "generatedAt": "2026-11-24T12:57:10.657Z",
+  "generatedAt": "2026-11-25T17:10:49.051Z",
   "ownedFrom": 7,
   "reserve": {
-    "players": 473
+    "players": 477
   },
   "reports": {
     "weeks": {
@@ -11,12 +11,13 @@
       "8": 320,
       "9": 362,
       "10": 347,
-      "11": 313
+      "11": 313,
+      "12": 104
     },
-    "latestWeek": 11,
-    "added": 1692,
+    "latestWeek": 12,
+    "added": 1796,
     "dropped": 1692,
-    "players": 841,
+    "players": 860,
     "newPlayers": 0
   },
   "plays": {
@@ -29,6 +30,6 @@
   },
   "roster": {
     "indexed": 1,
-    "sleeperIds": 1
+    "sleeperIds": 0
   }
 }

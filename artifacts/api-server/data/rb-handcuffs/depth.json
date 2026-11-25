@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-24T12:56:08.014Z",
+  "generated_at": "2026-11-25T17:10:09.236Z",
   "source": {
     "depth": "https://www.ourlads.com/nfldepthcharts/depthchartpos/RB",
     "players": "https://api.sleeper.app/v1/players/nfl"
@@ -143,7 +143,7 @@
     "SEA": {
       "rb1": "Zach Charbonnet",
       "rb2": "Jadarian Price",
-      "rb3": "George Holani"
+      "rb3": "Emanuel Wilson"
     },
     "SF": {
       "rb1": "Christian McCaffrey",
@@ -227,7 +227,7 @@
       "name": "Blake Corum",
       "team": "LAR",
       "sleeperId": "11586",
-      "age": 25,
+      "age": 26,
       "injuryStatus": null,
       "status": "Active"
     },
@@ -340,7 +340,7 @@
       "team": "BAL",
       "sleeperId": "3198",
       "age": 32,
-      "injuryStatus": "Questionable",
+      "injuryStatus": null,
       "status": "Active"
     },
     "devin singletary": {
@@ -375,6 +375,14 @@
       "injuryStatus": null,
       "status": "Active"
     },
+    "emanuel wilson": {
+      "name": "Emanuel Wilson",
+      "team": "SEA",
+      "sleeperId": "11435",
+      "age": 27,
+      "injuryStatus": null,
+      "status": "Active"
+    },
     "emari demercado": {
       "name": "Emari Demercado",
       "team": "HOU",
@@ -399,20 +407,12 @@
       "injuryStatus": null,
       "status": "Active"
     },
-    "george holani": {
-      "name": "George Holani",
-      "team": "SEA",
-      "sleeperId": "12048",
-      "age": 26,
-      "injuryStatus": "IR",
-      "status": "Active"
-    },
     "gregory desrosiers": {
       "name": "Gregory Desrosiers Jr.",
       "team": "NYG",
       "sleeperId": "13603",
       "age": 25,
-      "injuryStatus": "Out",
+      "injuryStatus": null,
       "status": "Active"
     },
     "isaiah davis": {
@@ -428,7 +428,7 @@
       "team": "DEN",
       "sleeperId": "6806",
       "age": 27,
-      "injuryStatus": null,
+      "injuryStatus": "Out",
       "status": "Active"
     },
     "jacob saylors": {
@@ -556,7 +556,7 @@
       "team": "GB",
       "sleeperId": "5850",
       "age": 28,
-      "injuryStatus": "Out",
+      "injuryStatus": "Questionable",
       "status": "Active"
     },
     "julius chestnut": {
@@ -652,7 +652,7 @@
       "team": "LAR",
       "sleeperId": "8150",
       "age": 26,
-      "injuryStatus": "Questionable",
+      "injuryStatus": null,
       "status": "Active"
     },
     "lan larison": {
@@ -772,7 +772,7 @@
       "team": "CHI",
       "sleeperId": "10235",
       "age": 25,
-      "injuryStatus": "Out",
+      "injuryStatus": "Questionable",
       "status": "Active"
     },
     "samaje perine": {
@@ -788,7 +788,7 @@
       "team": "PHI",
       "sleeperId": "4866",
       "age": 29,
-      "injuryStatus": "Questionable",
+      "injuryStatus": null,
       "status": "Active"
     },
     "sean tucker": {
@@ -876,7 +876,7 @@
       "team": "HOU",
       "sleeperId": "12474",
       "age": 25,
-      "injuryStatus": "Out",
+      "injuryStatus": "Questionable",
       "status": "Active"
     },
     "zach charbonnet": {

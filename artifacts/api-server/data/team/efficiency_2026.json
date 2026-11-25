@@ -1,6 +1,6 @@
 {
   "season": 2026,
-  "builtAt": "2026-11-24",
+  "builtAt": "2026-11-25",
   "throughWeek": 11,
   "snapshot": {
     "season": 2026,
@@ -102,9 +102,9 @@
         },
         "blitzRate": {
           "value": 26.2,
-          "rank": 29,
+          "rank": 28,
           "tied": false,
-          "pct": 10
+          "pct": 13
         },
         "epaVsBlitz": {
           "value": -0.18,
@@ -683,9 +683,9 @@
         },
         "blitzRate": {
           "value": 30.4,
-          "rank": 18,
+          "rank": 17,
           "tied": false,
-          "pct": 45
+          "pct": 48
         },
         "epaVsBlitz": {
           "value": 0.05,
@@ -1786,7 +1786,7 @@
         "plays": 602,
         "dropbacks": 408,
         "rushes": 194,
-        "chartedDropbacks": 365,
+        "chartedDropbacks": 408,
         "epaPlay": {
           "value": 0.15,
           "rank": 2,
@@ -1842,10 +1842,10 @@
           "pct": 97
         },
         "blitzRate": {
-          "value": 27.4,
-          "rank": 26,
+          "value": 24.5,
+          "rank": 30,
           "tied": false,
-          "pct": 19
+          "pct": 6
         },
         "epaVsBlitz": {
           "value": 0.19,
@@ -1876,7 +1876,7 @@
         "plays": 607,
         "dropbacks": 389,
         "rushes": 218,
-        "chartedDropbacks": 349,
+        "chartedDropbacks": 389,
         "epaPlay": {
           "value": 0.01,
           "rank": 16,
@@ -1932,7 +1932,7 @@
           "pct": 61
         },
         "blitzRate": {
-          "value": 16.9,
+          "value": 15.2,
           "rank": 32,
           "tied": false,
           "pct": 0
@@ -2424,9 +2424,9 @@
         },
         "blitzRate": {
           "value": 31.7,
-          "rank": 14,
+          "rank": 13,
           "tied": false,
-          "pct": 58
+          "pct": 61
         },
         "epaVsBlitz": {
           "value": 0.11,
@@ -2714,9 +2714,9 @@
         },
         "blitzRate": {
           "value": 30.6,
-          "rank": 16,
+          "rank": 15,
           "tied": false,
-          "pct": 52
+          "pct": 55
         },
         "epaVsBlitz": {
           "value": -0.13,
@@ -3584,9 +3584,9 @@
         },
         "blitzRate": {
           "value": 26.8,
-          "rank": 27,
+          "rank": 26,
           "tied": true,
-          "pct": 16
+          "pct": 19
         },
         "epaVsBlitz": {
           "value": 0.25,
@@ -5035,9 +5035,9 @@
         },
         "blitzRate": {
           "value": 30.1,
-          "rank": 19,
+          "rank": 18,
           "tied": false,
-          "pct": 42
+          "pct": 45
         },
         "epaVsBlitz": {
           "value": 0.03,
@@ -5326,9 +5326,9 @@
         },
         "blitzRate": {
           "value": 29.7,
-          "rank": 20,
-          "tied": false,
-          "pct": 39
+          "rank": 19,
+          "tied": true,
+          "pct": 42
         },
         "epaVsBlitz": {
           "value": 0.05,
@@ -5616,9 +5616,9 @@
         },
         "blitzRate": {
           "value": 31.3,
-          "rank": 15,
+          "rank": 14,
           "tied": false,
-          "pct": 55
+          "pct": 58
         },
         "epaVsBlitz": {
           "value": -0.06,
@@ -6196,9 +6196,9 @@
         },
         "blitzRate": {
           "value": 30.5,
-          "rank": 17,
+          "rank": 16,
           "tied": false,
-          "pct": 48
+          "pct": 52
         },
         "epaVsBlitz": {
           "value": 0,
@@ -6866,9 +6866,9 @@
         },
         "blitzRate": {
           "value": 38.7,
-          "rank": 4,
+          "rank": 3,
           "tied": false,
-          "pct": 90
+          "pct": 94
         },
         "epaVsBlitz": {
           "value": -0.07,
@@ -7067,9 +7067,9 @@
         },
         "blitzRate": {
           "value": 26.8,
-          "rank": 27,
+          "rank": 26,
           "tied": true,
-          "pct": 16
+          "pct": 19
         },
         "epaVsBlitz": {
           "value": -0.01,
@@ -7647,9 +7647,9 @@
         },
         "blitzRate": {
           "value": 25.6,
-          "rank": 30,
+          "rank": 29,
           "tied": false,
-          "pct": 6
+          "pct": 10
         },
         "epaVsBlitz": {
           "value": -0.17,
@@ -8227,9 +8227,9 @@
         },
         "blitzRate": {
           "value": 32.7,
-          "rank": 12,
+          "rank": 11,
           "tied": false,
-          "pct": 65
+          "pct": 68
         },
         "epaVsBlitz": {
           "value": 0.47,
@@ -8517,9 +8517,9 @@
         },
         "blitzRate": {
           "value": 31.9,
-          "rank": 13,
+          "rank": 12,
           "tied": false,
-          "pct": 61
+          "pct": 65
         },
         "epaVsBlitz": {
           "value": -0.19,
@@ -9040,7 +9040,7 @@
         "plays": 615,
         "dropbacks": 391,
         "rushes": 224,
-        "chartedDropbacks": 351,
+        "chartedDropbacks": 391,
         "epaPlay": {
           "value": -0.01,
           "rank": 19,
@@ -9096,10 +9096,10 @@
           "pct": 71
         },
         "blitzRate": {
-          "value": 33,
-          "rank": 11,
-          "tied": false,
-          "pct": 68
+          "value": 29.7,
+          "rank": 19,
+          "tied": true,
+          "pct": 42
         },
         "epaVsBlitz": {
           "value": 0.04,
@@ -9130,7 +9130,7 @@
         "plays": 635,
         "dropbacks": 416,
         "rushes": 219,
-        "chartedDropbacks": 373,
+        "chartedDropbacks": 416,
         "epaPlay": {
           "value": 0.03,
           "rank": 19,
@@ -9186,10 +9186,10 @@
           "pct": 35
         },
         "blitzRate": {
-          "value": 42.4,
-          "rank": 3,
+          "value": 38,
+          "rank": 4,
           "tied": false,
-          "pct": 94
+          "pct": 90
         },
         "epaVsBlitz": {
           "value": 0.07,

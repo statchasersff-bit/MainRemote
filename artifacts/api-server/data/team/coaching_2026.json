@@ -1,6 +1,6 @@
 {
   "season": 2026,
-  "builtAt": "2026-11-24",
+  "builtAt": "2026-11-25",
   "snapshot": {
     "season": 2026,
     "throughWeek": 11,
@@ -64,12 +64,14 @@
             "label": "Pass rate (all downs)",
             "def": "Share of offensive snaps that were dropbacks. Sacks and QB scrambles count as passes, since both began as pass plays. Kneels, spikes, two-point tries and snaps wiped out by penalty are removed. Regular season only, as is every row here.",
             "prior": "55.3%",
-            "current": "55%",
+            "current": "55.0%",
             "change": {
               "dir": "flat",
               "text": "steady"
             },
             "nflAvg": "60.5%",
+            "priorRaw": 55.303,
+            "currentRaw": 54.9521,
             "priorNum": 55.3,
             "feed": "passRate"
           },
@@ -78,14 +80,16 @@
             "label": "Pass rate over expected",
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
-            "prior": "−3.5%",
+            "prior": "−1.1%",
             "current": "−0.6%",
             "change": {
               "dir": "up",
-              "text": "+2.9"
+              "text": "+0.5"
             },
-            "nflAvg": "0%",
-            "priorNum": -3.5,
+            "nflAvg": "+0.0%",
+            "priorRaw": -1.1199,
+            "currentRaw": -0.5531,
+            "priorNum": -1.1,
             "feed": "proe"
           },
           {
@@ -94,12 +98,14 @@
             "sub": "sec/play, neutral game state",
             "def": "Average seconds between back-to-back snaps on the same drive, counted only while the game is neutral: win probability between 20% and 80%, with more than two minutes left in the half. Gaps over 60 seconds (timeouts, reviews, quarter breaks) are dropped. Lower is faster.",
             "prior": "34.9s",
-            "current": "32s",
+            "current": "32.0s",
             "change": {
               "dir": "up",
               "text": "faster"
             },
-            "nflAvg": "33s",
+            "nflAvg": "33.0s",
+            "priorRaw": 34.9248,
+            "currentRaw": 32.0361,
             "priorNum": 34.9,
             "feed": "pace",
             "invert": true
@@ -115,7 +121,9 @@
               "dir": "flat",
               "text": "steady"
             },
-            "nflAvg": "55.1%"
+            "nflAvg": "55.1%",
+            "priorRaw": 50.3053,
+            "currentRaw": 50.2024
           },
           {
             "key": "noHuddleRate",
@@ -128,7 +136,9 @@
               "dir": "down",
               "text": "−1.6"
             },
-            "nflAvg": "6.8%"
+            "nflAvg": "6.8%",
+            "priorRaw": 6.1553,
+            "currentRaw": 4.6326
           },
           {
             "key": "paRate",
@@ -141,20 +151,24 @@
               "dir": "up",
               "text": "+1.8 - 6th in NFL"
             },
-            "nflAvg": "22.4%"
+            "nflAvg": "22.4%",
+            "priorRaw": 25.5137,
+            "currentRaw": 27.3256
           },
           {
             "key": "motionRate",
             "label": "Pre-snap motion",
             "sub": "before or at the snap, charted",
             "def": "Share of charted snaps with motion before or at the snap. That includes a player who motions and resets before the ball is snapped, not only one still moving when it is.",
-            "prior": "60%",
+            "prior": "60.0%",
             "current": "63.7%",
             "change": {
               "dir": "up",
               "text": "+3.7 - 7th in NFL"
             },
-            "nflAvg": "58.5%"
+            "nflAvg": "58.1%",
+            "priorRaw": 60.0379,
+            "currentRaw": 63.738
           },
           {
             "key": "shotgunRate",
@@ -167,7 +181,9 @@
               "dir": "down",
               "text": "−4"
             },
-            "nflAvg": "62.2%"
+            "nflAvg": "62.2%",
+            "priorRaw": 50.1894,
+            "currentRaw": 46.1661
           },
           {
             "key": "rzPassRate",
@@ -181,6 +197,8 @@
               "text": "−0.5"
             },
             "nflAvg": "53.5%",
+            "priorRaw": 45.7895,
+            "currentRaw": 45.2991,
             "priorNum": 45.8,
             "feed": "rzPassRate"
           },
@@ -212,7 +230,7 @@
       "shifts": [
         {
           "key": "pace",
-          "stat": "32s",
+          "stat": "32.0s",
           "unit": "sec/play",
           "heading": "The offense sped up.",
           "body": "Extra plays per game for every skill player.",
@@ -708,7 +726,7 @@
         "note": "Positional finishes are season-long PPR ranks. A row with a week range covers only the games he called that season, ranked against the league over the same weeks. Brady's offenses have put up repeated top-ten positional seasons - the system has paid fantasy investors before."
       },
       "distribution": {
-        "sub": "Target split by position across Brady's play-calling seasons since 2016, vs. league average.",
+        "sub": "Target split by position across Brady's play-calling seasons (2020-2021, 2023-2026), vs. league average over the same seasons.",
         "rows": [
           {
             "label": "Wide receivers",
@@ -846,6 +864,8 @@
               "text": "−4.9 - 6th in NFL"
             },
             "nflAvg": "60.5%",
+            "priorRaw": 69.6262,
+            "currentRaw": 64.7315,
             "priorNum": 69.6,
             "feed": "passRate"
           },
@@ -854,14 +874,16 @@
             "label": "Pass rate over expected",
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
-            "prior": "+3.8%",
+            "prior": "+4.2%",
             "current": "−0.6%",
             "change": {
               "dir": "down",
-              "text": "−4.4"
+              "text": "−4.8"
             },
-            "nflAvg": "0%",
-            "priorNum": 3.8,
+            "nflAvg": "+0.0%",
+            "priorRaw": 4.2332,
+            "currentRaw": -0.5698,
+            "priorNum": 4.2,
             "feed": "proe"
           },
           {
@@ -875,7 +897,9 @@
               "dir": "up",
               "text": "faster"
             },
-            "nflAvg": "33s",
+            "nflAvg": "33.0s",
+            "priorRaw": 34.2701,
+            "currentRaw": 33.1306,
             "priorNum": 34.3,
             "feed": "pace",
             "invert": true
@@ -891,7 +915,9 @@
               "dir": "down",
               "text": "−7.4 - 5th in NFL"
             },
-            "nflAvg": "55.1%"
+            "nflAvg": "55.1%",
+            "priorRaw": 66.7482,
+            "currentRaw": 59.3023
           },
           {
             "key": "noHuddleRate",
@@ -904,7 +930,9 @@
               "dir": "down",
               "text": "−3.2 - 7th in NFL"
             },
-            "nflAvg": "6.8%"
+            "nflAvg": "6.8%",
+            "priorRaw": 12.1495,
+            "currentRaw": 8.8534
           },
           {
             "key": "paRate",
@@ -917,7 +945,9 @@
               "dir": "down",
               "text": "−8.1"
             },
-            "nflAvg": "22.4%"
+            "nflAvg": "22.4%",
+            "priorRaw": 24.698,
+            "currentRaw": 16.5919
           },
           {
             "key": "motionRate",
@@ -930,7 +960,9 @@
               "dir": "up",
               "text": "+15.8"
             },
-            "nflAvg": "58.5%"
+            "nflAvg": "58.1%",
+            "priorRaw": 43.9252,
+            "currentRaw": 59.6517
           },
           {
             "key": "shotgunRate",
@@ -938,12 +970,14 @@
             "sub": "share of offensive snaps",
             "def": "Share of offensive snaps the play-by-play logs as shotgun, over the same snaps as the pass rate. Pistol is not tracked separately: a pistol snap counts only if the play-by-play logs it as shotgun.",
             "prior": "71.7%",
-            "current": "61%",
+            "current": "61.0%",
             "change": {
               "dir": "down",
               "text": "−10.7"
             },
-            "nflAvg": "62.2%"
+            "nflAvg": "62.2%",
+            "priorRaw": 71.6822,
+            "currentRaw": 60.9579
           },
           {
             "key": "rzPassRate",
@@ -957,6 +991,8 @@
               "text": "−7.1 - 5th in NFL"
             },
             "nflAvg": "53.5%",
+            "priorRaw": 70.303,
+            "currentRaw": 63.2,
             "priorNum": 70.3,
             "feed": "rzPassRate"
           },
@@ -1004,7 +1040,7 @@
         },
         {
           "key": "shotgunRate",
-          "stat": "61",
+          "stat": "61.0",
           "unit": "shotgun",
           "heading": "More under center.",
           "body": "Under-center snaps travel with the run game and play-action: better for an early-down back and downfield shots off the fake.",
@@ -1209,7 +1245,7 @@
         "note": "LaFleur has 2 prior play-calling seasons in this table, so read the history as background and the 2026 pace row as the live read. Positional finishes are season-long PPR ranks."
       },
       "distribution": {
-        "sub": "Target split by position across LaFleur's play-calling seasons since 2016, vs. league average.",
+        "sub": "Target split by position across LaFleur's play-calling seasons (2021-2022, 2026), vs. league average over the same seasons.",
         "rows": [
           {
             "label": "Wide receivers",
@@ -1335,6 +1371,8 @@
               "text": "steady"
             },
             "nflAvg": "60.5%",
+            "priorRaw": 56.4922,
+            "currentRaw": 56.2925,
             "priorNum": 56.5,
             "feed": "passRate"
           },
@@ -1343,14 +1381,16 @@
             "label": "Pass rate over expected",
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
-            "prior": "−6.2%",
-            "current": "−6%",
+            "prior": "−4.8%",
+            "current": "−6.0%",
             "change": {
-              "dir": "flat",
-              "text": "steady"
+              "dir": "down",
+              "text": "−1.2"
             },
-            "nflAvg": "0%",
-            "priorNum": -6.2,
+            "nflAvg": "+0.0%",
+            "priorRaw": -4.8067,
+            "currentRaw": -5.9633,
+            "priorNum": -4.8,
             "feed": "proe"
           },
           {
@@ -1364,7 +1404,9 @@
               "dir": "down",
               "text": "slower"
             },
-            "nflAvg": "33s",
+            "nflAvg": "33.0s",
+            "priorRaw": 33.1953,
+            "currentRaw": 35.4829,
             "priorNum": 33.2,
             "feed": "pace",
             "invert": true
@@ -1380,7 +1422,9 @@
               "dir": "flat",
               "text": "steady"
             },
-            "nflAvg": "55.1%"
+            "nflAvg": "55.1%",
+            "priorRaw": 50.438,
+            "currentRaw": 50.1104
           },
           {
             "key": "noHuddleRate",
@@ -1393,7 +1437,9 @@
               "dir": "down",
               "text": "−5"
             },
-            "nflAvg": "6.8%"
+            "nflAvg": "6.8%",
+            "priorRaw": 11.1434,
+            "currentRaw": 6.1224
           },
           {
             "key": "paRate",
@@ -1401,12 +1447,14 @@
             "sub": "share of dropbacks, charted",
             "def": "Share of dropbacks charted as play-action. The denominator is dropbacks, not pass attempts, so sacks and scrambles are in it.",
             "prior": "20.1%",
-            "current": "19%",
+            "current": "19.0%",
             "change": {
               "dir": "down",
               "text": "−1.1"
             },
-            "nflAvg": "22.4%"
+            "nflAvg": "22.4%",
+            "priorRaw": 20.0686,
+            "currentRaw": 19.0332
           },
           {
             "key": "motionRate",
@@ -1419,7 +1467,9 @@
               "dir": "down",
               "text": "−10.4"
             },
-            "nflAvg": "58.5%"
+            "nflAvg": "58.1%",
+            "priorRaw": 66.6667,
+            "currentRaw": 56.2925
           },
           {
             "key": "shotgunRate",
@@ -1432,7 +1482,9 @@
               "dir": "down",
               "text": "−24.3"
             },
-            "nflAvg": "62.2%"
+            "nflAvg": "62.2%",
+            "priorRaw": 80.814,
+            "currentRaw": 56.4626
           },
           {
             "key": "rzPassRate",
@@ -1446,6 +1498,8 @@
               "text": "+3.8"
             },
             "nflAvg": "53.5%",
+            "priorRaw": 50.7246,
+            "currentRaw": 54.5455,
             "priorNum": 50.7,
             "feed": "rzPassRate"
           },
@@ -1648,7 +1702,7 @@
         "note": "Rees has 1 prior play-calling season in this table, so read the history as background and the 2026 pace row as the live read. Positional finishes are season-long PPR ranks. A row with a week range covers only the games he called that season, ranked against the league over the same weeks."
       },
       "distribution": {
-        "sub": "Target split by position across Rees's play-calling seasons since 2016, vs. league average.",
+        "sub": "Target split by position across Rees's play-calling seasons (2025-2026), vs. league average over the same seasons.",
         "rows": [
           {
             "label": "Wide receivers",
@@ -1667,7 +1721,7 @@
             "gold": true
           }
         ],
-        "note": "Across his play-calling seasons since 2016, Rees's offenses have directed a smaller share of targets to wide receivers than the league baseline (51% vs 58%). That historical tendency is worth monitoring alongside the current roster and weekly usage."
+        "note": "Across his play-calling seasons (2025-2026), Rees's offenses have directed a smaller share of targets to wide receivers than the league baseline (51% vs 58%). That historical tendency is worth monitoring alongside the current roster and weekly usage."
       },
       "backfield": {
         "sub": "Lead back's share of backfield weighted opportunities, by season (* = previous staff).",
@@ -1713,7 +1767,7 @@
       "bottomLine": "The fantasy bottom line: Tommy Rees is new to the Falcons call sheet in 2026, so 2025 tendencies describe a different coach's offense. Through 10 games, the Falcons have been more under-center, less motion-heavy and less aggressive on short 4th downs than under the 2025 staff. Historically, Rees's offenses have also directed a below-average share of targets to wide receivers. Current personnel usage should still carry weight alongside these tendencies.",
       "faq": {
         "question": "How does Tommy Rees's play-calling affect Falcons fantasy players?",
-        "answer": "Tommy Rees is a first-year play-caller for the Falcons, so last season's tendencies carry little predictive weight. Through Week 10 2026, the offense shows 4th-down go rate below league average (67% vs 76%) and pass rate over expected below league average (−6% vs +0%). The lead back handles 76% of backfield weighted opportunities, and the target split leans toward wide receivers (51% vs a 58% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
+        "answer": "Tommy Rees is a first-year play-caller for the Falcons, so last season's tendencies carry little predictive weight. Through Week 10 2026, the offense shows 4th-down go rate below league average (67% vs 76%) and pass rate over expected below league average (−6.0% vs +0.0%). The lead back handles 76% of backfield weighted opportunities, and the target split leans toward wide receivers (51% vs a 58% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
       }
     },
     "bal": {
@@ -1765,12 +1819,14 @@
             "label": "Pass rate (all downs)",
             "def": "Share of offensive snaps that were dropbacks. Sacks and QB scrambles count as passes, since both began as pass plays. Kneels, spikes, two-point tries and snaps wiped out by penalty are removed. Regular season only, as is every row here.",
             "prior": "52.5%",
-            "current": "58%",
+            "current": "58.0%",
             "change": {
               "dir": "up",
               "text": "+5.5"
             },
             "nflAvg": "60.5%",
+            "priorRaw": 52.5157,
+            "currentRaw": 57.9755,
             "priorNum": 52.5,
             "feed": "passRate"
           },
@@ -1779,14 +1835,16 @@
             "label": "Pass rate over expected",
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
-            "prior": "−8.7%",
+            "prior": "−7.5%",
             "current": "−3.6%",
             "change": {
               "dir": "up",
-              "text": "+5.1"
+              "text": "+3.9"
             },
-            "nflAvg": "0%",
-            "priorNum": -8.7,
+            "nflAvg": "+0.0%",
+            "priorRaw": -7.5,
+            "currentRaw": -3.6018,
+            "priorNum": -7.5,
             "feed": "proe"
           },
           {
@@ -1800,7 +1858,9 @@
               "dir": "up",
               "text": "faster"
             },
-            "nflAvg": "33s",
+            "nflAvg": "33.0s",
+            "priorRaw": 34.7007,
+            "currentRaw": 34.3709,
             "priorNum": 34.7,
             "feed": "pace",
             "invert": true
@@ -1816,7 +1876,9 @@
               "dir": "up",
               "text": "+7.3"
             },
-            "nflAvg": "55.1%"
+            "nflAvg": "55.1%",
+            "priorRaw": 45.467,
+            "currentRaw": 52.7559
           },
           {
             "key": "noHuddleRate",
@@ -1824,12 +1886,14 @@
             "sub": "share of offensive snaps",
             "def": "Share of offensive snaps the play-by-play marks as no-huddle, over the same snaps as the pass rate.",
             "prior": "2.9%",
-            "current": "3.2%",
+            "current": "3.4%",
             "change": {
-              "dir": "flat",
-              "text": "steady"
+              "dir": "up",
+              "text": "+0.5"
             },
-            "nflAvg": "6.8%"
+            "nflAvg": "6.8%",
+            "priorRaw": 2.935,
+            "currentRaw": 3.3742
           },
           {
             "key": "paRate",
@@ -1842,33 +1906,39 @@
               "dir": "up",
               "text": "+3.5 - 8th in NFL"
             },
-            "nflAvg": "22.4%"
+            "nflAvg": "22.4%",
+            "priorRaw": 22.3553,
+            "currentRaw": 25.9259
           },
           {
             "key": "motionRate",
             "label": "Pre-snap motion",
             "sub": "before or at the snap, charted",
             "def": "Share of charted snaps with motion before or at the snap. That includes a player who motions and resets before the ball is snapped, not only one still moving when it is.",
-            "prior": "54%",
+            "prior": "54.0%",
             "current": "62.7%",
             "change": {
               "dir": "up",
               "text": "+8.7 - 8th in NFL"
             },
-            "nflAvg": "58.5%"
+            "nflAvg": "58.1%",
+            "priorRaw": 53.9832,
+            "currentRaw": 62.7301
           },
           {
             "key": "shotgunRate",
             "label": "Shotgun rate",
             "sub": "share of offensive snaps",
             "def": "Share of offensive snaps the play-by-play logs as shotgun, over the same snaps as the pass rate. Pistol is not tracked separately: a pistol snap counts only if the play-by-play logs it as shotgun.",
-            "prior": "65%",
-            "current": "60.7%",
+            "prior": "65.0%",
+            "current": "60.9%",
             "change": {
               "dir": "down",
-              "text": "−4.3"
+              "text": "−4.1"
             },
-            "nflAvg": "62.2%"
+            "nflAvg": "62.2%",
+            "priorRaw": 64.9895,
+            "currentRaw": 60.8896
           },
           {
             "key": "rzPassRate",
@@ -1882,6 +1952,8 @@
               "text": "+1.7"
             },
             "nflAvg": "53.5%",
+            "priorRaw": 42.8571,
+            "currentRaw": 44.5545,
             "priorNum": 42.9,
             "feed": "rzPassRate"
           },
@@ -2151,6 +2223,8 @@
               "text": "+4.6"
             },
             "nflAvg": "60.5%",
+            "priorRaw": 58.7286,
+            "currentRaw": 63.3436,
             "priorNum": 58.7,
             "feed": "passRate"
           },
@@ -2159,14 +2233,16 @@
             "label": "Pass rate over expected",
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
-            "prior": "−5.9%",
+            "prior": "−5.4%",
             "current": "+1.8%",
             "change": {
               "dir": "up",
-              "text": "+7.7 - 6th in NFL"
+              "text": "+7.2 - 6th in NFL"
             },
-            "nflAvg": "0%",
-            "priorNum": -5.9,
+            "nflAvg": "+0.0%",
+            "priorRaw": -5.4389,
+            "currentRaw": 1.8085,
+            "priorNum": -5.4,
             "feed": "proe"
           },
           {
@@ -2175,12 +2251,14 @@
             "sub": "sec/play, neutral game state",
             "def": "Average seconds between back-to-back snaps on the same drive, counted only while the game is neutral: win probability between 20% and 80%, with more than two minutes left in the half. Gaps over 60 seconds (timeouts, reviews, quarter breaks) are dropped. Lower is faster.",
             "prior": "34.2s",
-            "current": "30s",
+            "current": "30.0s",
             "change": {
               "dir": "up",
               "text": "faster"
             },
-            "nflAvg": "33s",
+            "nflAvg": "33.0s",
+            "priorRaw": 34.229,
+            "currentRaw": 29.9517,
             "priorNum": 34.2,
             "feed": "pace",
             "invert": true
@@ -2196,7 +2274,9 @@
               "dir": "up",
               "text": "+6.5 - 6th in NFL"
             },
-            "nflAvg": "55.1%"
+            "nflAvg": "55.1%",
+            "priorRaw": 52.737,
+            "currentRaw": 59.2369
           },
           {
             "key": "noHuddleRate",
@@ -2204,25 +2284,29 @@
             "sub": "share of offensive snaps",
             "def": "Share of offensive snaps the play-by-play marks as no-huddle, over the same snaps as the pass rate.",
             "prior": "6.3%",
-            "current": "8%",
+            "current": "8.0%",
             "change": {
               "dir": "up",
               "text": "+1.7"
             },
-            "nflAvg": "6.8%"
+            "nflAvg": "6.8%",
+            "priorRaw": 6.2563,
+            "currentRaw": 7.9755
           },
           {
             "key": "paRate",
             "label": "Play-action rate",
             "sub": "share of dropbacks, charted",
             "def": "Share of dropbacks charted as play-action. The denominator is dropbacks, not pass attempts, so sacks and scrambles are in it.",
-            "prior": "22%",
+            "prior": "22.0%",
             "current": "25.2%",
             "change": {
               "dir": "up",
               "text": "+3.2"
             },
-            "nflAvg": "22.4%"
+            "nflAvg": "22.4%",
+            "priorRaw": 21.9931,
+            "currentRaw": 25.1816
           },
           {
             "key": "motionRate",
@@ -2235,7 +2319,9 @@
               "dir": "up",
               "text": "+12.6"
             },
-            "nflAvg": "58.5%"
+            "nflAvg": "58.1%",
+            "priorRaw": 42.886,
+            "currentRaw": 55.5215
           },
           {
             "key": "shotgunRate",
@@ -2248,7 +2334,9 @@
               "dir": "down",
               "text": "−2.3"
             },
-            "nflAvg": "62.2%"
+            "nflAvg": "62.2%",
+            "priorRaw": 67.2048,
+            "currentRaw": 64.8773
           },
           {
             "key": "rzPassRate",
@@ -2262,6 +2350,8 @@
               "text": "+1.4 - 6th in NFL"
             },
             "nflAvg": "53.5%",
+            "priorRaw": 59.7222,
+            "currentRaw": 61.1111,
             "priorNum": 59.7,
             "feed": "rzPassRate"
           },
@@ -2301,7 +2391,7 @@
         },
         {
           "key": "pace",
-          "stat": "30s",
+          "stat": "30.0s",
           "unit": "sec/play",
           "heading": "The offense sped up.",
           "body": "Extra plays per game for every skill player.",
@@ -2526,12 +2616,14 @@
             "label": "Pass rate (all downs)",
             "def": "Share of offensive snaps that were dropbacks. Sacks and QB scrambles count as passes, since both began as pass plays. Kneels, spikes, two-point tries and snaps wiped out by penalty are removed. Regular season only, as is every row here.",
             "prior": "58.7%",
-            "current": "56%",
+            "current": "56.0%",
             "change": {
               "dir": "down",
               "text": "−2.7"
             },
             "nflAvg": "60.5%",
+            "priorRaw": 58.7156,
+            "currentRaw": 56.0294,
             "priorNum": 58.7,
             "feed": "passRate"
           },
@@ -2540,14 +2632,16 @@
             "label": "Pass rate over expected",
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
-            "prior": "−3.8%",
+            "prior": "−2.9%",
             "current": "−0.2%",
             "change": {
               "dir": "up",
-              "text": "+3.6"
+              "text": "+2.7"
             },
-            "nflAvg": "0%",
-            "priorNum": -3.8,
+            "nflAvg": "+0.0%",
+            "priorRaw": -2.8511,
+            "currentRaw": -0.1624,
+            "priorNum": -2.9,
             "feed": "proe"
           },
           {
@@ -2561,7 +2655,9 @@
               "dir": "flat",
               "text": "steady"
             },
-            "nflAvg": "33s",
+            "nflAvg": "33.0s",
+            "priorRaw": 32.4797,
+            "currentRaw": 32.6704,
             "priorNum": 32.5,
             "feed": "pace",
             "invert": true
@@ -2577,20 +2673,24 @@
               "dir": "down",
               "text": "−3"
             },
-            "nflAvg": "55.1%"
+            "nflAvg": "55.1%",
+            "priorRaw": 54.1417,
+            "currentRaw": 51.0557
           },
           {
             "key": "noHuddleRate",
             "label": "No-huddle rate",
             "sub": "share of offensive snaps",
             "def": "Share of offensive snaps the play-by-play marks as no-huddle, over the same snaps as the pass rate.",
-            "prior": "5%",
+            "prior": "5.0%",
             "current": "5.6%",
             "change": {
               "dir": "up",
               "text": "+0.6"
             },
-            "nflAvg": "6.8%"
+            "nflAvg": "6.8%",
+            "priorRaw": 4.9541,
+            "currentRaw": 5.5882
           },
           {
             "key": "paRate",
@@ -2603,20 +2703,24 @@
               "dir": "up",
               "text": "+2.2 - 1st in NFL"
             },
-            "nflAvg": "22.4%"
+            "nflAvg": "22.4%",
+            "priorRaw": 31.4063,
+            "currentRaw": 33.5958
           },
           {
             "key": "motionRate",
             "label": "Pre-snap motion",
             "sub": "before or at the snap, charted",
             "def": "Share of charted snaps with motion before or at the snap. That includes a player who motions and resets before the ball is snapped, not only one still moving when it is.",
-            "prior": "58%",
-            "current": "55%",
+            "prior": "58.0%",
+            "current": "55.0%",
             "change": {
               "dir": "down",
               "text": "−3"
             },
-            "nflAvg": "58.5%"
+            "nflAvg": "58.1%",
+            "priorRaw": 57.9817,
+            "currentRaw": 55
           },
           {
             "key": "shotgunRate",
@@ -2629,7 +2733,9 @@
               "dir": "up",
               "text": "+2"
             },
-            "nflAvg": "62.2%"
+            "nflAvg": "62.2%",
+            "priorRaw": 52.1101,
+            "currentRaw": 54.1176
           },
           {
             "key": "rzPassRate",
@@ -2643,6 +2749,8 @@
               "text": "−4.2"
             },
             "nflAvg": "53.5%",
+            "priorRaw": 48.8506,
+            "currentRaw": 44.6809,
             "priorNum": 48.9,
             "feed": "rzPassRate"
           },
@@ -2681,19 +2789,19 @@
           "note": null
         },
         {
-          "key": "proe",
-          "stat": "−0.2",
-          "unit": "PROE",
-          "heading": "A pass lean has emerged.",
-          "body": "Adjusted for situation, so the pass lean reads as intent, not game script.",
-          "note": null
-        },
-        {
           "key": "earlyDownPassRate",
           "stat": "51.1",
           "unit": "early-down pass %",
           "heading": "Running on the downs that are a choice.",
           "body": "The staff is choosing the ground game when it has the choice.",
+          "note": null
+        },
+        {
+          "key": "motionRate",
+          "stat": "55.0",
+          "unit": "motion",
+          "heading": "Less pre-snap motion.",
+          "body": "Receivers win more against settled coverage, so efficiency leans on talent more than scheme.",
           "note": null
         }
       ],
@@ -2994,7 +3102,7 @@
         "note": "Positional finishes are season-long PPR ranks. Johnson's offenses have put up repeated top-ten positional seasons - the system has paid fantasy investors before."
       },
       "distribution": {
-        "sub": "Target split by position across Johnson's play-calling seasons since 2016, vs. league average.",
+        "sub": "Target split by position across Johnson's play-calling seasons (2022-2026), vs. league average over the same seasons.",
         "rows": [
           {
             "label": "Wide receivers",
@@ -3063,7 +3171,7 @@
         ],
         "note": "A clear pass-rate increase when trailing. The Bears have passed on 67% of plays while trailing by 7+, compared with 51% while leading by 7+. The 16-point difference is worth monitoring; play counts are shown so you can weigh each bucket's sample."
       },
-      "bottomLine": "The fantasy bottom line: Johnson called this offense in 2025 too, giving those tendencies more predictive value than they would have after a play-caller change. Through 10 games, the Bears have been more run-heavy in the red zone, more pass-leaning by PROE and run-heavier on early downs than in 2025. Current personnel usage should still carry weight alongside these tendencies.",
+      "bottomLine": "The fantasy bottom line: Johnson called this offense in 2025 too, giving those tendencies more predictive value than they would have after a play-caller change. Through 10 games, the Bears have been more run-heavy in the red zone, run-heavier on early downs and less motion-heavy than in 2025. Current personnel usage should still carry weight alongside these tendencies.",
       "faq": {
         "question": "How does Ben Johnson's play-calling affect Bears fantasy players?",
         "answer": "Ben Johnson is calling the Bears offense for the second straight season, so last year's tendencies remain predictive. Through Week 11 2026, the offense shows play-action rate above league average (33.6% vs 22.4%) and red-zone pass rate below league average (44.7% vs 53.5%). The lead back handles 62% of backfield weighted opportunities. The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
@@ -3120,6 +3228,8 @@
               "text": "+2 - 1st in NFL"
             },
             "nflAvg": "60.5%",
+            "priorRaw": 65.8046,
+            "currentRaw": 67.7741,
             "priorNum": 65.8,
             "feed": "passRate"
           },
@@ -3128,14 +3238,16 @@
             "label": "Pass rate over expected",
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
-            "prior": "+1.9%",
-            "current": "+11%",
+            "prior": "+2.5%",
+            "current": "+11.0%",
             "change": {
               "dir": "up",
-              "text": "+9.1 - 1st in NFL"
+              "text": "+8.5 - 1st in NFL"
             },
-            "nflAvg": "0%",
-            "priorNum": 1.9,
+            "nflAvg": "+0.0%",
+            "priorRaw": 2.5423,
+            "currentRaw": 11.0255,
+            "priorNum": 2.5,
             "feed": "proe"
           },
           {
@@ -3144,12 +3256,14 @@
             "sub": "sec/play, neutral game state",
             "def": "Average seconds between back-to-back snaps on the same drive, counted only while the game is neutral: win probability between 20% and 80%, with more than two minutes left in the half. Gaps over 60 seconds (timeouts, reviews, quarter breaks) are dropped. Lower is faster.",
             "prior": "32.8s",
-            "current": "34s",
+            "current": "34.0s",
             "change": {
               "dir": "down",
               "text": "slower"
             },
-            "nflAvg": "33s",
+            "nflAvg": "33.0s",
+            "priorRaw": 32.8345,
+            "currentRaw": 33.9727,
             "priorNum": 32.8,
             "feed": "pace",
             "invert": true
@@ -3165,7 +3279,9 @@
               "dir": "up",
               "text": "+2.7 - 1st in NFL"
             },
-            "nflAvg": "55.1%"
+            "nflAvg": "55.1%",
+            "priorRaw": 61.6625,
+            "currentRaw": 64.4351
           },
           {
             "key": "noHuddleRate",
@@ -3178,33 +3294,39 @@
               "dir": "up",
               "text": "+1.5"
             },
-            "nflAvg": "6.8%"
+            "nflAvg": "6.8%",
+            "priorRaw": 2.682,
+            "currentRaw": 4.1528
           },
           {
             "key": "paRate",
             "label": "Play-action rate",
             "sub": "share of dropbacks, charted",
             "def": "Share of dropbacks charted as play-action. The denominator is dropbacks, not pass attempts, so sacks and scrambles are in it.",
-            "prior": "16%",
-            "current": "12%",
+            "prior": "16.0%",
+            "current": "12.0%",
             "change": {
               "dir": "down",
               "text": "−4"
             },
-            "nflAvg": "22.4%"
+            "nflAvg": "22.4%",
+            "priorRaw": 16.0116,
+            "currentRaw": 12.0098
           },
           {
             "key": "motionRate",
             "label": "Pre-snap motion",
             "sub": "before or at the snap, charted",
             "def": "Share of charted snaps with motion before or at the snap. That includes a player who motions and resets before the ball is snapped, not only one still moving when it is.",
-            "prior": "53%",
-            "current": "52%",
+            "prior": "53.0%",
+            "current": "47.2%",
             "change": {
               "dir": "down",
-              "text": "−1"
+              "text": "−5.8"
             },
-            "nflAvg": "58.5%"
+            "nflAvg": "58.1%",
+            "priorRaw": 52.9693,
+            "currentRaw": 47.1761
           },
           {
             "key": "shotgunRate",
@@ -3217,20 +3339,24 @@
               "dir": "down",
               "text": "−2.8 - 1st in NFL"
             },
-            "nflAvg": "62.2%"
+            "nflAvg": "62.2%",
+            "priorRaw": 82.3755,
+            "currentRaw": 79.5681
           },
           {
             "key": "rzPassRate",
             "label": "Red-zone pass rate",
             "sub": "inside the opponent's 20",
             "def": "Pass share on snaps at the opponent's 20-yard line or closer. Sacks and scrambles count as passes; kneels, spikes, two-point tries and snaps wiped out by penalty are removed. It counts plays, not trips, so a few long red-zone drives can move it a lot early in a season.",
-            "prior": "61%",
+            "prior": "61.0%",
             "current": "63.5%",
             "change": {
               "dir": "up",
               "text": "+2.5 - 4th in NFL"
             },
             "nflAvg": "53.5%",
+            "priorRaw": 60.9589,
+            "currentRaw": 63.5417,
             "priorNum": 61,
             "feed": "rzPassRate"
           },
@@ -3270,18 +3396,18 @@
         },
         {
           "key": "proe",
-          "stat": "+11",
+          "stat": "+11.0",
           "unit": "PROE",
           "heading": "A pass lean has emerged.",
           "body": "Adjusted for situation, so the pass lean reads as intent, not game script.",
           "note": null
         },
         {
-          "key": "paRate",
-          "stat": "12",
-          "unit": "play-action",
-          "heading": "Less play-action.",
-          "body": "Fewer of the scheme's easiest explosive throws.",
+          "key": "motionRate",
+          "stat": "47.2",
+          "unit": "motion",
+          "heading": "Less pre-snap motion.",
+          "body": "Receivers win more against settled coverage, so efficiency leans on talent more than scheme.",
           "note": null
         }
       ],
@@ -3818,7 +3944,7 @@
         "note": "Positional finishes are season-long PPR ranks. Taylor's offenses have put up repeated top-ten positional seasons - the system has paid fantasy investors before."
       },
       "distribution": {
-        "sub": "Target split by position across Taylor's play-calling seasons since 2016, vs. league average.",
+        "sub": "Target split by position across Taylor's play-calling seasons (2019-2026), vs. league average over the same seasons.",
         "rows": [
           {
             "label": "Wide receivers",
@@ -3837,7 +3963,7 @@
             "nfl": 19
           }
         ],
-        "note": "Across his play-calling seasons since 2016, Taylor's offenses have directed a larger share of targets to wide receivers than the league baseline (63% vs 59%). That historical tendency is worth monitoring alongside the current roster and weekly usage."
+        "note": "Across his play-calling seasons (2019-2026), Taylor's offenses have directed a larger share of targets to wide receivers than the league baseline (63% vs 59%). That historical tendency is worth monitoring alongside the current roster and weekly usage."
       },
       "backfield": {
         "sub": "Lead back's share of backfield weighted opportunities, by season called.",
@@ -3892,10 +4018,10 @@
         ],
         "note": "A clear pass-rate increase when trailing. The Bengals have passed on 77% of plays while trailing by 7+, compared with 56% while leading by 7+. The 21-point difference is worth monitoring; play counts are shown so you can weigh each bucket's sample."
       },
-      "bottomLine": "The fantasy bottom line: Taylor called this offense in 2025 too, giving those tendencies more predictive value than they would have after a play-caller change. Through 10 games, the Bengals have been less aggressive on short 4th downs, more pass-leaning by PROE and lighter on play-action than in 2025. Historically, Taylor's offenses have also directed an above-average share of targets to wide receivers. Current personnel usage should still carry weight alongside these tendencies.",
+      "bottomLine": "The fantasy bottom line: Taylor called this offense in 2025 too, giving those tendencies more predictive value than they would have after a play-caller change. Through 10 games, the Bengals have been less aggressive on short 4th downs, more pass-leaning by PROE and less motion-heavy than in 2025. Historically, Taylor's offenses have also directed an above-average share of targets to wide receivers. Current personnel usage should still carry weight alongside these tendencies.",
       "faq": {
         "question": "How does Zac Taylor's play-calling affect Bengals fantasy players?",
-        "answer": "Zac Taylor is calling the Bengals offense for the eighth straight season, so last year's tendencies remain predictive. Through Week 11 2026, the offense shows shotgun rate above league average (79.6% vs 62.2%) and pass rate over expected above league average (+11% vs +0%). The lead back handles 70% of backfield weighted opportunities, and the target split leans toward wide receivers (63% vs a 59% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
+        "answer": "Zac Taylor is calling the Bengals offense for the eighth straight season, so last year's tendencies remain predictive. Through Week 11 2026, the offense shows shotgun rate above league average (79.6% vs 62.2%) and pass rate over expected above league average (+11.0% vs +0.0%). The lead back handles 70% of backfield weighted opportunities, and the target split leans toward wide receivers (63% vs a 59% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
       }
     },
     "cle": {
@@ -3951,12 +4077,14 @@
             "label": "Pass rate (all downs)",
             "def": "Share of offensive snaps that were dropbacks. Sacks and QB scrambles count as passes, since both began as pass plays. Kneels, spikes, two-point tries and snaps wiped out by penalty are removed. Regular season only, as is every row here.",
             "prior": "62.4%",
-            "current": "65%",
+            "current": "65.0%",
             "change": {
               "dir": "up",
               "text": "+2.6 - 4th in NFL"
             },
             "nflAvg": "60.5%",
+            "priorRaw": 62.4023,
+            "currentRaw": 64.9755,
             "priorNum": 62.4,
             "feed": "passRate"
           },
@@ -3965,14 +4093,16 @@
             "label": "Pass rate over expected",
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
-            "prior": "−3.5%",
+            "prior": "−4.2%",
             "current": "+0.6%",
             "change": {
               "dir": "up",
-              "text": "+4.1"
+              "text": "+4.8"
             },
-            "nflAvg": "0%",
-            "priorNum": -3.5,
+            "nflAvg": "+0.0%",
+            "priorRaw": -4.234,
+            "currentRaw": 0.578,
+            "priorNum": -4.2,
             "feed": "proe"
           },
           {
@@ -3986,7 +4116,9 @@
               "dir": "up",
               "text": "faster"
             },
-            "nflAvg": "33s",
+            "nflAvg": "33.0s",
+            "priorRaw": 34.1037,
+            "currentRaw": 31.7617,
             "priorNum": 34.1,
             "feed": "pace",
             "invert": true
@@ -4002,20 +4134,24 @@
               "dir": "up",
               "text": "+2.9 - 4th in NFL"
             },
-            "nflAvg": "55.1%"
+            "nflAvg": "55.1%",
+            "priorRaw": 56.8421,
+            "currentRaw": 59.6983
           },
           {
             "key": "noHuddleRate",
             "label": "No-huddle rate",
             "sub": "share of offensive snaps",
             "def": "Share of offensive snaps the play-by-play marks as no-huddle, over the same snaps as the pass rate.",
-            "prior": "9%",
+            "prior": "9.0%",
             "current": "4.1%",
             "change": {
               "dir": "down",
               "text": "−4.9"
             },
-            "nflAvg": "6.8%"
+            "nflAvg": "6.8%",
+            "priorRaw": 8.9844,
+            "currentRaw": 4.0917
           },
           {
             "key": "paRate",
@@ -4028,7 +4164,9 @@
               "dir": "down",
               "text": "−4.8"
             },
-            "nflAvg": "22.4%"
+            "nflAvg": "22.4%",
+            "priorRaw": 21.9092,
+            "currentRaw": 17.1285
           },
           {
             "key": "motionRate",
@@ -4041,7 +4179,9 @@
               "dir": "up",
               "text": "+9.4"
             },
-            "nflAvg": "58.5%"
+            "nflAvg": "58.1%",
+            "priorRaw": 49.4141,
+            "currentRaw": 58.7561
           },
           {
             "key": "shotgunRate",
@@ -4054,7 +4194,9 @@
               "dir": "up",
               "text": "+9.7 - 2nd in NFL"
             },
-            "nflAvg": "62.2%"
+            "nflAvg": "62.2%",
+            "priorRaw": 67.5781,
+            "currentRaw": 77.2504
           },
           {
             "key": "rzPassRate",
@@ -4068,6 +4210,8 @@
               "text": "−3.8"
             },
             "nflAvg": "53.5%",
+            "priorRaw": 55.2,
+            "currentRaw": 51.3514,
             "priorNum": 55.2,
             "feed": "rzPassRate"
           },
@@ -4427,7 +4571,7 @@
         "note": "Monken has 4 prior play-calling seasons in this table, so read the history as background and the 2026 pace row as the live read. Positional finishes are season-long PPR ranks."
       },
       "distribution": {
-        "sub": "Target split by position across Monken's play-calling seasons since 2016, vs. league average.",
+        "sub": "Target split by position across Monken's play-calling seasons (2018, 2023-2026), vs. league average over the same seasons.",
         "rows": [
           {
             "label": "Wide receivers",
@@ -4445,7 +4589,7 @@
             "nfl": 19
           }
         ],
-        "note": "Across his play-calling seasons since 2016, Monken's offenses have directed a larger share of targets to tight ends than the league baseline (25% vs 22%). That historical tendency is worth monitoring alongside the current roster and weekly usage."
+        "note": "Across his play-calling seasons (2018, 2023-2026), Monken's offenses have directed a larger share of targets to tight ends than the league baseline (25% vs 22%). That historical tendency is worth monitoring alongside the current roster and weekly usage."
       },
       "backfield": {
         "sub": "Lead back's share of backfield weighted opportunities, by season called.",
@@ -4561,6 +4705,8 @@
               "text": "+1.9 - 8th in NFL"
             },
             "nflAvg": "60.5%",
+            "priorRaw": 61.8529,
+            "currentRaw": 63.7883,
             "priorNum": 61.9,
             "feed": "passRate"
           },
@@ -4569,14 +4715,16 @@
             "label": "Pass rate over expected",
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
-            "prior": "−0.9%",
+            "prior": "+0.2%",
             "current": "+1.9%",
             "change": {
               "dir": "up",
-              "text": "+2.8 - 5th in NFL"
+              "text": "+1.7 - 5th in NFL"
             },
-            "nflAvg": "0%",
-            "priorNum": -0.9,
+            "nflAvg": "+0.0%",
+            "priorRaw": 0.2122,
+            "currentRaw": 1.9174,
+            "priorNum": 0.2,
             "feed": "proe"
           },
           {
@@ -4590,7 +4738,9 @@
               "dir": "down",
               "text": "slower"
             },
-            "nflAvg": "33s",
+            "nflAvg": "33.0s",
+            "priorRaw": 31.1432,
+            "currentRaw": 31.6093,
             "priorNum": 31.1,
             "feed": "pace",
             "invert": true
@@ -4606,7 +4756,9 @@
               "dir": "up",
               "text": "+3.7 - 6th in NFL"
             },
-            "nflAvg": "55.1%"
+            "nflAvg": "55.1%",
+            "priorRaw": 55.4524,
+            "currentRaw": 59.18
           },
           {
             "key": "noHuddleRate",
@@ -4619,7 +4771,9 @@
               "dir": "down",
               "text": "−0.6 - 8th in NFL"
             },
-            "nflAvg": "6.8%"
+            "nflAvg": "6.8%",
+            "priorRaw": 9.1735,
+            "currentRaw": 8.6351
           },
           {
             "key": "paRate",
@@ -4627,12 +4781,14 @@
             "sub": "share of dropbacks, charted",
             "def": "Share of dropbacks charted as play-action. The denominator is dropbacks, not pass attempts, so sacks and scrambles are in it.",
             "prior": "26.9%",
-            "current": "24%",
+            "current": "24.0%",
             "change": {
               "dir": "down",
               "text": "−2.9"
             },
-            "nflAvg": "22.4%"
+            "nflAvg": "22.4%",
+            "priorRaw": 26.8722,
+            "currentRaw": 24.0175
           },
           {
             "key": "motionRate",
@@ -4645,7 +4801,9 @@
               "dir": "down",
               "text": "−11.9"
             },
-            "nflAvg": "58.5%"
+            "nflAvg": "58.1%",
+            "priorRaw": 59.1281,
+            "currentRaw": 47.2145
           },
           {
             "key": "shotgunRate",
@@ -4658,7 +4816,9 @@
               "dir": "flat",
               "text": "steady"
             },
-            "nflAvg": "62.2%"
+            "nflAvg": "62.2%",
+            "priorRaw": 62.6703,
+            "currentRaw": 62.5348
           },
           {
             "key": "rzPassRate",
@@ -4672,6 +4832,8 @@
               "text": "−1.5"
             },
             "nflAvg": "53.5%",
+            "priorRaw": 58.1633,
+            "currentRaw": 56.7376,
             "priorNum": 58.2,
             "feed": "rzPassRate"
           },
@@ -5262,7 +5424,7 @@
         "note": "Positional finishes are season-long PPR ranks. A row with a week range covers only the games he called that season, ranked against the league over the same weeks. Schottenheimer's offenses have put up repeated top-ten positional seasons - the system has paid fantasy investors before."
       },
       "distribution": {
-        "sub": "Target split by position across Schottenheimer's play-calling seasons since 2016, vs. league average.",
+        "sub": "Target split by position across Schottenheimer's play-calling seasons (2018-2021, 2025-2026), vs. league average over the same seasons.",
         "rows": [
           {
             "label": "Wide receivers",
@@ -5281,7 +5443,7 @@
             "nfl": 19
           }
         ],
-        "note": "Across his play-calling seasons since 2016, Schottenheimer's offenses have directed a larger share of targets to wide receivers than the league baseline (65% vs 59%). That historical tendency is worth monitoring alongside the current roster and weekly usage."
+        "note": "Across his play-calling seasons (2018-2021, 2025-2026), Schottenheimer's offenses have directed a larger share of targets to wide receivers than the league baseline (65% vs 59%). That historical tendency is worth monitoring alongside the current roster and weekly usage."
       },
       "backfield": {
         "sub": "Lead back's share of backfield weighted opportunities, by season called.",
@@ -5339,7 +5501,7 @@
       "bottomLine": "The fantasy bottom line: Schottenheimer called this offense in 2025 too, giving those tendencies more predictive value than they would have after a play-caller change. Through 11 games, the Cowboys have been less motion-heavy, more aggressive on short 4th downs and pass-heavier on early downs than in 2025. Historically, Schottenheimer's offenses have also directed an above-average share of targets to wide receivers. Current personnel usage should still carry weight alongside these tendencies.",
       "faq": {
         "question": "How does Brian Schottenheimer's play-calling affect Cowboys fantasy players?",
-        "answer": "Brian Schottenheimer is calling the Cowboys offense for the second straight season, so last year's tendencies remain predictive. Through Week 11 2026, the offense shows 4th-down go rate above league average (100% vs 76%) and pre-snap motion below league average (47.2% vs 58.5%). The lead back handles 74% of backfield weighted opportunities, and the target split leans toward wide receivers (65% vs a 59% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
+        "answer": "Brian Schottenheimer is calling the Cowboys offense for the second straight season, so last year's tendencies remain predictive. Through Week 11 2026, the offense shows 4th-down go rate above league average (100% vs 76%) and pre-snap motion below league average (47.2% vs 58.1%). The lead back handles 74% of backfield weighted opportunities, and the target split leans toward wide receivers (65% vs a 59% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
       }
     },
     "den": {
@@ -5397,6 +5559,8 @@
               "text": "−3.4"
             },
             "nflAvg": "60.5%",
+            "priorRaw": 62.5349,
+            "currentRaw": 59.1379,
             "priorNum": 62.5,
             "feed": "passRate"
           },
@@ -5405,14 +5569,16 @@
             "label": "Pass rate over expected",
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
-            "prior": "+1.5%",
+            "prior": "+3.0%",
             "current": "−0.3%",
             "change": {
               "dir": "down",
-              "text": "−1.8"
+              "text": "−3.3"
             },
-            "nflAvg": "0%",
-            "priorNum": 1.5,
+            "nflAvg": "+0.0%",
+            "priorRaw": 3.0294,
+            "currentRaw": -0.3309,
+            "priorNum": 3,
             "feed": "proe"
           },
           {
@@ -5426,7 +5592,9 @@
               "dir": "down",
               "text": "slower"
             },
-            "nflAvg": "33s",
+            "nflAvg": "33.0s",
+            "priorRaw": 32.3501,
+            "currentRaw": 32.7569,
             "priorNum": 32.4,
             "feed": "pace",
             "invert": true
@@ -5442,33 +5610,39 @@
               "dir": "down",
               "text": "−3.5"
             },
-            "nflAvg": "55.1%"
+            "nflAvg": "55.1%",
+            "priorRaw": 56.3946,
+            "currentRaw": 52.8889
           },
           {
             "key": "noHuddleRate",
             "label": "No-huddle rate",
             "sub": "share of offensive snaps",
             "def": "Share of offensive snaps the play-by-play marks as no-huddle, over the same snaps as the pass rate.",
-            "prior": "13%",
+            "prior": "13.0%",
             "current": "6.6%",
             "change": {
               "dir": "down",
               "text": "−6.4"
             },
-            "nflAvg": "6.8%"
+            "nflAvg": "6.8%",
+            "priorRaw": 12.9543,
+            "currentRaw": 6.5517
           },
           {
             "key": "paRate",
             "label": "Play-action rate",
             "sub": "share of dropbacks, charted",
             "def": "Share of dropbacks charted as play-action. The denominator is dropbacks, not pass attempts, so sacks and scrambles are in it.",
-            "prior": "24%",
+            "prior": "24.0%",
             "current": "23.6%",
             "change": {
               "dir": "flat",
               "text": "steady"
             },
-            "nflAvg": "22.4%"
+            "nflAvg": "22.4%",
+            "priorRaw": 23.994,
+            "currentRaw": 23.6152
           },
           {
             "key": "motionRate",
@@ -5481,7 +5655,9 @@
               "dir": "up",
               "text": "+15.4"
             },
-            "nflAvg": "58.5%"
+            "nflAvg": "58.1%",
+            "priorRaw": 46.3187,
+            "currentRaw": 61.7241
           },
           {
             "key": "shotgunRate",
@@ -5494,7 +5670,9 @@
               "dir": "down",
               "text": "−0.7"
             },
-            "nflAvg": "62.2%"
+            "nflAvg": "62.2%",
+            "priorRaw": 65.5172,
+            "currentRaw": 64.8276
           },
           {
             "key": "rzPassRate",
@@ -5508,6 +5686,8 @@
               "text": "−6.2"
             },
             "nflAvg": "53.5%",
+            "priorRaw": 59.1463,
+            "currentRaw": 52.8736,
             "priorNum": 59.1,
             "feed": "rzPassRate"
           },
@@ -5720,7 +5900,7 @@
       "bottomLine": "The fantasy bottom line: Davis Webb is new to the Broncos call sheet in 2026, so 2025 tendencies describe a different coach's offense. Through 10 games, the Broncos have been less aggressive on short 4th downs, more motion-heavy and less up-tempo than under the 2025 staff. This season the offense has directed an above-average share of targets to running backs. Current personnel usage should still carry weight alongside these tendencies.",
       "faq": {
         "question": "How does Davis Webb's play-calling affect Broncos fantasy players?",
-        "answer": "Davis Webb is a first-year play-caller for the Broncos, so last season's tendencies carry little predictive weight. Through Week 11 2026, the offense shows 4th-down go rate below league average (33% vs 76%) and pre-snap motion above league average (61.7% vs 58.5%). The lead back handles 36% of backfield weighted opportunities, and the target split leans toward running backs (23% vs a 18% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
+        "answer": "Davis Webb is a first-year play-caller for the Broncos, so last season's tendencies carry little predictive weight. Through Week 11 2026, the offense shows 4th-down go rate below league average (33% vs 76%) and pre-snap motion above league average (61.7% vs 58.1%). The lead back handles 36% of backfield weighted opportunities, and the target split leans toward running backs (23% vs a 18% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
       }
     },
     "det": {
@@ -5772,12 +5952,14 @@
             "label": "Pass rate (all downs)",
             "def": "Share of offensive snaps that were dropbacks. Sacks and QB scrambles count as passes, since both began as pass plays. Kneels, spikes, two-point tries and snaps wiped out by penalty are removed. Regular season only, as is every row here.",
             "prior": "59.4%",
-            "current": "57%",
+            "current": "57.0%",
             "change": {
               "dir": "down",
               "text": "−2.4"
             },
             "nflAvg": "60.5%",
+            "priorRaw": 59.4286,
+            "currentRaw": 56.9859,
             "priorNum": 59.4,
             "feed": "passRate"
           },
@@ -5786,14 +5968,16 @@
             "label": "Pass rate over expected",
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
-            "prior": "−4.4%",
+            "prior": "−2.8%",
             "current": "+0.1%",
             "change": {
               "dir": "up",
-              "text": "+4.5"
+              "text": "+2.9"
             },
-            "nflAvg": "0%",
-            "priorNum": -4.4,
+            "nflAvg": "+0.0%",
+            "priorRaw": -2.7695,
+            "currentRaw": 0.0707,
+            "priorNum": -2.8,
             "feed": "proe"
           },
           {
@@ -5807,7 +5991,9 @@
               "dir": "up",
               "text": "faster"
             },
-            "nflAvg": "33s",
+            "nflAvg": "33.0s",
+            "priorRaw": 33.2318,
+            "currentRaw": 32.5531,
             "priorNum": 33.2,
             "feed": "pace",
             "invert": true
@@ -5823,7 +6009,9 @@
               "dir": "down",
               "text": "−2.4"
             },
-            "nflAvg": "55.1%"
+            "nflAvg": "55.1%",
+            "priorRaw": 53.7221,
+            "currentRaw": 51.2974
           },
           {
             "key": "noHuddleRate",
@@ -5836,7 +6024,9 @@
               "dir": "down",
               "text": "−2"
             },
-            "nflAvg": "6.8%"
+            "nflAvg": "6.8%",
+            "priorRaw": 6.0952,
+            "currentRaw": 4.0816
           },
           {
             "key": "paRate",
@@ -5849,7 +6039,9 @@
               "dir": "up",
               "text": "+4.8 - 3rd in NFL"
             },
-            "nflAvg": "22.4%"
+            "nflAvg": "22.4%",
+            "priorRaw": 25.4808,
+            "currentRaw": 30.303
           },
           {
             "key": "motionRate",
@@ -5862,7 +6054,9 @@
               "dir": "down",
               "text": "−4.9"
             },
-            "nflAvg": "58.5%"
+            "nflAvg": "58.1%",
+            "priorRaw": 59.8095,
+            "currentRaw": 54.9451
           },
           {
             "key": "shotgunRate",
@@ -5875,7 +6069,9 @@
               "dir": "down",
               "text": "−6"
             },
-            "nflAvg": "62.2%"
+            "nflAvg": "62.2%",
+            "priorRaw": 51.5238,
+            "currentRaw": 45.5259
           },
           {
             "key": "rzPassRate",
@@ -5883,12 +6079,14 @@
             "sub": "inside the opponent's 20",
             "def": "Pass share on snaps at the opponent's 20-yard line or closer. Sacks and scrambles count as passes; kneels, spikes, two-point tries and snaps wiped out by penalty are removed. It counts plays, not trips, so a few long red-zone drives can move it a lot early in a season.",
             "prior": "53.2%",
-            "current": "52%",
+            "current": "52.0%",
             "change": {
               "dir": "down",
               "text": "−1.2"
             },
             "nflAvg": "53.5%",
+            "priorRaw": 53.1579,
+            "currentRaw": 52.0325,
             "priorNum": 53.2,
             "feed": "rzPassRate"
           },
@@ -6190,7 +6388,7 @@
         "note": "Petzing has 3 prior play-calling seasons in this table, so read the history as background and the 2026 pace row as the live read. Positional finishes are season-long PPR ranks."
       },
       "distribution": {
-        "sub": "Target split by position across Petzing's play-calling seasons since 2016, vs. league average.",
+        "sub": "Target split by position across Petzing's play-calling seasons (2023-2026), vs. league average over the same seasons.",
         "rows": [
           {
             "label": "Wide receivers",
@@ -6209,7 +6407,7 @@
             "nfl": 18
           }
         ],
-        "note": "Across his play-calling seasons since 2016, Petzing's offenses have directed a smaller share of targets to wide receivers than the league baseline (50% vs 59%). That historical tendency is worth monitoring alongside the current roster and weekly usage."
+        "note": "Across his play-calling seasons (2023-2026), Petzing's offenses have directed a smaller share of targets to wide receivers than the league baseline (50% vs 59%). That historical tendency is worth monitoring alongside the current roster and weekly usage."
       },
       "backfield": {
         "sub": "Lead back's share of backfield weighted opportunities, by season called.",
@@ -6317,6 +6515,8 @@
               "text": "+9.7 - 3rd in NFL"
             },
             "nflAvg": "60.5%",
+            "priorRaw": 55.7013,
+            "currentRaw": 65.4036,
             "priorNum": 55.7,
             "feed": "passRate"
           },
@@ -6325,14 +6525,16 @@
             "label": "Pass rate over expected",
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
-            "prior": "−4.4%",
+            "prior": "−3.3%",
             "current": "+3.8%",
             "change": {
               "dir": "up",
-              "text": "+8.2 - 3rd in NFL"
+              "text": "+7.1 - 3rd in NFL"
             },
-            "nflAvg": "0%",
-            "priorNum": -4.4,
+            "nflAvg": "+0.0%",
+            "priorRaw": -3.2718,
+            "currentRaw": 3.8178,
+            "priorNum": -3.3,
             "feed": "proe"
           },
           {
@@ -6346,7 +6548,9 @@
               "dir": "up",
               "text": "faster"
             },
-            "nflAvg": "33s",
+            "nflAvg": "33.0s",
+            "priorRaw": 34.3408,
+            "currentRaw": 32.9175,
             "priorNum": 34.3,
             "feed": "pace",
             "invert": true
@@ -6362,7 +6566,9 @@
               "dir": "up",
               "text": "+8.8 - 8th in NFL"
             },
-            "nflAvg": "55.1%"
+            "nflAvg": "55.1%",
+            "priorRaw": 50.2632,
+            "currentRaw": 59.0909
           },
           {
             "key": "noHuddleRate",
@@ -6375,7 +6581,9 @@
               "dir": "up",
               "text": "+0.6 - 5th in NFL"
             },
-            "nflAvg": "6.8%"
+            "nflAvg": "6.8%",
+            "priorRaw": 8.779,
+            "currentRaw": 9.3904
           },
           {
             "key": "paRate",
@@ -6388,7 +6596,9 @@
               "dir": "down",
               "text": "−8.4"
             },
-            "nflAvg": "22.4%"
+            "nflAvg": "22.4%",
+            "priorRaw": 25.5435,
+            "currentRaw": 17.1285
           },
           {
             "key": "motionRate",
@@ -6396,12 +6606,14 @@
             "sub": "before or at the snap, charted",
             "def": "Share of charted snaps with motion before or at the snap. That includes a player who motions and resets before the ball is snapped, not only one still moving when it is.",
             "prior": "55.2%",
-            "current": "59%",
+            "current": "59.0%",
             "change": {
               "dir": "up",
               "text": "+3.8"
             },
-            "nflAvg": "58.5%"
+            "nflAvg": "58.1%",
+            "priorRaw": 55.1968,
+            "currentRaw": 58.9786
           },
           {
             "key": "shotgunRate",
@@ -6414,7 +6626,9 @@
               "dir": "up",
               "text": "+5.8 - 8th in NFL"
             },
-            "nflAvg": "62.2%"
+            "nflAvg": "62.2%",
+            "priorRaw": 63.0676,
+            "currentRaw": 68.8633
           },
           {
             "key": "rzPassRate",
@@ -6428,6 +6642,8 @@
               "text": "+3.9"
             },
             "nflAvg": "53.5%",
+            "priorRaw": 48.5207,
+            "currentRaw": 52.4272,
             "priorNum": 48.5,
             "feed": "rzPassRate"
           },
@@ -7074,7 +7290,7 @@
         "note": "Positional finishes are season-long PPR ranks. LaFleur's offenses have put up repeated top-ten positional seasons - the system has paid fantasy investors before."
       },
       "distribution": {
-        "sub": "Target split by position across LaFleur's play-calling seasons since 2016, vs. league average.",
+        "sub": "Target split by position across LaFleur's play-calling seasons (2018-2026), vs. league average over the same seasons.",
         "rows": [
           {
             "label": "Wide receivers",
@@ -7092,7 +7308,7 @@
             "nfl": 19
           }
         ],
-        "note": "Across his play-calling seasons since 2016, LaFleur's offenses have directed a larger share of targets to wide receivers than the league baseline (62% vs 59%). That historical tendency is worth monitoring alongside the current roster and weekly usage."
+        "note": "Across his play-calling seasons (2018-2026), LaFleur's offenses have directed a larger share of targets to wide receivers than the league baseline (62% vs 59%). That historical tendency is worth monitoring alongside the current roster and weekly usage."
       },
       "backfield": {
         "sub": "Lead back's share of backfield weighted opportunities, by season called.",
@@ -7198,12 +7414,14 @@
             "label": "Pass rate (all downs)",
             "def": "Share of offensive snaps that were dropbacks. Sacks and QB scrambles count as passes, since both began as pass plays. Kneels, spikes, two-point tries and snaps wiped out by penalty are removed. Regular season only, as is every row here.",
             "prior": "60.1%",
-            "current": "62%",
+            "current": "62.0%",
             "change": {
               "dir": "up",
               "text": "+1.9"
             },
             "nflAvg": "60.5%",
+            "priorRaw": 60.0746,
+            "currentRaw": 61.9512,
             "priorNum": 60.1,
             "feed": "passRate"
           },
@@ -7212,14 +7430,16 @@
             "label": "Pass rate over expected",
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
-            "prior": "−0.9%",
-            "current": "+1%",
+            "prior": "+0.7%",
+            "current": "+1.0%",
             "change": {
-              "dir": "up",
-              "text": "+1.9"
+              "dir": "flat",
+              "text": "steady"
             },
-            "nflAvg": "0%",
-            "priorNum": -0.9,
+            "nflAvg": "+0.0%",
+            "priorRaw": 0.7315,
+            "currentRaw": 0.9741,
+            "priorNum": 0.7,
             "feed": "proe"
           },
           {
@@ -7233,7 +7453,9 @@
               "dir": "down",
               "text": "slower"
             },
-            "nflAvg": "33s",
+            "nflAvg": "33.0s",
+            "priorRaw": 32.4932,
+            "currentRaw": 33.5238,
             "priorNum": 32.5,
             "feed": "pace",
             "invert": true
@@ -7244,12 +7466,14 @@
             "sub": "1st & 2nd down",
             "def": "Pass share on every 1st- and 2nd-down snap, whatever the score - not only neutral situations. Same pass definition as the pass rate, so sacks and scrambles count as passes.",
             "prior": "54.8%",
-            "current": "57%",
+            "current": "57.0%",
             "change": {
               "dir": "up",
               "text": "+2.2"
             },
-            "nflAvg": "55.1%"
+            "nflAvg": "55.1%",
+            "priorRaw": 54.7995,
+            "currentRaw": 57.0231
           },
           {
             "key": "noHuddleRate",
@@ -7262,7 +7486,9 @@
               "dir": "up",
               "text": "+0.5"
             },
-            "nflAvg": "6.8%"
+            "nflAvg": "6.8%",
+            "priorRaw": 3.7313,
+            "currentRaw": 4.2276
           },
           {
             "key": "paRate",
@@ -7275,20 +7501,24 @@
               "dir": "down",
               "text": "−4"
             },
-            "nflAvg": "22.4%"
+            "nflAvg": "22.4%",
+            "priorRaw": 22.8616,
+            "currentRaw": 18.8976
           },
           {
             "key": "motionRate",
             "label": "Pre-snap motion",
             "sub": "before or at the snap, charted",
             "def": "Share of charted snaps with motion before or at the snap. That includes a player who motions and resets before the ball is snapped, not only one still moving when it is.",
-            "prior": "54%",
+            "prior": "54.0%",
             "current": "55.9%",
             "change": {
               "dir": "up",
               "text": "+1.9"
             },
-            "nflAvg": "58.5%"
+            "nflAvg": "58.1%",
+            "priorRaw": 54.0112,
+            "currentRaw": 55.935
           },
           {
             "key": "shotgunRate",
@@ -7301,7 +7531,9 @@
               "dir": "up",
               "text": "+7.8 - 7th in NFL"
             },
-            "nflAvg": "62.2%"
+            "nflAvg": "62.2%",
+            "priorRaw": 62.1269,
+            "currentRaw": 69.9187
           },
           {
             "key": "rzPassRate",
@@ -7315,6 +7547,8 @@
               "text": "+0.5 - 8th in NFL"
             },
             "nflAvg": "53.5%",
+            "priorRaw": 56.25,
+            "currentRaw": 56.8182,
             "priorNum": 56.3,
             "feed": "rzPassRate"
           },
@@ -7509,7 +7743,7 @@
         "note": "Positional finishes are season-long PPR ranks. Top-ten positional seasons have been scarce under Caley - price this offense on volume and matchup, not system history."
       },
       "distribution": {
-        "sub": "Target split by position across Caley's play-calling seasons since 2016, vs. league average.",
+        "sub": "Target split by position across Caley's play-calling seasons (2025-2026), vs. league average over the same seasons.",
         "rows": [
           {
             "label": "Wide receivers",
@@ -7528,7 +7762,7 @@
             "nfl": 18
           }
         ],
-        "note": "Across his play-calling seasons since 2016, Caley's offenses have directed a larger share of targets to wide receivers than the league baseline (64% vs 58%). That historical tendency is worth monitoring alongside the current roster and weekly usage."
+        "note": "Across his play-calling seasons (2025-2026), Caley's offenses have directed a larger share of targets to wide receivers than the league baseline (64% vs 58%). That historical tendency is worth monitoring alongside the current roster and weekly usage."
       },
       "backfield": {
         "sub": "Lead back's share of backfield weighted opportunities, by season (* = previous staff).",
@@ -7628,6 +7862,8 @@
               "text": "−0.8"
             },
             "nflAvg": "60.5%",
+            "priorRaw": 59.6614,
+            "currentRaw": 58.8757,
             "priorNum": 59.7,
             "feed": "passRate"
           },
@@ -7636,14 +7872,16 @@
             "label": "Pass rate over expected",
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
-            "prior": "−0.8%",
+            "prior": "+0.7%",
             "current": "−2.9%",
             "change": {
               "dir": "down",
-              "text": "−2.1"
+              "text": "−3.6"
             },
-            "nflAvg": "0%",
-            "priorNum": -0.8,
+            "nflAvg": "+0.0%",
+            "priorRaw": 0.7331,
+            "currentRaw": -2.9491,
+            "priorNum": 0.7,
             "feed": "proe"
           },
           {
@@ -7657,7 +7895,9 @@
               "dir": "up",
               "text": "faster"
             },
-            "nflAvg": "33s",
+            "nflAvg": "33.0s",
+            "priorRaw": 33.7315,
+            "currentRaw": 32.8185,
             "priorNum": 33.7,
             "feed": "pace",
             "invert": true
@@ -7673,7 +7913,9 @@
               "dir": "down",
               "text": "−2.5"
             },
-            "nflAvg": "55.1%"
+            "nflAvg": "55.1%",
+            "priorRaw": 56.1224,
+            "currentRaw": 53.6062
           },
           {
             "key": "noHuddleRate",
@@ -7686,20 +7928,24 @@
               "dir": "down",
               "text": "−1.5"
             },
-            "nflAvg": "6.8%"
+            "nflAvg": "6.8%",
+            "priorRaw": 5.1793,
+            "currentRaw": 3.6982
           },
           {
             "key": "paRate",
             "label": "Play-action rate",
             "sub": "share of dropbacks, charted",
             "def": "Share of dropbacks charted as play-action. The denominator is dropbacks, not pass attempts, so sacks and scrambles are in it.",
-            "prior": "28%",
+            "prior": "28.0%",
             "current": "27.4%",
             "change": {
               "dir": "down",
               "text": "−0.6 - 5th in NFL"
             },
-            "nflAvg": "22.4%"
+            "nflAvg": "22.4%",
+            "priorRaw": 28.0467,
+            "currentRaw": 27.3869
           },
           {
             "key": "motionRate",
@@ -7712,7 +7958,9 @@
               "dir": "up",
               "text": "+8.1"
             },
-            "nflAvg": "58.5%"
+            "nflAvg": "58.1%",
+            "priorRaw": 53.0876,
+            "currentRaw": 61.2426
           },
           {
             "key": "shotgunRate",
@@ -7720,12 +7968,14 @@
             "sub": "share of offensive snaps",
             "def": "Share of offensive snaps the play-by-play logs as shotgun, over the same snaps as the pass rate. Pistol is not tracked separately: a pistol snap counts only if the play-by-play logs it as shotgun.",
             "prior": "72.2%",
-            "current": "63%",
+            "current": "63.0%",
             "change": {
               "dir": "down",
               "text": "−9.2"
             },
-            "nflAvg": "62.2%"
+            "nflAvg": "62.2%",
+            "priorRaw": 72.2112,
+            "currentRaw": 63.0178
           },
           {
             "key": "rzPassRate",
@@ -7733,12 +7983,14 @@
             "sub": "inside the opponent's 20",
             "def": "Pass share on snaps at the opponent's 20-yard line or closer. Sacks and scrambles count as passes; kneels, spikes, two-point tries and snaps wiped out by penalty are removed. It counts plays, not trips, so a few long red-zone drives can move it a lot early in a season.",
             "prior": "49.2%",
-            "current": "41%",
+            "current": "41.0%",
             "change": {
               "dir": "down",
               "text": "−8.2"
             },
             "nflAvg": "53.5%",
+            "priorRaw": 49.1979,
+            "currentRaw": 40.9639,
             "priorNum": 49.2,
             "feed": "rzPassRate"
           },
@@ -7778,7 +8030,7 @@
         },
         {
           "key": "shotgunRate",
-          "stat": "63",
+          "stat": "63.0",
           "unit": "shotgun",
           "heading": "More under center.",
           "body": "Under-center snaps travel with the run game and play-action: better for an early-down back and downfield shots off the fake.",
@@ -7786,7 +8038,7 @@
         },
         {
           "key": "rzPassRate",
-          "stat": "41",
+          "stat": "41.0",
           "unit": "red-zone pass %",
           "heading": "Run-heavy in the red zone.",
           "body": "More rushing TD opportunity, less for the pass-catchers.",
@@ -8370,7 +8622,7 @@
         "note": "Positional finishes are season-long PPR ranks. Steichen's offenses have put up repeated top-ten positional seasons - the system has paid fantasy investors before."
       },
       "distribution": {
-        "sub": "Target split by position across Steichen's play-calling seasons since 2016, vs. league average.",
+        "sub": "Target split by position across Steichen's play-calling seasons (2019-2026), vs. league average over the same seasons.",
         "rows": [
           {
             "label": "Wide receivers",
@@ -8446,7 +8698,7 @@
       "bottomLine": "The fantasy bottom line: Steichen called this offense in 2025 too, giving those tendencies more predictive value than they would have after a play-caller change. Through 11 games, the Colts have been less aggressive on short 4th downs, more under-center and more run-heavy in the red zone than in 2025. Current personnel usage should still carry weight alongside these tendencies.",
       "faq": {
         "question": "How does Shane Steichen's play-calling affect Colts fantasy players?",
-        "answer": "Shane Steichen is calling the Colts offense for the fourth straight season, so last year's tendencies remain predictive. Through Week 11 2026, the offense shows 4th-down go rate below league average (53% vs 76%) and red-zone pass rate below league average (41% vs 53.5%). The lead back handles 77% of backfield weighted opportunities. The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
+        "answer": "Shane Steichen is calling the Colts offense for the fourth straight season, so last year's tendencies remain predictive. Through Week 11 2026, the offense shows 4th-down go rate below league average (53% vs 76%) and red-zone pass rate below league average (41.0% vs 53.5%). The lead back handles 77% of backfield weighted opportunities. The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
       }
     },
     "jax": {
@@ -8504,6 +8756,8 @@
               "text": "−4"
             },
             "nflAvg": "60.5%",
+            "priorRaw": 60.1869,
+            "currentRaw": 56.1667,
             "priorNum": 60.2,
             "feed": "passRate"
           },
@@ -8512,14 +8766,16 @@
             "label": "Pass rate over expected",
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
-            "prior": "+2.1%",
+            "prior": "+2.6%",
             "current": "−1.3%",
             "change": {
               "dir": "down",
-              "text": "−3.4"
+              "text": "−3.9"
             },
-            "nflAvg": "0%",
-            "priorNum": 2.1,
+            "nflAvg": "+0.0%",
+            "priorRaw": 2.6054,
+            "currentRaw": -1.2861,
+            "priorNum": 2.6,
             "feed": "proe"
           },
           {
@@ -8527,13 +8783,15 @@
             "label": "Neutral pace",
             "sub": "sec/play, neutral game state",
             "def": "Average seconds between back-to-back snaps on the same drive, counted only while the game is neutral: win probability between 20% and 80%, with more than two minutes left in the half. Gaps over 60 seconds (timeouts, reviews, quarter breaks) are dropped. Lower is faster.",
-            "prior": "34s",
+            "prior": "34.0s",
             "current": "33.9s",
             "change": {
               "dir": "flat",
               "text": "steady"
             },
-            "nflAvg": "33s",
+            "nflAvg": "33.0s",
+            "priorRaw": 34.0049,
+            "currentRaw": 33.8927,
             "priorNum": 34,
             "feed": "pace",
             "invert": true
@@ -8544,12 +8802,14 @@
             "sub": "1st & 2nd down",
             "def": "Pass share on every 1st- and 2nd-down snap, whatever the score - not only neutral situations. Same pass definition as the pass rate, so sacks and scrambles count as passes.",
             "prior": "56.6%",
-            "current": "53%",
+            "current": "53.0%",
             "change": {
               "dir": "down",
               "text": "−3.6"
             },
-            "nflAvg": "55.1%"
+            "nflAvg": "55.1%",
+            "priorRaw": 56.6265,
+            "currentRaw": 53.0043
           },
           {
             "key": "noHuddleRate",
@@ -8557,12 +8817,14 @@
             "sub": "share of offensive snaps",
             "def": "Share of offensive snaps the play-by-play marks as no-huddle, over the same snaps as the pass rate.",
             "prior": "6.9%",
-            "current": "4%",
+            "current": "4.0%",
             "change": {
               "dir": "down",
               "text": "−2.9"
             },
-            "nflAvg": "6.8%"
+            "nflAvg": "6.8%",
+            "priorRaw": 6.9159,
+            "currentRaw": 4
           },
           {
             "key": "paRate",
@@ -8575,20 +8837,24 @@
               "dir": "up",
               "text": "+2.3"
             },
-            "nflAvg": "22.4%"
+            "nflAvg": "22.4%",
+            "priorRaw": 21.8944,
+            "currentRaw": 24.1791
           },
           {
             "key": "motionRate",
             "label": "Pre-snap motion",
             "sub": "before or at the snap, charted",
             "def": "Share of charted snaps with motion before or at the snap. That includes a player who motions and resets before the ball is snapped, not only one still moving when it is.",
-            "prior": "60%",
+            "prior": "60.0%",
             "current": "65.8%",
             "change": {
               "dir": "up",
               "text": "+5.8 - 6th in NFL"
             },
-            "nflAvg": "58.5%"
+            "nflAvg": "58.1%",
+            "priorRaw": 60,
+            "currentRaw": 65.8333
           },
           {
             "key": "shotgunRate",
@@ -8601,7 +8867,9 @@
               "dir": "down",
               "text": "−6.1"
             },
-            "nflAvg": "62.2%"
+            "nflAvg": "62.2%",
+            "priorRaw": 60.9346,
+            "currentRaw": 54.8333
           },
           {
             "key": "rzPassRate",
@@ -8615,6 +8883,8 @@
               "text": "+4.7"
             },
             "nflAvg": "53.5%",
+            "priorRaw": 49.7537,
+            "currentRaw": 54.5455,
             "priorNum": 49.8,
             "feed": "rzPassRate"
           },
@@ -8867,7 +9137,7 @@
         "note": "Positional finishes are season-long PPR ranks. Coen's offenses have put up repeated top-ten positional seasons - the system has paid fantasy investors before."
       },
       "distribution": {
-        "sub": "Target split by position across Coen's play-calling seasons since 2016, vs. league average.",
+        "sub": "Target split by position across Coen's play-calling seasons (2024-2026), vs. league average over the same seasons.",
         "rows": [
           {
             "label": "Wide receivers",
@@ -8886,7 +9156,7 @@
             "nfl": 18
           }
         ],
-        "note": "Across his play-calling seasons since 2016, Coen's offenses have directed a larger share of targets to wide receivers than the league baseline (64% vs 59%). That historical tendency is worth monitoring alongside the current roster and weekly usage."
+        "note": "Across his play-calling seasons (2024-2026), Coen's offenses have directed a larger share of targets to wide receivers than the league baseline (64% vs 59%). That historical tendency is worth monitoring alongside the current roster and weekly usage."
       },
       "backfield": {
         "sub": "Lead back's share of backfield weighted opportunities, by season called.",
@@ -8932,7 +9202,7 @@
       "bottomLine": "The fantasy bottom line: Coen called this offense in 2025 too, giving those tendencies more predictive value than they would have after a play-caller change. Through 10 games, the Jaguars have been less aggressive on short 4th downs, more under-center and more motion-heavy than in 2025. Historically, Coen's offenses have also directed an above-average share of targets to wide receivers. Current personnel usage should still carry weight alongside these tendencies.",
       "faq": {
         "question": "How does Liam Coen's play-calling affect Jaguars fantasy players?",
-        "answer": "Liam Coen is calling the Jaguars offense for the second straight season, so last year's tendencies remain predictive. Through Week 11 2026, the offense shows 4th-down go rate below league average (63% vs 76%) and shotgun rate below league average (54.8% vs 62.2%). The lead back handles 62% of backfield weighted opportunities, and the target split leans toward wide receivers (64% vs a 59% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
+        "answer": "Liam Coen is calling the Jaguars offense for the second straight season, so last year's tendencies remain predictive. Through Week 11 2026, the offense shows 4th-down go rate below league average (63% vs 76%) and pre-snap motion above league average (65.8% vs 58.1%). The lead back handles 62% of backfield weighted opportunities, and the target split leans toward wide receivers (64% vs a 59% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
       }
     },
     "kc": {
@@ -8986,6 +9256,8 @@
               "text": "−6.1"
             },
             "nflAvg": "60.5%",
+            "priorRaw": 65.7416,
+            "currentRaw": 59.5779,
             "priorNum": 65.7,
             "feed": "passRate"
           },
@@ -8994,14 +9266,16 @@
             "label": "Pass rate over expected",
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
-            "prior": "+4.2%",
+            "prior": "+5.6%",
             "current": "+5.5%",
             "change": {
-              "dir": "up",
-              "text": "+1.3 - 2nd in NFL"
+              "dir": "flat",
+              "text": "steady"
             },
-            "nflAvg": "0%",
-            "priorNum": 4.2,
+            "nflAvg": "+0.0%",
+            "priorRaw": 5.5955,
+            "currentRaw": 5.4631,
+            "priorNum": 5.6,
             "feed": "proe"
           },
           {
@@ -9015,7 +9289,9 @@
               "dir": "up",
               "text": "faster"
             },
-            "nflAvg": "33s",
+            "nflAvg": "33.0s",
+            "priorRaw": 32.7684,
+            "currentRaw": 31.597,
             "priorNum": 32.8,
             "feed": "pace",
             "invert": true
@@ -9031,7 +9307,9 @@
               "dir": "down",
               "text": "−6.8"
             },
-            "nflAvg": "55.1%"
+            "nflAvg": "55.1%",
+            "priorRaw": 62.2334,
+            "currentRaw": 55.4167
           },
           {
             "key": "noHuddleRate",
@@ -9039,12 +9317,14 @@
             "sub": "share of offensive snaps",
             "def": "Share of offensive snaps the play-by-play marks as no-huddle, over the same snaps as the pass rate.",
             "prior": "2.5%",
-            "current": "1%",
+            "current": "1.0%",
             "change": {
               "dir": "down",
               "text": "−1.5"
             },
-            "nflAvg": "6.8%"
+            "nflAvg": "6.8%",
+            "priorRaw": 2.488,
+            "currentRaw": 0.974
           },
           {
             "key": "paRate",
@@ -9057,7 +9337,9 @@
               "dir": "up",
               "text": "+13.6 - 4th in NFL"
             },
-            "nflAvg": "22.4%"
+            "nflAvg": "22.4%",
+            "priorRaw": 15.3061,
+            "currentRaw": 28.8828
           },
           {
             "key": "motionRate",
@@ -9070,20 +9352,24 @@
               "dir": "up",
               "text": "+7"
             },
-            "nflAvg": "58.5%"
+            "nflAvg": "58.1%",
+            "priorRaw": 49.6651,
+            "currentRaw": 56.6558
           },
           {
             "key": "shotgunRate",
             "label": "Shotgun rate",
             "sub": "share of offensive snaps",
             "def": "Share of offensive snaps the play-by-play logs as shotgun, over the same snaps as the pass rate. Pistol is not tracked separately: a pistol snap counts only if the play-by-play logs it as shotgun.",
-            "prior": "81%",
+            "prior": "81.0%",
             "current": "60.1%",
             "change": {
               "dir": "down",
               "text": "−20.9"
             },
-            "nflAvg": "62.2%"
+            "nflAvg": "62.2%",
+            "priorRaw": 80.9569,
+            "currentRaw": 60.0649
           },
           {
             "key": "rzPassRate",
@@ -9097,6 +9383,8 @@
               "text": "−4.1"
             },
             "nflAvg": "53.5%",
+            "priorRaw": 59.6774,
+            "currentRaw": 55.5556,
             "priorNum": 59.7,
             "feed": "rzPassRate"
           },
@@ -9936,7 +10224,7 @@
         "note": "Positional finishes are season-long PPR ranks. Reid's offenses have put up repeated top-ten positional seasons - the system has paid fantasy investors before."
       },
       "distribution": {
-        "sub": "Target split by position across Reid's play-calling seasons since 2016, vs. league average.",
+        "sub": "Target split by position across Reid's play-calling seasons (2016-2026), vs. league average over the same seasons.",
         "rows": [
           {
             "label": "Wide receivers",
@@ -9955,7 +10243,7 @@
             "nfl": 19
           }
         ],
-        "note": "Across his play-calling seasons since 2016, Reid's offenses have directed a smaller share of targets to wide receivers than the league baseline (52% vs 59%). That historical tendency is worth monitoring alongside the current roster and weekly usage."
+        "note": "Across his play-calling seasons (2016-2026), Reid's offenses have directed a smaller share of targets to wide receivers than the league baseline (52% vs 59%). That historical tendency is worth monitoring alongside the current roster and weekly usage."
       },
       "backfield": {
         "sub": "Lead back's share of backfield weighted opportunities, by season called.",
@@ -10013,7 +10301,7 @@
       "bottomLine": "The fantasy bottom line: Reid called this offense in 2025 too, giving those tendencies more predictive value than they would have after a play-caller change. Through 10 games, the Chiefs have been more under-center, heavier on play-action and more motion-heavy than in 2025. Historically, Reid's offenses have also directed a below-average share of targets to wide receivers. Current personnel usage should still carry weight alongside these tendencies.",
       "faq": {
         "question": "How does Andy Reid's play-calling affect Chiefs fantasy players?",
-        "answer": "Andy Reid is calling the Chiefs offense for the 14th straight season, so last year's tendencies remain predictive. Through Week 11 2026, the offense shows play-action rate above league average (28.9% vs 22.4%) and no-huddle rate below league average (1% vs 6.8%). The lead back handles 63% of backfield weighted opportunities, and the target split leans toward wide receivers (52% vs a 59% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
+        "answer": "Andy Reid is calling the Chiefs offense for the 14th straight season, so last year's tendencies remain predictive. Through Week 11 2026, the offense shows play-action rate above league average (28.9% vs 22.4%) and no-huddle rate below league average (1.0% vs 6.8%). The lead back handles 63% of backfield weighted opportunities, and the target split leans toward wide receivers (52% vs a 59% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
       }
     },
     "lac": {
@@ -10067,6 +10355,8 @@
               "text": "−4.8"
             },
             "nflAvg": "60.5%",
+            "priorRaw": 63.114,
+            "currentRaw": 58.3196,
             "priorNum": 63.1,
             "feed": "passRate"
           },
@@ -10075,14 +10365,16 @@
             "label": "Pass rate over expected",
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
-            "prior": "+0.8%",
-            "current": "−10%",
+            "prior": "+2.4%",
+            "current": "−10.0%",
             "change": {
               "dir": "down",
-              "text": "−10.8"
+              "text": "−12.4"
             },
-            "nflAvg": "0%",
-            "priorNum": 0.8,
+            "nflAvg": "+0.0%",
+            "priorRaw": 2.4084,
+            "currentRaw": -10.0263,
+            "priorNum": 2.4,
             "feed": "proe"
           },
           {
@@ -10096,7 +10388,9 @@
               "dir": "up",
               "text": "faster"
             },
-            "nflAvg": "33s",
+            "nflAvg": "33.0s",
+            "priorRaw": 34.4807,
+            "currentRaw": 33.1483,
             "priorNum": 34.5,
             "feed": "pace",
             "invert": true
@@ -10112,7 +10406,9 @@
               "dir": "down",
               "text": "−8.1"
             },
-            "nflAvg": "55.1%"
+            "nflAvg": "55.1%",
+            "priorRaw": 58.22,
+            "currentRaw": 50.1114
           },
           {
             "key": "noHuddleRate",
@@ -10120,12 +10416,14 @@
             "sub": "share of offensive snaps",
             "def": "Share of offensive snaps the play-by-play marks as no-huddle, over the same snaps as the pass rate.",
             "prior": "3.8%",
-            "current": "4.6%",
+            "current": "4.8%",
             "change": {
               "dir": "up",
-              "text": "+0.8"
+              "text": "+1"
             },
-            "nflAvg": "6.8%"
+            "nflAvg": "6.8%",
+            "priorRaw": 3.7998,
+            "currentRaw": 4.7776
           },
           {
             "key": "paRate",
@@ -10138,7 +10436,9 @@
               "dir": "up",
               "text": "+1.8"
             },
-            "nflAvg": "22.4%"
+            "nflAvg": "22.4%",
+            "priorRaw": 23.0543,
+            "currentRaw": 24.8588
           },
           {
             "key": "motionRate",
@@ -10151,7 +10451,9 @@
               "dir": "up",
               "text": "+20.8 - 2nd in NFL"
             },
-            "nflAvg": "58.5%"
+            "nflAvg": "58.1%",
+            "priorRaw": 52.2706,
+            "currentRaw": 73.1466
           },
           {
             "key": "shotgunRate",
@@ -10159,12 +10461,14 @@
             "sub": "share of offensive snaps",
             "def": "Share of offensive snaps the play-by-play logs as shotgun, over the same snaps as the pass rate. Pistol is not tracked separately: a pistol snap counts only if the play-by-play logs it as shotgun.",
             "prior": "71.5%",
-            "current": "67.4%",
+            "current": "67.5%",
             "change": {
               "dir": "down",
-              "text": "−4.1"
+              "text": "−4"
             },
-            "nflAvg": "62.2%"
+            "nflAvg": "62.2%",
+            "priorRaw": 71.4551,
+            "currentRaw": 67.5453
           },
           {
             "key": "rzPassRate",
@@ -10178,6 +10482,8 @@
               "text": "−5.5"
             },
             "nflAvg": "53.5%",
+            "priorRaw": 60.6061,
+            "currentRaw": 55.1282,
             "priorNum": 60.6,
             "feed": "rzPassRate"
           },
@@ -10225,7 +10531,7 @@
         },
         {
           "key": "proe",
-          "stat": "−10",
+          "stat": "−10.0",
           "unit": "PROE",
           "heading": "A run lean has emerged.",
           "body": "Adjusted for situation, so the run lean reads as intent, not game script.",
@@ -10527,7 +10833,7 @@
         "note": "McDaniel has 4 prior play-calling seasons in this table, so read the history as background and the 2026 pace row as the live read. Positional finishes are season-long PPR ranks."
       },
       "distribution": {
-        "sub": "Target split by position across McDaniel's play-calling seasons since 2016, vs. league average.",
+        "sub": "Target split by position across McDaniel's play-calling seasons (2022-2026), vs. league average over the same seasons.",
         "rows": [
           {
             "label": "Wide receivers",
@@ -10546,7 +10852,7 @@
             "gold": true
           }
         ],
-        "note": "Across his play-calling seasons since 2016, McDaniel's offenses have directed a larger share of targets to running backs than the league baseline (23% vs 18%). That historical tendency is worth monitoring alongside the current roster and weekly usage."
+        "note": "Across his play-calling seasons (2022-2026), McDaniel's offenses have directed a larger share of targets to running backs than the league baseline (23% vs 18%). That historical tendency is worth monitoring alongside the current roster and weekly usage."
       },
       "backfield": {
         "sub": "Lead back's share of backfield weighted opportunities, by season called.",
@@ -10600,7 +10906,7 @@
       "bottomLine": "The fantasy bottom line: Mike McDaniel is new to the Chargers call sheet in 2026, so 2025 tendencies describe a different coach's offense. Through 10 games, the Chargers have been more motion-heavy, more aggressive on short 4th downs and more run-leaning by PROE than under the 2025 staff. Historically, McDaniel's offenses have also directed an above-average share of targets to running backs. Current personnel usage should still carry weight alongside these tendencies.",
       "faq": {
         "question": "How does Mike McDaniel's play-calling affect Chargers fantasy players?",
-        "answer": "Mike McDaniel is a first-year play-caller for the Chargers, so last season's tendencies carry little predictive weight. Through Week 11 2026, the offense shows 4th-down go rate below league average (60% vs 76%) and pre-snap motion above league average (73.1% vs 58.5%). The lead back handles 47% of backfield weighted opportunities, and the target split leans toward running backs (23% vs a 18% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
+        "answer": "Mike McDaniel is a first-year play-caller for the Chargers, so last season's tendencies carry little predictive weight. Through Week 11 2026, the offense shows 4th-down go rate below league average (60% vs 76%) and pre-snap motion above league average (73.1% vs 58.1%). The lead back handles 47% of backfield weighted opportunities, and the target split leans toward running backs (23% vs a 18% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
       }
     },
     "lar": {
@@ -10648,12 +10954,14 @@
             "label": "Pass rate (all downs)",
             "def": "Share of offensive snaps that were dropbacks. Sacks and QB scrambles count as passes, since both began as pass plays. Kneels, spikes, two-point tries and snaps wiped out by penalty are removed. Regular season only, as is every row here.",
             "prior": "59.1%",
-            "current": "59%",
+            "current": "59.0%",
             "change": {
               "dir": "flat",
               "text": "steady"
             },
             "nflAvg": "60.5%",
+            "priorRaw": 59.0909,
+            "currentRaw": 59.0361,
             "priorNum": 59.1,
             "feed": "passRate"
           },
@@ -10662,14 +10970,16 @@
             "label": "Pass rate over expected",
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
-            "prior": "+3%",
+            "prior": "+5.1%",
             "current": "+0.9%",
             "change": {
               "dir": "down",
-              "text": "−2.1"
+              "text": "−4.2"
             },
-            "nflAvg": "0%",
-            "priorNum": 3,
+            "nflAvg": "+0.0%",
+            "priorRaw": 5.08,
+            "currentRaw": 0.8594,
+            "priorNum": 5.1,
             "feed": "proe"
           },
           {
@@ -10683,7 +10993,9 @@
               "dir": "flat",
               "text": "steady"
             },
-            "nflAvg": "33s",
+            "nflAvg": "33.0s",
+            "priorRaw": 31.7533,
+            "currentRaw": 31.5907,
             "priorNum": 31.8,
             "feed": "pace",
             "invert": true
@@ -10699,7 +11011,9 @@
               "dir": "up",
               "text": "+0.5"
             },
-            "nflAvg": "55.1%"
+            "nflAvg": "55.1%",
+            "priorRaw": 55.2506,
+            "currentRaw": 55.7656
           },
           {
             "key": "noHuddleRate",
@@ -10712,7 +11026,9 @@
               "dir": "up",
               "text": "+2.7 - 6th in NFL"
             },
-            "nflAvg": "6.8%"
+            "nflAvg": "6.8%",
+            "priorRaw": 6.6288,
+            "currentRaw": 9.3373
           },
           {
             "key": "paRate",
@@ -10720,12 +11036,14 @@
             "sub": "share of dropbacks, charted",
             "def": "Share of dropbacks charted as play-action. The denominator is dropbacks, not pass attempts, so sacks and scrambles are in it.",
             "prior": "34.6%",
-            "current": "25%",
+            "current": "25.0%",
             "change": {
               "dir": "down",
               "text": "−9.6"
             },
-            "nflAvg": "22.4%"
+            "nflAvg": "22.4%",
+            "priorRaw": 34.6154,
+            "currentRaw": 25
           },
           {
             "key": "motionRate",
@@ -10738,20 +11056,24 @@
               "dir": "up",
               "text": "+4.2 - 4th in NFL"
             },
-            "nflAvg": "58.5%"
+            "nflAvg": "58.1%",
+            "priorRaw": 64.8674,
+            "currentRaw": 69.1265
           },
           {
             "key": "shotgunRate",
             "label": "Shotgun rate",
             "sub": "share of offensive snaps",
             "def": "Share of offensive snaps the play-by-play logs as shotgun, over the same snaps as the pass rate. Pistol is not tracked separately: a pistol snap counts only if the play-by-play logs it as shotgun.",
-            "prior": "41%",
+            "prior": "41.0%",
             "current": "49.2%",
             "change": {
               "dir": "up",
               "text": "+8.2"
             },
-            "nflAvg": "62.2%"
+            "nflAvg": "62.2%",
+            "priorRaw": 41.0038,
+            "currentRaw": 49.247
           },
           {
             "key": "rzPassRate",
@@ -10765,6 +11087,8 @@
               "text": "−1.2"
             },
             "nflAvg": "53.5%",
+            "priorRaw": 57.5758,
+            "currentRaw": 56.3636,
             "priorNum": 57.6,
             "feed": "rzPassRate"
           },
@@ -10796,7 +11120,7 @@
       "shifts": [
         {
           "key": "paRate",
-          "stat": "25",
+          "stat": "25.0",
           "unit": "play-action",
           "heading": "Less play-action.",
           "body": "Fewer of the scheme's easiest explosive throws.",
@@ -11448,7 +11772,7 @@
         "note": "Positional finishes are season-long PPR ranks. McVay's offenses have put up repeated top-ten positional seasons - the system has paid fantasy investors before."
       },
       "distribution": {
-        "sub": "Target split by position across McVay's play-calling seasons since 2016, vs. league average.",
+        "sub": "Target split by position across McVay's play-calling seasons (2017-2026), vs. league average over the same seasons.",
         "rows": [
           {
             "label": "Wide receivers",
@@ -11467,7 +11791,7 @@
             "nfl": 19
           }
         ],
-        "note": "Across his play-calling seasons since 2016, McVay's offenses have directed a larger share of targets to wide receivers than the league baseline (66% vs 59%). That historical tendency is worth monitoring alongside the current roster and weekly usage."
+        "note": "Across his play-calling seasons (2017-2026), McVay's offenses have directed a larger share of targets to wide receivers than the league baseline (66% vs 59%). That historical tendency is worth monitoring alongside the current roster and weekly usage."
       },
       "backfield": {
         "sub": "Lead back's share of backfield weighted opportunities, by season called.",
@@ -11525,7 +11849,7 @@
       "bottomLine": "The fantasy bottom line: McVay called this offense in 2025 too, giving those tendencies more predictive value than they would have after a play-caller change. Through 10 games, the Rams have been lighter on play-action, more shotgun-based and less aggressive on short 4th downs than in 2025. Historically, McVay's offenses have also directed an above-average share of targets to wide receivers. Current personnel usage should still carry weight alongside these tendencies.",
       "faq": {
         "question": "How does Sean McVay's play-calling affect Rams fantasy players?",
-        "answer": "Sean McVay is calling the Rams offense for the tenth straight season, so last year's tendencies remain predictive. Through Week 10 2026, the offense shows shotgun rate below league average (49.2% vs 62.2%) and pre-snap motion above league average (69.1% vs 58.5%). The lead back handles 59% of backfield weighted opportunities, and the target split leans toward wide receivers (66% vs a 59% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
+        "answer": "Sean McVay is calling the Rams offense for the tenth straight season, so last year's tendencies remain predictive. Through Week 10 2026, the offense shows shotgun rate below league average (49.2% vs 62.2%) and pre-snap motion above league average (69.1% vs 58.1%). The lead back handles 59% of backfield weighted opportunities, and the target split leans toward wide receivers (66% vs a 59% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
       }
     },
     "lv": {
@@ -11583,6 +11907,8 @@
               "text": "−0.6"
             },
             "nflAvg": "60.5%",
+            "priorRaw": 63.6848,
+            "currentRaw": 63.0792,
             "priorNum": 63.7,
             "feed": "passRate"
           },
@@ -11591,14 +11917,16 @@
             "label": "Pass rate over expected",
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
-            "prior": "−1.9%",
+            "prior": "−1.4%",
             "current": "−2.4%",
             "change": {
               "dir": "down",
-              "text": "−0.5"
+              "text": "−1"
             },
-            "nflAvg": "0%",
-            "priorNum": -1.9,
+            "nflAvg": "+0.0%",
+            "priorRaw": -1.3547,
+            "currentRaw": -2.4152,
+            "priorNum": -1.4,
             "feed": "proe"
           },
           {
@@ -11612,7 +11940,9 @@
               "dir": "down",
               "text": "slower"
             },
-            "nflAvg": "33s",
+            "nflAvg": "33.0s",
+            "priorRaw": 33.299,
+            "currentRaw": 33.8185,
             "priorNum": 33.3,
             "feed": "pace",
             "invert": true
@@ -11628,7 +11958,9 @@
               "dir": "flat",
               "text": "steady"
             },
-            "nflAvg": "55.1%"
+            "nflAvg": "55.1%",
+            "priorRaw": 58.3573,
+            "currentRaw": 58.3004
           },
           {
             "key": "noHuddleRate",
@@ -11641,7 +11973,9 @@
               "dir": "down",
               "text": "−0.5"
             },
-            "nflAvg": "6.8%"
+            "nflAvg": "6.8%",
+            "priorRaw": 8.7327,
+            "currentRaw": 8.2212
           },
           {
             "key": "paRate",
@@ -11649,12 +11983,14 @@
             "sub": "share of dropbacks, charted",
             "def": "Share of dropbacks charted as play-action. The denominator is dropbacks, not pass attempts, so sacks and scrambles are in it.",
             "prior": "24.9%",
-            "current": "24%",
+            "current": "24.0%",
             "change": {
               "dir": "down",
               "text": "−0.9"
             },
-            "nflAvg": "22.4%"
+            "nflAvg": "22.4%",
+            "priorRaw": 24.9164,
+            "currentRaw": 23.9905
           },
           {
             "key": "motionRate",
@@ -11667,7 +12003,9 @@
               "dir": "up",
               "text": "+7.5"
             },
-            "nflAvg": "58.5%"
+            "nflAvg": "58.1%",
+            "priorRaw": 52.3962,
+            "currentRaw": 59.9402
           },
           {
             "key": "shotgunRate",
@@ -11680,20 +12018,24 @@
               "dir": "down",
               "text": "−8.5"
             },
-            "nflAvg": "62.2%"
+            "nflAvg": "62.2%",
+            "priorRaw": 66.3472,
+            "currentRaw": 57.8475
           },
           {
             "key": "rzPassRate",
             "label": "Red-zone pass rate",
             "sub": "inside the opponent's 20",
             "def": "Pass share on snaps at the opponent's 20-yard line or closer. Sacks and scrambles count as passes; kneels, spikes, two-point tries and snaps wiped out by penalty are removed. It counts plays, not trips, so a few long red-zone drives can move it a lot early in a season.",
-            "prior": "64%",
+            "prior": "64.0%",
             "current": "55.7%",
             "change": {
               "dir": "down",
               "text": "−8.3"
             },
             "nflAvg": "53.5%",
+            "priorRaw": 64.0351,
+            "currentRaw": 55.6522,
             "priorNum": 64,
             "feed": "rzPassRate"
           },
@@ -12072,7 +12414,7 @@
         "note": "Kubiak has 4 prior play-calling seasons in this table, so read the history as background and the 2026 pace row as the live read. Positional finishes are season-long PPR ranks. A row with a week range covers only the games he called that season, ranked against the league over the same weeks."
       },
       "distribution": {
-        "sub": "Target split by position across Kubiak's play-calling seasons since 2016, vs. league average.",
+        "sub": "Target split by position across Kubiak's play-calling seasons (2021-2022, 2024-2026), vs. league average over the same seasons.",
         "rows": [
           {
             "label": "Wide receivers",
@@ -12091,7 +12433,7 @@
             "nfl": 18
           }
         ],
-        "note": "Across his play-calling seasons since 2016, Kubiak's offenses have directed a smaller share of targets to wide receivers than the league baseline (54% vs 59%). That historical tendency is worth monitoring alongside the current roster and weekly usage."
+        "note": "Across his play-calling seasons (2021-2022, 2024-2026), Kubiak's offenses have directed a smaller share of targets to wide receivers than the league baseline (54% vs 59%). That historical tendency is worth monitoring alongside the current roster and weekly usage."
       },
       "backfield": {
         "sub": "Lead back's share of backfield weighted opportunities, by season called.",
@@ -12203,6 +12545,8 @@
               "text": "+2.2"
             },
             "nflAvg": "60.5%",
+            "priorRaw": 56.443,
+            "currentRaw": 58.6453,
             "priorNum": 56.4,
             "feed": "passRate"
           },
@@ -12211,14 +12555,16 @@
             "label": "Pass rate over expected",
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
-            "prior": "−5.7%",
+            "prior": "−5.6%",
             "current": "−10.3%",
             "change": {
               "dir": "down",
-              "text": "−4.6"
+              "text": "−4.7"
             },
-            "nflAvg": "0%",
-            "priorNum": -5.7,
+            "nflAvg": "+0.0%",
+            "priorRaw": -5.5832,
+            "currentRaw": -10.3387,
+            "priorNum": -5.6,
             "feed": "proe"
           },
           {
@@ -12232,7 +12578,9 @@
               "dir": "up",
               "text": "faster"
             },
-            "nflAvg": "33s",
+            "nflAvg": "33.0s",
+            "priorRaw": 36.6916,
+            "currentRaw": 33.4366,
             "priorNum": 36.7,
             "feed": "pace",
             "invert": true
@@ -12248,7 +12596,9 @@
               "dir": "up",
               "text": "+2.5"
             },
-            "nflAvg": "55.1%"
+            "nflAvg": "55.1%",
+            "priorRaw": 50.2762,
+            "currentRaw": 52.7578
           },
           {
             "key": "noHuddleRate",
@@ -12261,7 +12611,9 @@
               "dir": "down",
               "text": "−0.6"
             },
-            "nflAvg": "6.8%"
+            "nflAvg": "6.8%",
+            "priorRaw": 3.5144,
+            "currentRaw": 2.852
           },
           {
             "key": "paRate",
@@ -12274,7 +12626,9 @@
               "dir": "down",
               "text": "−4.6"
             },
-            "nflAvg": "22.4%"
+            "nflAvg": "22.4%",
+            "priorRaw": 27.3585,
+            "currentRaw": 22.7964
           },
           {
             "key": "motionRate",
@@ -12287,7 +12641,9 @@
               "dir": "down",
               "text": "−1 - 3rd in NFL"
             },
-            "nflAvg": "58.5%"
+            "nflAvg": "58.1%",
+            "priorRaw": 70.7135,
+            "currentRaw": 69.697
           },
           {
             "key": "shotgunRate",
@@ -12300,7 +12656,9 @@
               "dir": "down",
               "text": "−13.9"
             },
-            "nflAvg": "62.2%"
+            "nflAvg": "62.2%",
+            "priorRaw": 71.672,
+            "currentRaw": 57.754
           },
           {
             "key": "rzPassRate",
@@ -12314,6 +12672,8 @@
               "text": "−11.2"
             },
             "nflAvg": "53.5%",
+            "priorRaw": 50.7143,
+            "currentRaw": 39.4737,
             "priorNum": 50.7,
             "feed": "rzPassRate"
           },
@@ -12567,7 +12927,7 @@
         "note": "Slowik has 2 prior play-calling seasons in this table, so read the history as background and the 2026 pace row as the live read. Positional finishes are season-long PPR ranks."
       },
       "distribution": {
-        "sub": "Target split by position across Slowik's play-calling seasons since 2016, vs. league average.",
+        "sub": "Target split by position across Slowik's play-calling seasons (2023-2024, 2026), vs. league average over the same seasons.",
         "rows": [
           {
             "label": "Wide receivers",
@@ -12586,7 +12946,7 @@
             "nfl": 18
           }
         ],
-        "note": "Across his play-calling seasons since 2016, Slowik's offenses have directed a larger share of targets to wide receivers than the league baseline (64% vs 59%). That historical tendency is worth monitoring alongside the current roster and weekly usage."
+        "note": "Across his play-calling seasons (2023-2024, 2026), Slowik's offenses have directed a larger share of targets to wide receivers than the league baseline (64% vs 59%). That historical tendency is worth monitoring alongside the current roster and weekly usage."
       },
       "backfield": {
         "sub": "Lead back's share of backfield weighted opportunities, by season called.",
@@ -12686,6 +13046,8 @@
               "text": "−0.7"
             },
             "nflAvg": "60.5%",
+            "priorRaw": 60.8094,
+            "currentRaw": 60.1045,
             "priorNum": 60.8,
             "feed": "passRate"
           },
@@ -12694,14 +13056,16 @@
             "label": "Pass rate over expected",
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
-            "prior": "−1%",
+            "prior": "−0.3%",
             "current": "−0.2%",
             "change": {
-              "dir": "up",
-              "text": "+0.8"
+              "dir": "flat",
+              "text": "steady"
             },
-            "nflAvg": "0%",
-            "priorNum": -1,
+            "nflAvg": "+0.0%",
+            "priorRaw": -0.2528,
+            "currentRaw": -0.1805,
+            "priorNum": -0.3,
             "feed": "proe"
           },
           {
@@ -12709,13 +13073,15 @@
             "label": "Neutral pace",
             "sub": "sec/play, neutral game state",
             "def": "Average seconds between back-to-back snaps on the same drive, counted only while the game is neutral: win probability between 20% and 80%, with more than two minutes left in the half. Gaps over 60 seconds (timeouts, reviews, quarter breaks) are dropped. Lower is faster.",
-            "prior": "34s",
+            "prior": "34.0s",
             "current": "33.7s",
             "change": {
               "dir": "flat",
               "text": "steady"
             },
-            "nflAvg": "33s",
+            "nflAvg": "33.0s",
+            "priorRaw": 33.9558,
+            "currentRaw": 33.7316,
             "priorNum": 34,
             "feed": "pace",
             "invert": true
@@ -12731,7 +13097,9 @@
               "dir": "down",
               "text": "−3.7"
             },
-            "nflAvg": "55.1%"
+            "nflAvg": "55.1%",
+            "priorRaw": 54.7718,
+            "currentRaw": 51.0539
           },
           {
             "key": "noHuddleRate",
@@ -12744,7 +13112,9 @@
               "dir": "down",
               "text": "−1.3"
             },
-            "nflAvg": "6.8%"
+            "nflAvg": "6.8%",
+            "priorRaw": 7.5612,
+            "currentRaw": 6.2718
           },
           {
             "key": "paRate",
@@ -12757,7 +13127,9 @@
               "dir": "up",
               "text": "+5.4 - 2nd in NFL"
             },
-            "nflAvg": "22.4%"
+            "nflAvg": "22.4%",
+            "priorRaw": 25.7443,
+            "currentRaw": 31.1047
           },
           {
             "key": "motionRate",
@@ -12770,7 +13142,9 @@
               "dir": "flat",
               "text": "steady"
             },
-            "nflAvg": "58.5%"
+            "nflAvg": "58.1%",
+            "priorRaw": 51.7572,
+            "currentRaw": 51.9164
           },
           {
             "key": "shotgunRate",
@@ -12783,7 +13157,9 @@
               "dir": "up",
               "text": "+5.6"
             },
-            "nflAvg": "62.2%"
+            "nflAvg": "62.2%",
+            "priorRaw": 55.9105,
+            "currentRaw": 61.4983
           },
           {
             "key": "rzPassRate",
@@ -12797,6 +13173,8 @@
               "text": "+1 - 3rd in NFL"
             },
             "nflAvg": "53.5%",
+            "priorRaw": 63.6986,
+            "currentRaw": 64.7059,
             "priorNum": 63.7,
             "feed": "rzPassRate"
           },
@@ -13299,7 +13677,7 @@
         "note": "Positional finishes are season-long PPR ranks. O'Connell's offenses have put up repeated top-ten positional seasons - the system has paid fantasy investors before."
       },
       "distribution": {
-        "sub": "Target split by position across O'Connell's play-calling seasons since 2016, vs. league average.",
+        "sub": "Target split by position across O'Connell's play-calling seasons (2019, 2022-2026), vs. league average over the same seasons.",
         "rows": [
           {
             "label": "Wide receivers",
@@ -13317,7 +13695,7 @@
             "nfl": 19
           }
         ],
-        "note": "Across his play-calling seasons since 2016, O'Connell's offenses have directed a smaller share of targets to running backs than the league baseline (16% vs 19%). That historical tendency is worth monitoring alongside the current roster and weekly usage."
+        "note": "Across his play-calling seasons (2019, 2022-2026), O'Connell's offenses have directed a smaller share of targets to running backs than the league baseline (16% vs 19%). That historical tendency is worth monitoring alongside the current roster and weekly usage."
       },
       "backfield": {
         "sub": "Lead back's share of backfield weighted opportunities, by season called.",
@@ -13441,6 +13819,8 @@
               "text": "steady"
             },
             "nflAvg": "60.5%",
+            "priorRaw": 60.4536,
+            "currentRaw": 60.7679,
             "priorNum": 60.5,
             "feed": "passRate"
           },
@@ -13449,14 +13829,16 @@
             "label": "Pass rate over expected",
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
-            "prior": "+2.7%",
+            "prior": "+3.9%",
             "current": "−0.1%",
             "change": {
               "dir": "down",
-              "text": "−2.8"
+              "text": "−4"
             },
-            "nflAvg": "0%",
-            "priorNum": 2.7,
+            "nflAvg": "+0.0%",
+            "priorRaw": 3.8674,
+            "currentRaw": -0.1198,
+            "priorNum": 3.9,
             "feed": "proe"
           },
           {
@@ -13470,7 +13852,9 @@
               "dir": "up",
               "text": "faster"
             },
-            "nflAvg": "33s",
+            "nflAvg": "33.0s",
+            "priorRaw": 34.3553,
+            "currentRaw": 32.8333,
             "priorNum": 34.4,
             "feed": "pace",
             "invert": true
@@ -13486,7 +13870,9 @@
               "dir": "up",
               "text": "+1.3"
             },
-            "nflAvg": "55.1%"
+            "nflAvg": "55.1%",
+            "priorRaw": 54.7859,
+            "currentRaw": 56.1028
           },
           {
             "key": "noHuddleRate",
@@ -13499,7 +13885,9 @@
               "dir": "down",
               "text": "−1.6"
             },
-            "nflAvg": "6.8%"
+            "nflAvg": "6.8%",
+            "priorRaw": 2.3669,
+            "currentRaw": 0.8347
           },
           {
             "key": "paRate",
@@ -13512,7 +13900,9 @@
               "dir": "down",
               "text": "−3.8"
             },
-            "nflAvg": "22.4%"
+            "nflAvg": "22.4%",
+            "priorRaw": 24.1436,
+            "currentRaw": 20.3297
           },
           {
             "key": "motionRate",
@@ -13525,7 +13915,9 @@
               "dir": "up",
               "text": "+2.5"
             },
-            "nflAvg": "58.5%"
+            "nflAvg": "58.1%",
+            "priorRaw": 52.86,
+            "currentRaw": 55.4257
           },
           {
             "key": "shotgunRate",
@@ -13538,7 +13930,9 @@
               "dir": "up",
               "text": "+5.5"
             },
-            "nflAvg": "62.2%"
+            "nflAvg": "62.2%",
+            "priorRaw": 55.1282,
+            "currentRaw": 60.601
           },
           {
             "key": "rzPassRate",
@@ -13552,6 +13946,8 @@
               "text": "+10.5 - 2nd in NFL"
             },
             "nflAvg": "53.5%",
+            "priorRaw": 54.386,
+            "currentRaw": 64.8649,
             "priorNum": 54.4,
             "feed": "rzPassRate"
           },
@@ -14388,7 +14784,7 @@
         "note": "Positional finishes are season-long PPR ranks. A row with a week range covers only the games he called that season, ranked against the league over the same weeks. McDaniels's offenses have put up repeated top-ten positional seasons - the system has paid fantasy investors before."
       },
       "distribution": {
-        "sub": "Target split by position across McDaniels's play-calling seasons since 2016, vs. league average.",
+        "sub": "Target split by position across McDaniels's play-calling seasons (2016-2023, 2025-2026), vs. league average over the same seasons.",
         "rows": [
           {
             "label": "Wide receivers",
@@ -14407,7 +14803,7 @@
             "gold": true
           }
         ],
-        "note": "Across his play-calling seasons since 2016, McDaniels's offenses have directed a larger share of targets to running backs than the league baseline (24% vs 19%). That historical tendency is worth monitoring alongside the current roster and weekly usage."
+        "note": "Across his play-calling seasons (2016-2023, 2025-2026), McDaniels's offenses have directed a larger share of targets to running backs than the league baseline (24% vs 19%). That historical tendency is worth monitoring alongside the current roster and weekly usage."
       },
       "backfield": {
         "sub": "Lead back's share of backfield weighted opportunities, by season called.",
@@ -14523,6 +14919,8 @@
               "text": "+3 - 2nd in NFL"
             },
             "nflAvg": "60.5%",
+            "priorRaw": 63.148,
+            "currentRaw": 66.1094,
             "priorNum": 63.1,
             "feed": "passRate"
           },
@@ -14531,14 +14929,16 @@
             "label": "Pass rate over expected",
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
-            "prior": "−2.9%",
+            "prior": "−2.1%",
             "current": "+1.3%",
             "change": {
               "dir": "up",
-              "text": "+4.2 - 8th in NFL"
+              "text": "+3.4 - 8th in NFL"
             },
-            "nflAvg": "0%",
-            "priorNum": -2.9,
+            "nflAvg": "+0.0%",
+            "priorRaw": -2.0997,
+            "currentRaw": 1.288,
+            "priorNum": -2.1,
             "feed": "proe"
           },
           {
@@ -14552,7 +14952,9 @@
               "dir": "down",
               "text": "slower"
             },
-            "nflAvg": "33s",
+            "nflAvg": "33.0s",
+            "priorRaw": 30.6168,
+            "currentRaw": 31.318,
             "priorNum": 30.6,
             "feed": "pace",
             "invert": true
@@ -14568,7 +14970,9 @@
               "dir": "up",
               "text": "+1.1 - 3rd in NFL"
             },
-            "nflAvg": "55.1%"
+            "nflAvg": "55.1%",
+            "priorRaw": 59.3789,
+            "currentRaw": 60.5263
           },
           {
             "key": "noHuddleRate",
@@ -14581,7 +14985,9 @@
               "dir": "down",
               "text": "−7.8 - 3rd in NFL"
             },
-            "nflAvg": "6.8%"
+            "nflAvg": "6.8%",
+            "priorRaw": 22.7144,
+            "currentRaw": 14.8936
           },
           {
             "key": "paRate",
@@ -14594,7 +15000,9 @@
               "dir": "down",
               "text": "−1.7"
             },
-            "nflAvg": "22.4%"
+            "nflAvg": "22.4%",
+            "priorRaw": 18.5075,
+            "currentRaw": 16.7816
           },
           {
             "key": "motionRate",
@@ -14607,20 +15015,24 @@
               "dir": "flat",
               "text": "steady"
             },
-            "nflAvg": "58.5%"
+            "nflAvg": "58.1%",
+            "priorRaw": 61.64,
+            "currentRaw": 61.3982
           },
           {
             "key": "shotgunRate",
             "label": "Shotgun rate",
             "sub": "share of offensive snaps",
             "def": "Share of offensive snaps the play-by-play logs as shotgun, over the same snaps as the pass rate. Pistol is not tracked separately: a pistol snap counts only if the play-by-play logs it as shotgun.",
-            "prior": "79%",
-            "current": "71%",
+            "prior": "79.0%",
+            "current": "71.0%",
             "change": {
               "dir": "down",
               "text": "−8 - 6th in NFL"
             },
-            "nflAvg": "62.2%"
+            "nflAvg": "62.2%",
+            "priorRaw": 78.9821,
+            "currentRaw": 70.9726
           },
           {
             "key": "rzPassRate",
@@ -14634,6 +15046,8 @@
               "text": "+2"
             },
             "nflAvg": "53.5%",
+            "priorRaw": 53.6585,
+            "currentRaw": 55.6701,
             "priorNum": 53.7,
             "feed": "rzPassRate"
           },
@@ -14665,7 +15079,7 @@
       "shifts": [
         {
           "key": "shotgunRate",
-          "stat": "71",
+          "stat": "71.0",
           "unit": "shotgun",
           "heading": "More under center.",
           "body": "Under-center snaps travel with the run game and play-action: better for an early-down back and downfield shots off the fake.",
@@ -15257,7 +15671,7 @@
         "note": "Positional finishes are season-long PPR ranks. Moore's offenses have put up repeated top-ten positional seasons - the system has paid fantasy investors before."
       },
       "distribution": {
-        "sub": "Target split by position across Moore's play-calling seasons since 2016, vs. league average.",
+        "sub": "Target split by position across Moore's play-calling seasons (2019-2026), vs. league average over the same seasons.",
         "rows": [
           {
             "label": "Wide receivers",
@@ -15275,7 +15689,7 @@
             "nfl": 19
           }
         ],
-        "note": "Across his play-calling seasons since 2016, Moore's offenses have directed a larger share of targets to wide receivers than the league baseline (62% vs 59%). That historical tendency is worth monitoring alongside the current roster and weekly usage."
+        "note": "Across his play-calling seasons (2019-2026), Moore's offenses have directed a larger share of targets to wide receivers than the league baseline (62% vs 59%). That historical tendency is worth monitoring alongside the current roster and weekly usage."
       },
       "backfield": {
         "sub": "Lead back's share of backfield weighted opportunities, by season called.",
@@ -15333,7 +15747,7 @@
       "bottomLine": "The fantasy bottom line: Moore called this offense in 2025 too, giving those tendencies more predictive value than they would have after a play-caller change. Through 10 games, the Saints have been more under-center, less up-tempo and more aggressive on short 4th downs than in 2025. Historically, Moore's offenses have also directed an above-average share of targets to wide receivers. Current personnel usage should still carry weight alongside these tendencies.",
       "faq": {
         "question": "How does Kellen Moore's play-calling affect Saints fantasy players?",
-        "answer": "Kellen Moore is calling the Saints offense for the second straight season, so last year's tendencies remain predictive. Through Week 11 2026, the offense shows 4th-down go rate above league average (93% vs 76%) and shotgun rate above league average (71% vs 62.2%). The lead back handles 34% of backfield weighted opportunities, and the target split leans toward wide receivers (62% vs a 59% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
+        "answer": "Kellen Moore is calling the Saints offense for the second straight season, so last year's tendencies remain predictive. Through Week 11 2026, the offense shows 4th-down go rate above league average (93% vs 76%) and shotgun rate above league average (71.0% vs 62.2%). The lead back handles 34% of backfield weighted opportunities, and the target split leans toward wide receivers (62% vs a 59% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
       }
     },
     "nyg": {
@@ -15388,13 +15802,15 @@
             "key": "passRate",
             "label": "Pass rate (all downs)",
             "def": "Share of offensive snaps that were dropbacks. Sacks and QB scrambles count as passes, since both began as pass plays. Kneels, spikes, two-point tries and snaps wiped out by penalty are removed. Regular season only, as is every row here.",
-            "prior": "58%",
-            "current": "60%",
+            "prior": "58.0%",
+            "current": "60.0%",
             "change": {
               "dir": "up",
               "text": "+2"
             },
             "nflAvg": "60.5%",
+            "priorRaw": 58.0465,
+            "currentRaw": 60,
             "priorNum": 58,
             "feed": "passRate"
           },
@@ -15403,14 +15819,16 @@
             "label": "Pass rate over expected",
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
-            "prior": "−4.8%",
+            "prior": "−4.9%",
             "current": "−2.8%",
             "change": {
               "dir": "up",
-              "text": "+2"
+              "text": "+2.1"
             },
-            "nflAvg": "0%",
-            "priorNum": -4.8,
+            "nflAvg": "+0.0%",
+            "priorRaw": -4.8748,
+            "currentRaw": -2.754,
+            "priorNum": -4.9,
             "feed": "proe"
           },
           {
@@ -15424,7 +15842,9 @@
               "dir": "flat",
               "text": "steady"
             },
-            "nflAvg": "33s",
+            "nflAvg": "33.0s",
+            "priorRaw": 33.0549,
+            "currentRaw": 33.1728,
             "priorNum": 33.1,
             "feed": "pace",
             "invert": true
@@ -15440,7 +15860,9 @@
               "dir": "up",
               "text": "+4"
             },
-            "nflAvg": "55.1%"
+            "nflAvg": "55.1%",
+            "priorRaw": 51.2915,
+            "currentRaw": 55.2846
           },
           {
             "key": "noHuddleRate",
@@ -15453,7 +15875,9 @@
               "dir": "down",
               "text": "−14.6"
             },
-            "nflAvg": "6.8%"
+            "nflAvg": "6.8%",
+            "priorRaw": 21.4884,
+            "currentRaw": 6.875
           },
           {
             "key": "paRate",
@@ -15466,7 +15890,9 @@
               "dir": "down",
               "text": "−2.5"
             },
-            "nflAvg": "22.4%"
+            "nflAvg": "22.4%",
+            "priorRaw": 22.7564,
+            "currentRaw": 20.3125
           },
           {
             "key": "motionRate",
@@ -15479,20 +15905,24 @@
               "dir": "up",
               "text": "+11.8"
             },
-            "nflAvg": "58.5%"
+            "nflAvg": "58.1%",
+            "priorRaw": 38.4186,
+            "currentRaw": 50.1563
           },
           {
             "key": "shotgunRate",
             "label": "Shotgun rate",
             "sub": "share of offensive snaps",
             "def": "Share of offensive snaps the play-by-play logs as shotgun, over the same snaps as the pass rate. Pistol is not tracked separately: a pistol snap counts only if the play-by-play logs it as shotgun.",
-            "prior": "77%",
+            "prior": "77.0%",
             "current": "65.3%",
             "change": {
               "dir": "down",
               "text": "−11.7"
             },
-            "nflAvg": "62.2%"
+            "nflAvg": "62.2%",
+            "priorRaw": 77.0233,
+            "currentRaw": 65.3125
           },
           {
             "key": "rzPassRate",
@@ -15500,12 +15930,14 @@
             "sub": "inside the opponent's 20",
             "def": "Pass share on snaps at the opponent's 20-yard line or closer. Sacks and scrambles count as passes; kneels, spikes, two-point tries and snaps wiped out by penalty are removed. It counts plays, not trips, so a few long red-zone drives can move it a lot early in a season.",
             "prior": "50.3%",
-            "current": "48%",
+            "current": "48.0%",
             "change": {
               "dir": "down",
               "text": "−2.3"
             },
             "nflAvg": "53.5%",
+            "priorRaw": 50.2762,
+            "currentRaw": 48,
             "priorNum": 50.3,
             "feed": "rzPassRate"
           },
@@ -16042,7 +16474,7 @@
         "note": "Nagy has 4 prior play-calling seasons in this table, so read the history as background and the 2026 pace row as the live read. Positional finishes are season-long PPR ranks. A row with a week range covers only the games he called that season, ranked against the league over the same weeks."
       },
       "distribution": {
-        "sub": "Target split by position across Nagy's play-calling seasons since 2016, vs. league average.",
+        "sub": "Target split by position across Nagy's play-calling seasons (2017-2021, 2026), vs. league average over the same seasons.",
         "rows": [
           {
             "label": "Wide receivers",
@@ -16118,7 +16550,7 @@
       "bottomLine": "The fantasy bottom line: Matt Nagy is new to the Giants call sheet in 2026, so 2025 tendencies describe a different coach's offense. Through 10 games, the Giants have been less up-tempo, more motion-heavy and more under-center than under the 2025 staff. Current personnel usage should still carry weight alongside these tendencies.",
       "faq": {
         "question": "How does Matt Nagy's play-calling affect Giants fantasy players?",
-        "answer": "Matt Nagy is a first-year play-caller for the Giants, so last season's tendencies carry little predictive weight. Through Week 11 2026, the offense shows 4th-down go rate above league average (89% vs 76%) and pre-snap motion below league average (50.2% vs 58.5%). The lead back handles 56% of backfield weighted opportunities. The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
+        "answer": "Matt Nagy is a first-year play-caller for the Giants, so last season's tendencies carry little predictive weight. Through Week 11 2026, the offense shows 4th-down go rate above league average (89% vs 76%) and pre-snap motion below league average (50.2% vs 58.1%). The lead back handles 56% of backfield weighted opportunities. The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
       }
     },
     "nyj": {
@@ -16176,6 +16608,8 @@
               "text": "−2"
             },
             "nflAvg": "60.5%",
+            "priorRaw": 60.7393,
+            "currentRaw": 58.7057,
             "priorNum": 60.7,
             "feed": "passRate"
           },
@@ -16184,14 +16618,16 @@
             "label": "Pass rate over expected",
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
-            "prior": "−8.5%",
+            "prior": "−8.8%",
             "current": "−3.5%",
             "change": {
               "dir": "up",
-              "text": "+5"
+              "text": "+5.3"
             },
-            "nflAvg": "0%",
-            "priorNum": -8.5,
+            "nflAvg": "+0.0%",
+            "priorRaw": -8.7711,
+            "currentRaw": -3.4857,
+            "priorNum": -8.8,
             "feed": "proe"
           },
           {
@@ -16205,7 +16641,9 @@
               "dir": "down",
               "text": "slower"
             },
-            "nflAvg": "33s",
+            "nflAvg": "33.0s",
+            "priorRaw": 33.9209,
+            "currentRaw": 34.6827,
             "priorNum": 33.9,
             "feed": "pace",
             "invert": true
@@ -16221,7 +16659,9 @@
               "dir": "down",
               "text": "−2.9"
             },
-            "nflAvg": "55.1%"
+            "nflAvg": "55.1%",
+            "priorRaw": 55.5404,
+            "currentRaw": 52.6
           },
           {
             "key": "noHuddleRate",
@@ -16229,12 +16669,14 @@
             "sub": "share of offensive snaps",
             "def": "Share of offensive snaps the play-by-play marks as no-huddle, over the same snaps as the pass rate.",
             "prior": "9.8%",
-            "current": "6%",
+            "current": "6.0%",
             "change": {
               "dir": "down",
               "text": "−3.8"
             },
-            "nflAvg": "6.8%"
+            "nflAvg": "6.8%",
+            "priorRaw": 9.7902,
+            "currentRaw": 6.0092
           },
           {
             "key": "paRate",
@@ -16247,7 +16689,9 @@
               "dir": "up",
               "text": "+2.8"
             },
-            "nflAvg": "22.4%"
+            "nflAvg": "22.4%",
+            "priorRaw": 17.9276,
+            "currentRaw": 20.7349
           },
           {
             "key": "motionRate",
@@ -16260,7 +16704,9 @@
               "dir": "down",
               "text": "−12.3"
             },
-            "nflAvg": "58.5%"
+            "nflAvg": "58.1%",
+            "priorRaw": 62.7373,
+            "currentRaw": 50.3852
           },
           {
             "key": "shotgunRate",
@@ -16273,7 +16719,9 @@
               "dir": "down",
               "text": "−12.8"
             },
-            "nflAvg": "62.2%"
+            "nflAvg": "62.2%",
+            "priorRaw": 73.7263,
+            "currentRaw": 60.8629
           },
           {
             "key": "rzPassRate",
@@ -16287,6 +16735,8 @@
               "text": "steady"
             },
             "nflAvg": "53.5%",
+            "priorRaw": 55.3719,
+            "currentRaw": 55.2083,
             "priorNum": 55.4,
             "feed": "rzPassRate"
           },
@@ -16941,7 +17391,7 @@
         "note": "Reich has 4 prior play-calling seasons in this table, so read the history as background and the 2026 pace row as the live read. Positional finishes are season-long PPR ranks. A row with a week range covers only the games he called that season, ranked against the league over the same weeks."
       },
       "distribution": {
-        "sub": "Target split by position across Reich's play-calling seasons since 2016, vs. league average.",
+        "sub": "Target split by position across Reich's play-calling seasons (2018-2023, 2026), vs. league average over the same seasons.",
         "rows": [
           {
             "label": "Wide receivers",
@@ -17017,7 +17467,7 @@
       "bottomLine": "The fantasy bottom line: Frank Reich is new to the Jets call sheet in 2026, so 2025 tendencies describe a different coach's offense. Through 11 games, the Jets have been more under-center, less motion-heavy and more aggressive on short 4th downs than under the 2025 staff. Current personnel usage should still carry weight alongside these tendencies.",
       "faq": {
         "question": "How does Frank Reich's play-calling affect Jets fantasy players?",
-        "answer": "Frank Reich is a first-year play-caller for the Jets, so last season's tendencies carry little predictive weight. Through Week 11 2026, the offense shows 4th-down go rate above league average (89% vs 76%) and pre-snap motion below league average (50.4% vs 58.5%). The lead back handles 54% of backfield weighted opportunities. The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
+        "answer": "Frank Reich is a first-year play-caller for the Jets, so last season's tendencies carry little predictive weight. Through Week 11 2026, the offense shows 4th-down go rate above league average (89% vs 76%) and pre-snap motion below league average (50.4% vs 58.1%). The lead back handles 54% of backfield weighted opportunities. The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
       }
     },
     "phi": {
@@ -17075,6 +17525,8 @@
               "text": "+6.3 - 7th in NFL"
             },
             "nflAvg": "60.5%",
+            "priorRaw": 57.7621,
+            "currentRaw": 64.1286,
             "priorNum": 57.8,
             "feed": "passRate"
           },
@@ -17083,14 +17535,16 @@
             "label": "Pass rate over expected",
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
-            "prior": "−2.4%",
+            "prior": "−1.0%",
             "current": "−2.8%",
             "change": {
-              "dir": "flat",
-              "text": "steady"
+              "dir": "down",
+              "text": "−1.8"
             },
-            "nflAvg": "0%",
-            "priorNum": -2.4,
+            "nflAvg": "+0.0%",
+            "priorRaw": -0.953,
+            "currentRaw": -2.7735,
+            "priorNum": -1,
             "feed": "proe"
           },
           {
@@ -17104,7 +17558,9 @@
               "dir": "up",
               "text": "faster"
             },
-            "nflAvg": "33s",
+            "nflAvg": "33.0s",
+            "priorRaw": 33.2165,
+            "currentRaw": 32.5939,
             "priorNum": 33.2,
             "feed": "pace",
             "invert": true
@@ -17120,7 +17576,9 @@
               "dir": "up",
               "text": "+3.7"
             },
-            "nflAvg": "55.1%"
+            "nflAvg": "55.1%",
+            "priorRaw": 52.6797,
+            "currentRaw": 56.351
           },
           {
             "key": "noHuddleRate",
@@ -17133,7 +17591,9 @@
               "dir": "down",
               "text": "−4.2 - 2nd in NFL"
             },
-            "nflAvg": "6.8%"
+            "nflAvg": "6.8%",
+            "priorRaw": 19.3548,
+            "currentRaw": 15.2284
           },
           {
             "key": "paRate",
@@ -17146,7 +17606,9 @@
               "dir": "down",
               "text": "−4.9"
             },
-            "nflAvg": "22.4%"
+            "nflAvg": "22.4%",
+            "priorRaw": 22.3386,
+            "currentRaw": 17.4142
           },
           {
             "key": "motionRate",
@@ -17159,7 +17621,9 @@
               "dir": "up",
               "text": "+10.3"
             },
-            "nflAvg": "58.5%"
+            "nflAvg": "58.1%",
+            "priorRaw": 47.5806,
+            "currentRaw": 57.868
           },
           {
             "key": "shotgunRate",
@@ -17172,20 +17636,24 @@
               "dir": "down",
               "text": "−3.8 - 3rd in NFL"
             },
-            "nflAvg": "62.2%"
+            "nflAvg": "62.2%",
+            "priorRaw": 77.7218,
+            "currentRaw": 73.9425
           },
           {
             "key": "rzPassRate",
             "label": "Red-zone pass rate",
             "sub": "inside the opponent's 20",
             "def": "Pass share on snaps at the opponent's 20-yard line or closer. Sacks and scrambles count as passes; kneels, spikes, two-point tries and snaps wiped out by penalty are removed. It counts plays, not trips, so a few long red-zone drives can move it a lot early in a season.",
-            "prior": "45%",
+            "prior": "45.0%",
             "current": "34.8%",
             "change": {
               "dir": "down",
               "text": "−10.2"
             },
             "nflAvg": "53.5%",
+            "priorRaw": 45.0331,
+            "currentRaw": 34.8485,
             "priorNum": 45,
             "feed": "rzPassRate"
           },
@@ -17450,12 +17918,14 @@
             "label": "Pass rate (all downs)",
             "def": "Share of offensive snaps that were dropbacks. Sacks and QB scrambles count as passes, since both began as pass plays. Kneels, spikes, two-point tries and snaps wiped out by penalty are removed. Regular season only, as is every row here.",
             "prior": "60.7%",
-            "current": "65%",
+            "current": "65.0%",
             "change": {
               "dir": "up",
               "text": "+4.3 - 4th in NFL"
             },
             "nflAvg": "60.5%",
+            "priorRaw": 60.74,
+            "currentRaw": 65.0485,
             "priorNum": 60.7,
             "feed": "passRate"
           },
@@ -17464,14 +17934,16 @@
             "label": "Pass rate over expected",
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
-            "prior": "−0.7%",
+            "prior": "−0.2%",
             "current": "+1.6%",
             "change": {
               "dir": "up",
-              "text": "+2.3 - 7th in NFL"
+              "text": "+1.8 - 7th in NFL"
             },
-            "nflAvg": "0%",
-            "priorNum": -0.7,
+            "nflAvg": "+0.0%",
+            "priorRaw": -0.2117,
+            "currentRaw": 1.5709,
+            "priorNum": -0.2,
             "feed": "proe"
           },
           {
@@ -17485,7 +17957,9 @@
               "dir": "up",
               "text": "faster"
             },
-            "nflAvg": "33s",
+            "nflAvg": "33.0s",
+            "priorRaw": 35.125,
+            "currentRaw": 34.4545,
             "priorNum": 35.1,
             "feed": "pace",
             "invert": true
@@ -17501,7 +17975,9 @@
               "dir": "up",
               "text": "+6.4 - 2nd in NFL"
             },
-            "nflAvg": "55.1%"
+            "nflAvg": "55.1%",
+            "priorRaw": 55.1213,
+            "currentRaw": 61.4737
           },
           {
             "key": "noHuddleRate",
@@ -17514,7 +17990,9 @@
               "dir": "down",
               "text": "−3.3"
             },
-            "nflAvg": "6.8%"
+            "nflAvg": "6.8%",
+            "priorRaw": 11.6136,
+            "currentRaw": 8.2524
           },
           {
             "key": "paRate",
@@ -17527,7 +18005,9 @@
               "dir": "down",
               "text": "−2.8"
             },
-            "nflAvg": "22.4%"
+            "nflAvg": "22.4%",
+            "priorRaw": 19.4585,
+            "currentRaw": 16.6667
           },
           {
             "key": "motionRate",
@@ -17540,7 +18020,9 @@
               "dir": "down",
               "text": "−8.5"
             },
-            "nflAvg": "58.5%"
+            "nflAvg": "58.1%",
+            "priorRaw": 55.0874,
+            "currentRaw": 46.6019
           },
           {
             "key": "shotgunRate",
@@ -17553,20 +18035,24 @@
               "dir": "flat",
               "text": "steady"
             },
-            "nflAvg": "62.2%"
+            "nflAvg": "62.2%",
+            "priorRaw": 66.8037,
+            "currentRaw": 66.5049
           },
           {
             "key": "rzPassRate",
             "label": "Red-zone pass rate",
             "sub": "inside the opponent's 20",
             "def": "Pass share on snaps at the opponent's 20-yard line or closer. Sacks and scrambles count as passes; kneels, spikes, two-point tries and snaps wiped out by penalty are removed. It counts plays, not trips, so a few long red-zone drives can move it a lot early in a season.",
-            "prior": "53%",
-            "current": "69%",
+            "prior": "53.0%",
+            "current": "69.0%",
             "change": {
               "dir": "up",
               "text": "+16 - 1st in NFL"
             },
             "nflAvg": "53.5%",
+            "priorRaw": 53.0488,
+            "currentRaw": 69.0476,
             "priorNum": 53,
             "feed": "rzPassRate"
           },
@@ -17606,7 +18092,7 @@
         },
         {
           "key": "rzPassRate",
-          "stat": "69",
+          "stat": "69.0",
           "unit": "red-zone pass %",
           "heading": "Pass-heavy in the red zone.",
           "body": "More receiving TD opportunity, less goal-line rushing volume.",
@@ -18219,7 +18705,7 @@
         "note": "McCarthy has 4 prior play-calling seasons in this table, so read the history as background and the 2026 pace row as the live read. Positional finishes are season-long PPR ranks."
       },
       "distribution": {
-        "sub": "Target split by position across McCarthy's play-calling seasons since 2016, vs. league average.",
+        "sub": "Target split by position across McCarthy's play-calling seasons (2016-2018, 2023-2024, 2026), vs. league average over the same seasons.",
         "rows": [
           {
             "label": "Wide receivers",
@@ -18238,7 +18724,7 @@
             "nfl": 19
           }
         ],
-        "note": "Across his play-calling seasons since 2016, McCarthy's offenses have directed a larger share of targets to wide receivers than the league baseline (63% vs 59%). That historical tendency is worth monitoring alongside the current roster and weekly usage."
+        "note": "Across his play-calling seasons (2016-2018, 2023-2024, 2026), McCarthy's offenses have directed a larger share of targets to wide receivers than the league baseline (63% vs 59%). That historical tendency is worth monitoring alongside the current roster and weekly usage."
       },
       "backfield": {
         "sub": "Lead back's share of backfield weighted opportunities, by season called.",
@@ -18296,7 +18782,7 @@
       "bottomLine": "The fantasy bottom line: Mike McCarthy is new to the Steelers call sheet in 2026, so 2025 tendencies describe a different coach's offense. Through 10 games, the Steelers have been less aggressive on short 4th downs, more pass-heavy in the red zone and less motion-heavy than under the 2025 staff. Historically, McCarthy's offenses have also directed an above-average share of targets to wide receivers. Current personnel usage should still carry weight alongside these tendencies.",
       "faq": {
         "question": "How does Mike McCarthy's play-calling affect Steelers fantasy players?",
-        "answer": "Mike McCarthy is a first-year play-caller for the Steelers, so last season's tendencies carry little predictive weight. Through Week 11 2026, the offense shows 4th-down go rate below league average (43% vs 76%) and red-zone pass rate above league average (69% vs 53.5%). The lead back handles 65% of backfield weighted opportunities, and the target split leans toward wide receivers (63% vs a 59% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
+        "answer": "Mike McCarthy is a first-year play-caller for the Steelers, so last season's tendencies carry little predictive weight. Through Week 11 2026, the offense shows 4th-down go rate below league average (43% vs 76%) and red-zone pass rate above league average (69.0% vs 53.5%). The lead back handles 65% of backfield weighted opportunities, and the target split leans toward wide receivers (63% vs a 59% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
       }
     },
     "sea": {
@@ -18354,6 +18840,8 @@
               "text": "+3.4"
             },
             "nflAvg": "60.5%",
+            "priorRaw": 52.1127,
+            "currentRaw": 55.5008,
             "priorNum": 52.1,
             "feed": "passRate"
           },
@@ -18362,14 +18850,16 @@
             "label": "Pass rate over expected",
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
-            "prior": "−6.5%",
+            "prior": "−5.4%",
             "current": "−5.3%",
             "change": {
-              "dir": "up",
-              "text": "+1.2"
+              "dir": "flat",
+              "text": "steady"
             },
-            "nflAvg": "0%",
-            "priorNum": -6.5,
+            "nflAvg": "+0.0%",
+            "priorRaw": -5.3656,
+            "currentRaw": -5.2839,
+            "priorNum": -5.4,
             "feed": "proe"
           },
           {
@@ -18378,12 +18868,14 @@
             "sub": "sec/play, neutral game state",
             "def": "Average seconds between back-to-back snaps on the same drive, counted only while the game is neutral: win probability between 20% and 80%, with more than two minutes left in the half. Gaps over 60 seconds (timeouts, reviews, quarter breaks) are dropped. Lower is faster.",
             "prior": "34.6s",
-            "current": "35s",
+            "current": "35.0s",
             "change": {
               "dir": "down",
               "text": "slower"
             },
-            "nflAvg": "33s",
+            "nflAvg": "33.0s",
+            "priorRaw": 34.5623,
+            "currentRaw": 35.0346,
             "priorNum": 34.6,
             "feed": "pace",
             "invert": true
@@ -18399,7 +18891,9 @@
               "dir": "up",
               "text": "+0.6"
             },
-            "nflAvg": "55.1%"
+            "nflAvg": "55.1%",
+            "priorRaw": 47.9487,
+            "currentRaw": 48.5232
           },
           {
             "key": "noHuddleRate",
@@ -18412,7 +18906,9 @@
               "dir": "down",
               "text": "−3.6"
             },
-            "nflAvg": "6.8%"
+            "nflAvg": "6.8%",
+            "priorRaw": 7.4447,
+            "currentRaw": 3.7767
           },
           {
             "key": "paRate",
@@ -18425,20 +18921,24 @@
               "dir": "up",
               "text": "+1.3 - 7th in NFL"
             },
-            "nflAvg": "22.4%"
+            "nflAvg": "22.4%",
+            "priorRaw": 25.2896,
+            "currentRaw": 26.6272
           },
           {
             "key": "motionRate",
             "label": "Pre-snap motion",
             "sub": "before or at the snap, charted",
             "def": "Share of charted snaps with motion before or at the snap. That includes a player who motions and resets before the ball is snapped, not only one still moving when it is.",
-            "prior": "57%",
+            "prior": "57.0%",
             "current": "52.5%",
             "change": {
               "dir": "down",
               "text": "−4.5"
             },
-            "nflAvg": "58.5%"
+            "nflAvg": "58.1%",
+            "priorRaw": 57.0423,
+            "currentRaw": 52.5452
           },
           {
             "key": "shotgunRate",
@@ -18451,20 +18951,24 @@
               "dir": "up",
               "text": "+4.2"
             },
-            "nflAvg": "62.2%"
+            "nflAvg": "62.2%",
+            "priorRaw": 46.3783,
+            "currentRaw": 50.5747
           },
           {
             "key": "rzPassRate",
             "label": "Red-zone pass rate",
             "sub": "inside the opponent's 20",
             "def": "Pass share on snaps at the opponent's 20-yard line or closer. Sacks and scrambles count as passes; kneels, spikes, two-point tries and snaps wiped out by penalty are removed. It counts plays, not trips, so a few long red-zone drives can move it a lot early in a season.",
-            "prior": "44%",
+            "prior": "44.0%",
             "current": "49.4%",
             "change": {
               "dir": "up",
               "text": "+5.4"
             },
             "nflAvg": "53.5%",
+            "priorRaw": 43.9759,
+            "currentRaw": 49.4118,
             "priorNum": 44,
             "feed": "rzPassRate"
           },
@@ -18731,6 +19235,8 @@
               "text": "−2.8"
             },
             "nflAvg": "60.5%",
+            "priorRaw": 58.8679,
+            "currentRaw": 56.0554,
             "priorNum": 58.9,
             "feed": "passRate"
           },
@@ -18739,14 +19245,16 @@
             "label": "Pass rate over expected",
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
-            "prior": "−0.9%",
+            "prior": "+0.1%",
             "current": "+3.1%",
             "change": {
               "dir": "up",
-              "text": "+4 - 4th in NFL"
+              "text": "+3 - 4th in NFL"
             },
-            "nflAvg": "0%",
-            "priorNum": -0.9,
+            "nflAvg": "+0.0%",
+            "priorRaw": 0.057,
+            "currentRaw": 3.1176,
+            "priorNum": 0.1,
             "feed": "proe"
           },
           {
@@ -18760,7 +19268,9 @@
               "dir": "flat",
               "text": "steady"
             },
-            "nflAvg": "33s",
+            "nflAvg": "33.0s",
+            "priorRaw": 33.8575,
+            "currentRaw": 33.7118,
             "priorNum": 33.9,
             "feed": "pace",
             "invert": true
@@ -18776,7 +19286,9 @@
               "dir": "down",
               "text": "−1.7"
             },
-            "nflAvg": "55.1%"
+            "nflAvg": "55.1%",
+            "priorRaw": 54.2823,
+            "currentRaw": 52.6087
           },
           {
             "key": "noHuddleRate",
@@ -18789,7 +19301,9 @@
               "dir": "down",
               "text": "−1.1"
             },
-            "nflAvg": "6.8%"
+            "nflAvg": "6.8%",
+            "priorRaw": 3.6792,
+            "currentRaw": 2.5952
           },
           {
             "key": "paRate",
@@ -18802,7 +19316,9 @@
               "dir": "up",
               "text": "+0.8"
             },
-            "nflAvg": "22.4%"
+            "nflAvg": "22.4%",
+            "priorRaw": 22.2756,
+            "currentRaw": 23.1481
           },
           {
             "key": "motionRate",
@@ -18815,7 +19331,9 @@
               "dir": "up",
               "text": "+7.9 - 1st in NFL"
             },
-            "nflAvg": "58.5%"
+            "nflAvg": "58.1%",
+            "priorRaw": 68.3962,
+            "currentRaw": 76.2976
           },
           {
             "key": "shotgunRate",
@@ -18823,25 +19341,29 @@
             "sub": "share of offensive snaps",
             "def": "Share of offensive snaps the play-by-play logs as shotgun, over the same snaps as the pass rate. Pistol is not tracked separately: a pistol snap counts only if the play-by-play logs it as shotgun.",
             "prior": "54.2%",
-            "current": "49%",
+            "current": "49.0%",
             "change": {
               "dir": "down",
               "text": "−5.2"
             },
-            "nflAvg": "62.2%"
+            "nflAvg": "62.2%",
+            "priorRaw": 54.1509,
+            "currentRaw": 48.9619
           },
           {
             "key": "rzPassRate",
             "label": "Red-zone pass rate",
             "sub": "inside the opponent's 20",
             "def": "Pass share on snaps at the opponent's 20-yard line or closer. Sacks and scrambles count as passes; kneels, spikes, two-point tries and snaps wiped out by penalty are removed. It counts plays, not trips, so a few long red-zone drives can move it a lot early in a season.",
-            "prior": "52%",
+            "prior": "52.0%",
             "current": "53.1%",
             "change": {
               "dir": "up",
               "text": "+1.1"
             },
             "nflAvg": "53.5%",
+            "priorRaw": 52.0408,
+            "currentRaw": 53.0612,
             "priorNum": 52,
             "feed": "rzPassRate"
           },
@@ -18889,7 +19411,7 @@
         },
         {
           "key": "shotgunRate",
-          "stat": "49",
+          "stat": "49.0",
           "unit": "shotgun",
           "heading": "More under center.",
           "body": "Under-center snaps travel with the run game and play-action: better for an early-down back and downfield shots off the fake.",
@@ -19672,7 +20194,7 @@
         "note": "Positional finishes are season-long PPR ranks. Shanahan's offenses have put up repeated top-ten positional seasons - the system has paid fantasy investors before."
       },
       "distribution": {
-        "sub": "Target split by position across Shanahan's play-calling seasons since 2016, vs. league average.",
+        "sub": "Target split by position across Shanahan's play-calling seasons (2016-2026), vs. league average over the same seasons.",
         "rows": [
           {
             "label": "Wide receivers",
@@ -19691,7 +20213,7 @@
             "gold": true
           }
         ],
-        "note": "Across his play-calling seasons since 2016, Shanahan's offenses have directed a smaller share of targets to wide receivers than the league baseline (54% vs 59%). That historical tendency is worth monitoring alongside the current roster and weekly usage."
+        "note": "Across his play-calling seasons (2016-2026), Shanahan's offenses have directed a smaller share of targets to wide receivers than the league baseline (54% vs 59%). That historical tendency is worth monitoring alongside the current roster and weekly usage."
       },
       "backfield": {
         "sub": "Lead back's share of backfield weighted opportunities, by season called.",
@@ -19749,7 +20271,7 @@
       "bottomLine": "The fantasy bottom line: Shanahan called this offense in 2025 too, giving those tendencies more predictive value than they would have after a play-caller change. Through 10 games, the 49ers have been more motion-heavy, less aggressive on short 4th downs and more under-center than in 2025. Historically, Shanahan's offenses have also directed a below-average share of targets to wide receivers. Current personnel usage should still carry weight alongside these tendencies.",
       "faq": {
         "question": "How does Kyle Shanahan's play-calling affect 49ers fantasy players?",
-        "answer": "Kyle Shanahan is calling the 49ers offense for the tenth straight season, so last year's tendencies remain predictive. Through Week 11 2026, the offense shows pre-snap motion above league average (76.3% vs 58.5%) and shotgun rate below league average (49% vs 62.2%). The lead back handles 62% of backfield weighted opportunities, and the target split leans toward wide receivers (54% vs a 59% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
+        "answer": "Kyle Shanahan is calling the 49ers offense for the tenth straight season, so last year's tendencies remain predictive. Through Week 11 2026, the offense shows pre-snap motion above league average (76.3% vs 58.1%) and shotgun rate below league average (49.0% vs 62.2%). The lead back handles 62% of backfield weighted opportunities, and the target split leans toward wide receivers (54% vs a 59% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
       }
     },
     "tb": {
@@ -19807,6 +20329,8 @@
               "text": "−6.3"
             },
             "nflAvg": "60.5%",
+            "priorRaw": 60.3595,
+            "currentRaw": 54.1195,
             "priorNum": 60.4,
             "feed": "passRate"
           },
@@ -19815,14 +20339,16 @@
             "label": "Pass rate over expected",
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
-            "prior": "−3.5%",
+            "prior": "−2.3%",
             "current": "−9.8%",
             "change": {
               "dir": "down",
-              "text": "−6.3"
+              "text": "−7.5"
             },
-            "nflAvg": "0%",
-            "priorNum": -3.5,
+            "nflAvg": "+0.0%",
+            "priorRaw": -2.3199,
+            "currentRaw": -9.8322,
+            "priorNum": -2.3,
             "feed": "proe"
           },
           {
@@ -19831,12 +20357,14 @@
             "sub": "sec/play, neutral game state",
             "def": "Average seconds between back-to-back snaps on the same drive, counted only while the game is neutral: win probability between 20% and 80%, with more than two minutes left in the half. Gaps over 60 seconds (timeouts, reviews, quarter breaks) are dropped. Lower is faster.",
             "prior": "35.1s",
-            "current": "35s",
+            "current": "35.0s",
             "change": {
               "dir": "flat",
               "text": "steady"
             },
-            "nflAvg": "33s",
+            "nflAvg": "33.0s",
+            "priorRaw": 35.1317,
+            "currentRaw": 35.0045,
             "priorNum": 35.1,
             "feed": "pace",
             "invert": true
@@ -19852,7 +20380,9 @@
               "dir": "down",
               "text": "−7.1"
             },
-            "nflAvg": "55.1%"
+            "nflAvg": "55.1%",
+            "priorRaw": 54.1823,
+            "currentRaw": 47.1092
           },
           {
             "key": "noHuddleRate",
@@ -19865,7 +20395,9 @@
               "dir": "up",
               "text": "+0.9"
             },
-            "nflAvg": "6.8%"
+            "nflAvg": "6.8%",
+            "priorRaw": 6.2441,
+            "currentRaw": 7.1082
           },
           {
             "key": "paRate",
@@ -19873,12 +20405,14 @@
             "sub": "share of dropbacks, charted",
             "def": "Share of dropbacks charted as play-action. The denominator is dropbacks, not pass attempts, so sacks and scrambles are in it.",
             "prior": "16.9%",
-            "current": "20%",
+            "current": "20.0%",
             "change": {
               "dir": "up",
               "text": "+3.1"
             },
-            "nflAvg": "22.4%"
+            "nflAvg": "22.4%",
+            "priorRaw": 16.9279,
+            "currentRaw": 20
           },
           {
             "key": "motionRate",
@@ -19891,7 +20425,9 @@
               "dir": "up",
               "text": "+6.9 - 4th in NFL"
             },
-            "nflAvg": "58.5%"
+            "nflAvg": "58.1%",
+            "priorRaw": 62.157,
+            "currentRaw": 69.1438
           },
           {
             "key": "shotgunRate",
@@ -19904,7 +20440,9 @@
               "dir": "down",
               "text": "−0.7"
             },
-            "nflAvg": "62.2%"
+            "nflAvg": "62.2%",
+            "priorRaw": 65.5629,
+            "currentRaw": 64.9435
           },
           {
             "key": "rzPassRate",
@@ -19918,6 +20456,8 @@
               "text": "−10.3"
             },
             "nflAvg": "53.5%",
+            "priorRaw": 57.4468,
+            "currentRaw": 47.1154,
             "priorNum": 57.4,
             "feed": "rzPassRate"
           },
@@ -19964,11 +20504,11 @@
           "note": null
         },
         {
-          "key": "earlyDownPassRate",
-          "stat": "47.1",
-          "unit": "early-down pass %",
-          "heading": "Running on the downs that are a choice.",
-          "body": "The staff is choosing the ground game when it has the choice.",
+          "key": "proe",
+          "stat": "−9.8",
+          "unit": "PROE",
+          "heading": "A run lean has emerged.",
+          "body": "Adjusted for situation, so the run lean reads as intent, not game script.",
           "note": null
         }
       ],
@@ -20171,7 +20711,7 @@
         "note": "Robinson has 2 prior play-calling seasons in this table, so read the history as background and the 2026 pace row as the live read. Positional finishes are season-long PPR ranks."
       },
       "distribution": {
-        "sub": "Target split by position across Robinson's play-calling seasons since 2016, vs. league average.",
+        "sub": "Target split by position across Robinson's play-calling seasons (2024-2026), vs. league average over the same seasons.",
         "rows": [
           {
             "label": "Wide receivers",
@@ -20189,7 +20729,7 @@
             "nfl": 18
           }
         ],
-        "note": "Across his play-calling seasons since 2016, Robinson's offenses have directed a smaller share of targets to tight ends than the league baseline (19% vs 23%). That historical tendency is worth monitoring alongside the current roster and weekly usage."
+        "note": "Across his play-calling seasons (2024-2026), Robinson's offenses have directed a smaller share of targets to tight ends than the league baseline (19% vs 23%). That historical tendency is worth monitoring alongside the current roster and weekly usage."
       },
       "backfield": {
         "sub": "Lead back's share of backfield weighted opportunities, by season called.",
@@ -20232,10 +20772,10 @@
         ],
         "note": "A clear pass-rate increase when trailing. The Buccaneers have passed on 67% of plays while trailing by 7+, compared with 32% while leading by 7+. The 35-point difference is worth monitoring; play counts are shown so you can weigh each bucket's sample."
       },
-      "bottomLine": "The fantasy bottom line: Zac Robinson is new to the Buccaneers call sheet in 2026, so 2025 tendencies describe a different coach's offense. Through 10 games, the Buccaneers have been less aggressive on short 4th downs, more run-heavy in the red zone and run-heavier on early downs than under the 2025 staff. Historically, Robinson's offenses have also directed a below-average share of targets to tight ends. Current personnel usage should still carry weight alongside these tendencies.",
+      "bottomLine": "The fantasy bottom line: Zac Robinson is new to the Buccaneers call sheet in 2026, so 2025 tendencies describe a different coach's offense. Through 10 games, the Buccaneers have been less aggressive on short 4th downs, more run-heavy in the red zone and more run-leaning by PROE than under the 2025 staff. Historically, Robinson's offenses have also directed a below-average share of targets to tight ends. Current personnel usage should still carry weight alongside these tendencies.",
       "faq": {
         "question": "How does Zac Robinson's play-calling affect Buccaneers fantasy players?",
-        "answer": "Zac Robinson is a first-year play-caller for the Buccaneers, so last season's tendencies carry little predictive weight. Through Week 11 2026, the offense shows pre-snap motion above league average (69.1% vs 58.5%) and pass rate over expected below league average (−9.8% vs +0%). The lead back handles 65% of backfield weighted opportunities, and the target split leans toward tight ends (19% vs a 23% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
+        "answer": "Zac Robinson is a first-year play-caller for the Buccaneers, so last season's tendencies carry little predictive weight. Through Week 11 2026, the offense shows pre-snap motion above league average (69.1% vs 58.1%) and pass rate over expected below league average (−9.8% vs +0.0%). The lead back handles 65% of backfield weighted opportunities, and the target split leans toward tight ends (19% vs a 23% league average). The play-calling and tendency metrics on this page are computed from play-by-play and charting data. Coaching roles, history and staff information are sourced separately from team and league reporting."
       }
     },
     "ten": {
@@ -20293,6 +20833,8 @@
               "text": "−2.2"
             },
             "nflAvg": "60.5%",
+            "priorRaw": 64.9246,
+            "currentRaw": 62.6761,
             "priorNum": 64.9,
             "feed": "passRate"
           },
@@ -20301,14 +20843,16 @@
             "label": "Pass rate over expected",
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
-            "prior": "−3.7%",
+            "prior": "−4.3%",
             "current": "−4.9%",
             "change": {
               "dir": "down",
-              "text": "−1.2"
+              "text": "−0.6"
             },
-            "nflAvg": "0%",
-            "priorNum": -3.7,
+            "nflAvg": "+0.0%",
+            "priorRaw": -4.2593,
+            "currentRaw": -4.9231,
+            "priorNum": -4.3,
             "feed": "proe"
           },
           {
@@ -20316,13 +20860,15 @@
             "label": "Neutral pace",
             "sub": "sec/play, neutral game state",
             "def": "Average seconds between back-to-back snaps on the same drive, counted only while the game is neutral: win probability between 20% and 80%, with more than two minutes left in the half. Gaps over 60 seconds (timeouts, reviews, quarter breaks) are dropped. Lower is faster.",
-            "prior": "35s",
+            "prior": "35.0s",
             "current": "30.2s",
             "change": {
               "dir": "up",
               "text": "faster"
             },
-            "nflAvg": "33s",
+            "nflAvg": "33.0s",
+            "priorRaw": 34.9851,
+            "currentRaw": 30.2353,
             "priorNum": 35,
             "feed": "pace",
             "invert": true
@@ -20338,7 +20884,9 @@
               "dir": "down",
               "text": "−2"
             },
-            "nflAvg": "55.1%"
+            "nflAvg": "55.1%",
+            "priorRaw": 58.9286,
+            "currentRaw": 56.9476
           },
           {
             "key": "noHuddleRate",
@@ -20351,7 +20899,9 @@
               "dir": "up",
               "text": "+15 - 1st in NFL"
             },
-            "nflAvg": "6.8%"
+            "nflAvg": "6.8%",
+            "priorRaw": 10.1508,
+            "currentRaw": 25.1761
           },
           {
             "key": "paRate",
@@ -20359,12 +20909,14 @@
             "sub": "share of dropbacks, charted",
             "def": "Share of dropbacks charted as play-action. The denominator is dropbacks, not pass attempts, so sacks and scrambles are in it.",
             "prior": "18.7%",
-            "current": "23%",
+            "current": "23.0%",
             "change": {
               "dir": "up",
               "text": "+4.3"
             },
-            "nflAvg": "22.4%"
+            "nflAvg": "22.4%",
+            "priorRaw": 18.7307,
+            "currentRaw": 23.0337
           },
           {
             "key": "motionRate",
@@ -20377,7 +20929,9 @@
               "dir": "up",
               "text": "+3.7"
             },
-            "nflAvg": "58.5%"
+            "nflAvg": "58.1%",
+            "priorRaw": 44.7236,
+            "currentRaw": 48.4155
           },
           {
             "key": "shotgunRate",
@@ -20390,7 +20944,9 @@
               "dir": "up",
               "text": "+0.7 - 4th in NFL"
             },
-            "nflAvg": "62.2%"
+            "nflAvg": "62.2%",
+            "priorRaw": 72.8643,
+            "currentRaw": 73.5915
           },
           {
             "key": "rzPassRate",
@@ -20404,6 +20960,8 @@
               "text": "−9.2"
             },
             "nflAvg": "53.5%",
+            "priorRaw": 61.3861,
+            "currentRaw": 52.2222,
             "priorNum": 61.4,
             "feed": "rzPassRate"
           },
@@ -20972,7 +21530,7 @@
         "note": "Daboll has 4 prior play-calling seasons in this table, so read the history as background and the 2026 pace row as the live read. Positional finishes are season-long PPR ranks."
       },
       "distribution": {
-        "sub": "Target split by position across Daboll's play-calling seasons since 2016, vs. league average.",
+        "sub": "Target split by position across Daboll's play-calling seasons (2018-2021, 2024, 2026), vs. league average over the same seasons.",
         "rows": [
           {
             "label": "Wide receivers",
@@ -20991,7 +21549,7 @@
             "nfl": 19
           }
         ],
-        "note": "Across his play-calling seasons since 2016, Daboll's offenses have directed a larger share of targets to wide receivers than the league baseline (69% vs 59%). That historical tendency is worth monitoring alongside the current roster and weekly usage."
+        "note": "Across his play-calling seasons (2018-2021, 2024, 2026), Daboll's offenses have directed a larger share of targets to wide receivers than the league baseline (69% vs 59%). That historical tendency is worth monitoring alongside the current roster and weekly usage."
       },
       "backfield": {
         "sub": "Lead back's share of backfield weighted opportunities, by season called.",
@@ -21100,13 +21658,15 @@
             "key": "passRate",
             "label": "Pass rate (all downs)",
             "def": "Share of offensive snaps that were dropbacks. Sacks and QB scrambles count as passes, since both began as pass plays. Kneels, spikes, two-point tries and snaps wiped out by penalty are removed. Regular season only, as is every row here.",
-            "prior": "58%",
+            "prior": "58.0%",
             "current": "63.6%",
             "change": {
               "dir": "up",
               "text": "+5.6"
             },
             "nflAvg": "60.5%",
+            "priorRaw": 58.0247,
+            "currentRaw": 63.5772,
             "priorNum": 58,
             "feed": "passRate"
           },
@@ -21115,14 +21675,16 @@
             "label": "Pass rate over expected",
             "sub": "situation-adjusted",
             "def": "The average pass-over-expected value across the same snaps as the pass rate: whether each snap was a pass, minus the chance an average team passes in that down, distance, field position, score and time remaining. Positive means this staff passes more than the situation predicts.",
-            "prior": "−4.4%",
-            "current": "+0%",
+            "prior": "−3.7%",
+            "current": "+0.0%",
             "change": {
               "dir": "up",
-              "text": "+4.4"
+              "text": "+3.7"
             },
-            "nflAvg": "0%",
-            "priorNum": -4.4,
+            "nflAvg": "+0.0%",
+            "priorRaw": -3.7451,
+            "currentRaw": -0.0394,
+            "priorNum": -3.7,
             "feed": "proe"
           },
           {
@@ -21136,7 +21698,9 @@
               "dir": "up",
               "text": "faster"
             },
-            "nflAvg": "33s",
+            "nflAvg": "33.0s",
+            "priorRaw": 33.8468,
+            "currentRaw": 32.3411,
             "priorNum": 33.8,
             "feed": "pace",
             "invert": true
@@ -21152,20 +21716,24 @@
               "dir": "up",
               "text": "+6.2"
             },
-            "nflAvg": "55.1%"
+            "nflAvg": "55.1%",
+            "priorRaw": 51.9104,
+            "currentRaw": 58.0508
           },
           {
             "key": "noHuddleRate",
             "label": "No-huddle rate",
             "sub": "share of offensive snaps",
             "def": "Share of offensive snaps the play-by-play marks as no-huddle, over the same snaps as the pass rate.",
-            "prior": "62%",
+            "prior": "62.0%",
             "current": "9.6%",
             "change": {
               "dir": "down",
               "text": "−52.4 - 4th in NFL"
             },
-            "nflAvg": "6.8%"
+            "nflAvg": "6.8%",
+            "priorRaw": 62.037,
+            "currentRaw": 9.5935
           },
           {
             "key": "paRate",
@@ -21178,7 +21746,9 @@
               "dir": "down",
               "text": "−6.6"
             },
-            "nflAvg": "22.4%"
+            "nflAvg": "22.4%",
+            "priorRaw": 25.5319,
+            "currentRaw": 18.9258
           },
           {
             "key": "motionRate",
@@ -21186,12 +21756,14 @@
             "sub": "before or at the snap, charted",
             "def": "Share of charted snaps with motion before or at the snap. That includes a player who motions and resets before the ball is snapped, not only one still moving when it is.",
             "prior": "54.5%",
-            "current": "54.6%",
+            "current": "49.1%",
             "change": {
-              "dir": "flat",
-              "text": "steady"
+              "dir": "down",
+              "text": "−5.4"
             },
-            "nflAvg": "58.5%"
+            "nflAvg": "58.1%",
+            "priorRaw": 54.5267,
+            "currentRaw": 49.1057
           },
           {
             "key": "shotgunRate",
@@ -21204,20 +21776,24 @@
               "dir": "down",
               "text": "−15 - 5th in NFL"
             },
-            "nflAvg": "62.2%"
+            "nflAvg": "62.2%",
+            "priorRaw": 88.4774,
+            "currentRaw": 73.4959
           },
           {
             "key": "rzPassRate",
             "label": "Red-zone pass rate",
             "sub": "inside the opponent's 20",
             "def": "Pass share on snaps at the opponent's 20-yard line or closer. Sacks and scrambles count as passes; kneels, spikes, two-point tries and snaps wiped out by penalty are removed. It counts plays, not trips, so a few long red-zone drives can move it a lot early in a season.",
-            "prior": "43%",
+            "prior": "43.0%",
             "current": "57.3%",
             "change": {
               "dir": "up",
               "text": "+14.3 - 7th in NFL"
             },
             "nflAvg": "53.5%",
+            "priorRaw": 43.0464,
+            "currentRaw": 57.3333,
             "priorNum": 43,
             "feed": "rzPassRate"
           },

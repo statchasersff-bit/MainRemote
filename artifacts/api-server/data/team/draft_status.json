@@ -1,5 +1,5 @@
 {
- "builtAt": "2026-11-24T12:58:48.977Z",
+ "builtAt": "2026-11-25T17:12:17.618Z",
  "season": 2026,
  "week": 12,
  "players": {
@@ -485,7 +485,7 @@
   },
   "00-0038600": {
    "now": {
-    "kind": "active",
+    "kind": "ps",
     "club": "det",
     "week": 12
    },
@@ -1757,7 +1757,7 @@
   },
   "00-0038119": {
    "now": {
-    "kind": "active",
+    "kind": "ps",
     "club": "lac",
     "week": 12
    },
@@ -2005,11 +2005,15 @@
   },
   "00-0040075": {
    "now": {
-    "kind": "active",
+    "kind": "cut",
     "club": "bal",
     "week": 12
    },
-   "left": null
+   "left": {
+    "kind": "waived",
+    "season": 2026,
+    "week": 12
+   }
   },
   "00-0040076": {
    "now": {
@@ -2129,7 +2133,7 @@
   },
   "00-0033884": {
    "now": {
-    "kind": "active",
+    "kind": "ps",
     "club": "buf",
     "week": 12
    },
@@ -2137,7 +2141,7 @@
   },
   "00-0033891": {
    "now": {
-    "kind": "active",
+    "kind": "ps",
     "club": "ari",
     "week": 12
    },
@@ -2561,9 +2565,9 @@
   },
   "00-0038633": {
    "now": {
-    "kind": "active",
+    "kind": "ps",
     "club": "buf",
-    "week": 11
+    "week": 12
    },
    "left": {
     "kind": "released",
@@ -2721,11 +2725,15 @@
   },
   "00-0040217": {
    "now": {
-    "kind": "ps",
-    "club": "buf",
+    "kind": "active",
+    "club": "sea",
     "week": 12
    },
-   "left": null
+   "left": {
+    "kind": "traded",
+    "season": 2026,
+    "week": 12
+   }
   },
   "00-0041036": {
    "now": {
@@ -3273,7 +3281,7 @@
   },
   "00-0038587": {
    "now": {
-    "kind": "ps",
+    "kind": "active",
     "club": "atl",
     "week": 12
    },
@@ -3901,9 +3909,9 @@
   },
   "00-0038395": {
    "now": {
-    "kind": "cut",
-    "club": "pit",
-    "week": 10
+    "kind": "ps",
+    "club": "atl",
+    "week": 12
    },
    "left": null
   },
@@ -4117,7 +4125,7 @@
   },
   "00-0033463": {
    "now": {
-    "kind": "ps",
+    "kind": "active",
     "club": "ind",
     "week": 12
    },
@@ -4461,9 +4469,9 @@
   },
   "00-0036850": {
    "now": {
-    "kind": "cut",
-    "club": "atl",
-    "week": 1
+    "kind": "ps",
+    "club": "ind",
+    "week": 12
    },
    "left": null
   },
@@ -4825,7 +4833,7 @@
   },
   "00-0041098": {
    "now": {
-    "kind": "ir",
+    "kind": "active",
     "club": "cin",
     "week": 12
    },
@@ -5153,7 +5161,7 @@
   },
   "00-0036996": {
    "now": {
-    "kind": "active",
+    "kind": "ir",
     "club": "nyg",
     "week": 12
    },
@@ -5793,7 +5801,7 @@
   },
   "00-0036361": {
    "now": {
-    "kind": "ps",
+    "kind": "active",
     "club": "sea",
     "week": 12
    },
@@ -5849,7 +5857,7 @@
   },
   "00-0036932": {
    "now": {
-    "kind": "pup",
+    "kind": "active",
     "club": "gb",
     "week": 12
    },
@@ -6241,7 +6249,7 @@
   },
   "00-0040021": {
    "now": {
-    "kind": "active",
+    "kind": "ps",
     "club": "nyg",
     "week": 12
    },
@@ -6430,7 +6438,7 @@
   "00-0034780": {
    "now": {
     "kind": "active",
-    "club": "was",
+    "club": "chi",
     "week": 12
    },
    "left": null
@@ -7505,7 +7513,7 @@
   },
   "00-0038592": {
    "now": {
-    "kind": "active",
+    "kind": "ps",
     "club": "no",
     "week": 12
    },
@@ -8741,7 +8749,7 @@
   },
   "00-0036195": {
    "now": {
-    "kind": "active",
+    "kind": "cut",
     "club": "ind",
     "week": 12
    },
@@ -8845,7 +8853,7 @@
   },
   "00-0037823": {
    "now": {
-    "kind": "active",
+    "kind": "cut",
     "club": "atl",
     "week": 12
    },
@@ -9969,7 +9977,7 @@
   },
   "00-0041111": {
    "now": {
-    "kind": "active",
+    "kind": "ir",
     "club": "ind",
     "week": 12
    },
@@ -12453,7 +12461,7 @@
   },
   "00-0037842": {
    "now": {
-    "kind": "active",
+    "kind": "ps",
     "club": "dal",
     "week": 12
    },
@@ -12521,7 +12529,7 @@
   },
   "00-0039076": {
    "now": {
-    "kind": "active",
+    "kind": "ps",
     "club": "car",
     "week": 12
    },
@@ -14173,11 +14181,15 @@
   },
   "00-0041531": {
    "now": {
-    "kind": "active",
+    "kind": "cut",
     "club": "mia",
     "week": 12
    },
-   "left": null
+   "left": {
+    "kind": "waived",
+    "season": 2026,
+    "week": 12
+   }
   },
   "00-0033893": {
    "now": {
@@ -14325,7 +14337,7 @@
   },
   "00-0034161": {
    "now": {
-    "kind": "active",
+    "kind": "ps",
     "club": "mia",
     "week": 12
    },
@@ -16377,7 +16389,7 @@
   },
   "00-0041114": {
    "now": {
-    "kind": "active",
+    "kind": "ps",
     "club": "no",
     "week": 12
    },
@@ -16845,9 +16857,9 @@
   },
   "00-0038396": {
    "now": {
-    "kind": "cut",
-    "club": "nyg",
-    "week": 11
+    "kind": "ps",
+    "club": "ind",
+    "week": 12
    },
    "left": {
     "kind": "waived",
@@ -17329,7 +17341,7 @@
   },
   "00-0036924": {
    "now": {
-    "kind": "active",
+    "kind": "ps",
     "club": "ten",
     "week": 12
    },
@@ -20037,7 +20049,7 @@
   },
   "00-0036261": {
    "now": {
-    "kind": "exempt",
+    "kind": "active",
     "club": "sf",
     "week": 12
    },
@@ -21493,7 +21505,7 @@
   },
   "00-0037312": {
    "now": {
-    "kind": "ps",
+    "kind": "active",
     "club": "phi",
     "week": 12
    },
@@ -22421,7 +22433,7 @@
   },
   "00-0040242": {
    "now": {
-    "kind": "ir",
+    "kind": "active",
     "club": "was",
     "week": 12
    },
