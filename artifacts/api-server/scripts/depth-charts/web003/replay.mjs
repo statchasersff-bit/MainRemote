@@ -28,7 +28,14 @@
  *
  *   SC_WP_DIR=<dir holding ./wordpress, ./router.php, ./wp-cli.phar> SC_PHP=<php> node replay.mjs
  *
- * Ports 18100 (WordPress), 18101 (edge = WP_HOME), 18102 (API origin).
+ * Ports 18100 (WordPress), 18101 (edge = WP_HOME), 18102 (API origin); set
+ * SC_BENCH_PORT_BASE to move all three (WP_HOME in the bench's wp-config must
+ * name base+1, STATCHASERS_NEWS_ORIGIN base+2).
+ *
+ * Also (depth charts audit integration, 2026-11-25): the league page's
+ * "updated" line (<time datetime>) must advance with the lineup in the same
+ * publication, and the run prints the team tab's asset URLs (WEB-023) and the
+ * league page's og:image and JSON-LD graph (WEB-021).
  */
 import http from "node:http";
 import fs from "node:fs";
@@ -46,9 +53,10 @@ const { startServer } = await import(path.join(APP, "tests", "helpers", "server.
 const { startUpstreamReplay } = await import(path.join(APP, "tests", "helpers", "upstream-replay.mjs"));
 const WP_DIR = process.env.SC_WP_DIR;
 const PHP = process.env.SC_PHP || "php";
-const WP_PORT = 18100;
-const EDGE_PORT = 18101;
-const ORIGIN_PORT = 18102;
+const PORT_BASE = Number(process.env.SC_BENCH_PORT_BASE || 18100);
+const WP_PORT = PORT_BASE;
+const EDGE_PORT = PORT_BASE + 1;
+const ORIGIN_PORT = PORT_BASE + 2;
 const KEY = "bench-embed-key";
 const HUB = "/nfl/nfl-depth-charts/";
 const TEAM = "/nfl/teams/buffalo-bills/depth-chart/";
@@ -71,6 +79,7 @@ const edgeServer = http.createServer((req, res) => {
       const { files } = JSON.parse(body);
       let n = 0;
       for (const key of [...edge.keys()]) if (files.includes(key.split(" ")[1])) { edge.delete(key); n++; }
+      purgeCount++;
       log(`EDGE purge: ${files.join(" ")} -> ${n} entries dropped`);
       res.setHeader("content-type", "application/json");
       res.end(JSON.stringify({ success: true }));
@@ -131,7 +140,10 @@ function get(pathname, ua = DESKTOP, port = EDGE_PORT, extra = {}) {
 async function readHub(r, ua) {
   const endpoint = (r.body.match(/data-endpoint="([^"]+)"/) ?? [])[1]?.replace(/&amp;/g, "&") ?? "";
   const updated = (r.body.match(/data-last-updated="([^"]*)"/) ?? [])[1] ?? "-";
-  if (!endpoint) return { v: "-", qb1: "-", updated, json: "-" };
+  // The visible "updated" line: first child of .scdc-page, baked into the HTML.
+  const line = r.body.match(/<p class="scdc-updated"><span class="scdc-updated-label">([^<]*)<\/span> <time datetime="([^"]*)">([^<]*)<\/time><\/p>/);
+  const stamp = line ? { label: line[1], iso: line[2], text: line[3] } : null;
+  if (!endpoint) return { v: "-", qb1: "-", updated, json: "-", stamp };
   const u = new URL(endpoint);
   const j = await get(u.pathname + u.search, ua);
   let qb1 = "-";
@@ -139,7 +151,7 @@ async function readHub(r, ua) {
     const doc = JSON.parse(j.body);
     qb1 = doc.teams.find((t) => t.team.abbr === "BUF")?.positions?.QB?.[0]?.name ?? "-";
   } catch { /* not JSON */ }
-  return { v: u.searchParams.get("v"), qb1, updated, json: j.headers["cf-cache-status"] ?? "origin" };
+  return { v: u.searchParams.get("v"), qb1, updated, json: j.headers["cf-cache-status"] ?? "origin", stamp };
 }
 
 /** Team tab: whose name opens the Bills' QB row. */
@@ -157,8 +169,8 @@ async function show(label, which, ua = DESKTOP, query = "", port = EDGE_PORT) {
   const layer = `${(r.headers["cf-cache-status"] ?? "origin").padEnd(6)} ${r.headers["x-bench-rocket"] ? "rocket-file" : "wp-render  "}`;
   if (which === "hub") {
     const h = await readHub(r, ua);
-    log(`${label.padEnd(22)} hub  ${device.padEnd(7)} ${r.status} ${layer} ${String(r.ms).padStart(5)}ms  ?v=${h.v}  JSON ${h.json.padEnd(6)} BUF QB1: ${h.qb1}  (Updated ${h.updated})`);
-    results.push({ label, which, device, cf: r.headers["cf-cache-status"] ?? "origin", qb1: h.qb1, v: h.v });
+    log(`${label.padEnd(22)} hub  ${device.padEnd(7)} ${r.status} ${layer} ${String(r.ms).padStart(5)}ms  ?v=${h.v}  JSON ${h.json.padEnd(6)} BUF QB1: ${h.qb1}  line: ${h.stamp ? `${h.stamp.label} <time ${h.stamp.iso}> ${h.stamp.text}` : "-"}`);
+    results.push({ label, which, device, cf: r.headers["cf-cache-status"] ?? "origin", qb1: h.qb1, v: h.v, iso: h.stamp?.iso ?? null });
     return h;
   }
   const t = readTeam(r);
@@ -172,6 +184,9 @@ async function wp(...args) {
   return stdout.trim();
 }
 const evalJson = (php) => wp("eval", php);
+/** The pending team warm-up events: "offset@+seconds" each, in time order. */
+const warmEvents = () => evalJson("$o = array(); foreach ( (array) _get_cron_array() as $ts => $hooks ) { foreach ( (array) ( $hooks['statchasers_depth_charts_team_warm'] ?? array() ) as $e ) { $o[] = ( $e['args'][1] ?? '-' ) . '@+' . ( $ts - time() ) . 's'; } } echo implode( ' ', $o );");
+const clearWarmEvents = () => wp("eval", "wp_clear_scheduled_hook('statchasers_depth_charts_team_warm'); foreach ( (array) _get_cron_array() as $ts => $hooks ) { if ( isset( $hooks['statchasers_depth_charts_team_warm'] ) ) { foreach ( $hooks['statchasers_depth_charts_team_warm'] as $e ) { wp_unschedule_event( $ts, 'statchasers_depth_charts_team_warm', $e['args'] ); } } }");
 
 // php -S forks PHP_CLI_SERVER_WORKERS children that outlive a plain kill of
 // the parent; it runs in its own process group so the whole group goes.
@@ -192,6 +207,13 @@ async function startWp() {
 
 let scratch;
 let upstream;
+let stampA = "";
+let firstPollEvents = [];
+let secondPollQuiet = false;
+let purgeCount = 0;
+let stampB = "";
+/** The file's ISO time as the page prints it in datetime: UTC with Z, seconds. */
+const isoZ = (s) => (s && !Number.isNaN(Date.parse(s)) ? new Date(Date.parse(s)).toISOString().replace(/\.\d{3}Z$/, "Z") : "");
 const API_ENV = () => ({ ...upstream.env, NODE_ENV: "production", SC_PLAYER_LIVE_REFRESH: "0", SC_DEPTH_CHARTS_FILE: path.join(scratch, "depth-charts.json"), SC_EMBED_KEY: KEY });
 
 function writeSnapshot(doc) {
@@ -242,8 +264,13 @@ try {
   log("--- 1. snapshot A published on both surfaces, then visitors fill every layer");
   await wp("option", "update", "dc_bench_qb1", "Hub Alpha QB");
   await wp("eval", "do_action( SCDC_Refresh::CRON_HOOK );");
+  stampA = await evalJson("$d = json_decode(file_get_contents(SCDC_Store::file_path()), true); echo $d['updatedAt'] ?? '';");
+  log(`stored file A: updatedAt ${stampA}`);
   log("league refresh: " + await evalJson("echo wp_json_encode(array_intersect_key(SCDC_Store::get_meta(), array_flip(array('status','last_refreshed_ts','teams_ok')))) . ' hub record: ' . wp_json_encode(array_intersect_key(get_option('statchasers_depth_charts_hub_published'), array_flip(array('version','edge','wp_rocket')))) ;"));
+  await clearWarmEvents();
   log("team check: " + await evalJson("$r = statchasers_depth_charts_publish_check(); echo $r['result'], ' (', count($r['changed'] ?? array()), ' clubs, edge ', $r['edge'] ?? '-', ')';"));
+  firstPollEvents = (await warmEvents()).split(" ").filter(Boolean);
+  log(`first poll warm-up events (offset@delay): ${firstPollEvents.join(" ")}`);
   await wp("eval", "do_action('statchasers_depth_charts_hub_warm'); do_action('statchasers_depth_charts_team_warm');");
   log("warm-ups ran (desktop + phone)");
   await both("public A", "hub");
@@ -263,6 +290,8 @@ try {
   await sleep(1100);
   await wp("option", "update", "dc_bench_qb1", "Hub Bravo QB");
   await wp("eval", "do_action( SCDC_Refresh::CRON_HOOK );");
+  stampB = await evalJson("$d = json_decode(file_get_contents(SCDC_Store::file_path()), true); echo $d['updatedAt'] ?? '';");
+  log(`stored file B: updatedAt ${stampB}`);
   log("hub record: " + await evalJson("echo wp_json_encode(array_intersect_key(get_option('statchasers_depth_charts_hub_published'), array_flip(array('version','previous','edge','wp_rocket','paths'))));"));
   await both("public B, pre-warm", "hub");
   await wp("eval", "do_action('statchasers_depth_charts_hub_warm');");
@@ -294,8 +323,45 @@ try {
   log(`origin cache headers, team tab: ${JSON.stringify(sample)}`);
   log(`origin cache headers, league:   ${JSON.stringify(sampleHub)}`);
 
-  log("--- 6. a second check with nothing new: no purge");
+  log("--- 5b. what the pages load and declare (WEB-023 assets, WEB-021 identity)");
+  {
+    const t = await get(TEAM, DESKTOP);
+    const tags = [...t.body.matchAll(/<(?:link|script)[^>]+id=['"]statchasers-team-(?:css|js)['"][^>]*>/g)].map((m) => m[0]);
+    for (const tag of tags) log(`team asset: ${(tag.match(/(?:href|src)=['"]([^'"]+)['"]/) ?? [])[1] ?? tag}`);
+    if (!tags.length) log("team asset: no statchasers-team tags found");
+    const h = await get(HUB, DESKTOP);
+    const meta = (prop) => (h.body.match(new RegExp(`<meta[^>]+(?:property|name)=["']${prop}["'][^>]+content=["']([^"']+)["']`)) ?? [])[1] ?? "-";
+    const canon = (h.body.match(/<link[^>]+rel=["']canonical["'][^>]+href=["']([^"']+)["']/) ?? [])[1] ?? "-";
+    log(`hub canonical: ${canon}`);
+    log(`hub og:image: ${meta("og:image")}  ${meta("og:image:width")}x${meta("og:image:height")}  twitter:image ${meta("twitter:image")}`);
+    let blocks = 0;
+    for (const m of h.body.matchAll(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/g)) {
+      blocks++;
+      let doc;
+      try { doc = JSON.parse(m[1]); } catch (e) { log(`hub JSON-LD: PARSE ERROR ${e.message}`); continue; }
+      const graph = Array.isArray(doc["@graph"]) ? doc["@graph"] : [doc];
+      const ids = new Set(graph.map((n) => n["@id"]).filter(Boolean));
+      const refs = [];
+      const walk = (v) => { if (Array.isArray(v)) v.forEach(walk); else if (v && typeof v === "object") { if (Object.keys(v).length === 1 && v["@id"]) refs.push(v["@id"]); else Object.values(v).forEach(walk); } };
+      graph.forEach((n) => Object.entries(n).forEach(([k, v]) => k !== "@id" && walk(v)));
+      const dangling = [...new Set(refs)].filter((r) => !ids.has(r));
+      log(`hub JSON-LD: ${graph.map((n) => `${[].concat(n["@type"]).join("/")}${n["@id"] ? `(${n["@id"]})` : ""}`).join(", ")}`);
+      log(`hub JSON-LD @id refs: ${refs.length}, unresolved: ${dangling.length ? dangling.join(" ") : "none"}`);
+      const crumbs = graph.find((n) => [].concat(n["@type"]).includes("BreadcrumbList"));
+      if (crumbs) log(`hub breadcrumbs: ${(crumbs.itemListElement ?? []).map((i) => `${i.position}. ${i.name ?? i.item?.name} <${i.item?.["@id"] ?? i.item}>`).join(" > ")}`);
+      const page = graph.find((n) => [].concat(n["@type"]).some((x) => /WebPage$/.test(x)));
+      if (page) log(`hub WebPage: url ${page.url}  primaryImageOfPage ${JSON.stringify(page.primaryImageOfPage)}`);
+    }
+    if (!blocks) log("hub JSON-LD: none printed");
+  }
+
+  log("--- 6. a second check with nothing new: no purge, no warm-up");
+  await clearWarmEvents();
+  const purgesBefore = purgeCount;
   log("check: " + await evalJson("echo statchasers_depth_charts_publish_check()['result'];"));
+  const secondEvents = (await warmEvents()).split(" ").filter(Boolean);
+  secondPollQuiet = purgeCount === purgesBefore && secondEvents.length === 0;
+  log(`second poll: ${purgeCount - purgesBefore} edge purges, ${secondEvents.length} warm-up events scheduled`);
 
   log("--- 7. the API goes down: the check changes nothing, the public pages keep B");
   await api.stop();
@@ -306,7 +372,20 @@ try {
   const finals = results.filter((r) => r.label === "public B" || r.label === "public B repeat");
   const ok = finals.length === 8 && finals.every((r) => (r.which === "hub" ? r.qb1 === "Hub Bravo QB" : r.qb1 === TEAM_B));
   log(`ACCEPTANCE: ${ok ? "PASS" : "FAIL"} - ${finals.length} ordinary requests after publication B, all showing B: ${ok}`);
-  process.exitCode = ok ? 0 : 1;
+
+  // The timestamp: every public hub request shows the line; A's requests the
+  // time file A carries, B's the later time file B carries (read from the
+  // stored file right after each publication).
+  const hubA = results.filter((r) => r.which === "hub" && (r.label === "public A" || r.label === "public A repeat"));
+  const hubB = finals.filter((r) => r.which === "hub");
+  const stampOk = hubA.length === 4 && hubB.length === 4
+    && hubA.every((r) => r.qb1 === "Hub Alpha QB" && r.iso && r.iso === isoZ(stampA))
+    && hubB.every((r) => r.qb1 === "Hub Bravo QB" && r.iso && r.iso === isoZ(stampB))
+    && Date.parse(stampB) > Date.parse(stampA);
+  log(`ACCEPTANCE (timestamp): ${stampOk ? "PASS" : "FAIL"} - hub <time datetime> A=${isoZ(stampA)} with Hub Alpha QB (${hubA.length} requests), B=${isoZ(stampB)} with Hub Bravo QB (${hubB.length} requests), advanced with the lineup: ${stampOk}`);
+  const staggerOk = firstPollEvents.length === 8;
+  log(`ACCEPTANCE (rollout): ${staggerOk && secondPollQuiet ? "PASS" : "FAIL"} - first poll ${firstPollEvents.length} warm-up events (expect 8 x 4 clubs, a minute apart); second poll quiet: ${secondPollQuiet}`);
+  process.exitCode = ok && stampOk && staggerOk && secondPollQuiet ? 0 : 1;
 } finally {
   stopWp();
   await api?.stop?.().catch(() => {});

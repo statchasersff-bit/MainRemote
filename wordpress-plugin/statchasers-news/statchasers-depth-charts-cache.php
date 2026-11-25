@@ -39,7 +39,11 @@
  *   2. replace those clubs' fragment copies (fresh and backup);
  *   3. clear WP Rocket's files for exactly those addresses;
  *   4. purge exactly those paths at the edge;
- *   5. record, and warm them a minute later, desktop and phone.
+ *   5. record, and warm them desktop and phone, STATCHASERS_DEPTH_WARM_BATCH
+ *      clubs per WP-cron event, one event a minute starting a minute later
+ *      (the first check after install changes all 32: 8 events of 8
+ *      requests, ~8 requests a minute for ~8 minutes, not 64 at once). The
+ *      purges are not staggered: every club is purged before its warm-up.
  *
  * Steps 1-2 come before 3-4 so that the request that refills a page after the
  * purge cannot be rendered from the old fragment; 3 before 4 so the edge
@@ -70,6 +74,9 @@ const STATCHASERS_DEPTH_PUBLISH_HOOK = 'statchasers_depth_charts_publish_check';
 const STATCHASERS_DEPTH_TEAM_WARM_HOOK = 'statchasers_depth_charts_team_warm';
 const STATCHASERS_DEPTH_HUB_WARM_HOOK  = 'statchasers_depth_charts_hub_warm';
 
+/** Clubs per team warm-up event (each club = a desktop and a phone request). */
+const STATCHASERS_DEPTH_WARM_BATCH = 4;
+
 /** What was last published, and when (one row each, autoload off). */
 const STATCHASERS_DEPTH_TEAM_OPTION = 'statchasers_depth_charts_team_published';
 const STATCHASERS_DEPTH_HUB_OPTION  = 'statchasers_depth_charts_hub_published';
@@ -95,7 +102,7 @@ add_action(
 		statchasers_depth_charts_publish_check();
 	}
 );
-add_action( STATCHASERS_DEPTH_TEAM_WARM_HOOK, 'statchasers_depth_charts_team_warm' );
+add_action( STATCHASERS_DEPTH_TEAM_WARM_HOOK, 'statchasers_depth_charts_team_warm', 10, 2 );
 add_action( STATCHASERS_DEPTH_HUB_WARM_HOOK, 'statchasers_depth_charts_hub_warm' );
 add_action( 'scdc_published', 'statchasers_depth_charts_on_published', 10, 2 );
 
@@ -378,10 +385,8 @@ function statchasers_depth_charts_publish_check( bool $force = false ): array {
 	$paths = array_values( array_unique( (array) apply_filters( 'statchasers_depth_charts_team_purge_paths', $paths, $changed ) ) );
 	$edge  = statchasers_edge_purge_paths( $paths, 'statchasers_depth_charts_pre_purge_edge' );
 
-	// 5. Record, then refill in a minute.
-	if ( ! wp_next_scheduled( STATCHASERS_DEPTH_TEAM_WARM_HOOK ) ) {
-		wp_schedule_single_event( $now + MINUTE_IN_SECONDS, STATCHASERS_DEPTH_TEAM_WARM_HOOK );
-	}
+	// 5. Record, then refill in batches, one a minute from a minute on.
+	statchasers_depth_charts_schedule_team_warm( (string) $remote['version'], count( $changed ), $now );
 
 	return statchasers_depth_charts_team_record(
 		$base + array(
@@ -411,17 +416,56 @@ function statchasers_depth_charts_team_record( array $published, array $check ):
 }
 
 /**
+ * Schedule the team warm-up for a publication: one WP-cron event per
+ * STATCHASERS_DEPTH_WARM_BATCH clubs, a minute apart, the first a minute from
+ * now (the purge takes a moment to land). Each event names the publication
+ * and its offset, so a later publication's events never collide with these.
+ *
+ * @param string $version The publication (the API's fingerprint).
+ * @param int    $count   How many clubs changed.
+ * @param int    $now     The check's time.
+ * @return int The number of events scheduled.
+ */
+function statchasers_depth_charts_schedule_team_warm( string $version, int $count, int $now ): int {
+	$events = 0;
+	for ( $offset = 0, $i = 0; $offset < $count; $offset += STATCHASERS_DEPTH_WARM_BATCH, $i++ ) {
+		$args = array( $version, $offset );
+		if ( ! wp_next_scheduled( STATCHASERS_DEPTH_TEAM_WARM_HOOK, $args ) ) {
+			wp_schedule_single_event( $now + ( 1 + $i ) * MINUTE_IN_SECONDS, STATCHASERS_DEPTH_TEAM_WARM_HOOK, $args );
+			++$events;
+		}
+	}
+	return $events;
+}
+
+/**
  * The team tabs' warm-up: the clubs the last publication changed.
  *
+ * From WP-cron it gets the publication and an offset and warms that batch
+ * only; an event for a publication that is no longer the recorded one does
+ * nothing (its clubs were purged; the newer publication warms its own).
+ * Called with no arguments (by hand, the bench) it warms every changed club.
+ *
+ * @param string|null $version The publication the event was scheduled for.
+ * @param int|null    $offset  The batch's first club.
  * @return array<string,string>
  */
-function statchasers_depth_charts_team_warm(): array {
+function statchasers_depth_charts_team_warm( $version = null, $offset = null ): array {
 	$stored  = get_option( STATCHASERS_DEPTH_TEAM_OPTION );
-	$changed = is_array( $stored ) && isset( $stored['changed'] ) && is_array( $stored['changed'] ) ? $stored['changed'] : array();
-	$out     = statchasers_edge_warm( array_map( 'statchasers_depth_charts_team_url', $changed ), 'StatChasers-DepthWarm/1' );
+	$changed = is_array( $stored ) && isset( $stored['changed'] ) && is_array( $stored['changed'] ) ? array_values( $stored['changed'] ) : array();
+	$batch   = null !== $version && null !== $offset;
+	if ( $batch ) {
+		if ( ! is_array( $stored ) || ! isset( $stored['version'] ) || (string) $stored['version'] !== (string) $version ) {
+			return array();
+		}
+		$changed = array_slice( $changed, max( 0, (int) $offset ), STATCHASERS_DEPTH_WARM_BATCH );
+	}
+	$out = statchasers_edge_warm( array_map( 'statchasers_depth_charts_team_url', $changed ), 'StatChasers-DepthWarm/1' );
 	if ( is_array( $stored ) ) {
 		$stored['warmed_at'] = time();
-		$stored['warm']      = $out;
+		$stored['warm']      = $batch && 0 !== (int) $offset && isset( $stored['warm'] ) && is_array( $stored['warm'] )
+			? array_merge( $stored['warm'], $out )
+			: $out;
 		update_option( STATCHASERS_DEPTH_TEAM_OPTION, $stored, false );
 	}
 	return $out;

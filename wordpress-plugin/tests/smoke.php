@@ -228,7 +228,7 @@ function wp_delete_post( $id, $force = false ) {
 // WP-Cron. What was scheduled is kept so a test can see the builder come back.
 function wp_next_scheduled( $hook, $args = array() ) { return false; }
 function wp_schedule_event( $ts, $recurrence, $hook, $args = array() ) { $GLOBALS['scheduled'][] = array( $hook, (int) $ts, $recurrence ); return true; }
-function wp_schedule_single_event( $ts, $hook, $args = array() ) { $GLOBALS['scheduled'][] = array( $hook, (int) $ts, 'single' ); return true; }
+function wp_schedule_single_event( $ts, $hook, $args = array() ) { $GLOBALS['scheduled'][] = array( $hook, (int) $ts, 'single', $args ); return true; }
 function wp_clear_scheduled_hook( $hook, $args = array() ) { return 0; }
 // The URL is kept so a test can see what the plugin asked the API for.
 function wp_remote_get( $u, $a = array() ) { $GLOBALS['remote_urls'][] = $u; $GLOBALS['remote_args'][] = $a; return array(); }

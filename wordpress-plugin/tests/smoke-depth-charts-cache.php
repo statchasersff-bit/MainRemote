@@ -111,12 +111,35 @@ is( count( $GLOBALS['remote_urls'] ), 33, 'team: one version read + 32 fragment 
 is( false !== strpos( (string) $GLOBALS['remote_urls'][1], '/embed/team/buffalo-bills?section=depth-chart' ), true, 'team: the fragment is the depth-chart section' );
 is( in_array( STATCHASERS_DEPTH_TEAM_WARM_HOOK, array_column( $GLOBALS['scheduled'], 0 ), true ), true, 'team: the warm-up is scheduled' );
 
-// Nothing new: nothing purged.
+// The first poll's warm-up is staggered: 8 events of 4 clubs (8 requests), a
+// minute apart from a minute on; the purges above all came first.
+$warm_events = array_values( array_filter( $GLOBALS['scheduled'], static fn( $e ) => STATCHASERS_DEPTH_TEAM_WARM_HOOK === $e[0] ) );
+is( count( $warm_events ), 8, 'team warm: first poll, 32 clubs in 8 events' );
+is( array_map( static fn( $e ) => $e[3][1] ?? null, $warm_events ), array( 0, 4, 8, 12, 16, 20, 24, 28 ), 'team warm: offsets of 4 clubs each' );
+is( array_map( static fn( $e ) => $e[3][0] ?? null, $warm_events ), array_fill( 0, 8, 'fpA' ), 'team warm: each event names the publication' );
+$gaps = array();
+foreach ( $warm_events as $i => $e ) {
+	$gaps[] = $i ? $e[1] - $warm_events[ $i - 1 ][1] : 0;
+}
+is( array_slice( $gaps, 1 ), array_fill( 0, 7, 60 ), 'team warm: one event a minute' );
+is( $warm_events[0][1] - time() >= 59 && $warm_events[0][1] - time() <= 61, true, 'team warm: the first a minute after the purge' );
+
+// One batch, run as WP-cron runs it: that batch's clubs only, desktop + phone.
+$GLOBALS['http_body'] = '';
+$GLOBALS['remote_urls'] = array();
+$w = statchasers_depth_charts_team_warm( 'fpA', 4 );
+is( count( $w ), 8, 'team warm: one batch = 4 clubs x desktop + phone' );
+is( count( $GLOBALS['remote_urls'] ), 8, 'team warm: one batch, 8 requests' );
+is( count( statchasers_depth_charts_team_warm( 'not-the-publication', 0 ) ), 0, 'team warm: an event for a superseded publication does nothing' );
+$GLOBALS['http_body'] = json_encode( $doc( 'fpA', array(), 'A~h0' ) );
+
+// Nothing new (the second poll against the same snapshot): nothing purged, nothing warmed.
 $reset();
 $r = statchasers_depth_charts_publish_check();
 is( $r['result'], 'unchanged', 'team: same version, unchanged' );
 is( count( $GLOBALS['sc_test_edge'] ) + count( $GLOBALS['sc_test_rocket'] ), 0, 'team: same version, no purge' );
 is( count( $GLOBALS['remote_urls'] ), 1, 'team: same version, the version read only' );
+is( count( $GLOBALS['scheduled'] ), 0, 'team: same version, zero warm-ups scheduled' );
 
 // A new snapshot that changes one club: only that club.
 $reset();
@@ -129,6 +152,7 @@ is( $GLOBALS['sc_test_edge'], array( array( '/nfl/teams/buffalo-bills/depth-char
 is( $GLOBALS['sc_test_rocket'], array( array( 'https://example.com/nfl/teams/buffalo-bills/depth-chart/' ) ), 'team: only its WP Rocket files cleared' );
 is( $r['previous'], 'fpA', 'team: the previous publication is on record' );
 is( $r['teams']['buffalo-bills'], 'h1', 'team: the new hash is on record' );
+is( count( array_filter( $GLOBALS['scheduled'], static fn( $e ) => STATCHASERS_DEPTH_TEAM_WARM_HOOK === $e[0] ) ), 1, 'team: one club moved, one warm-up event' );
 
 // A new stamp over the same charts: recorded, nothing purged.
 $reset();
@@ -136,6 +160,7 @@ $GLOBALS['http_body'] = json_encode( $doc( 'fpC', array( 'buffalo-bills' => 'h1'
 $r = statchasers_depth_charts_publish_check();
 is( $r['result'], 'no club changed', 'team: a new stamp, same charts' );
 is( count( $GLOBALS['sc_test_edge'] ) + count( $GLOBALS['sc_test_rocket'] ), 0, 'team: new stamp, no purge' );
+is( count( $GLOBALS['scheduled'] ), 0, 'team: new stamp, no warm-up' );
 is( $r['version'], 'fpC', 'team: the new fingerprint is recorded' );
 
 // A later failure leaves the published record alone.
