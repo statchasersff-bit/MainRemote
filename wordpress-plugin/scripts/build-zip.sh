@@ -134,6 +134,51 @@ grep -q "Plugin Name:" "$plugin/rookie-hit-rates/rookie-hit-rates.php" && die "r
 
 say "loader   ok"
 
+# ------------------------------------------------------------- 3b. api assets
+
+# WEB-023: the team depth-chart route loads team.css and the team bundle from
+# WordPress (statchasers-local-assets.php), so the zip carries a copy of the
+# API's BUILD OUTPUT - the exact bytes the API serves at /team.css and
+# /dist/statchasers-team.js - with a manifest naming the build. Build the API
+# (artifacts/api-server: node build.mjs) from the commit that is deployed, then
+# run this. The plugin only uses the copy while it is that build (or
+# byte-identical to it), so a stale copy costs nothing but the fallback to the
+# asset host; a missing one fails here, because the zip would ship without it.
+#
+#   SC_API_DIST=/path/to/artifacts/api-server/public/dist   another build
+#   SC_NO_API_ASSETS=1                                      a zip without them
+api_dist="${SC_API_DIST:-$here/../artifacts/api-server/public/dist}"
+api_out="$plugin/assets/api"
+rm -rf "$api_out"
+
+if [ "${SC_NO_API_ASSETS:-}" = "1" ]; then
+	say "api      SKIPPED (SC_NO_API_ASSETS=1) - the depth-chart route will load from the asset host"
+else
+	for need in version.json css/team.css statchasers-team.js; do
+		[ -s "$api_dist/$need" ] || die "no $need under $api_dist - build the API first (cd artifacts/api-server && node build.mjs), or set SC_API_DIST."
+	done
+	api_version="$(grep -oE '"version": *"[^"]+"' "$api_dist/version.json" | sed -E 's/.*"([^"]+)"$/\1/')"
+	[ -n "$api_version" ] && [ "$api_version" != "0" ] || die "$api_dist/version.json names no version."
+
+	mkdir -p "$api_out/dist"
+	cp "$api_dist/css/team.css" "$api_out/team.css"
+	cp "$api_dist/statchasers-team.js" "$api_out/dist/statchasers-team.js"
+
+	entry() { printf '"%s":{"sha256":"%s","bytes":%s}' "$1" "$(sha256sum "$api_out$1" | cut -d' ' -f1)" "$(wc -c < "$api_out$1" | tr -d ' ')"; }
+	printf '{"version":"%s","files":{%s,%s}}\n' "$api_version" "$(entry /team.css)" "$(entry /dist/statchasers-team.js)" > "$api_out/manifest.json"
+
+	# Staleness is a warning, not an error: the runtime check decides.
+	src="$(cd "$api_dist/../.." 2>/dev/null && pwd || true)"
+	if [ -n "$src" ] && [ -f "$src/public/team.css" ] && [ "$src/public/team.css" -nt "$api_dist/version.json" ]; then
+		say "WARNING  $src/public/team.css is newer than the build; rebuild the API if it changed."
+	fi
+
+	if [ -n "$PHP" ] && [ -f "$here/tests/smoke-local-assets.php" ]; then
+		"$PHP" "$here/tests/smoke-local-assets.php" >/dev/null || die "tests/smoke-local-assets.php failed. Run it to see why."
+	fi
+	say "api      $api_version (team.css, dist/statchasers-team.js) from ${api_dist}"
+fi
+
 # -------------------------------------------------------------------- 4. zip
 
 mkdir -p "$dist"
@@ -145,4 +190,13 @@ rm -f "$out"
 ( cd "$here" && zip -rq "$out" statchasers-news -x '*.DS_Store' '*/.*' )
 
 say "wrote    ${out#"$here"/} ($(du -h "$out" | cut -f1 | tr -d ' '))"
+
+# Every file the plugin can print a URL for has to be in the archive.
+if [ -f "$api_out/manifest.json" ]; then
+	listing="$(unzip -Z1 "$out")"
+	for f in manifest.json team.css dist/statchasers-team.js; do
+		grep -qx "statchasers-news/assets/api/$f" <<<"$listing" || die "the zip is missing statchasers-news/assets/api/$f"
+	done
+	say "api      in zip: assets/api/{manifest.json,team.css,dist/statchasers-team.js}"
+fi
 unzip -l "$out" | tail -n +4 | head -n -2 | awk '{ printf "         %s\n", $4 }'

@@ -66,6 +66,7 @@ require_once __DIR__ . '/statchasers-assets.php';
 // The news shortcode's compact rail mode (layout="rail"): its arguments.
 require_once __DIR__ . '/statchasers-news-rail.php';
 require_once __DIR__ . '/statchasers-proxy.php';
+require_once __DIR__ . '/statchasers-local-assets.php';
 require_once __DIR__ . '/statchasers-team.php';
 require_once __DIR__ . '/statchasers-team-pages.php';
 require_once __DIR__ . '/statchasers-matchup.php';

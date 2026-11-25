@@ -399,6 +399,7 @@ require_once "$dir/statchasers-bdp-assets.php";
 require_once "$dir/statchasers-host-css.php";
 require_once "$dir/statchasers-perf.php";
 require_once "$dir/statchasers-divi-late-css.php";
+require_once "$dir/statchasers-local-assets.php";
 require_once "$dir/statchasers-team.php";
 require_once "$dir/statchasers-team-pages.php";
 require_once "$dir/statchasers-matchup.php";

@@ -338,6 +338,14 @@ function statchasers_team_enqueue_assets(): void {
 
 	$version = statchasers_news_asset_version();
 
+	// The depth-chart route loads the copies bundled with this plugin when
+	// they are the API's current build, else the asset host as before
+	// (WEB-023, statchasers-local-assets.php).
+	$urls = statchasers_team_asset_urls(
+		function_exists( 'statchasers_team_section_from_url' ) ? statchasers_team_section_from_url() : '',
+		$version
+	);
+
 	if ( ! wp_style_is( STATCHASERS_TEAM_HANDLE, 'registered' ) ) {
 		// Inter like every tool, plus the hub's display face (Barlow, Barlow
 		// Condensed) for its numerals, headings and the matchup hero. Both as
@@ -345,7 +353,7 @@ function statchasers_team_enqueue_assets(): void {
 		// else. See statchasers-assets.php.
 		wp_register_style(
 			STATCHASERS_TEAM_HANDLE,
-			statchasers_public_origin() . '/team.css',
+			$urls['css'],
 			array_merge( statchasers_font_dependency(), statchasers_display_font_dependency() ),
 			$version
 		);
@@ -354,7 +362,7 @@ function statchasers_team_enqueue_assets(): void {
 	if ( ! wp_script_is( STATCHASERS_TEAM_HANDLE, 'registered' ) ) {
 		wp_register_script(
 			STATCHASERS_TEAM_HANDLE,
-			statchasers_public_origin() . '/dist/statchasers-team.js',
+			$urls['js'],
 			array(),
 			$version,
 			array(

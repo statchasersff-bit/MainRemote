@@ -95,3 +95,6 @@ artifacts/api-server/data/matchup/game-videos-live-misses.json
 
 # Throwaway scratch scripts (lookup.tmp.mjs and the like); never source.
 *.tmp.mjs
+
+# WEB-023: the API build output build-zip.sh copies into the plugin (never source).
+wordpress-plugin/statchasers-news/assets/api/
