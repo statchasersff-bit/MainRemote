@@ -431,10 +431,15 @@ export function sosRelatedLinks(page: SosPage): { label: string; href: string }[
       label: pos ? `Rest-of-Season ${pos} Rankings` : "Rest-of-Season Rankings",
       href: `${site}/fantasy-football/rest-of-season-rankings/${seg ? `${seg}/` : ""}`,
     },
-    {
-      label: pos ? `${pos} Fantasy Projections` : "Fantasy Football Projections",
-      href: `${site}/redraft-command/fantasy-football-projections${seg ? `/${seg}` : ""}`,
-    },
+    // Redraft Command's position pages open on the current week (audit
+    // WEB-029), so they say so; the playoffs page has no position and takes
+    // the rest-of-season projections, the window its Weeks 15-17 sit in.
+    pos
+      ? { label: `Weekly ${pos} Projections`, href: `${site}/redraft-command/fantasy-football-projections/${seg}` }
+      : {
+          label: "Rest-of-Season Projections",
+          href: `${site}/redraft-command/fantasy-football-projections/rest-of-season`,
+        },
     { label: "Fantasy Points Allowed by Position", href: `${site}/nfl/fantasy-points-allowed-by-position/` },
     { label: "Who Should I Start?", href: `${site}/redraft-command/who-should-i-start` },
   ];

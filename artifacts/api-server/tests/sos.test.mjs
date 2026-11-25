@@ -398,6 +398,12 @@ describe("the markup", () => {
         "https://statchasers.com/redraft-command/who-should-i-start",
       ],
     );
+    // Audit WEB-029: the projections link says which window it opens on.
+    assert.equal(render.sosRelatedLinks("rb")[1].label, "Weekly RB Projections");
+    assert.deepEqual(render.sosRelatedLinks("playoffs")[1], {
+      label: "Rest-of-Season Projections",
+      href: "https://statchasers.com/redraft-command/fantasy-football-projections/rest-of-season",
+    });
     assert.equal(render.sosRelatedLinks("all").length, 0);
     assert.doesNotMatch(html, /\u2014/, "no em dashes");
 

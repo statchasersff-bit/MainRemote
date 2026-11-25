@@ -645,7 +645,18 @@ function tags(m: Model, depth: PlayerPageData["depth"]): Chip[] {
 export interface FitsModel {
   leagues: [string, string, string];
   chips: [Chip, Chip, Chip];
+  /** The whole line as text; when `link` is set it ends with `link.text`. */
   note: string;
+  /** The position's rest-of-season board, when the note quotes a rank from it. */
+  link: { href: string; text: string } | null;
+}
+
+/**
+ * The position's page on the WordPress rest-of-season board: the same file
+ * (data/rankings/ros-<season>.csv) and the same date the note quotes.
+ */
+export function rosPositionUrl(pos: string): string {
+  return `https://statchasers.com/fantasy-football/rest-of-season-rankings/${pos.toLowerCase()}/`;
 }
 
 function fitsModel(m: Model): FitsModel | null {
@@ -658,7 +669,22 @@ function fitsModel(m: Model): FitsModel | null {
         (m.staleRos
           ? ` The rest-of-season board (${m.pos}${m.staleRos.rank}) was last updated ${m.staleRos.updatedAt.replace(/, \d{4}$/, "") || "on an unknown date"} and is not used for current advice.`
           : "");
-  return { leagues, chips: m.chips, note: `${basis} ${FIT_ASSUMES[m.pos] ?? ""}`.trim() };
+  // A rank quoted from the board links to that board (audit WEB-029).
+  const quoted = (m.fit.source === "ros" && m.ros) || m.staleRos;
+  const link = quoted ? { href: rosPositionUrl(m.pos), text: `See the ${m.pos} rest-of-season rankings.` } : null;
+  return {
+    leagues,
+    chips: m.chips,
+    note: [basis, FIT_ASSUMES[m.pos] ?? "", link?.text ?? ""].filter(Boolean).join(" "),
+    link,
+  };
+}
+
+/** The note as HTML: its text, with the closing sentence as the board link. */
+export function fitNoteHtml(fm: FitsModel): string {
+  if (!fm.link || !fm.note.endsWith(fm.link.text)) return escapeHtml(fm.note);
+  const head = fm.note.slice(0, fm.note.length - fm.link.text.length);
+  return `${escapeHtml(head)}<a href="${escapeHtml(fm.link.href)}" data-cta="ros-rankings-outlook-fit">${escapeHtml(fm.link.text)}</a>`;
 }
 
 function renderFits(m: Model): string {
@@ -675,14 +701,16 @@ function renderFits(m: Model): string {
       )
       .join("") +
     `</div>` +
-    `<p class="scp-ol-fitnote">${escapeHtml(fm.note)}</p>` +
+    `<p class="scp-ol-fitnote">${fitNoteHtml(fm)}</p>` +
     `</div>`
   );
 }
 
 /** The Redraft Command card's sentence, the same on the tab and in the premium block. */
 function rcCopy(m: Model): string {
-  return `This outlook explains the why. Redraft Command gives you the number: ${possessive(m.last)} rest-of-season rank and trade value for your league's scoring, updated after every game.`;
+  // Not the StatChasers board quoted under Best fit: Redraft Command's player
+  // page ranks him by projected PPR points per game from here (audit WEB-029).
+  return `This outlook explains the why. Redraft Command gives you the number: ${possessive(m.last)} rank by projected PPR points per game for the rest of the season, and his trade value.`;
 }
 
 /** What the supports / threatens cells say when the data gives them nothing. */

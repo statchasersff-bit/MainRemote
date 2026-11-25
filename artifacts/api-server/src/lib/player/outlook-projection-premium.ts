@@ -30,7 +30,7 @@ import { escapeHtml } from "../render";
 import { phoneHeading } from "./phone-heading";
 import type { PlayerRenderOptions } from "../player-render";
 import type { PlayerPageData } from "./player-data";
-import { outlookProjectionModel, type Chip, type OpportunityTake, type OpportunityTile } from "./outlook-tab";
+import { fitNoteHtml, outlookProjectionModel, type Chip, type OpportunityTake, type OpportunityTile } from "./outlook-tab";
 import { headArt, headIcon } from "./tab-head";
 
 const e = escapeHtml;
@@ -177,7 +177,7 @@ export function renderOutlookProjectionPremium(data: PlayerPageData, options: Pl
         .map((chip, i) => `<div class="scp-olr-fit-row" role="listitem"><span class="scp-olr-fit-league">${e(m.fits!.leagues[i]!)}</span><span class="scp-olr-pill is-${chip.kind}">${e(chip.label)}</span></div>`)
         .join("") +
       `</div>` +
-      `<p class="scp-olr-fit-note">${e(m.fits.note)}</p></div>`
+      `<p class="scp-olr-fit-note">${fitNoteHtml(m.fits)}</p></div>`
     : "";
   const projection =
     `<section class="scp-olr-sec is-proj" aria-labelledby="scp-ol-take-h">` +
