@@ -243,7 +243,16 @@ function statchasers_page_identity_schema( $data ) {
 	if ( null === $image ) {
 		return $data;
 	}
-	if ( empty( $data['primaryImage'] ) ) {
+	// A family image flagged replace_unshareable (the team cards) also takes
+	// the place of a featured image the social networks cannot show (the
+	// hubs' AVIF crests), so og:image and primaryImageOfPage name one picture.
+	$unshareable = ! empty( $image['replace_unshareable'] )
+		&& ! empty( $data['primaryImage']['url'] )
+		&& preg_match( '/\.avif(?:\?|$)/i', (string) $data['primaryImage']['url'] );
+	if ( $unshareable ) {
+		unset( $data['WebPage']['primaryImageOfPage'] );
+	}
+	if ( empty( $data['primaryImage'] ) || $unshareable ) {
 		$data['primaryImage'] = array(
 			'@type'      => 'ImageObject',
 			'@id'        => $image['url'],

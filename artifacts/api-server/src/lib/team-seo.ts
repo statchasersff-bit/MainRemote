@@ -188,8 +188,9 @@ export function teamPageMeta(
     title: scoped?.title ?? teamHubTitle(team, season),
     description:
       scoped?.description ??
-      `${team.fullName} fantasy football hub: the latest ${team.nickname} player news, ` +
-        `injury designations, offensive depth chart, ${season} schedule and fantasy outlook.`,
+      // The plugin's stored hub description (statchasers_team_section_meta), word for word.
+      `${team.fullName} team hub: record and schedule, roster and depth chart, injuries, ` +
+        `player usage, coaching tendencies, team stats and fantasy outlook.`,
     canonical,
     siteName: SITE_NAME,
   };

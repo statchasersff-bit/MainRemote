@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       StatChasers
  * Description:       Creates the NFL team, player and matchup pages for you, then mounts the StatChasers tools into them - the news feed, team hubs, player profiles, matchups, Fantasy Points Allowed, rest-of-season rankings, the schedule, advanced player stats, RB handcuff rankings, fantasy football strength of schedule, the NFL depth charts, the injury risk analysis and the injury database. Server-rendered markup in the page's own HTML, with the compiled bundles loaded through the WordPress enqueue system. No iframe.
- * Version:           1.10.68
+ * Version:           1.10.69
  * Requires at least: 6.3
  * Requires PHP:      7.4
  * Author:            StatChasers
@@ -43,7 +43,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * outage. scripts/build-zip.sh refuses to build when this and the header
  * disagree, so a release bumps both or ships neither.
  */
-const STATCHASERS_NEWS_VERSION       = '1.10.68';
+const STATCHASERS_NEWS_VERSION       = '1.10.69';
 const STATCHASERS_NEWS_SHORTCODE     = 'statchasers_news';
 const STATCHASERS_NEWS_HANDLE        = 'statchasers-news';
 const STATCHASERS_NEWS_OPTION_ORIGIN = 'statchasers_news_origin';
@@ -736,7 +736,7 @@ function statchasers_news_schema_description(): string {
 		// description nor an excerpt. Worded for whichever tool is mounted,
 		// because describing a team hub as a news feed is worse than no node.
 		$description = statchasers_team_post_has_shortcode()
-			? 'An NFL team hub for fantasy football: team stats and NFL ranks, offensive depth chart, schedule, and the latest player news and injury designations.'
+			? 'An NFL team hub for fantasy football: record and schedule, roster and depth chart, injuries, player usage, team stats and fantasy outlook.'
 			: 'Browse NFL player news and injury updates for fantasy football, with headlines, publish times and sources for each report.';
 	}
 

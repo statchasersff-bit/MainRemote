@@ -58,7 +58,7 @@ if ( 'pageids' === $group ) {
 		// The team family (team audit, 2026-11-24): the directory, a hub with
 		// no image of its own, a hub whose crest is its featured image, every
 		// tab address, a long name, and a page at a slug that is no team.
-		array( 'team:index', 'team:buffalo-bills', 'team:buffalo-bills+thumb', 'team:buffalo-bills/coaching+thumb' ),
+		array( 'team:index', 'team:buffalo-bills', 'team:buffalo-bills+thumb', 'team:buffalo-bills/coaching+thumb', 'team:buffalo-bills+avif', 'team:buffalo-bills/schedule+avif' ),
 		array_map(
 			static function ( $t ) {
 				return 'team:buffalo-bills/' . $t;
@@ -155,6 +155,15 @@ function rank_math_model( string $canonical, string $title, array $crumbs ): arr
 		);
 		// Author: a Person no node references, removed again by
 		// Frontend::remove_person_entity before printing. Not modeled.
+		if ( ! empty( $GLOBALS['featured_avif'] ) ) {
+			// Rank Math's primaryImage from the featured image.
+			$data['primaryImage']                  = array(
+				'@type' => 'ImageObject',
+				'@id'   => $GLOBALS['featured_avif'],
+				'url'   => $GLOBALS['featured_avif'],
+			);
+			$data['WebPage']['primaryImageOfPage'] = array( '@id' => $GLOBALS['featured_avif'] );
+		}
 	}
 
 	// The rest of the json_ld chain: every callback the plugin registered.
@@ -240,6 +249,13 @@ if ( 'sched' === $family ) {
 	// page has a featured image, which Rank Math's own add_images finds).
 	$thumb = '+thumb' === substr( $which, -6 );
 	$which = $thumb ? substr( $which, 0, -6 ) : $which;
+	// "+avif": the live hubs' featured image, an AVIF crest Rank Math names as
+	// primaryImage but does not print as og:image (2026-11-25).
+	$avif  = '+avif' === substr( $which, -5 );
+	$which = $avif ? substr( $which, 0, -5 ) : $which;
+	if ( $avif ) {
+		$GLOBALS['featured_avif'] = 'https://example.com/wp-content/uploads/2026/09/buf.avif';
+	}
 	list( $team_slug, $team_tab ) = array_pad( explode( '/', $which, 2 ), 2, '' );
 	$container                    = new WP_Post();
 	$container->ID                = 50;
@@ -456,7 +472,8 @@ if ( 'team' === $family ) {
 	$want_canonical = $is_index ? $team_hubs_url : ( '' === $team_tab ? $base_canonical : $base_canonical . $team_tab . '/' );
 	$want_meta      = $is_index ? null : statchasers_team_section_meta( $team_slug, $team_tab );
 	$want_title     = $is_index || '' === $team_tab ? $post->post_title : $want_meta['title'];
-	$want_image     = $thumb ? 'https://example.com/wp-content/uploads/BUF.png' : STATCHASERS_PAGE_IDENTITY_IMAGE['url'];
+	$team_card      = 'https://news.example.com/og/team/' . $team_slug . '.png?v=' . STATCHASERS_TEAM_SHARE_VERSION;
+	$want_image     = $thumb ? 'https://example.com/wp-content/uploads/BUF.png' : ( $is_index ? STATCHASERS_PAGE_IDENTITY_IMAGE['url'] : $team_card );
 
 	is( statchasers_page_identity_family(), 'team', "$label: a team route" );
 	is( $canonical, $want_canonical, "$label: canonical $want_canonical" );
@@ -470,7 +487,11 @@ if ( 'team' === $family ) {
 
 	is( count( $fb ), 1, "$label: one og:image" );
 	is( count( $tw ), 1, "$label: one twitter:image" );
-	is( $fb[0]['url'] ?? '', $want_image, $thumb ? "$label: the page's own image is kept" : "$label: og:image is the brand card" );
+	is( $fb[0]['url'] ?? '', $want_image, $thumb ? "$label: the page's own image is kept" : ( $is_index ? "$label: og:image is the brand card" : "$label: og:image is the team's own card" ) );
+	if ( ! $thumb && ! $is_index ) {
+		is( $fb[0]['width'] ?? 0, 1200, "$label: the card is 1200 wide" );
+		is( false !== strpos( (string) ( $fb[0]['alt'] ?? '' ), statchasers_team_table()[ $team_slug ][0] ), true, "$label: its alt names the team" );
+	}
 	is( ( $tw[0]['url'] ?? '' ) === ( $fb[0]['url'] ?? null ), true, "$label: twitter:image is the same picture" );
 
 	$orgs = $typed( 'Organization' );
@@ -500,7 +521,10 @@ if ( 'team' === $family ) {
 		is( count( $trail ), 3, "$label: the directory's trail is untouched" );
 		is( (array) ( $page['@type'] ?? null ), array( 'WebPage' ), "$label: a WebPage" );
 	}
-	$want_primary = $thumb ? null : STATCHASERS_PAGE_IDENTITY_IMAGE['url'];
+	$want_primary = $thumb ? null : ( $is_index ? STATCHASERS_PAGE_IDENTITY_IMAGE['url'] : $team_card );
+	if ( $avif ) {
+		is( isset( $by_id[ $GLOBALS['featured_avif'] ] ), false, "$label: the AVIF crest is no longer the page's image" );
+	}
 	if ( null !== $want_primary ) {
 		is( $page['primaryImageOfPage']['@id'] ?? '', $want_primary, "$label: primaryImageOfPage is the share image" );
 	}

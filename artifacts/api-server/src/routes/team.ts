@@ -37,6 +37,7 @@ import {
   type NflTeam,
 } from "../lib/team/teams";
 import { nflState } from "../lib/team/nfl-state";
+import { renderTeamShareImage } from "../lib/team/og-image";
 import { getLeagueStandings, type LeagueStandings } from "../lib/team/profile";
 
 /**
@@ -427,6 +428,29 @@ router.get("/embed/teams", async (req, res) => {
     .set("X-Robots-Tag", "noindex, indexifembedded")
     .type("html")
     .send(html);
+});
+
+/**
+ * A club's share image: /og/team/<slug>.png (lib/team/og-image.ts). Public,
+ * like the recap images, because the crawlers that read og:image are not
+ * WordPress; the plugin prints it with ?v=<TEAM_SHARE_VERSION>.
+ */
+router.get("/og/team/:file", (req, res) => {
+  void (async () => {
+    const match = /^([a-z0-9-]+)\.png$/.exec(String(req.params.file ?? ""));
+    const team = match ? getTeamBySlug(match[1]) : null;
+    if (!team) {
+      res.status(404).type("text/plain").send("Unknown image");
+      return;
+    }
+    try {
+      const png = await renderTeamShareImage(team);
+      res.set("Cache-Control", "public, max-age=604800").type("png").send(png);
+    } catch (err) {
+      logger.error({ err, slug: team.slug }, "Failed to draw team share image");
+      res.status(503).type("text/plain").send("Image unavailable");
+    }
+  })();
 });
 
 router.get("/embed/team/:slug", (req, res) => {

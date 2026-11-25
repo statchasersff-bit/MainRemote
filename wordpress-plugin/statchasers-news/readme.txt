@@ -2,7 +2,7 @@
 Contributors: statchasers
 Requires at least: 6.3
 Requires PHP: 7.4
-Stable tag: 1.10.68
+Stable tag: 1.10.69
 License: GPL-2.0-or-later
 
 Mounts the StatChasers NFL news tool, the 32 team hubs, the player pages, the Fantasy Points Allowed table, the rest-of-season rankings, the NFL schedule, the advanced player stats, the RB handcuff rankings, the fantasy football strength of schedule, the dynasty rookie hit rates and the redraft draft strategy analysis into WordPress pages.
@@ -19,6 +19,9 @@ answers that question directly, with a Last-Modified header that says when the
 upload landed. Keep "Stable tag" in step with the Version header.
 
 == Changelog ==
+
+= 1.10.69 =
+* Team pages, 2026-11-25 (mak): each team hub and tab shares its own card. The API draws a 1200x630 PNG per club (/og/team/<slug>.png, crest on the club's colors), and it is now og:image, twitter:image and primaryImageOfPage, replacing the brand-card fallback; the hubs' AVIF crests, which social networks cannot show, are no longer the schema's primary image. The directory keeps the brand card. New hub description wording (no season, no "offensive depth chart") for pages built from now on; the 32 stored hub descriptions and the directory's were rewritten in the same release. Needs the matching API deploy for the image route. Includes 1.10.68 unchanged.
 
 = 1.10.68 =
 * Rookie Hit Rates moves into this plugin (rookie-hit-rates/), on top of 1.10.67. The former standalone "StatChasers - Rookie Hit Rates" iframe plugin (1.0.0, live on /nfl/rookie-hit-rates/, page 1319) now ships here with the same [rookie_hit_rates] shortcode and the same page, plus: a "How We Count a Hit" methodology section and a Top-12 hit-rate-by-position table printed in the page under the tool, from rookie-hit-rates/summary/hit-rates-summary.json (computed at build time by the app's own calculation; no request or calculation per page view; nothing prints if the CSVs do not match it); <noscript> hides the iframe so JS-off readers get the table; data with every rookie linked to all his seasons (app repository PR #1). The iframe now loads from /wp-content/plugins/statchasers-news/rookie-hit-rates/app/. The standalone plugin is deactivated on the next admin request (notice until deleted); delete it after upload. The standalone registered a [statchasers_rookie_hit_rates] alias that overrode the server-rendered port's shortcode; the alias is gone.

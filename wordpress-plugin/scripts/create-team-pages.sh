@@ -230,7 +230,7 @@ for row in "${TEAMS[@]}"; do
 	# Tools carried two different titles for the same page.
 	set_meta "$id" rank_math_title "$name $SEASON: Record, Schedule, Stats & Fantasy Football | StatChasers"
 	set_meta "$id" rank_math_description \
-		"Live $nick player news and injury updates, the offensive depth chart, $SEASON schedule, team stats with NFL ranks and a weekly fantasy outlook."
+		"$name team hub: record and schedule, roster and depth chart, injuries, player usage, coaching tendencies, team stats and fantasy outlook."
 	set_meta "$id" rank_math_robots '["index","follow"]' --format=json
 
 	# Featured image = the team crest, which is what Divi's dynamic content

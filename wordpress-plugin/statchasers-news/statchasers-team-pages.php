@@ -1430,10 +1430,12 @@ function statchasers_team_section_meta( string $slug, string $section ): ?array 
 				sprintf( '%1$s %2$s: Record, Schedule & Stats', $name, $season ),
 			)
 		),
+		// No season: the hub's description is STORED (fill_meta), so a year in
+		// it would go stale; the title carries the season (mak, 2026-11-25).
+		// MIRRORED in the API's team-seo.ts.
 		'description' => sprintf(
-			'Live %1$s player news and injury updates, the offensive depth chart, %2$s schedule, team stats with NFL ranks and a weekly fantasy outlook.',
-			$nick,
-			$season
+			'%s team hub: record and schedule, roster and depth chart, injuries, player usage, coaching tendencies, team stats and fantasy outlook.',
+			$name
 		),
 	);
 }
@@ -1979,3 +1981,45 @@ function statchasers_team_retitle_panel(): void {
 		echo '<p>Nothing to update.</p>';
 	}
 }
+
+/* ------------------------------------------------------- team share image */
+
+/** Matches TEAM_SHARE_VERSION in the API's lib/team/og-image.ts. */
+const STATCHASERS_TEAM_SHARE_VERSION = '1';
+
+/**
+ * The club's own share card on its hub and every tab (mak, 2026-11-25).
+ *
+ * Every hub's featured image is its crest as an AVIF, which Rank Math does not
+ * print as og:image and the social networks could not show anyway, so the
+ * page-identity fallback put the StatChasers brand card on all 32 hubs while
+ * primaryImageOfPage named the AVIF. The API draws a 1200x630 PNG per club
+ * (/og/team/<slug>.png: crest on the club's colors); this hands it to the
+ * same page-identity mechanism, so og:image, twitter:image and the schema's
+ * primary image are one picture. The directory keeps the brand card.
+ *
+ * @param array|null $image  The page-identity image.
+ * @param string     $family The route family.
+ * @return array|null
+ */
+function statchasers_team_share_image( $image, $family ) {
+	if ( 'team' !== $family || ! function_exists( 'statchasers_public_origin' ) ) {
+		return $image;
+	}
+	$slug = statchasers_team_current_slug();
+	$row  = '' === $slug ? null : ( statchasers_team_table()[ $slug ] ?? null );
+	if ( null === $row ) {
+		return $image;
+	}
+	$name     = $row[0];
+	$nickname = trim( (string) preg_replace( '/^.*\s(\S+)$/', '$1', $name ) );
+	return array(
+		'url'                 => statchasers_public_origin() . '/og/team/' . $slug . '.png?v=' . STATCHASERS_TEAM_SHARE_VERSION,
+		'width'               => 1200,
+		'height'              => 630,
+		'alt'                 => sprintf( '%s logo on the StatChasers %s team hub', $name, $nickname ),
+		'type'                => 'image/png',
+		'replace_unshareable' => true,
+	);
+}
+add_filter( 'statchasers_page_identity_image', 'statchasers_team_share_image', 10, 2 );

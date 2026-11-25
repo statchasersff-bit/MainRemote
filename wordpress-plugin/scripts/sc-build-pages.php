@@ -626,8 +626,7 @@ foreach ( $sc_build_teams as $sc_slug => $sc_row ) {
 	sc_set_meta(
 		$sc_id,
 		'rank_math_description',
-		'Live ' . $sc_nick . ' player news and injury updates, the offensive depth chart, ' .
-		SC_BUILD_SEASON . ' schedule, team stats with NFL ranks and a weekly fantasy outlook.',
+		$sc_name . ' team hub: record and schedule, roster and depth chart, injuries, player usage, coaching tendencies, team stats and fantasy outlook.',
 		$sc_go
 	);
 	sc_set_meta( $sc_id, 'rank_math_robots', array( 'index', 'follow' ), $sc_go );
