@@ -259,9 +259,14 @@ is versioned per publication. The unversioned URL is not used by any page.
 2. Within 5 minutes, `wp option get statchasers_depth_charts_team_published --format=json`
    should show:
    - `result: published` and `changed`: all 32 on this first run, so expect
-     32 purges and 64 warm requests once;
+     32 purges at once (one WP Rocket clean, two Rocket.net calls) and then
+     64 warm requests spread over ~8 minutes: 8 WP-cron events
+     `statchasers_depth_charts_team_warm` with args `[<version>, 0|4|...|28]`,
+     one a minute from a minute after the check, 4 clubs (8 requests) each;
    - `edge: rocket.net ok`;
-   - a minute later, `warm` with 200s.
+   - after the last event, `warm` with 64 entries of 200s.
+   - the next run (5 minutes later) says `result: unchanged` and schedules no
+     warm-up event.
 
    If it shows `version unavailable`, the API is not yet on this build, or the
    embed key is missing on the WP side.
@@ -288,11 +293,12 @@ is versioned per publication. The unversioned URL is not used by any page.
   - the team Draft tab's Pos column.
 
   Neither is purged by this.
-- `restoreDepthCharts()` puts the database's last push back over the committed
-  file on API boot when that push is newer. With the push off, the committed
-  snapshot is newer and wins. A snapshot committed with an older `fetchedAt`
-  than the stored push would be replaced at boot. The validator only compares
-  against the committed file.
+- `restoreDepthCharts()` (fixed 2026-11-25, see
+  docs/DEPTH-CHARTS-AUDIT-2026-11-25.md): a stored push is put back on API
+  boot only when it was pushed on top of the committed snapshot now on disk
+  (`basedOn`) and is a later fetch. Rows from before the fix carry no
+  `basedOn` and are never restored, so a committed snapshot always wins over
+  them whatever their `fetchedAt`.
 - The team-tab hash covers the club's entry only. If the tab starts printing
   anything from outside it (for example the document's `fetchedAt`), fold that
   into `teamHash()` in `lib/team/depth-charts.ts`.
