@@ -19,6 +19,7 @@
  */
 
 import { targetShareById } from "../team/usage-share";
+import type { PlayerUsage, UsageMetric } from "./outlook-context";
 import fs from "node:fs";
 import path from "node:path";
 import { dataPath } from "../data-dir";
@@ -71,6 +72,11 @@ export interface AdvCard {
   qualifiedCount: number;
   /** The qualifying line in words ("50+ pass attempts and 6+ games"), for the footnote. */
   qualifyNote?: string;
+  /**
+   * The share rows ranked in the usage field instead of this card's pool
+   * (WEB-035), and that field in words, for the footnote. Absent when none is.
+   */
+  shareField?: { labels: string[]; of: number; note: string };
   metrics: AdvMetric[];
   /**
    * Every metric either season's card carries, in one order, so the advanced
@@ -476,6 +482,43 @@ export function collegeCard(profile: CollegeProfile | null | undefined, position
   };
 }
 
+/**
+ * One comparison per share metric (audit WEB-035, 2026-11-26: Luther Burden
+ * III's 22.0% target share read 27th of 110 on the Stats card, 25th of 114 in
+ * the Outlook and the 62nd percentile of a third pool in the Overview). The
+ * Outlook's usage field (outlook-context.ts playerUsage: his position,
+ * every club summed, the report's volume rule and the Outlook's games
+ * threshold) is the comparison for target share, snap share and air-yards
+ * share wherever they are ranked, so this season's card takes its rank and
+ * percentile for those rows and says so beside them. A player the field
+ * leaves out is not ranked on them here either.
+ */
+const SHARE_ROWS: Record<string, UsageMetric> = { tgts: "targetShare", snap: "snapShare", ays: "airYardsShare" };
+
+function withUsageField(card: AdvCard | null, usage: PlayerUsage | null | undefined, pos: string): AdvCard | null {
+  // An unranked card stays unranked: its notice says why, for every row.
+  if (!card || !card.qualified || !usage || usage.season !== card.season) return card;
+  const labels: string[] = [];
+  let of = 0;
+  const swap = (m: AdvMetric): AdvMetric => {
+    const metric = m.key ? SHARE_ROWS[m.key] : undefined;
+    if (!metric || m.value === "-") return m;
+    const v = usage.row[metric];
+    const value = typeof v === "number" && Number.isFinite(v) ? `${v.toFixed(1)}%` : m.value;
+    const r = usage.ranks[metric];
+    if (!labels.includes(m.label)) labels.push(m.label);
+    if (!r) return { ...m, value, read: "Not ranked", standing: "muted", pct: null, pctl: null, rank: null, of: null };
+    of = Math.max(of, r.of);
+    return { ...m, value, read: `${ordinal(r.rank)} of ${r.of} ${pos}s (${usage.fieldNote})`, standing: standingOf(r.pct), pct: r.pct, pctl: r.pct, rank: r.rank, of: r.of };
+  };
+  const metrics = card.metrics.map(swap);
+  const all = card.all.map(swap);
+  if (!labels.length) return card;
+  const pct = { ...card.pct };
+  for (const m of metrics) if (m.key && SHARE_ROWS[m.key]) pct[m.key] = m.pct;
+  return { ...card, metrics, all, pct, shareField: { labels, of, note: usage.fieldNote } };
+}
+
 export interface StatsTabAdvanced {
   current: AdvCard | null;
   last: AdvCard | null;
@@ -491,6 +534,7 @@ export function statsTabAdvanced(
   leagueSeason: number,
   playedThisSeason: boolean,
   format: ScoringFormat = DEFAULT_SCORING_FORMAT,
+  usage: PlayerUsage | null = null,
 ): StatsTabAdvanced {
   const pos = position ?? "";
   if (!["QB", "RB", "WR", "TE"].includes(pos)) return { current: null, last: null };
@@ -506,7 +550,7 @@ export function statsTabAdvanced(
     if (!all.some((d) => d.key === def.key)) all.push(def);
   }
   const sharedTable = withSharedShares(curTable, leagueSeason, pos);
-  const current = sharedTable ? buildCard(sharedTable, playerId, pos, (rows) => currentDefs(pos, rows), all) : null;
+  const current = withUsageField(sharedTable ? buildCard(sharedTable, playerId, pos, (rows) => currentDefs(pos, rows), all) : null, usage, pos);
   const last = buildCard(lastTable, playerId, pos, () => lastDefs(pos), all);
   return { current: relabel(current, format), last: relabel(last, format) };
 }

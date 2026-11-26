@@ -100,8 +100,15 @@ export interface PlayerUsage {
   /** Target-share and snap-share trends: last three games against the three before. */
   ts: Trend;
   snap: Trend;
-  /** Rank among the qualified players at his position league-wide, per metric. */
-  ranks: Partial<Record<UsageMetric, { rank: number; of: number }>>;
+  /**
+   * Rank among the qualified players at his position league-wide, per metric,
+   * and his percentile in the same field (the share of the OTHER qualified
+   * players he is above: the Stats card's rule). This field is THE
+   * comparison for a share metric on every player component (WEB-035).
+   */
+  ranks: Partial<Record<UsageMetric, { rank: number; of: number; pct: number }>>;
+  /** Who the field is, in words: "6+ games and 1.5+ targets per team game". */
+  fieldNote: string;
   /** He leads (or co-leads) his club in red-zone touches. */
   leadsRz: boolean;
   rzCoLead: boolean;
@@ -167,7 +174,13 @@ export function playerUsage(player: Player, team: NflTeam | null, season: number
       if (!finite(mine)) continue;
       const values = field.map((p) => p[metric]).filter(finite).sort((a, b) => b - a);
       if (!values.length) continue;
-      ranks[metric] = { rank: values.findIndex((v) => v <= mine) + 1 || values.length, of: values.length };
+      const others = values.length - 1;
+      const below = values.filter((v) => v < mine).length;
+      ranks[metric] = {
+        rank: values.findIndex((v) => v <= mine) + 1 || values.length,
+        of: values.length,
+        pct: others > 0 ? Math.round((below / others) * 100) : 100,
+      };
     }
   }
 
@@ -195,10 +208,20 @@ export function playerUsage(player: Player, team: NflTeam | null, season: number
     ts: trend(row.weekly, "ts"),
     snap: trend(row.weekly, "snap"),
     ranks,
+    fieldNote: usageFieldNote(row.pos, min),
     leadsRz: rzMax > 0 && clubRow?.rzTouches === rzMax,
     rzCoLead: rzMax > 0 && clubRow?.rzTouches === rzMax && rzLeaders > 1,
     aheadOfHim,
   };
+}
+
+/**
+ * The usage field's qualification in words: the games threshold plus the
+ * report's own volume rule (usage-share.ts mergeRows), per team game.
+ */
+export function usageFieldNote(pos: string, minGames: number): string {
+  const volume = pos === "QB" ? "12+ dropbacks" : pos === "RB" ? "5+ weighted opportunities" : "1.5+ targets";
+  return `${minGames}+ games and ${volume} per team game`;
 }
 
 const ppgCache = new WeakMap<object, Map<string, number>>();

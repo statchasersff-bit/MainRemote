@@ -61,6 +61,7 @@ import {
 import { headArt, headIcon } from "./tab-head";
 import { SOFT_MAX_RANK, TOUGH_MIN_RANK } from "../fpa/matchup-bands";
 import { redraftPlayerUrl } from "./redraft-link";
+import { publishedRank, rankBasisWords, type PublishedRank } from "./season-phase";
 
 const DASH = "-";
 
@@ -187,10 +188,9 @@ export function fantasyCall(pos: string, rank: number, rosteredPct: number | nul
     : { label: "Waiver consideration", tone: "waiver" };
 }
 
-/** His points-per-game rank this season, the header's POS RANK. */
-function seasonRank(data: PlayerPageData): number | null {
-  const row = data.production.find((r) => r.season === data.season);
-  return row?.posFinishPpg ?? data.seasonRank ?? row?.posFinishTotal ?? data.seasonRankTotal ?? null;
+/** His rank this season, the header's POS RANK, with the sort key it was taken from. */
+function seasonRank(data: PlayerPageData): PublishedRank | null {
+  return publishedRank(data);
 }
 
 /* --------------------------------------------------------- the season */
@@ -534,7 +534,8 @@ function volumeOf(pos: string, e: GameLogEntry): { n: number; noun: string } | n
 }
 
 /** The paragraph: role, rank, consistency, efficiency, trend, what is ahead. */
-function outlookParagraph(data: PlayerPageData, s: Season, rank: number | null): string {
+function outlookParagraph(data: PlayerPageData, s: Season, ranked: PublishedRank | null): string {
+  const rank = ranked?.rank ?? null;
   const { pos, played } = s;
   const last = lastName(data.player.name);
   const sentences: string[] = [];
@@ -552,7 +553,9 @@ function outlookParagraph(data: PlayerPageData, s: Season, rank: number | null):
   const rate = played.reduce((a, e) => a + s.pts(e), 0) / played.length;
   sentences.push(
     rank
-      ? `${role}${role === last ? " ranks" : " and ranks"} ${pos}${rank} in ${scoring} points per game (${one(rate)}).`
+      ? ranked!.basis === "ppg"
+        ? `${role}${role === last ? " ranks" : " and ranks"} ${pos}${rank} ${rankBasisWords("ppg", scoring)} (${one(rate)}).`
+        : `${role}${role === last ? " ranks" : " and ranks"} ${pos}${rank} ${rankBasisWords("total", scoring)}, averaging ${one(rate)} a game.`
       : `${role}${role === last ? " is" : " and is"} averaging ${one(rate)} ${scoring} points per game.`,
   );
 
@@ -607,8 +610,9 @@ function outlookParagraph(data: PlayerPageData, s: Season, rank: number | null):
     if (soft >= 2) sentences.push(`${titleCase(word(soft))} of his next ${word(n)} matchups grade favorable.`);
     else if (tough >= 2) sentences.push(`${titleCase(word(tough))} of his next ${word(n)} matchups grade tough, a reason to temper expectations.`);
   }
-  const tier = data.fantasyOutlook2026?.restOfSeason;
-  if (tier && sentences.length < 5) sentences.push(`Our rest-of-season tier: ${tier}.`);
+  // No "rest-of-season tier" from the preseason record here (WEB-034,
+  // 2026-11-26): an undated June tier read as current advice. Rest-of-season
+  // advice comes only from a current board, on the Outlook tab.
 
   // The brief's 40-70 words: the role-and-rank and consistency sentences
   // always, then the rest in order while they fit.
@@ -641,7 +645,7 @@ function renderMeters(data: PlayerPageData, s: Season): string {
       );
     })
     .join("");
-  const note = `Percentile vs. every ${m.position} with at least ${m.threshold} ${m.unit} in ${m.season}.`;
+  const note = m.note ?? `Percentile vs. every ${m.position} with at least ${m.threshold} ${m.unit} in ${m.season}.`;
   return (
     `<div class="scp-ox-effs">` +
     `<h3 class="scp-ow-h3">Efficiency</h3>` +
@@ -649,6 +653,33 @@ function renderMeters(data: PlayerPageData, s: Season): string {
     `<p class="scp-ow-note">${escapeHtml(note)}</p>` +
     `</div>`
   );
+}
+
+/**
+ * In season with no game played: the sentence that leads the Overview read,
+ * and whether he is sidelined (a reserve list or an Out designation), in which
+ * case no preseason advice follows it. Null before Week 1.
+ */
+function noGamesLead(data: PlayerPageData): { text: string; sidelined: boolean } | null {
+  if ((data.leagueWeek ?? 0) < 1) return null;
+  const season = data.leagueSeason ?? data.season;
+  const status = data.currentStatus ?? null;
+  const reserve = status?.kind === "reserve" || /^(ir|pup|nfi|injured reserve|sus)/i.test((data.designation?.injuryStatus ?? "").trim());
+  const out = reserve || designationSeverity((data.designation?.injuryStatus ?? "").trim()) === "out";
+  const last = lastName(data.player.name);
+  const parts = [`${data.player.name} has not played in ${season}.`];
+  if (out && status?.message && !/^No /.test(status.message)) parts.push(status.message);
+  if (reserve) parts.push(`${last} cannot be started until he is activated.`);
+  else if (out) parts.push(`He is not available this week.`);
+  return { text: parts.join(" "), sidelined: out };
+}
+
+/** "June 2026": when the preseason outlook was published, or null. */
+function preseasonMonth(o: PlayerPageData["fantasyOutlook2026"]): string | null {
+  const raw = (o as unknown as { generatedAt?: string } | null)?.generatedAt;
+  const at = raw ? Date.parse(raw) : NaN;
+  if (!Number.isFinite(at)) return null;
+  return new Date(at).toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "America/New_York" });
 }
 
 function renderOutlook(data: PlayerPageData, s: Season, options: PlayerRenderOptions): string {
@@ -661,18 +692,34 @@ function renderOutlook(data: PlayerPageData, s: Season, options: PlayerRenderOpt
   let call = "";
   let para = "";
   if (s.played.length === 0) {
-    // Preseason, or no games yet: the outlook's own take is the read, and
-    // there is no rank to grade him on.
+    // Preseason, or no games yet: there is no rank to grade him on.
     const o = data.fantasyOutlook2026;
     const text = (o?.quickTake ?? o?.body?.split(/\n{2,}/)[0] ?? "").trim();
-    if (!text) return "";
-    para = escapeHtml(text);
+    const lead = noGamesLead(data);
+    if (lead === null) {
+      // Before Week 1 the June take is the current read.
+      if (!text) return "";
+      para = escapeHtml(text);
+    } else {
+      // In season with no game (WEB-034, 2026-11-26: Hayden Large, on IR,
+      // led with the June take as if it were current): availability and
+      // participation first. The June take follows only for a player who
+      // can play, dated as what it is; a sidelined player gets none of it.
+      const published = preseasonMonth(o);
+      para = escapeHtml(
+        lead.text +
+          (text && !lead.sidelined ? ` From our preseason outlook${published ? ` (${published})` : ""}: ${text}` : ""),
+      );
+    }
   } else {
     if (rank && pos) {
-      const c = fantasyCall(pos, rank, data.rosterPct ? data.rosterPct.owned : null);
+      const c = fantasyCall(pos, rank.rank, data.rosterPct ? data.rosterPct.owned : null);
+      // The label is the rank's own sort key (WEB-030): by points per game
+      // from four games, by total points until then.
+      const basis = rank.basis === "ppg" ? "by points per game" : "by total points";
       call =
         `<p class="scp-ox-call is-${c.tone}"><span class="scp-sr">Recommendation: </span>${escapeHtml(c.label)} ` +
-        `<span class="scp-ox-call-sub">${escapeHtml(`${pos}${rank} by points per game, ${plural(s.played.length, "game")}`)}</span></p>`;
+        `<span class="scp-ox-call-sub">${escapeHtml(`${pos}${rank.rank} ${basis}, ${plural(s.played.length, "game")}`)}</span></p>`;
     }
     para = escapeHtml(outlookParagraph(data, s, rank));
   }
@@ -724,7 +771,7 @@ function careerLine(data: PlayerPageData, pos: string): { totals: string; span: 
   let totals: string | null = null;
   if (pos === "QB") totals = `${plural(gp, "game")}, ${whole(sum((r) => r.totals.passYd))} passing yards, ${whole(sum((r) => r.totals.passTd))} passing TD`;
   else if (pos === "RB") totals = `${plural(gp, "game")}, ${whole(sum((r) => r.totals.rushYd))} rushing yards, ${whole(sum((r) => r.totals.rushTd + r.totals.recTd))} total TD`;
-  else if (pos === "WR" || pos === "TE") totals = `${plural(gp, "game")}, ${whole(sum((r) => r.totals.rec))} catches, ${whole(sum((r) => r.totals.recYd))} receiving yards, ${whole(sum((r) => r.totals.recTd))} TD`;
+  else if (pos === "WR" || pos === "TE") totals = `${plural(gp, "game")}, ${whole(sum((r) => r.totals.rec))} catches, ${whole(sum((r) => r.totals.recYd))} receiving yards, ${whole(sum((r) => r.totals.recTd))} receiving TD`;
   return totals ? { totals, span } : null;
 }
 

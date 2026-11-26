@@ -1467,6 +1467,17 @@ export async function getPlayerPageData(
   const rowTotals = careerTotals(careerRows);
   const currentRow = careerRows.find((row) => row.season === season) ?? null;
   const rank = positionalFinish(player, season, format, allPlayers, true);
+  // One usage field for every share comparison on the page (WEB-035): the
+  // Outlook, the Stats card's share rows and the Overview meters read it.
+  const usage = playerUsage(player, team, leagueSeason);
+  const statsAdvanced = statsTabAdvanced(
+    player.id,
+    player.position,
+    leagueSeason,
+    season === leagueSeason && played.length > 0,
+    format,
+    usage,
+  );
 
   return {
     player,
@@ -1600,11 +1611,11 @@ export async function getPlayerPageData(
       now: Date.now(),
       count: 7,
     }),
-    meters: overviewMeters(player, season, format, allPlayers),
+    meters: overviewMeters(player, season, format, allPlayers, season === leagueSeason ? statsAdvanced.current : null, usage),
     teammates: overviewTeammates(player, season, allPlayers),
     depth: depthRole(player, team),
     startingQb: startingQb(player, team, leagueSeason, allPlayers),
-    usage: playerUsage(player, team, leagueSeason),
+    usage,
     // In season once a week has been logged: before that the board is the
     // preseason board and its age is not a defect.
     rosRank: rosRank(player, leagueSeason, { now: Date.now(), inSeason: leagueWeeksLogged(leagueSeason) >= 1 }),
@@ -1622,13 +1633,7 @@ export async function getPlayerPageData(
     statsUpdatedMs: lastIngestedMs("game_logs", season),
     statsCopy: loadStatsCopy()[player.slug] ?? null,
     college: loadCollegeStats().players?.[player.id] ?? null,
-    statsAdvanced: statsTabAdvanced(
-      player.id,
-      player.position,
-      leagueSeason,
-      season === leagueSeason && played.length > 0,
-      format,
-    ),
+    statsAdvanced,
 
     version: "",
   };

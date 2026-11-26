@@ -864,6 +864,14 @@ function advancedModel(data: PlayerPageData, c: Career): AdvancedModel | null {
         ? `${cur.season}${cur.throughWeek ? ` through Week ${cur.throughWeek}` : ""} among ${cur.qualifiedCount} qualified ${pos}s${cur.qualifyNote ? ` (${cur.qualifyNote})` : ""}`
         : `${cur.season}: below the qualifying line so far${cur.qualifyNote ? ` (${cur.qualifyNote})` : ""}, so no ranks`,
     );
+    // The share rows rank in the Outlook's usage field (WEB-035): said here,
+    // beside the card's own pool, because the two counts differ.
+    if (cur.shareField) {
+      const labels = cur.shareField.labels.map((l, i) => (i === 0 ? l : l.toLowerCase()));
+      const list = labels.length > 1 ? `${labels.slice(0, -1).join(", ")} and ${labels[labels.length - 1]}` : labels[0]!;
+      // Appended to the column's own note: notes line up with cols by index.
+      notes[notes.length - 1] += `; ${list.charAt(0).toLowerCase()}${list.slice(1)} among the ${cur.shareField.of} ${pos}s with ${cur.shareField.note}, the same field as his Outlook`;
+    }
   }
   if (college) {
     cols.push({ title: "College", sub: `${college.school} ${college.season}`, card: college });
