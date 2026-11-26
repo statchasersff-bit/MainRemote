@@ -22717,3 +22717,29 @@ button.scp-search-opt {
     text-align: right !important;
   }
 }
+
+/* ======================================================================
+ * Game Log season buttons (2026-11-26 audit, WEB-020).
+ *
+ * The season chips and the phone dropdown's options were <a href="?log=">
+ * links; they are <button>s now, so a crawler is not handed a ?log= address
+ * per player-season. Drawn exactly as the links were: the browser's button
+ * face (border, background, font, padding origin) is taken off here, and
+ * the existing .scp-glp-chip / .scp-glp-yr-opt rules above keep painting
+ * them. Low specificity on purpose, so every one of those rules still wins.
+ * ====================================================================== */
+.scp button.scp-season-opt {
+  -webkit-appearance: none;
+  appearance: none;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  letter-spacing: inherit;
+  cursor: pointer;
+}
+
+.scp button.scp-glp-yr-opt {
+  width: 100%;
+  text-align: left;
+}

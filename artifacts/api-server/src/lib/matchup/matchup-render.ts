@@ -998,7 +998,9 @@ function faqFacts(
   const logUrl = (name: string, sleeperId: string): string | null => {
     const profile = playerProfileUrl(name, { sleeperId });
     if (!profile) return null;
-    return `${profile.endsWith("/") ? profile : `${profile}/`}game-log/?log=${season}`;
+    // The season rides in the fragment (2026-11-26 audit, WEB-020): `?log=`
+    // 301s on WordPress, and the Game Log reads `#log=` to open the season.
+    return `${profile.endsWith("/") ? profile : `${profile}/`}game-log/#log=${season}`;
   };
   const plural = (n: number, one: string, many = `${one}s`): string =>
     n === 1 && /^(touchdown|interception)$/.test(one) ? `${one === "interception" ? "an" : "a"} ${one}` : `${n} ${n === 1 ? one : many}`;

@@ -426,94 +426,76 @@ function wirePeerRail(root: HTMLElement): void {
 /* ------------------------------------------------------------ state swap */
 
 /**
- * The controls that re-render the page in another state.
+ * The Game Log's season buttons (chips, and the phone's dropdown).
  *
- * Two of them now: the game log's season chips and the advanced table's season
- * chips (both .scp-season-opt). They are one family because they are one thing
- * - a link to THIS page rendered from different state - and the server builds
- * them from pageUrl().
+ * They were links to `?log=<year>` until the 2026-11-26 audit (WEB-020):
+ * every Game Log printed one per season, so every player-season was a
+ * crawlable address (Gibbs' hub six, a long career dozens), and each click
+ * fetched a whole WordPress page that nothing had cached. Now a click
+ * fetches this player's fragment for that season (data-scp-log-src: the
+ * embed endpoint through the WordPress proxy, keyed by season in every
+ * cache on the way) and puts its root in place of this one. The page's
+ * address keeps its path and writes the season as `#log=<year>` (cleared
+ * for the default season), which a reload, a bookmark or a shared link
+ * reopens; old `?log=` links 301 to that form (the plugin).
  *
- * The scoring toggle used to be the third and the first. It is gone from the
- * control bar, and with it the
- * only control that ever changed `?format=`; the parameter is still a real
- * address the server renders, and a reader who follows one gets a whole page
- * rather than a swap, which is what a link from outside the page should do.
+ * On the standalone page there is no data-scp-log-src and the fetch is
+ * this page's own address with `?log=`, which the app still renders.
  */
-const SWAP_LINK_SELECTOR = ".scp-season-opt";
+const SWAP_BUTTON_SELECTOR = "button.scp-season-opt[data-season]";
 
-/** The groups those links live in, used to find a control again after a swap. */
+/** The chip group, used to find the pressed button again after a swap. */
 const SWAP_GROUP_SELECTOR = ".scp-seasons";
 
-/**
- * The URL the content on screen was rendered from.
- *
- * Not `location`, which is deliberately left alone: the whole point of the swap
- * is that `/nfl/players/ashton-jeanty/` stays `/nfl/players/ashton-jeanty/`
- * whatever scoring the reader picks. Read at parse time rather than at boot,
- * because wireTabs rewrites the address bar as soon as a tab is clicked.
- */
-let renderedUrl = location.pathname + location.search;
+/** Where the season attributes live (the chip strip and the phone menu). */
+const LOG_ATTRS_SELECTOR = "[data-scp-log-default]";
 
-/** The swap in flight. A second click makes the first one's answer stale. */
+/**
+ * Per page, the id of the latest season request and the fetch it started.
+ * Every request takes the next id and aborts the one before it, and an
+ * answer whose id is no longer the latest is dropped, so an older season
+ * can never land on top of a newer choice.
+ */
 let swapToken = 0;
+let swapController: AbortController | null = null;
 
-/**
- * A URL reduced to the state it names, for comparing two of them.
- *
- * The trailing slash and the parameter order are the server's business and
- * differ between the link (`/nfl/players/x?format=half`) and the address the
- * reader landed on (`/nfl/players/x/`); neither difference is a different page.
- * The hash is dropped outright - nothing navigates, so there is nothing for
- * `#game-log` to scroll to that is not already open.
- */
-function stateKey(url: URL): string {
-  const params = Array.from(url.searchParams.entries()).sort(([a], [b]) =>
-    a < b ? -1 : a > b ? 1 : 0,
-  );
-  const query = params.map(([k, v]) => `${k}=${v}`).join("&");
-  return url.pathname.replace(/\/+$/, "") + (query ? `?${query}` : "");
+/** The `#log=` fragment's season, or null when the hash is something else. */
+function hashSeason(): string | null {
+  const match = /^#log=(\d{4})$/.exec(location.hash);
+  return match ? match[1]! : null;
 }
 
-/**
- * Where a control sits among the page's state controls.
- *
- * Group index plus link index, because the identity that matters is positional:
- * the same three scoring options and the same season chips come back in the
- * same order in every render of the page, whatever state it is rendered from.
- * Anything subtler (the href, the label) changes with the state, which is the
- * one thing this must survive.
- */
-function controlAddress(root: HTMLElement, link: HTMLAnchorElement): string | null {
-  const group = link.closest<HTMLElement>(SWAP_GROUP_SELECTOR);
-  if (!group || !root.contains(group)) return null;
-  const groups = Array.from(root.querySelectorAll<HTMLElement>(SWAP_GROUP_SELECTOR));
-  const links = Array.from(group.querySelectorAll<HTMLAnchorElement>(SWAP_LINK_SELECTOR));
-  return `${groups.indexOf(group)}:${links.indexOf(link)}`;
+/** Write the shown season into the address bar, or clear it for the default. */
+function writeHashSeason(season: string, defaultSeason: string): void {
+  const base = location.pathname + location.search;
+  try {
+    if (season === defaultSeason) {
+      if (/^#log=/.test(location.hash)) history.replaceState(history.state, "", base);
+    } else {
+      history.replaceState(history.state, "", `${base}#log=${season}`);
+    }
+  } catch {
+    // A sandboxed frame may refuse; the log on screen is still right.
+  }
 }
 
-/** The same control in a freshly rendered root, if the render still has one. */
-function controlAt(root: HTMLElement, address: string | null): HTMLAnchorElement | null {
-  if (!address) return null;
-  const [groupIndex, linkIndex] = address.split(":").map(Number);
-  const group = Array.from(root.querySelectorAll<HTMLElement>(SWAP_GROUP_SELECTOR))[
-    groupIndex!
-  ];
-  if (!group) return null;
-  return (
-    Array.from(group.querySelectorAll<HTMLAnchorElement>(SWAP_LINK_SELECTOR))[
-      linkIndex!
-    ] ?? null
-  );
+/** The fetch address for one season of this root's log. */
+function seasonTarget(attrs: HTMLElement, season: string): string {
+  const src = attrs.dataset["scpLogSrc"] ?? "";
+  const isDefault = season === (attrs.dataset["scpLogDefault"] ?? "");
+  const url = src ? new URL(src, location.href) : new URL(location.pathname + location.search, location.href);
+  url.hash = "";
+  if (isDefault) url.searchParams.delete("log");
+  else url.searchParams.set("log", season);
+  return url.toString();
 }
 
 /**
  * Reopen the tab the reader was on.
  *
- * wireTabs settles the fresh root on the tab the URL names, which after a swap
- * is the tab the page LOADED on rather than the one the reader walked to - the
- * address bar has been left behind on purpose, so it can no longer be asked.
- * Clicking the link goes through wireTabs' own handler, so the heading and the
- * address bar stay in step with the panel exactly as they do for a real click.
+ * wireTabs settles the fresh root on the tab the URL names. Clicking the
+ * link goes through wireTabs' own handler, so the heading and the address
+ * bar stay in step with the panel exactly as they do for a real click.
  */
 function restoreTab(root: HTMLElement, panelId: string): void {
   if (!panelId) return;
@@ -525,39 +507,43 @@ function restoreTab(root: HTMLElement, panelId: string): void {
 }
 
 /**
- * Fetch this page in another state and put it on screen in place.
+ * Fetch one season's log and put it on screen in place.
  *
- * The response is the whole page - the WordPress mount wraps the fragment in a
- * theme - and all that is taken from it is the profile root, which is the unit
- * the server renders and the unit every behavior here is wired against.
- *
- * When anything goes wrong the browser is handed the navigation it was about to
- * make. A reader who clicks "Half" must end up looking at half-PPR; a dirty URL
- * is the complaint this function exists to answer, not a reason to show them
- * the wrong numbers.
+ * The answer is the player's whole fragment; all that is taken from it is
+ * the profile root, the unit every behavior here is wired against. On any
+ * failure the log on screen stays as it was (the buttons are not links, so
+ * there is no navigation to hand the browser instead).
  */
-async function swapState(
-  root: HTMLElement,
-  target: string,
-  link: HTMLAnchorElement,
-): Promise<void> {
+async function swapSeason(root: HTMLElement, season: string, button: HTMLElement | null): Promise<void> {
+  const attrs = root.querySelector<HTMLElement>(LOG_ATTRS_SELECTOR);
+  if (!attrs) return;
+  const defaultSeason = attrs.dataset["scpLogDefault"] ?? "";
+  if (season === (attrs.dataset["scpLogShown"] ?? "")) {
+    writeHashSeason(season, defaultSeason);
+    return;
+  }
+
+  swapController?.abort();
   const token = ++swapToken;
+  const controller = typeof AbortController === "function" ? new AbortController() : null;
+  swapController = controller;
   root.setAttribute("aria-busy", "true");
 
-  // Measured before the fetch, because the control the reader clicked is the
-  // one thing on screen they are certainly looking at: a render that is taller
-  // or shorter above it must not slide it out from under the pointer.
-  const anchorTop = link.getBoundingClientRect().top;
-  const address = controlAddress(root, link);
+  // Measured before the fetch: a render that is taller or shorter above
+  // the control must not slide it out from under the pointer.
+  const anchorTop = button ? button.getBoundingClientRect().top : null;
   const openTab =
     root.querySelector<HTMLElement>(".scp-nav-link.is-active")?.dataset["scpPanelId"] ?? "";
 
   let next: HTMLElement | null = null;
   try {
-    const response = await fetch(target, {
+    const response = await fetch(seasonTarget(attrs, season), {
+      // Same-origin: the proxy is this site; cross-origin it sends nothing.
       credentials: "same-origin",
-      headers: { "X-Requested-With": "statchasers-player" },
+      headers: { Accept: "text/html", "X-Requested-With": "statchasers-player" },
+      signal: controller?.signal,
     });
+    if (token !== swapToken) return;
     if (response.ok) {
       const doc = new DOMParser().parseFromString(await response.text(), "text/html");
       next = doc.querySelector<HTMLElement>(ROOT_SELECTOR);
@@ -568,84 +554,83 @@ async function swapState(
 
   // A later click already owns the page. Its own answer will land.
   if (token !== swapToken) return;
+  swapController = null;
 
-  if (!next || !root.isConnected) {
-    location.assign(target);
+  const shown = next?.querySelector<HTMLElement>(LOG_ATTRS_SELECTOR)?.dataset["scpLogShown"];
+  if (!next || !root.isConnected || shown !== season) {
+    root.removeAttribute("aria-busy");
+    // A season this player has no log for (an edited `#log=`): say nothing,
+    // keep the default, and drop the fragment so a reload does not retry it.
+    if (next && shown !== season) writeHashSeason(defaultSeason, defaultSeason);
     return;
   }
 
   const fresh = document.importNode(next, true);
   root.replaceWith(fresh);
-  renderedUrl = target;
+  writeHashSeason(season, defaultSeason);
 
   wireProfile(fresh);
   restoreTab(fresh, openTab);
 
-  const moved = controlAt(fresh, address);
-  if (moved) {
+  const group = fresh.querySelector<HTMLElement>(SWAP_GROUP_SELECTOR);
+  const moved = group?.querySelector<HTMLElement>(`${SWAP_BUTTON_SELECTOR}[data-season="${season}"]`) ?? null;
+  if (moved && anchorTop !== null) {
     const drift = moved.getBoundingClientRect().top - anchorTop;
     if (drift) window.scrollBy(0, drift);
-    // The reader's focus was on a link that no longer exists. Without this it
-    // falls back to <body> and the next Tab starts again from the top.
-    moved.focus({ preventScroll: true });
   }
+  // The reader's focus was on a button that no longer exists. Without this
+  // it falls back to <body> and the next Tab starts again from the top.
+  if (moved && button) moved.focus({ preventScroll: true });
+}
+
+/** The season the address bar asks for, if it is one this log offers. */
+function requestedSeason(root: HTMLElement): string | null {
+  const season = hashSeason();
+  if (!season) return null;
+  return root.querySelector(`${SWAP_BUTTON_SELECTOR}[data-season="${season}"]`) ? season : null;
 }
 
 /**
- * Let the state controls change the page without changing its address.
- *
- * `?format=half` is a real address that the server renders and the canonical
- * points away from - it has to be, or the toggle would not work with scripting
- * off. What it should not be is the address a reader is left holding after
- * pressing a button on the page they are already on: one page, one URL, and
- * the scoring a reader chose is state, not a different document.
- *
- * Delegated from the root so it keeps working on content this same handler put
- * there, and declined for every click the browser should handle itself -
- * anything with a modifier key, which is how a reader deliberately opens one of
- * these in a new tab.
+ * Wire the season buttons, and honor a `#log=<year>` the page arrived with
+ * (a bookmark, a shared link, or an old `?log=` link the plugin 301'd).
  */
 function wireStateSwap(root: HTMLElement): void {
+  if (!root.querySelector(SWAP_BUTTON_SELECTOR)) return;
+
   root.addEventListener("click", (event: MouseEvent) => {
     if (event.defaultPrevented) return;
-    if (
-      event.button !== 0 ||
-      event.metaKey ||
-      event.ctrlKey ||
-      event.shiftKey ||
-      event.altKey
-    ) {
-      return;
-    }
-
     const target = event.target;
     if (!(target instanceof Element)) return;
-    const link = target.closest<HTMLAnchorElement>(SWAP_LINK_SELECTOR);
-    if (!link || !root.contains(link)) return;
-    if (link.target && link.target !== "_self") return;
-
-    let url: URL;
-    try {
-      url = new URL(link.href, location.href);
-    } catch {
-      return;
-    }
-    // Another origin is somebody else's page, and fetching it would be pointless
-    // even where CORS allowed it.
-    if (url.origin !== location.origin) return;
-
+    const button = target.closest<HTMLButtonElement>(SWAP_BUTTON_SELECTOR);
+    if (!button || !root.contains(button)) return;
     event.preventDefault();
-
-    const next = stateKey(url);
-    // The lit scoring option, and the lit season chip on the advanced table,
-    // both link to the state already on screen. Swallow the click rather than
-    // spend a fetch re-rendering what is there. (The game log's lit chip links
-    // to the state that CLEARS it, which is a different key and does swap.)
-    if (next === stateKey(new URL(renderedUrl, location.href))) return;
-
-    void swapState(root, next, link);
+    const menu = button.closest<HTMLDetailsElement>("details[data-scp-yr]");
+    if (menu) menu.open = false;
+    void swapSeason(root, button.dataset["season"] ?? "", button);
   });
+
+  // Once per page, not per root: a swapped-in root is wired again and must
+  // not stack listeners. The live root is looked up when the hash moves.
+  if (!hashListening) {
+    hashListening = true;
+    window.addEventListener("hashchange", () => {
+      const live = document.querySelector<HTMLElement>(ROOT_SELECTOR);
+      if (!live) return;
+      const attrs = live.querySelector<HTMLElement>(LOG_ATTRS_SELECTOR);
+      if (!attrs) return;
+      const wanted = requestedSeason(live) ?? (/^#log=/.test(location.hash) ? null : attrs.dataset["scpLogDefault"] ?? null);
+      if (wanted && wanted !== attrs.dataset["scpLogShown"]) void swapSeason(live, wanted, null);
+    });
+    const arrived = requestedSeason(root);
+    if (arrived) void swapSeason(root, arrived, null);
+    else if (/^#log=/.test(location.hash)) {
+      const attrs = root.querySelector<HTMLElement>(LOG_ATTRS_SELECTOR);
+      if (attrs) writeHashSeason(attrs.dataset["scpLogDefault"] ?? "", attrs.dataset["scpLogDefault"] ?? "");
+    }
+  }
 }
+
+let hashListening = false;
 
 /* ------------------------------------------------------- stats toggle */
 
@@ -1132,7 +1117,7 @@ async function paintFigure(figure: HTMLElement): Promise<void> {
 /**
  * The phone's season dropdown on the Game Log heading (a <details>): close it
  * on a tap outside it and on Escape, as a menu does. Picking a season needs
- * nothing here, because its options are state-swap links.
+ * nothing here, because its options are the season swap's buttons.
  */
 function wireSeasonMenu(root: HTMLElement): void {
   const menus = Array.from(root.querySelectorAll<HTMLDetailsElement>("details[data-scp-yr]"));

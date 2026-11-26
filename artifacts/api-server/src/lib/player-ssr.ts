@@ -93,6 +93,8 @@ function optionKey(
     // The Game Log's season, for the same reason the section is here: two
     // requests differing only in ?log= render different tables.
     data.logSeason ?? 0,
+    // The season swap's fetch address is printed on the Game Log.
+    options.logEndpoint ?? "",
   ]);
 }
 

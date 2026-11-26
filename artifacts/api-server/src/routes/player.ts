@@ -34,6 +34,7 @@ import { devBarEnabled, injectDevBar } from "../lib/devbar";
 import { liveReload } from "../lib/livereload";
 import { canonicalUrl } from "../lib/request";
 import { escapeHtml } from "../lib/render";
+import { browserEndpoint } from "../lib/embed-key";
 import { renderPlayerAppPage, renderPlayerFragment } from "../lib/player-ssr";
 import { renderPlayerIndex, renderPlayerIndexFragment } from "../lib/player-render";
 import { hasOutlookTab } from "../lib/player/outlook-2026";
@@ -213,13 +214,36 @@ function section(req: Request): string | undefined {
  * the only thing holding the list of seasons he appeared in.
  *
  * Deliberately not part of the canonical. One game log per player is the page
- * that ranks, the season selector carries rel="nofollow", and `?log=2023` is a
- * rendering of that page rather than a second one. See player-seo.ts.
+ * that ranks, and `?log=2023` is a rendering of that page rather than a second
+ * one. Nothing links it any more (2026-11-26 audit, WEB-020): the season
+ * selector is buttons that fetch the embed fragment with `log=`, the
+ * WordPress plugin 301s a `?log=` page address to `#log=<year>`, and only
+ * the standalone page and the fragment endpoint still read the parameter.
  */
 function logSeason(req: Request): number | undefined {
   const raw = Number.parseInt(String(req.query["log"] ?? ""), 10);
   if (!Number.isFinite(raw)) return undefined;
   return getAvailableSeasons().includes(raw) ? raw : undefined;
+}
+
+/**
+ * Where the Game Log's season buttons fetch another season from, on an
+ * embedded page: this same fragment, with this request's section, heading
+ * mode and format, through the browser proxy when one is configured
+ * (SC_BROWSER_PROXY - the WordPress proxy forwards `embed/player/<slug>`
+ * with the key). The client adds `log=<year>`. The season is never in the
+ * page's own address any more (2026-11-26 audit, WEB-020): old `?log=`
+ * links 301 to `#log=<year>` on the clean URL, and the swap fetches here.
+ */
+function logEndpoint(req: Request, slug: string): string {
+  const params = new URLSearchParams();
+  const sec = section(req);
+  if (sec) params.set("section", sec);
+  if (ownHeading(req)) params.set("h1", "1");
+  const fmt = format(req);
+  if (fmt !== "ppr") params.set("format", fmt);
+  const query = params.toString();
+  return `${browserEndpoint(req, `/embed/player/${encodeURIComponent(slug)}`)}${query ? `?${query}` : ""}`;
 }
 
 function format(req: Request): ScoringFormat {
@@ -679,6 +703,7 @@ router.get("/embed/player/:slug", (req, res) => {
           linkQuery: fragmentLinkQuery(playerPrefix),
           section: section(req),
           ownHeading: ownHeading(req),
+          logEndpoint: logEndpoint(req, slug),
         },
         {
           format: format(req),
