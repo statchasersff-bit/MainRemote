@@ -401,6 +401,48 @@ $held = statchasers_player_duplicate_apply( array( 4929 ) );
 is( 0 === strpos( $held[4929], 'skipped: holds post_content' ), true, 'a duplicate with content of its own is not trashed' );
 $GLOBALS['pages'][4929]->post_content = '[statchasers_player]';
 
+/* ------------------------------------------------- the retitle dry run */
+
+echo "\nthe retitle dry run and apply move stored titles only: no slug, no canonical\n";
+
+if ( ! function_exists( 'update_meta_cache' ) ) {
+	function update_meta_cache( $type, $ids ) { return true; }
+}
+$GLOBALS['pages'] = array(
+	500 => $nfl,
+	501 => $players,
+	601 => sc_test_profile( 601, 'josh-allen' ),
+	602 => sc_test_profile( 602, 'cole-kmet' ),
+	603 => sc_test_profile( 603, 'luther-burden' ),
+);
+$GLOBALS['post_meta'] = array(
+	// The stored wording the 4926/4928 pair carries on production.
+	601 => array( 'rank_math_title' => 'Josh Allen Fantasy Football 2026: Stats, Outlook & News', 'rank_math_canonical_url' => 'https://example.com/nfl/players/josh-allen/' ),
+	// A hand-written title: left alone.
+	602 => array( 'rank_math_title' => 'Cole Kmet: our editor\'s take', 'rank_math_canonical_url' => '' ),
+	// Already the current wording: nothing to do.
+	603 => array( 'rank_math_title' => 'Luther Burden NFL Stats & News | StatChasers' ),
+);
+$GLOBALS['post_meta_writes'] = array();
+$names_before = array_map( static fn( $p ) => $p->post_name, $GLOBALS['pages'] );
+$meta_before  = $GLOBALS['post_meta'];
+$report       = statchasers_player_retitle_report();
+echo '  sample: ' . json_encode( $report['rows'] ) . "\n";
+is( array_keys( $report['rows'] ), array( 601 ), 'the dry run lists the one generated, outdated title' );
+is( $report['rows'][601], array( 'old' => 'Josh Allen Fantasy Football 2026: Stats, Outlook & News', 'new' => 'Josh Allen NFL Stats & News | StatChasers', 'len' => 41 ), 'old => new, under 60' );
+is( array_keys( $report['rows'][601] ), array( 'old', 'new', 'len' ), 'a row carries the title and nothing else: no slug, no URL' );
+is( $report['custom'], 1, 'the hand-written title is counted as custom, not changed' );
+is( $GLOBALS['post_meta_writes'], array(), 'the dry run writes nothing' );
+is( $GLOBALS['post_meta'], $meta_before, 'stored meta untouched by the dry run' );
+
+is( statchasers_player_retitle_apply(), 1, 'apply updates the one eligible page' );
+is( array_map( static fn( $w ) => $w[1], $GLOBALS['post_meta_writes'] ), array( 'rank_math_title' ), 'only rank_math_title is written' );
+is( array_map( static fn( $p ) => $p->post_name, $GLOBALS['pages'] ), $names_before, 'every slug unchanged' );
+is( $GLOBALS['post_meta'][601]['rank_math_canonical_url'], 'https://example.com/nfl/players/josh-allen/', 'the stored canonical unchanged' );
+is( $GLOBALS['post_meta'][602]['rank_math_title'], 'Cole Kmet: our editor\'s take', 'the custom title unchanged' );
+$GLOBALS['post_meta'] = array();
+$GLOBALS['post_meta_writes'] = array();
+
 /* -------------------------------------------- one sitemap entry per slug */
 
 echo "\nthe sitemap lists the page the URL resolves to, once\n";
@@ -435,6 +477,7 @@ $cases = array(
 	'/nfl/players/josh-allen//game-log'              => 'https://example.com/nfl/players/josh-allen/game-log/',
 	'/nfl/players/josh-allen/overview/'              => 'https://example.com/nfl/players/josh-allen/',
 	'/nfl/players/josh-allen/?log=2024'              => 'https://example.com/nfl/players/josh-allen/game-log/#log=2024',
+	'/nfl/players/josh-allen/?log=2025'              => 'https://example.com/nfl/players/josh-allen/game-log/#log=2025',
 	'/nfl/players/josh-allen/game-log/?log=2023'     => 'https://example.com/nfl/players/josh-allen/game-log/#log=2023',
 	'/nfl/players/Josh-Allen/game-log/?log=2023&format=half' => 'https://example.com/nfl/players/josh-allen/game-log/?format=half#log=2023',
 	'/nfl/players/josh-allen/stats/?log=abc'         => 'https://example.com/nfl/players/josh-allen/stats/',

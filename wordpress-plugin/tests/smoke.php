@@ -276,8 +276,10 @@ function wp_clear_scheduled_hook( $hook, $args = array() ) { return 0; }
 function wp_remote_get( $u, $a = array() ) { $GLOBALS['remote_urls'][] = $u; $GLOBALS['remote_args'][] = $a; return array(); }
 function wp_remote_retrieve_body( $r ) { return $GLOBALS['http_body'] ?? ''; }
 function wp_remote_retrieve_response_code( $r ) { return $GLOBALS['http_code'] ?? 200; }
-function get_post_meta( $id, $k, $single = false ) { return ''; }
-function update_post_meta( $id, $k, $v ) {}
+// Empty unless a test seeds $GLOBALS['post_meta'][id][key]; writes are kept
+// in order so a test can see exactly which fields a tool touched.
+function get_post_meta( $id, $k, $single = false ) { return $GLOBALS['post_meta'][ (int) $id ][ $k ] ?? ''; }
+function update_post_meta( $id, $k, $v ) { $GLOBALS['post_meta_writes'][] = array( (int) $id, $k, $v ); $GLOBALS['post_meta'][ (int) $id ][ $k ] = $v; }
 function get_edit_post_link( $id ) { return ''; }
 function get_current_screen() { return null; }
 function wp_die( $m ) { throw new RuntimeException( $m ); }
