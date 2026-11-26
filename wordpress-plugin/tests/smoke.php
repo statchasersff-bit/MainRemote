@@ -57,14 +57,28 @@ function add_shortcode( $tag, $fn ) {}
 function register_activation_hook( $file, $fn ) {}
 function register_deactivation_hook( $file, $fn ) {}
 function add_management_page() {}
-function get_option( $key, $default = false ) { return $GLOBALS['options'][ $key ] ?? $default; }
+function get_option( $key, $default = false ) {
+	if ( ! empty( $GLOBALS['race_options'] ) ) {
+		$q = sc_race_db()->prepare( 'SELECT option_value FROM options WHERE option_name = ?' );
+		$q->execute( array( $key ) );
+		$v = $q->fetchColumn();
+		return false === $v ? $default : $v;
+	}
+	return $GLOBALS['options'][ $key ] ?? $default;
+}
 // Divi's own accessor. statchasers_team_is_divi() keys off its existence, and
 // statchasers_team_content_width() reads the Customizer's content width from
 // it. $GLOBALS['et_options'] left unset is a site that has never touched the
 // setting, which is the case the fallback is for.
 function et_get_option( $key, $default = false ) { return $GLOBALS['et_options'][ $key ] ?? $default; }
 function update_option( $key, $value, $autoload = null ) { $GLOBALS['options'][ $key ] = $value; }
-function delete_option( $key ) { unset( $GLOBALS['options'][ $key ] ); }
+function delete_option( $key ) {
+	if ( ! empty( $GLOBALS['race_options'] ) ) {
+		sc_race_db()->prepare( 'DELETE FROM options WHERE option_name = ?' )->execute( array( $key ) );
+		return true;
+	}
+	unset( $GLOBALS['options'][ $key ] );
+}
 function get_transient( $key ) { return false; }
 function set_transient( $key, $value, $ttl ) {}
 function delete_transient( $key ) {}
@@ -84,6 +98,9 @@ function in_the_loop() { return (bool) ( $GLOBALS['page']['loop'] ?? false ); }
 function is_main_query() { return (bool) ( $GLOBALS['page']['loop'] ?? false ); }
 function get_queried_object() { return $GLOBALS['page']['post'] ?? null; }
 function get_post( $id = null ) {
+	if ( isset( $GLOBALS['race_db'] ) && null !== $id ) {
+		return sc_race_get_post( (int) $id );
+	}
 	// By id when the test has built a page tree; otherwise the page being
 	// rendered, which is what every other caller in the plugin means.
 	if ( null !== $id && isset( $GLOBALS['pages'][ (int) $id ] ) ) {
@@ -136,6 +153,9 @@ function get_page_uri( $id ) { return 'nfl'; }
  * these exist to catch.
  */
 function get_posts( $args = array() ) {
+	if ( isset( $GLOBALS['race_db'] ) ) {
+		return sc_race_get_posts( $args );
+	}
 	if ( ! isset( $GLOBALS['pages'] ) ) {
 		return array();
 	}
@@ -158,6 +178,9 @@ function get_posts( $args = array() ) {
 }
 
 function wp_insert_post( $a, $b = false ) {
+	if ( isset( $GLOBALS['race_db'] ) ) {
+		return sc_race_insert_post( $a );
+	}
 	if ( ! isset( $GLOBALS['pages'] ) ) {
 		return 1;
 	}
@@ -175,7 +198,9 @@ function wp_insert_post( $a, $b = false ) {
 	// wp_unique_post_slug(): a page's slug is unique among its siblings, and
 	// WordPress makes it so by appending -2, -3 rather than refusing. That is
 	// the behavior the builder has to defend against, so the stub has it too.
-	if ( '' !== $name ) {
+	// `insert_no_suffix` is the other race: both inserts checked the slug
+	// before either landed, so both keep it (D'Andre Swift, 4928 + 4929).
+	if ( '' !== $name && empty( $GLOBALS['insert_no_suffix'] ) ) {
 		$taken = array();
 		foreach ( $GLOBALS['pages'] as $p ) {
 			if ( (int) $p->post_parent === $parent && 'trash' !== $p->post_status ) {
@@ -195,6 +220,12 @@ function wp_insert_post( $a, $b = false ) {
 	$post->post_parent  = (int) ( $a['post_parent'] ?? 0 );
 	$post->post_status  = (string) ( $a['post_status'] ?? 'publish' );
 	$GLOBALS['pages'][ $id ] = $post;
+	// A second process landing just after this insert. Runs once.
+	if ( isset( $GLOBALS['after_insert'] ) && is_callable( $GLOBALS['after_insert'] ) ) {
+		$hook = $GLOBALS['after_insert'];
+		unset( $GLOBALS['after_insert'] );
+		$hook( $a );
+	}
 	return $id;
 }
 
@@ -214,7 +245,18 @@ function wp_update_post( $a, $b = false ) {
 	return $id;
 }
 function is_wp_error( $t ) { return false; }
+function wp_trash_post( $id ) {
+	$GLOBALS['trashed_posts'][] = (int) $id;
+	if ( isset( $GLOBALS['pages'][ (int) $id ] ) ) {
+		$GLOBALS['pages'][ (int) $id ]->post_status = 'trash';
+	}
+	return true;
+}
+function get_post_thumbnail_id( $id = null ) { return 0; }
 function wp_delete_post( $id, $force = false ) {
+	if ( isset( $GLOBALS['race_db'] ) ) {
+		return sc_race_delete_post( (int) $id );
+	}
 	$GLOBALS['deleted_posts'][] = (int) $id;
 	if ( isset( $GLOBALS['pages'][ (int) $id ] ) ) {
 		if ( $force ) {
@@ -475,10 +517,10 @@ if ( 'main' === $group ) {
 	is( isset( $other['headers']['X-StatChasers-Key'] ), false, 'a look-alike host never gets the key' );
 	$third = statchasers_add_embed_key( array(), 'https://api.sleeper.app/v1/players' );
 	is( isset( $third['headers']['X-StatChasers-Key'] ), false, 'another service never gets the key' );
-	foreach ( array( 'embed/fpa', 'embed/player-stats', 'embed/sos', 'embed/rookie-hit-rates/data', 'embed/redraft-strategy/data/combo/one_qb__ppr__no_tep__12__2025', 'embed/redraft-strategy/data/trends/superflex__half_ppr__tep__12', 'embed/redraft-strategy/data/boards', 'embed/rb-handcuffs/player/4034', 'embed/injury-impact/data/analysis', 'embed/injury-impact/data/player/00-0030228', 'api/news' ) as $ok_path ) {
+	foreach ( array( 'embed/fpa', 'embed/player-stats', 'embed/sos', 'embed/rookie-hit-rates/data', 'embed/redraft-strategy/data/combo/one_qb__ppr__no_tep__12__2025', 'embed/redraft-strategy/data/trends/superflex__half_ppr__tep__12', 'embed/redraft-strategy/data/boards', 'embed/rb-handcuffs/player/4034', 'embed/injury-impact/data/analysis', 'embed/injury-impact/data/player/00-0030228', 'api/news', 'embed/player/jacoby-brissett', 'embed/player/amon-ra-st-brown' ) as $ok_path ) {
 		is( statchasers_proxy_allowed( $ok_path ), true, "proxy forwards $ok_path" );
 	}
-	foreach ( array( 'embed/players.json', 'embed/player/jacoby-brissett', 'player/x', 'embed/rb-handcuffs/player/../../x', 'embed/sos/x', 'embed/sos.csv', 'embed/rookie-hit-rates', 'embed/rookie-hit-rates/data/x', 'embed/redraft-strategy', 'embed/redraft-strategy/data', 'embed/redraft-strategy/data/combo/../x', 'embed/redraft-strategy/data/combo/One_QB', 'embed/redraft-strategy/data/boards/x', 'embed/injury-impact', 'embed/injury-impact/data/player/x', 'embed/injury-impact/data/analysis/x', 'api/x/accounts', '' ) as $no_path ) {
+	foreach ( array( 'embed/players.json', 'embed/player/x/y', 'embed/player/../x', 'embed/player/Jacoby', 'embed/player/', 'player/x', 'embed/rb-handcuffs/player/../../x', 'embed/sos/x', 'embed/sos.csv', 'embed/rookie-hit-rates', 'embed/rookie-hit-rates/data/x', 'embed/redraft-strategy', 'embed/redraft-strategy/data', 'embed/redraft-strategy/data/combo/../x', 'embed/redraft-strategy/data/combo/One_QB', 'embed/redraft-strategy/data/boards/x', 'embed/injury-impact', 'embed/injury-impact/data/player/x', 'embed/injury-impact/data/analysis/x', 'api/x/accounts', '' ) as $no_path ) {
 		is( statchasers_proxy_allowed( $no_path ), false, "proxy refuses '$no_path'" );
 	}
 	echo "\n";
@@ -648,6 +690,12 @@ if ( 'playerlinks' === $group ) {
 
 if ( 'playerbuilder' === $group ) {
 	require __DIR__ . '/smoke-player-builder.php';
+	echo "\n" . ( $fail ? "$fail FAILED\n" : "all passed\n" );
+	exit( $fail ? 1 : 0 );
+}
+
+if ( 'playerrace' === $group ) {
+	require __DIR__ . '/smoke-player-race.php';
 	echo "\n" . ( $fail ? "$fail FAILED\n" : "all passed\n" );
 	exit( $fail ? 1 : 0 );
 }
@@ -839,7 +887,10 @@ $meta = statchasers_player_page_meta( array(
 	'slug' => 'kyler-murray', 'name' => 'Kyler Murray', 'position' => 'QB',
 	'team' => 'MIN', 'teamName' => 'Minnesota Vikings', 'id' => '1',
 ) );
-is( $meta['title'], 'Kyler Murray Stats, News, Bio & Fantasy Outlook | StatChasers', 'title: the evergreen entity wording, branded (mak, 2026-11-03)' );
+is( $meta['title'], 'Kyler Murray NFL Stats & News | StatChasers', 'title: the hub is NFL stats and news, branded (2026-11-26 audit, WEB-029)' );
+is( statchasers_player_generated_title( 'Kyler Murray Stats, News, Bio & Fantasy Outlook | StatChasers' ), $meta['title'], 'retitle: the 2026-11-03 branded wording is ours' );
+is( statchasers_player_generated_title( 'Kyler Murray NFL Stats & News | StatChasers' ), $meta['title'], 'retitle: the current wording is ours, and already right' );
+is( statchasers_player_generated_title( 'Kyler Murray NFL Stats & News' ), $meta['title'], 'retitle: its bare rung too, read without " NFL" in the name' );
 is( statchasers_player_generated_title( 'Kyler Murray Fantasy Football Stats & Analysis | StatChasers' ), $meta['title'], 'retitle: the old branded wording is ours' );
 is( statchasers_player_generated_title( 'Kyler Murray Fantasy Football Stats & Analysis' ), $meta['title'], 'retitle: the 2026-10-08 wording is ours' );
 is( statchasers_player_generated_title( 'Kyler Murray Fantasy Football 2025: Stats & Outlook' ), $meta['title'], 'retitle: an earlier year of the dated ladder is ours' );
@@ -848,20 +899,25 @@ is( statchasers_player_generated_title( 'Kyler Murray Stats, News & Fantasy Outl
 is( statchasers_player_generated_title( 'Kyler Murray: the QB nobody expected' ), '', 'retitle: a typed title is left alone' );
 is(
 	statchasers_branded_title( statchasers_player_title_ladder( 'Marquez Valdes-Scantling' ) ),
-	'Marquez Valdes-Scantling Stats, News, Bio & Fantasy Outlook',
-	'title: a long name drops the brand before it drops words'
+	'Marquez Valdes-Scantling NFL Stats & News | StatChasers',
+	'title: a long real name keeps the brand within sixty'
 );
 is(
 	statchasers_branded_title( statchasers_player_title_ladder( 'Christian McCaffrey-Longname Jr.' ) ),
-	'Christian McCaffrey-Longname Jr. Stats, News & Outlook | StatChasers',
-	'title: the longest names shorten the wording and keep the brand where it fits'
+	'Christian McCaffrey-Longname Jr. NFL Stats & News',
+	'title: a longer name drops the brand before it drops words'
+);
+is(
+	statchasers_branded_title( statchasers_player_title_ladder( "  D'Andre   Swift " ) ),
+	"D'Andre Swift NFL Stats & News | StatChasers",
+	'title: stray whitespace in a name never reaches the title (WEB-022)'
 );
 is(
 	statchasers_branded_title( statchasers_player_title_ladder( 'Christian McCaffrey-Longname-Longername-Longest Jr.' ) ),
 	'Christian McCaffrey-Longname-Longername-Longest Jr. Stats & News',
 	'title: the last rung is returned bare'
 );
-is( strlen( $meta['title'] ) <= 70, true, 'title: within seventy characters with the brand' );
+is( strlen( $meta['title'] ) <= 60, true, 'title: within sixty characters with the brand (WEB-029)' );
 is( false !== strpos( $meta['description'], 'Updated throughout the NFL season.' ), true, 'description: the stored copy is the evergreen wording' );
 is( statchasers_player_generated_title( 'Kyler Murray: Our Take | StatChasers' ), '', 'retitle: a custom title stays custom' );
 is(
@@ -2183,10 +2239,12 @@ echo "\n?adv= reaches the API the way ?log= does\n";
 $_GET = array( 'adv' => '2024', 'log' => '2023' );
 $args = statchasers_player_args( array( 'slug' => 'josh-allen' ) );
 is( $args['adv'], '2024', 'the Advanced season comes off the URL' );
-is( $args['log'], '2023', 'beside the Game Log\'s' );
+// The Game Log's season no longer does (2026-11-26 audit, WEB-020): a
+// `?log=` address 301s to `#log=`, and the page renders one season per URL.
+is( $args['log'], '', 'the Game Log\'s season is not read from the URL' );
 $GLOBALS['remote_urls'] = array();
 statchasers_player_fetch( $args['slug'], $args['format'], $args['section'], $args['log'], $args['adv'] );
-is( end( $GLOBALS['remote_urls'] ), 'https://api.example.com/embed/player/josh-allen?log=2023?adv=2024', 'and both are forwarded to /embed/player' );
+is( end( $GLOBALS['remote_urls'] ), 'https://api.example.com/embed/player/josh-allen?adv=2024', 'and only the Advanced one is forwarded to /embed/player' );
 
 $_GET = array( 'adv' => '1998' );
 is( statchasers_player_args( array( 'slug' => 'josh-allen' ) )['adv'], '', 'a season before 1999 is dropped' );
@@ -2503,7 +2561,7 @@ is( statchasers_player_lazyload_exclusions( null ), array( 'class="scp-pwell-img
  * The other groups. Their failures are this run's failures - a split that only
  * reported the half it felt like running would be worse than not splitting.
  */
-foreach ( array( 'containers', 'week', 'weekstray', 'schedtitles', 'sched404s', 'route404s', 'legacyroutes', 'schedlive', 'schedfinal', 'mucache', 'statscache', 'dccache', 'dcconsumers', 'pageids', 'leak', 'headings', 'playersection', 'rules', 'playerlinks', 'playerbuilder', 'sos', 'sosleak', 'sospage', 'sosfallback', 'fpa', 'fpaleak', 'fpaarchive', 'rhr', 'rhrleak', 'rds', 'rdsleak', 'scin', 'scindb', 'scinleak', 'bdp', 'hostcss', 'newsrail' ) as $child_group ) {
+foreach ( array( 'containers', 'week', 'weekstray', 'schedtitles', 'sched404s', 'route404s', 'legacyroutes', 'schedlive', 'schedfinal', 'mucache', 'statscache', 'dccache', 'dcconsumers', 'pageids', 'leak', 'headings', 'playersection', 'rules', 'playerlinks', 'playerbuilder', 'playerrace', 'sos', 'sosleak', 'sospage', 'sosfallback', 'fpa', 'fpaleak', 'fpaarchive', 'rhr', 'rhrleak', 'rds', 'rdsleak', 'scin', 'scindb', 'scinleak', 'bdp', 'hostcss', 'newsrail' ) as $child_group ) {
 	$child = array();
 	$code  = 0;
 	exec(
