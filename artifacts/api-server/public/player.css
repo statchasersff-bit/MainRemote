@@ -19009,12 +19009,12 @@ button.scp-search-opt {
 
 @media (max-width: 560px) {
   /* Overview on phones (mak, 2026-11-06): no dek under "2026 Season Stats",
-     no "Complete ... stats and career statistics" link under its table, no
+     (the "Full ... stats" link under its table is shown again since
+     2026-11-26, WEB-044: the block's one way to the Stats tab), no
      "Analyze in Redraft Command" link under the outlook, and no "Full career
      stats" / "timeline and biography" links closing Career & Background.
      The links stay in the markup (crawlable); the tabs above reach both. */
   .scp.scp.scp.scp .scp-ovp-sec:has(#scp-ox-season-h) .scp-up-dek,
-  .scp.scp.scp.scp .scp-ovp-sec:has(#scp-ox-season-h) a.scp-ox-more,
   .scp.scp.scp.scp #overview a.scp-ox-more[data-cta="redraft-command-sidebar"],
   .scp.scp.scp.scp #overview .scp-ox-links {
     display: none !important;
@@ -22716,4 +22716,29 @@ button.scp-search-opt {
     margin: 0 0 0 auto !important;
     text-align: right !important;
   }
+}
+
+/* Readable labels (WEB-044, 2026-11-26): the audit counted 91 labels under
+   12px on the sampled hub. The Overview's and the peers rail's text labels
+   take a 12px floor at every width; the bar chart's in-plot numbers and week
+   marks (.scp-ow-v, .scp-ow-x, .scp-ow-mark) keep their size, as data labels
+   packed into one bar each, and the header is untouched (mak, 2026-11-15). */
+.scp.scp.scp.scp.scp.scp.scp :is(
+    .scp-ox-season abbr,
+    .scp-ox-about dt,
+    .scp-ox-eff-p,
+    .scp-ow-note,
+    .scp-ow-h3,
+    .scp-ox-chip,
+    .scp-nw-cat,
+    .scp-ow-key :is(li, span, b, small),
+    .scp-ow-games :is(small, b),
+    .scp-pr-rank,
+    .scp-pr-here,
+    .scp-pr-club b,
+    .scp-pr-value small,
+    .scp-pr-metric > span,
+    .scp-pr-metric > b
+  ) {
+  font-size: 12px !important;
 }

@@ -321,7 +321,9 @@ describe("rendered", () => {
     const shown = () => [...doc.querySelectorAll("[data-scp-news-item]")].filter((i) => !i.hidden).map((i) => i.dataset.type);
     doc.querySelector('[data-f="status"]').click();
     assert.deepEqual(shown(), ["status"]);
-    assert.equal(doc.querySelector("#scp-nw-empty").hidden, true);
+    // No "No updates of this type" note (WEB-044, 2026-11-26): the filters
+    // list only kinds the feed has, so it could never show.
+    assert.equal(doc.querySelector("#scp-nw-empty"), null);
     doc.querySelector('[data-f="moves"]').click();
     assert.deepEqual(shown(), ["contract"]);
     doc.querySelector('[data-f="game"]').click();

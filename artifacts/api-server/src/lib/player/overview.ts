@@ -351,7 +351,9 @@ function renderSeasonStats(data: PlayerPageData, s: Season, options: PlayerRende
       )
       .join("") +
     `</dl>` +
-    (hasStatsTab(data) ? more(href, `Complete ${data.player.name} stats and career statistics`) : "") +
+    // One clear way to everything else (WEB-044, 2026-11-26): shown at every
+    // width, phones included, since the block is the headline numbers only.
+    (hasStatsTab(data) ? more(href, `Full ${data.player.name} stats`, ` data-cta="full-stats-overview"`) : "") +
     SECTION_END
   );
 }

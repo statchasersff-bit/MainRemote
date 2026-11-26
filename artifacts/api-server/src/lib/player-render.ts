@@ -2096,14 +2096,14 @@ export function renderPlayerPage(
   // 2026-10-02) - so there is no copy after the panels any more. The Stats
   // footer closes its page, under the FAQ (mak, 2026-10-02); the Injury
   // footer keeps its place above the rail.
+  // On the profile (this all-tabs build) the other tabs' panels carry their
+  // body and footer only (WEB-044 / WEB-030, 2026-11-26): the Gibbs hub
+  // shipped the peers rail seven times and 64 FAQ questions, every tab's,
+  // in panels a reader of the profile does not see, and its FAQPage node
+  // listed them all. Each tab's own address still prints its rail and FAQ
+  // (renderScoped); the profile's rail and FAQ are the Overview's.
   const whole = (id: string, parts: TabParts | null): string =>
-    parts
-      ? parts.body +
-        (id === "stats" ? "" : parts.foot) +
-        renderPositionPeers(data, options) +
-        parts.faq +
-        (id === "stats" ? parts.foot : "")
-      : "";
+    parts ? parts.body + parts.foot : "";
   const stats = whole("stats", statsParts);
   const gameLog = whole("game-log", gameLogParts);
   const outlook = whole("outlook", outlookParts);
@@ -2208,10 +2208,9 @@ export function renderPlayerPage(
     // its own FAQ (mak, 2026-10-02), so a shared one under the panels would
     // double it on every tab.
     // Document order, so the node reads down the page the way the questions do.
-    renderPlayerFaqSchema(
-      sections.flatMap((section) => faqBySection.get(section.id) ?? []),
-      options,
-    ) +
+    // The Overview's questions only: the only FAQ the profile prints, so the
+    // node and the visible questions are the same entries.
+    renderPlayerFaqSchema(faqBySection.get("overview") ?? [], options) +
     `</div>`
   );
 }
