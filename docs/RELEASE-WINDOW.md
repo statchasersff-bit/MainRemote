@@ -62,6 +62,14 @@ Adopted 2026-11-20 from the SEO investigation's defect list, approved by mak.
    - **If mak purged by hand from the Rocket.net dashboard, run it with `--no-purge`** so the warm still happens.
 9. **Verify:** sample a few pages with a desktop and an iPhone user agent (`curl -sI`, look for `cf-cache-status: HIT` and a sub-second TTFB) once the phone pass has reached them.
 
+## Reserved slots
+
+| Slot (UTC) | Family | Release | Why this slot | What rides (and nothing else) |
+|---|---|---|---|---|
+| 2026-12-15 (Tue) 14:00-16:00 | Player pages (`/nfl/players/...`) + the FPA page | integ/player-audit-2026-11-26, plugin 1.10.74 (reserved 2026-11-26 for mak) | The player family's last SEO-surface change shipped 2026-11-24 19:45 (injury meta wording, after the 2026-11-20 FAQ/dateModified/sitemap release), so three weeks puts the next one at 2026-12-15 at the earliest. Tuesday is clear of every game window (Monday night ends 04:00 UTC). The Google November 2026 core update began 2026-11-10 (Search Status Dashboard; up to two weeks, completion not confirmed as of 11-26): re-check the dashboard shows it complete before the slot, and move the slot if any core update is rolling out that day | 648 player hub titles ("{Name} NFL Stats & News \| StatChasers") and tab titles held to 60 characters; FAQ/FAQPage reductions (hub = Overview FAQ, 10 per page, Bio duplicates out, IR matchup FAQs out); one-hop 301s for case/slash/`/overview/`/`-N`/`?log=` variants and VERIFIED alias slugs (e.g. mitchell-tinsley -> mitch-tinsley); page-sitemap duplicate and alias rows out; FPA page default PPR; then the retitle pass and the trash of WP 4927/4929. Unrelated releases stay out of this slot. |
+
+Pending elsewhere, not in this slot: team candidate plugin 1.10.73 (integ/team1125), its own release. Whichever of 1.10.73 / 1.10.74 ships second carries the other.
+
 ## Log
 
 | Date (UTC) | Release | SEO-surface change? |
