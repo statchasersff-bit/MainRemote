@@ -31,6 +31,12 @@ export interface NflInjuryEntry {
    */
   source?: string;
   season: number;
+  /**
+   * Set at render time (player-data.ts), never stored: every report week of
+   * this entry is a game still to be played, so it has cost no game yet and
+   * has not been played through either (WEB-039, 2026-11-26).
+   */
+  gameToCome?: boolean;
   week?: number;
   type: string;
   bodyPart?: string;

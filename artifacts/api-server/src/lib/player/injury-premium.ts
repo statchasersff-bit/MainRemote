@@ -175,7 +175,7 @@ function renderDurability(data: PlayerPageData, m: InjuryPremiumModel): string {
         `<b class="scp-inp-sel-v">${e(r.label)}</b>` +
         `<span class="scp-inp-sel-s">${e(`${r.episodes} occurrence${r.episodes === 1 ? "" : "s"} · ${r.gamesMissed} game${r.gamesMissed === 1 ? "" : "s"} missed`)}</span>` +
         `</div>` +
-        `<span class="scp-inp-sel-s is-note">${e(r.severe ? "Season-ending injury on record" : r.gamesMissed > 0 ? `Latest ${r.latest}` : `Played through${r.latest ? ` · latest ${r.latest}` : ""}`)}</span>` +
+        `<span class="scp-inp-sel-s is-note">${e(r.severe ? "Season-ending injury on record" : r.gamesMissed > 0 ? `Latest ${r.latest}` : r.toCome ? `Game not played yet · ${r.latest}` : `Played through${r.latest ? ` · latest ${r.latest}` : ""}`)}</span>` +
         `</div>`,
     )
     .join("");

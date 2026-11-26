@@ -175,7 +175,7 @@ export function currentStatus(input: CurrentStatusInput): CurrentStatus {
   const priorStatus =
     a.priorStatus ?? (a.source === "none" && a.report.state === "missing" && rosterRow.injuryStatus ? rosterRow.injuryStatus : null);
   const prior = priorWeek !== null && priorStatus ? { week: priorWeek, status: cap(priorStatus) } : null;
-  const injury = (rosterRow.injuryBodyPart ?? "").trim().toLowerCase() || null;
+  const injury = ((a.injury || rosterRow.injuryBodyPart) ?? "").trim().toLowerCase() || null;
 
   if (a.kind === "reserve") {
     return {

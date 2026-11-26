@@ -521,6 +521,76 @@ describe("durability profile (Redraft Command's injury card, mak 2026-10-30)", (
     }
   });
 
+  // WEB-039, 2026-11-26: the season on the page is the page's own record, not
+  // the durability pack's (gridiron.json, 2026 through Week 6).
+  const avail = (o) => ({
+    season: 2026, throughWeek: 11, teamGames: 10, played: 0, notPlayed: 10, missedInjury: 10, notPlayedOther: 0,
+    weeksMissedInjury: [1, 2, 3, 4, 5, 7, 8, 9, 10, 11], weeksNotPlayedOther: [], weekCodes: "XXXXXBXXXXX",
+    windows: [{ week: 1, recorded: 10, missedWeeks: [1, 2, 3, 4, 5, 7, 8, 9, 10, 11], open: true, type: "Injured reserve", bodyPart: null }],
+    ...o,
+  });
+  const packed = () => ({
+    seasonYears: [2025, 2026], seasons: { 2025: [13, 3], 2026: [0, 5] }, post: {},
+    w: { 2025: "PPPPPPPPXBXXPPPPP-", 2026: "XXXXX" },
+    extra: { seasons: {}, years: [], w: {}, t: {}, inj: [], gpTot: 0, gmTot: 0 },
+    gpTot: 13, gmTot: 8, possTot: 21, availPct: (100 * 13) / 21, perYearRate: 4,
+  });
+
+  test("Pacheco: the pack's stale 2026 row (5 missed, Week 6) gives way to the page's 10; totals and availability move with it", () => {
+    const gm = dur.withSeasonOnPage(packed(), avail());
+    assert.deepEqual(gm.seasons[2026], [0, 10]);
+    assert.equal(gm.w[2026], "XXXXXBXXXXX");
+    assert.equal(gm.gmTot, 13, "3 in 2025 + 10 in 2026");
+    assert.equal(gm.gpTot, 13);
+    assert.equal(gm.availPct.toFixed(1), "50.0");
+    assert.deepEqual(gm.w[2025], packed().w[2025], "past seasons keep the pack's");
+    // The grid: ten red boxes, the bye, then the weeks to come (Week 11 is
+    // complete: `current.week` is the last week the logs hold).
+    const html = dur.renderAvailGrid(gm, { season: 2026, week: 11 }, null, { newestFirst: true });
+    const row = html.split(/scp-in-av-row/).find((r) => r.includes('title="2026, game 1'));
+    assert.equal((row.match(/2026, game \d+: missed to injury/g) ?? []).length, 10);
+    assert.equal((row.match(/2026: bye week/g) ?? []).length, 1);
+    assert.equal((row.match(/not played yet/g) ?? []).length, 7);
+    assert.doesNotMatch(row, /beyond this season/);
+  });
+
+  test("a current-season episode counts its games from the page's windows; a window counts once; this week's report is a game to come", () => {
+    const a = avail({
+      played: 8, missedInjury: 2, notPlayed: 2, weeksMissedInjury: [9, 10], weekCodes: "PPPPBPPPXXP",
+      windows: [{ week: 9, recorded: 2, missedWeeks: [9, 10], open: false, type: "Calf", bodyPart: "calf" }],
+    });
+    // Jennings: the pack knew nothing after Week 6, so the report run read "didn't miss a game".
+    const run = ep({ season: 2026, week: 9, lastReportWeek: 11, reportWeeks: 3, worstStatus: "Out" });
+    const [counted] = dur.currentSeasonCounts([run], "calf", a);
+    assert.equal(counted.gamesMissed, 2);
+    assert.equal(counted.returnWeek, 11);
+    assert.equal(counted.ongoing, false);
+    assert.match(dur.tellEpisode(counted, null, 0, "calf / shin").text, /^Missed 2 games and returned in Week 11\./);
+    // Another region's episode the same weeks does not take the calf's window.
+    const [other] = dur.currentSeasonCounts([ep({ season: 2026, week: 9, lastReportWeek: 9 })], "knee", a);
+    assert.equal(other.gamesMissed, 0);
+    // Claimed once across the card.
+    const claimed = new Set();
+    dur.currentSeasonCounts([run], "calf", a, claimed);
+    assert.equal(dur.currentSeasonCounts([run], "calf", a, claimed)[0].gamesMissed, 0);
+    // Melton: on the Week 12 report, the game not played: not "didn't miss a game".
+    const [toCome] = dur.currentSeasonCounts([ep({ season: 2026, week: 12, lastReportWeek: 12, worstStatus: "Questionable" })], "thigh", a);
+    assert.equal(toCome.pending, true);
+    assert.equal(dur.tellEpisode(toCome, null, 0, "thigh").text, "Listed Questionable for Week 12; that game has not been played yet. First thigh issue on record.");
+    assert.match(dur.labelWords({ region: { key: "thigh", label: "Thigh" }, episodes: [toCome], gamesMissed: 0 }).sub, /game to come/);
+    // Past seasons are the pack's.
+    const old = ep({ season: 2025, week: 9, gamesMissed: 3, returnWeek: 13 });
+    assert.equal(dur.currentSeasonCounts([old], "knee", a)[0], old);
+  });
+
+  test("the history: an entry on this week's report for a game to come is not 'played through'", () => {
+    const [ev] = d.buildEvents([{ season: 2026, week: 12, type: "Thigh", bodyPart: "quad", gamesMissed: 0, report: true, gameToCome: true }]);
+    assert.equal(ev.upcoming, true);
+    assert.deepEqual(tab.eventWords(ev).chip, { kind: "mid", text: "Game not played yet" });
+    const [played] = d.buildEvents([{ season: 2026, week: 7, type: "Back", bodyPart: "back", gamesMissed: 0, report: true }]);
+    assert.equal(tab.eventWords(played).chip.text, "Played through");
+  });
+
   test("a player outside the durability set gets no card", () => {
     const { doc } = render({ player: { id: "999999999", slug: "nobody", name: "No Body", position: "QB", years_exp: 1 } });
     assert.equal(doc.querySelector("[data-scp-durability]"), null);
