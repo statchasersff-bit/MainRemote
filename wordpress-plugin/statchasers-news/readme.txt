@@ -2,7 +2,7 @@
 Contributors: statchasers
 Requires at least: 6.3
 Requires PHP: 7.4
-Stable tag: 1.10.72
+Stable tag: 1.10.74
 License: GPL-2.0-or-later
 
 Mounts the StatChasers NFL news tool, the 32 team hubs, the player pages, the Fantasy Points Allowed table, the rest-of-season rankings, the NFL schedule, the advanced player stats, the RB handcuff rankings, the fantasy football strength of schedule, the dynasty rookie hit rates and the redraft draft strategy analysis into WordPress pages.
@@ -19,6 +19,9 @@ answers that question directly, with a Last-Modified header that says when the
 upload landed. Keep "Stable tag" in step with the Version header.
 
 == Changelog ==
+
+= 1.10.74 =
+* Player-page audit fixes (2026-11-26, mak), on top of 1.10.72 (publish the matching API first; the Game Log season buttons fetch through the proxy path added here, so plugin and API ship together). 1.10.73 is the separate team-page candidate (integ/team1125): whichever ships second must carry the other's changes. FPA page opens in PPR (STATCHASERS_FPA_DEFAULT_FORMAT = 'ppr'; Half-PPR is ?format=half; the ?season= 301 drops the default format). Player pages: one page per slug (post-insert slug-race settlement in the builder and create-player-pages.sh; statchasers_player_duplicate_plan() / statchasers_player_duplicate_apply() dry run and trash-only apply for the shadow pages 4927 and 4929); page sitemap lists a shadowed duplicate's hub and tabs zero times; one-hop 301 to the canonical profile or tab for case, double slash, /overview/, retired -N slugs and ?log=YYYY (to /game-log/#log=YYYY); the proxy forwards embed/player/<slug> (section, h1, format, log); hub title ladder "{Name} NFL Stats & News | StatChasers", every title held to 60 characters with the brand, whitespace collapsed; statchasers_player_retitle_report() dry run for stored titles. Upload after the API publish, run `wp eval 'statchasers_news_run_upgrade_now();'`, clear WP Rocket (mobile included), then purge Rocket.net.
 
 = 1.10.72 =
 * Depth-chart follow-ups (2026-11-25, mak), on top of 1.10.71 (publish the matching API first). Edge purge retry: a Rocket.net purge that is refused, times out or errors keeps its paths pending and is retried on the five-minute runs after 5, 10, 20, 40 and 80 minutes (6 attempts, then recorded as failed and retried with the next publication); a page is warmed only after its purge lands; a skipped purge (no CDN plugin) is never retried. Applies to the league depth-chart page, the 32 team Depth Chart tabs, the NFL Player Stats pages and the consumers below. Records gain edge_state, edge_pending, edge_failed and edge_attempts. Snapshot consumers: when a depth-chart publication changes a club, the five-minute check also refreshes and purges the team hubs whose Draft tab Pos column changed and the matchup previews (dated pages and pair pages) whose Player Battles changed; the first run records a baseline only. Needs the API's new version fields. Upload after the API publish, run `wp eval 'statchasers_news_run_upgrade_now();'`, clear WP Rocket (mobile included), then purge Rocket.net.
