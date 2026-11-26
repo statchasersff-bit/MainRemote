@@ -306,6 +306,20 @@ export interface CareerSeasonStat {
   rec_td: number;
   total_td: number;
   scrimmage_yd: number;
+  /**
+   * Scoring the career table has no column for (WEB-036, 2026-11-26), so the
+   * page can say where the rest of FPTS came from: two-point conversions of
+   * any kind, kick/punt return and fumble-recovery touchdowns, a kicker's
+   * made field goals / extra points and their house-rule points, and the part
+   * of `points` the stat line does not record (0 under the house rule except
+   * for a kicker week with no field-goal distances).
+   */
+  two_pt?: number;
+  other_td?: number;
+  kick_fgm?: number;
+  kick_xpm?: number;
+  kick_pts?: number;
+  unmodeled?: number;
 }
 
 /** One season's tier-finish rates, for the finish timeline. */

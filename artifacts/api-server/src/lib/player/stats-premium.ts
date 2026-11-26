@@ -36,6 +36,7 @@ import {
   type StatsPremiumModel,
 } from "./stats-tab";
 import { headIcon } from "./tab-head";
+import { careerScoringExtras, scoringExtraText } from "./stats-profile";
 
 const DASH = "-";
 
@@ -285,6 +286,23 @@ function metricCards(m: StatsPremiumModel): string {
 
 /* ------------------------------------------------------------- the block */
 
+/**
+ * The career table's scoring note (WEB-036, 2026-11-26): every season whose
+ * FPTS counts scoring the row's columns do not show - a receiver's touchdown
+ * pass, a two-point conversion, a return touchdown, a kicker's kicks - with
+ * the counts and the points, so the visible columns plus the note add up to
+ * the printed total. Empty when every row reconciles from its own columns.
+ */
+export function careerScoringNote(data: PlayerPageData): string {
+  const position = data.player.position ?? null;
+  const parts = (data.statsProfile?.career ?? [])
+    .map((row) => ({ season: row.season, extras: careerScoringExtras(row, position, data.format) }))
+    .filter((r) => r.extras.length > 0)
+    .map((r) => `${r.season} ${r.extras.map(scoringExtraText).join(", ")}`);
+  if (!parts.length) return "";
+  return `<p class="scp-stp-note scp-stp-scorenote" data-scp-score-note><span class="scp-stp-note-icon" aria-hidden="true">${ICON.info}</span>${escapeHtml(`FPTS also counts scoring with no column in the table: ${parts.join("; ")}.`)}</p>`;
+}
+
 export function renderPremiumStats(data: PlayerPageData, inserts: { careerTable?: string } = {}): string {
   const m = statsPremiumModel(data, inserts);
   if (!m) return "";
@@ -374,7 +392,7 @@ export function renderPremiumStats(data: PlayerPageData, inserts: { careerTable?
     // production cards it describes.
     `<section class="scp-ox-sec scp-stp-sec" aria-labelledby="scp-st-prod-h">${m.lede ? seasonHead.replace('<p class="scp-stp-bar-sub scp-up-dek">', '<p class="scp-stp-bar-sub scp-up-dek is-moved">') : seasonHead}<div class="scp-stp-body">${seasonBody}${m.lede && !ledeMoves ? `<p class="scp-stp-prod-lede">${m.lede}</p>` : ""}</div></section>` +
     (m.careerTable
-      ? `<section class="scp-ox-sec scp-stp-sec" aria-labelledby="scp-st-career-h">${careerHead}<div class="scp-stp-body scp-stp-tablewrap">${m.careerTable}</div></section>`
+      ? `<section class="scp-ox-sec scp-stp-sec" aria-labelledby="scp-st-career-h">${careerHead}<div class="scp-stp-body scp-stp-tablewrap">${m.careerTable}</div>${careerScoringNote(data)}</section>`
       : "") +
     analysis +
     `</div>`
