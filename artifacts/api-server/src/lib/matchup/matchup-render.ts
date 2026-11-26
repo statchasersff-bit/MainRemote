@@ -3433,7 +3433,7 @@ function renderFantasy(data: MatchupData): string {
   if (!fpa || (!leftFpa && !rightFpa)) return "";
 
   // Rank 1 allows the most, so rank 1 is the fullest bar - the softest
-  // matchup. See rankDescending() in fpa/fpa-data.ts.
+  // matchup. See rankFpaValues() in fpa/math.ts.
   const softness = (rank: number | null): number | null => {
     if (rank === null) return null;
     const r = Math.min(Math.max(rank, 1), 32);

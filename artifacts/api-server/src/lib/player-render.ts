@@ -82,6 +82,7 @@ import type {
   GameLogEntry,
 } from "./player/types";
 import { passerRating, type CareerStatRow } from "./player/stats-profile";
+import { fpaFormatHref, oppRankScope } from "./fpa/matchup-bands";
 import { canonicalizeMatchupPair } from "./matchup/pair";
 import { gameLink, meetingForWeek, teamMeetings } from "./matchup/game-link";
 import {
@@ -343,6 +344,11 @@ function sectionHead(text: string, sub = "", aside = ""): string {
 function siteLink(href: string | null, label: string, className: string): string {
   if (!href) return "";
   return `<a class="${className}" href="${escapeHtml(href)}" target="_top">${escapeHtml(label)}</a>`;
+}
+
+/** The FPA page in the page's scoring format (fpaFormatHref, WEB-033). */
+function fpaPageHref(options: { fpaPath?: string; linkQuery?: string }, format: string): string {
+  return fpaFormatHref(`${options.fpaPath ?? DEFAULT_FPA_PATH}${options.linkQuery ?? ""}`, format);
 }
 
 /** One decimal, or the dash. Never "0.0" standing in for "we don't know". */
@@ -1060,18 +1066,25 @@ function renderWeekDetail(
   }
 
   if (entry.opp_rank_vs_pos) {
+    // "ranks 7th in", not "the 7th-most" - one phrasing that survives rank
+    // 1, where "the 1st-most" is not English. Position, format and cutoff
+    // in the words every rank label shares (oppRankScope, WEB-033).
+    const scope = oppRankScope({
+      position: player.position,
+      formatLabel: SCORING_LABELS[format],
+      source: entry.opp_rank_source,
+      season: data.logSeason,
+      through: data.logOppRankThrough,
+    });
     facts.push({
       label: "Matchup",
-      // "ranked 7th in points allowed", not "the 7th-most" - one phrasing that
-      // survives rank 1, where "the 1st-most" is not English. The direction is
-      // stated under the table rather than in every row.
       value:
         entry.opp_rank_source === "fpa-current"
-          ? `${entry.opp} ranks ${ordinal(entry.opp_rank_vs_pos)} in points ` +
-            `allowed to ${player.position ?? "the position"} this season to date (today's rank, not before this game)`
-          : `${entry.opp} ranked ${ordinal(entry.opp_rank_vs_pos)} in points ` +
-            `allowed to ${player.position ?? "the position"} that season`,
+          ? `${entry.opp} ranks ${ordinal(entry.opp_rank_vs_pos)} in ${scope} (current rank, not the rank entering this game)`
+          : `${entry.opp} ranked ${ordinal(entry.opp_rank_vs_pos)} in ${scope}`,
     });
+  } else if (entry.opp_rank_source === "unavailable") {
+    facts.push({ label: "Matchup", value: "Rank unavailable (the Fantasy Points Allowed table could not be read)" });
   }
 
   const snaps = statOf(entry, "off_snp");
@@ -1316,7 +1329,7 @@ function upcomingMatchupHref(
  */
 function breakdownPremiumDeps(data: PlayerPageData, options: PlayerRenderOptions): BreakdownPremiumDeps {
   const href = upcomingMatchupHref(data, options);
-  const fpaHref = `${options.fpaPath ?? DEFAULT_FPA_PATH}${options.linkQuery ?? ""}`;
+  const fpaHref = fpaPageHref(options, data.format);
   return {
     matchupHref: (game) => href(game),
     kickoff: kickoffLine,
@@ -1411,6 +1424,7 @@ function premiumLogDeps(data: PlayerPageData, options: PlayerRenderOptions): Pre
       };
     },
     detail: (entry, id, span) => renderWeekDetail(data, entry, id, span),
+    fpaLink: siteLink(fpaPageHref(options, data.format), "Fantasy Points Allowed page", "scp-caption-link"),
     difficultyWord: DIFFICULTY_WORD,
     ordinal,
     num,

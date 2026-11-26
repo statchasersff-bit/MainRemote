@@ -19,6 +19,7 @@
 import { escapeHtml } from "../render";
 import { getTeamByAbbreviation } from "../team/teams";
 import { matchupBand, type MatchupBand } from "./header";
+import { oppRankScope } from "../fpa/matchup-bands";
 import { weeklyTier, type LogColumn, type WeeklyTier } from "./metrics";
 import { SCORING_LABELS } from "./scoring";
 import {
@@ -60,6 +61,8 @@ export interface PremiumLogDeps {
   dnp: (entry: GameLogEntry) => { label: string; href: string | null };
   /** The fold-away detail row under one week (renderWeekDetail), or "". */
   detail: (entry: GameLogEntry, id: string, span: number) => string;
+  /** The FPA page in this page's scoring format, as a link ("" when none). */
+  fpaLink?: string;
   /** "Favorable" / "Neutral" / "Tough", the tab's own words. */
   difficultyWord: Record<MatchupBand, string>;
   /** "7th" */
@@ -116,16 +119,27 @@ function finishPill(pos: string, rank: number | null | undefined): string {
   return `<span class="scp-glp-pill" data-tier="${tier}">${escapeHtml(`${pos}${rank}`)}</span>`;
 }
 
-function difficultyCell(entry: GameLogEntry, deps: PremiumLogDeps, pos: string): string {
+function difficultyCell(entry: GameLogEntry, deps: PremiumLogDeps, data: PlayerPageData): string {
   const rank = entry.opp_rank_vs_pos;
-  if (!rank) return `<td class="scp-glp-diff-cell">${DASH}</td>`;
+  if (!rank) {
+    return entry.opp_rank_source === "unavailable"
+      ? `<td class="scp-glp-diff-cell"><span title="Matchup rank unavailable">${DASH}</span></td>`
+      : `<td class="scp-glp-diff-cell">${DASH}</td>`;
+  }
   const band = matchupBand(rank);
+  const scope = oppRankScope({
+    position: data.player.position,
+    formatLabel: SCORING_LABELS[data.format],
+    source: entry.opp_rank_source,
+    season: data.logSeason,
+    through: data.logOppRankThrough,
+  });
   return (
     `<td class="scp-glp-diff-cell">` +
     `<span class="scp-glp-diff" data-band="${band}" title="${escapeHtml(
       entry.opp_rank_source === "fpa-current"
-        ? `${entry.opp} ranks ${deps.ordinal(rank)} in fantasy points allowed to ${pos || "this position"} this season to date (Fantasy Points Allowed page) - 1st allows the most. Today's rank, not the rank before this game.`
-        : `${entry.opp} ranked ${deps.ordinal(rank)} in points allowed to ${pos || "this position"} that season - 1st allows the most`,
+        ? `${entry.opp} ranks ${deps.ordinal(rank)} in ${scope} (Fantasy Points Allowed page) - 1st allows the most. Current rank, not the rank entering this game.`
+        : `${entry.opp} ranked ${deps.ordinal(rank)} in ${scope} - 1st allows the most`,
     )}"><b>${escapeHtml(deps.ordinal(rank))}</b><span>${escapeHtml(deps.difficultyWord[band])}</span></span>` +
     `</td>`
   );
@@ -277,7 +291,7 @@ function renderTable(data: PlayerPageData, deps: PremiumLogDeps): string {
           ? `<img class="scp-glp-opp-logo" src="${escapeHtml(logo)}" alt="" aria-hidden="true" width="26" height="26" loading="lazy" decoding="async" />`
           : "") +
         `<span>${escapeHtml(entry.opp)}</span></td>` +
-        difficultyCell(entry, deps, pos) +
+        difficultyCell(entry, deps, data) +
         (scored ? `<td class="scp-glp-res">${escapeHtml(deps.score(entry))}</td>` : "") +
         columns
           .map(
@@ -315,18 +329,32 @@ function renderTable(data: PlayerPageData, deps: PremiumLogDeps): string {
       `</tr></tfoot>`
     : "";
 
-  // Say which period the rank describes (audit WEB-033): the current
-  // season's is today's season-to-date FPA rank, the same figure as the
-  // Fantasy Points Allowed page, not a pregame snapshot.
-  const source = seasonLog.find((entry) => entry.opp_rank_vs_pos)?.opp_rank_source ?? null;
-  const posWord = pos ? `${pos}s` : "the position";
-  const noteText =
+  // Say what the rank measures and when (audit WEB-033): position, format,
+  // per game and the cutoff, in the words every rank label shares. The
+  // current season's rank is today's FPA table rank, the same figure as the
+  // Fantasy Points Allowed page in this format (linked in this format, since
+  // that page opens in Half-PPR), not the rank entering each game.
+  const ranked = seasonLog.find((entry) => entry.opp_rank_vs_pos);
+  const source = ranked?.opp_rank_source ?? (seasonLog.some((entry) => entry.opp_rank_source === "unavailable") ? "unavailable" : null);
+  const scope = oppRankScope({
+    position: data.player.position,
+    formatLabel: SCORING_LABELS[data.format],
+    source,
+    season: data.logSeason,
+    through: data.logOppRankThrough,
+  });
+  const bands = "Favorable 1-12, Neutral 13-20, Tough 21-32.";
+  const fpaLink = deps.fpaLink || "Fantasy Points Allowed page";
+  const noteHtml =
     source === "fpa-current"
-      ? `Opponent rank is each defense's current ${data.logSeason} rank in ${SCORING_LABELS[data.format]} fantasy points allowed per game to ${posWord}, as on the Fantasy Points Allowed page: 1st allows the most. It is today's season-to-date rank, not the rank before that game. Favorable 1-12, Neutral 13-20, Tough 21-32.`
+      ? `Difficulty is each defense's current rank in ${escapeHtml(scope)}, the same rank as the ${fpaLink} (${escapeHtml(SCORING_LABELS[data.format])}): 1st allows the most. ` +
+        `It is today's rank for every row, not the rank entering that game. ${bands}`
       : source === "fpa-archive"
-        ? `Opponent rank is each defense's full ${data.logSeason} rank (weeks 1-17) in ${SCORING_LABELS[data.format]} fantasy points allowed per game to ${posWord}, as on the Fantasy Points Allowed archive: 1st allows the most. Favorable 1-12, Neutral 13-20, Tough 21-32.`
-        : `Opponent rank is fantasy points allowed to ${posWord} across ${data.logSeason}: 1st allows the most, 32nd the fewest.`;
-  const note = source ? `<p class="scp-glp-note">${ICON.info}<span>${escapeHtml(noteText)}</span></p>` : "";
+        ? escapeHtml(`Difficulty is each defense's final rank in ${scope}, as on the Fantasy Points Allowed archive: 1st allows the most. ${bands}`)
+        : source === "unavailable"
+          ? escapeHtml("Matchup ranks are unavailable: the Fantasy Points Allowed table could not be read. They return when it can.")
+          : escapeHtml(`Difficulty is each defense's final rank in ${scope}: 1st allows the most. ${bands}`);
+  const note = source ? `<p class="scp-glp-note">${ICON.info}<span>${noteHtml}</span></p>` : "";
 
   return (
     `<div class="scp-glp-panel">` +

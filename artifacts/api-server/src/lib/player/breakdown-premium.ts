@@ -214,10 +214,10 @@ function renderUpcoming(data: PlayerPageData, deps: BreakdownPremiumDeps): strin
     .join("");
 
   const note =
-    `Matchup rank is ${deps.allowedLink} to ` +
+    `Matchup rank is ${deps.allowedLink} per game to ` +
     (pos ? escapeHtml(`${pos}s`) : "the position") +
     `, in ${escapeHtml(SCORING_LABELS[data.format])}: 1st allows the most, 32nd the fewest.` +
-    (data.upcomingMatchupMode ? escapeHtml(` Measured through ${data.upcomingMatchupMode}.`) : "") +
+    (data.upcomingMatchupMode ? escapeHtml(` Measured through ${data.upcomingMatchupMode}, the same ranks as the Difficulty column above.`) : "") +
     (deps.outlookHref
       ? ` For his starting status, playing time and projections, see <a href="${escapeHtml(deps.outlookHref)}">his Outlook tab</a>.`
       : "");

@@ -1030,7 +1030,8 @@ describe("the game log tab", () => {
       const chip = cell.querySelector(".scp-glp-diff b");
       if (!chip) { assert.equal(cell.textContent.trim(), "-"); continue; }
       const rank = Number.parseInt(chip.textContent, 10);
-      const want = rank <= 10 ? "Favorable" : rank >= 23 ? "Tough" : "Neutral";
+      // The FPA page's scale since 2026-11-19 (matchup-bands.ts): 1-12, 13-20, 21-32.
+      const want = rank <= 12 ? "Favorable" : rank >= 21 ? "Tough" : "Neutral";
       const word = cell.textContent.replace(chip.textContent, "").trim();
       assert.equal(word, want, `${chip.textContent}: ${cell.textContent}`);
     }
@@ -1278,7 +1279,8 @@ describe("the game log tab", () => {
     // the phrase it defines is the way there.
     const link = note.querySelector("a.scp-caption-link");
     assert.ok(link, "the caption carries a link");
-    assert.equal(link.getAttribute("href"), "/fpa");
+    // In the page's format (WEB-033): the FPA page opens in Half-PPR.
+    assert.equal(link.getAttribute("href"), "/fpa?format=ppr");
     assert.equal(link.textContent, "fantasy points allowed");
     assert.match(note.textContent, /1st allows the most, 32nd the fewest/);
 
@@ -1286,7 +1288,7 @@ describe("the game log tab", () => {
     // the FPA page is mounted - a link back to /fpa from a WordPress page
     // would drop the reader onto the bare tool.
     const frag = await get(`/embed/player/${fixture.slug}?section=game-log`);
-    assert.match(frag.body, /class="scp-caption-link" href="\/fpa\?embed=1"/);
+    assert.match(frag.body, /class="scp-caption-link" href="\/fpa\?embed=1&amp;format=ppr"/);
   });
 
   test("every fixture opens the pair's page, at its canonical address", async () => {

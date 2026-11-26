@@ -22,7 +22,7 @@ import {
   type ScoredPlayerWeek,
   type ScoringFormat,
 } from "./nflverse";
-import { computeFpaTable } from "./math";
+import { computeFpaTable, rankFpaValues } from "./math";
 import { describeDataMode, type FpaView } from "./blend";
 import { fpaWeekCoverage, heldClubWeeks, partialGameWords } from "./week-coverage";
 import { slateGames } from "../data-coverage";
@@ -102,18 +102,6 @@ export interface FpaTableData {
   methodology: string;
   /** Fingerprint of everything rendered - the render cache key. */
   version: string;
-}
-
-/** Rank 1 = most points allowed = softest matchup. */
-function rankDescending(values: number[]): number[] {
-  const order = values
-    .map((value, index) => ({ value, index }))
-    .sort((a, b) => b.value - a.value);
-  const ranks = new Array<number>(values.length);
-  order.forEach((entry, i) => {
-    ranks[entry.index] = i + 1;
-  });
-  return ranks;
 }
 
 function toNumber(value: string): number {
@@ -325,10 +313,14 @@ interface UnrankedRow {
  * live and archive reads so the two tables can never rank differently.
  */
 function rankRows(base: UnrankedRow[]): FpaRow[] {
+  // Rank 1 = most points allowed = softest matchup; ties by team code
+  // (rankFpaValues), so a tie no longer ranks by the order the database
+  // happened to return the rows in (WEB-033).
+  const code = (r: UnrankedRow) => getTeamByAbbreviation(r.abbr)?.code ?? r.abbr.toUpperCase();
   const ranksByPos = Object.fromEntries(
-    FANTASY_POSITIONS.map((p) => [p, rankDescending(base.map((r) => r.fpa[p]))]),
+    FANTASY_POSITIONS.map((p) => [p, rankFpaValues(base.map((r) => ({ team: code(r), value: r.fpa[p] })))]),
   ) as Record<FantasyPosition, number[]>;
-  const offRanks = rankDescending(base.map((r) => r.offFpa));
+  const offRanks = rankFpaValues(base.map((r) => ({ team: code(r), value: r.offFpa })));
 
   const rows: FpaRow[] = base.map((row, i) => {
     const team = getTeamByAbbreviation(row.abbr);
