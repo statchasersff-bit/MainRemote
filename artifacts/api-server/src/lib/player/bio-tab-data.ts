@@ -354,8 +354,8 @@ function stopStats(pos: string, entries: GameLogEntry[], games: number): { rail:
     const td = sum(entries, "pass_td");
     const int = sum(entries, "pass_int");
     return {
-      rail: { big: fmt(yd), rest: `yds, ${td} TD, ${int} INT · ${g}` },
-      chips: [{ value: String(games), label: "games" }, { value: fmt(yd), label: "pass yds" }, { value: String(td), label: "TD" }, { value: String(int), label: "INT" }],
+      rail: { big: fmt(yd), rest: `pass yds, ${td} pass TD, ${int} INT · ${g}` },
+      chips: [{ value: String(games), label: "games" }, { value: fmt(yd), label: "pass yds" }, { value: String(td), label: "pass TD" }, { value: String(int), label: "INT" }],
     };
   }
   if (pos === "RB") {
@@ -363,7 +363,7 @@ function stopStats(pos: string, entries: GameLogEntry[], games: number): { rail:
     const td = sum(entries, "rush_td");
     const rec = sum(entries, "rec");
     return {
-      rail: { big: fmt(yd), rest: `rush yds, ${td} TD, ${rec} rec · ${g}` },
+      rail: { big: fmt(yd), rest: `rush yds, ${td} rush TD, ${rec} rec · ${g}` },
       chips: [{ value: String(games), label: "games" }, { value: fmt(yd), label: "rush yds" }, { value: String(td), label: "rush TD" }, { value: String(rec), label: "rec" }],
     };
   }
@@ -372,8 +372,8 @@ function stopStats(pos: string, entries: GameLogEntry[], games: number): { rail:
     const yd = sum(entries, "rec_yd");
     const td = sum(entries, "rec_td");
     return {
-      rail: { big: fmt(yd), rest: `rec yds, ${rec} rec, ${td} TD · ${g}` },
-      chips: [{ value: String(games), label: "games" }, { value: String(rec), label: "rec" }, { value: fmt(yd), label: "rec yds" }, { value: String(td), label: "TD" }],
+      rail: { big: fmt(yd), rest: `rec yds, ${rec} rec, ${td} rec TD · ${g}` },
+      chips: [{ value: String(games), label: "games" }, { value: String(rec), label: "rec" }, { value: fmt(yd), label: "rec yds" }, { value: String(td), label: "rec TD" }],
     };
   }
   if (pos === "K") {
@@ -803,8 +803,8 @@ export function buildBioPage(input: BioPageInput): BioPageFacts | null {
     const lead = status === "former" ? `In ${g} regular-season games from ${since}, he` : `In ${g} regular-season games since ${since}, he has`;
     const verb = (has: string, had: string) => (status === "former" ? had : has);
     if (pos === "QB") p3.push(`${lead} ${verb("thrown", "threw")} for ${fmt(sum(all, "pass_yd"))} yards and ${sum(all, "pass_td")} touchdowns.`);
-    else if (pos === "RB") p3.push(`${lead} ${verb("run", "ran")} for ${fmt(sum(all, "rush_yd"))} yards and ${sum(all, "rush_td")} touchdowns and ${verb("caught", "caught")} ${sum(all, "rec")} passes.`);
-    else if (pos === "WR" || pos === "TE") p3.push(`${lead} ${verb("caught", "caught")} ${sum(all, "rec")} passes for ${fmt(sum(all, "rec_yd"))} yards and ${sum(all, "rec_td")} touchdowns.`);
+    else if (pos === "RB") p3.push(`${lead} ${verb("run", "ran")} for ${fmt(sum(all, "rush_yd"))} yards and ${sum(all, "rush_td")} rushing touchdowns and ${verb("caught", "caught")} ${sum(all, "rec")} passes.`);
+    else if (pos === "WR" || pos === "TE") p3.push(`${lead} ${verb("caught", "caught")} ${sum(all, "rec")} passes for ${fmt(sum(all, "rec_yd"))} yards and ${sum(all, "rec_td")} receiving touchdowns.`);
     else if (pos === "K") p3.push(`${lead} ${verb("made", "made")} ${sum(all, "fgm")} of ${sum(all, "fga")} field goals.`);
   }
   if (p3.length) paragraphs.push(p3.join(" "));

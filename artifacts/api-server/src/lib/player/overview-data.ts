@@ -22,6 +22,8 @@ import { loadDepthCharts, loadGameLogs, loadIndexedSlugs } from "./data";
 import { getTeamByAbbreviation, type NflTeam } from "../team/teams";
 import type { GameLogStats, Player } from "./types";
 import { formatMetricLabel } from "../scoring/house-rules";
+import type { AdvCard } from "./stats-tab-data";
+import type { PlayerUsage } from "./outlook-context";
 
 /* ------------------------------------------------------------------ meters */
 
@@ -44,6 +46,47 @@ export interface OverviewMeters {
   qualified: number;
   /** Null when the player is below the threshold: the section is hidden. */
   meters: OverviewMeter[] | null;
+  /**
+   * The footnote naming the field(s) the percentiles are out of, when they
+   * are the Stats card's (WEB-035); absent for the logs' own pool below.
+   */
+  note?: string;
+}
+
+/**
+ * The Overview meters per position, as Stats card metric keys (the first key
+ * a card fills wins). Since 2026-11-26 (audit WEB-035) the meters are the
+ * Stats tab's own readings for this season: the same figure, the same
+ * qualified pool and the same percentile rule, and target share the usage
+ * field's (stats-tab-data.ts withUsageField). Before, the Overview ranked a
+ * third pool of its own (every receiver with 3 targets a week logged), so
+ * one 22.0% target share was the 62nd percentile here, 27th of 110 on the
+ * Stats card and 25th of 114 in the Outlook.
+ */
+const CARD_METERS: Record<string, string[][]> = {
+  QB: [["cmp"], ["ypa"], ["tdr"], ["epa"]],
+  RB: [["yaco"], ["expl"], ["tgts"], ["ppo"]],
+  WR: [["tgts"], ["yprr", "ypt"], ["catch"], ["ppt"]],
+  TE: [["tgts"], ["yprr", "ypt"], ["catch"], ["ppt"]],
+};
+
+function metersFromCard(position: string, card: AdvCard, usage: PlayerUsage | null): OverviewMeters {
+  const base = { position, season: card.season, threshold: 0, unit: "", qualified: card.qualifiedCount };
+  const pool = card.all?.length ? card.all : card.metrics;
+  const meters: OverviewMeter[] = [];
+  let share = false;
+  for (const keys of CARD_METERS[position] ?? []) {
+    const m = keys.map((k) => pool.find((x) => x.key === k && x.pct != null && x.value !== "-")).find(Boolean);
+    if (!m) continue;
+    if (m.key === "tgts" && card.shareField) share = true;
+    meters.push({ key: m.key!, label: m.label, value: m.value, percentile: m.pct! });
+  }
+  if (!card.qualified || meters.length < 2) return { ...base, meters: null };
+  const plural = `${position}s`;
+  const note =
+    `Percentile among the ${card.qualifiedCount} qualified ${plural} on his Stats tab${card.qualifyNote ? ` (${card.qualifyNote})` : ""}` +
+    (share && card.shareField ? `; target share among the ${card.shareField.of} ${plural} with ${usage?.fieldNote ?? card.shareField.note}.` : ".");
+  return { ...base, meters, note };
 }
 
 interface Totals {
@@ -197,10 +240,14 @@ export function overviewMeters(
   season: number,
   format: ScoringFormat,
   allPlayers: Player[],
+  card: AdvCard | null = null,
+  usage: PlayerUsage | null = null,
 ): OverviewMeters | null {
   const position = player.position ?? "";
   const spec = METERS[position];
   if (!spec) return null;
+  // This season's Stats card when there is one: one pool per comparison.
+  if (card && card.season === season && CARD_METERS[position]) return metersFromCard(position, card, usage);
 
   const weeks = Math.max(1, Math.min(18, leagueWeeksLogged(season) || 18));
   const threshold = Math.round(spec.perWeek * weeks);

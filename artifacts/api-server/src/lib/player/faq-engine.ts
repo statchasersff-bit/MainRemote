@@ -14,7 +14,7 @@
  *
  * Each tab builds a POOL of candidates from its own data. A candidate the data
  * cannot answer is null and simply drops out: nothing here guesses. This file
- * then selects (at most 15, one per intent key), spends a small internal-link
+ * then selects (at most FAQ_MAX, one per intent key), spends a small internal-link
  * budget on the first answers that carry a link, and renders the section. The
  * visible questions are exactly the ones handed to the page's FAQPage node.
  */
@@ -48,8 +48,12 @@ export interface FaqItem {
   text: string;
 }
 
-/** The ceiling (mak: 15, never forced). */
-export const FAQ_MAX = 15;
+/**
+ * The ceiling: 10 since 2026-11-26 (mak's audit brief, WEB-044 / WEB-030:
+ * "about 8-10 distinct, useful FAQs"; it was 15). Never forced: a player with
+ * little data has fewer. Pool order is priority order, so the tail goes.
+ */
+export const FAQ_MAX = 10;
 /** Contextual links per FAQ section (mak: typically 2-5). */
 export const FAQ_LINKS = 4;
 

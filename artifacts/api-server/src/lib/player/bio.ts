@@ -490,6 +490,10 @@ export function buildBioProfile(input: BioProfileInput): BioProfile {
   const hsState = /\(([A-Z]{2})\)\s*$/.exec(highSchool ?? "")?.[1] ?? null;
   const hsName = (highSchool ?? "").replace(/\s*\([A-Z]{2}\)\s*$/, "").trim();
 
+  // No question that only restates another's answer (2026-11-26, WEB-044 /
+  // WEB-030): position (the number and team answers name it), draft round
+  // and pick (the draft answer gives both), birthday (the age answer gives
+  // the date) and the entry year (the experience answer gives it) are gone.
   if (age !== null) {
     faq.push({
       key: "age",
@@ -530,16 +534,6 @@ export function buildBioProfile(input: BioProfileInput): BioProfile {
     });
   }
 
-  if (posWord) {
-    faq.push({
-      key: "position",
-      question: `What position does ${name} play?`,
-      answer: `${name} plays ${posWord}${teamName ? ` for the ${teamName}` : ""}` +
-        (player.number ? `, wearing number ${player.number}` : "") + `.` +
-        (seasonNo ? ` ${currentSeason} is his ${ordinal(seasonNo)} season in the NFL.` : ""),
-    });
-  }
-
   if (team) {
     const current = stints.filter((st) => st.kind === "nfl" && st.team?.code === team.code).pop();
     faq.push({
@@ -571,16 +565,6 @@ export function buildBioProfile(input: BioProfileInput): BioProfile {
         `${pickRow.year} NFL Draft with the ${ordinal(pickRow.pick)} overall pick` +
         (college ? `, out of ${college}.` : "."),
     });
-    faq.push({
-      key: "round",
-      question: `What round was ${name} drafted in?`,
-      answer: `${name} was a ${roundWord(pickRow.round)}-round pick in the ${pickRow.year} NFL Draft, taken ${ordinal(pickRow.pick)} overall by the ${pickRow.by}.`,
-    });
-    faq.push({
-      key: "pick",
-      question: `What pick was ${name} in the NFL Draft?`,
-      answer: `${name} was the ${ordinal(pickRow.pick)} overall pick of the ${pickRow.year} NFL Draft, selected by the ${pickRow.by} in the ${roundWord(pickRow.round)} round.`,
-    });
   }
 
   if (hsName && hsState) {
@@ -589,15 +573,6 @@ export function buildBioProfile(input: BioProfileInput): BioProfile {
       question: `Where is ${name} from?`,
       answer: `${name} went to high school in ${STATE_NAMES[hsState] ?? hsState}, at ${hsName}` +
         (college ? `, before playing college football at ${college}.` : "."),
-    });
-  }
-
-  if (born) {
-    faq.push({
-      key: "birthday",
-      question: `When is ${possessive(name)} birthday?`,
-      answer: `${possessive(name)} birthday is ${born.replace(/, \d{4}$/, "")}. He was born on ${born}` +
-        (age !== null ? ` and is ${age} years old.` : "."),
     });
   }
 
@@ -624,16 +599,6 @@ export function buildBioProfile(input: BioProfileInput): BioProfile {
       key: "teams",
       question: `What teams has ${name} played for?`,
       answer: `${name} has played for the ${listWords(clubs)}.`,
-    });
-  }
-
-  if (firstSeason) {
-    faq.push({
-      key: "entered",
-      question: `What year did ${name} enter the NFL?`,
-      answer: `${name} entered the NFL in ${firstSeason}` +
-        (pickRow ? `, when the ${pickRow.by} drafted him in the ${roundWord(pickRow.round)} round.` : ".") +
-        (seasonNo ? ` ${currentSeason} is his ${ordinal(seasonNo)} season.` : ""),
     });
   }
 

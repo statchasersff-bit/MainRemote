@@ -179,3 +179,26 @@ describe("the Burden WR19 / WR17 mismatch (week-10 fixture)", () => {
     }
   });
 });
+
+describe("the rank's label is its sort key (audit WEB-030, 2026-11-26)", () => {
+  // Order reverses between total points and PPG: x has more points over more
+  // games, y the better rate. z has two games: no PPG rank, a total rank only.
+  const players = [player("x", "X"), player("y", "Y"), player("z", "Z")];
+  const logs = { x: games(8, 120), y: games(5, 90), z: games(2, 100) };
+
+  test("PPG and total points order the pool differently", () => {
+    const table = ranks.ppgPositionTable(logs, players, "WR", "ppr");
+    assert.deepEqual(table.ranked.map((r) => [r.id, r.rank]), [["y", 1], ["x", 2]]);
+    const byTotal = [...table.byId.values()].sort((a, b) => b.total - a.total).map((r) => r.id);
+    assert.deepEqual(byTotal, ["x", "z", "y"]);
+  });
+
+  test("publishedRank names the basis it was taken from", async () => {
+    const phase = await importModule("lib/player/season-phase");
+    assert.deepEqual(phase.publishedRank({ season: SEASON, production: [], seasonRank: 2, seasonRankTotal: 1 }), { rank: 2, basis: "ppg" });
+    assert.deepEqual(phase.publishedRank({ season: SEASON, production: [], seasonRank: null, seasonRankTotal: 2 }), { rank: 2, basis: "total" });
+    assert.equal(phase.publishedRank({ season: SEASON, production: [], seasonRank: null, seasonRankTotal: null }), null);
+    assert.equal(phase.rankBasisWords("ppg", "PPR"), "in PPR points per game");
+    assert.equal(phase.rankBasisWords("total", "PPR"), "in total PPR points");
+  });
+});

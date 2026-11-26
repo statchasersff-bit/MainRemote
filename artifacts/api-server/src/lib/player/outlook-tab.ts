@@ -41,7 +41,7 @@
 
 import { escapeHtml } from "../render";
 import { possessive, titleCase } from "./title-case";
-import { statsThroughWeek } from "./season-phase";
+import { publishedRank, rankBasisWords, statsThroughWeek } from "./season-phase";
 import type { PlayerRenderOptions } from "../player-render";
 import type { PlayerPageData } from "./player-data";
 import { getEntryPoints, SCORING_SHORT } from "./scoring";
@@ -239,6 +239,8 @@ interface Model {
   prior: SeasonLine | null;
   /** The rank everything is judged on: this season's, or last season's before Week 1. */
   rank: number | null;
+  /** This season's rank's sort key (season-phase.ts publishedRank); null before Week 1. */
+  rankBasis: "ppg" | "total" | null;
   projected: number | null;
   measures: OutlookMeasures | null;
   chips: [Chip, Chip, Chip] | null;
@@ -263,8 +265,7 @@ interface Model {
 
 /** The rank the header prints for this season. */
 function currentRank(data: PlayerPageData): number | null {
-  const row = data.production?.find((r) => r.season === data.season);
-  return row?.posFinishPpg ?? data.seasonRank ?? row?.posFinishTotal ?? data.seasonRankTotal ?? null;
+  return publishedRank(data)?.rank ?? null;
 }
 
 function seasonLine(data: PlayerPageData, season: number, rank: number | null): SeasonLine | null {
@@ -324,6 +325,19 @@ function oneTargetSharePool(
   return {
     ...measures,
     drivers: measures.drivers.map((d) => {
+      // Air-yards share joins it (WEB-035, 2026-11-26): the drivers' Downfield
+      // row read "49th of 145" off the advanced table while the read above it
+      // said 47th in the usage field, for the same 19.8%.
+      const air = d.label === "Downfield role";
+      if (air) {
+        const a = usage.row.airYardsShare;
+        if (typeof a !== "number") return d;
+        const ra = usage.ranks.airYardsShare ?? null;
+        if (!ra) return { ...d, value: pct(a), rank: null, of: 0, tier: null, word: null };
+        const tier = tierOf(ra.rank, ra.of);
+        const word = (["Downfield", "Moderate", "Limited"] as const)[tier === "good" ? 0 : tier === "mid" ? 1 : 2];
+        return { ...d, value: pct(a), rank: ra.rank, of: ra.of, tier, word };
+      }
       if (d.label !== "Target share" || typeof v !== "number") return d;
       if (!r) return { ...d, value: pct(v), rank: null, of: 0, tier: null, word: null };
       const tier = tierOf(r.rank, r.of);
@@ -405,6 +419,7 @@ function model(data: PlayerPageData): Model | null {
     now,
     prior,
     rank,
+    rankBasis: preseason ? null : publishedRank(data)?.basis ?? null,
     projected: projectedRank(data),
     // The current season's line when he has one (mak, 2026-10-22), else last
     // season's from the outlook record.
@@ -665,7 +680,7 @@ function fitsModel(m: Model): FitsModel | null {
   const basis =
     m.fit.source === "ros" && m.ros
       ? `Based on his StatChasers rest-of-season rank, ${m.pos}${m.ros.rank}${m.ros.updatedAt ? ` (updated ${m.ros.updatedAt.replace(/, \d{4}$/, "")})` : ""}.`
-      : `Based on his ${m.scoring} points-per-game rank this season, ${m.pos}${m.fit.rank}.` +
+      : `Based on his ${m.rankBasis === "total" ? `total ${m.scoring} points` : `${m.scoring} points-per-game`} rank this season, ${m.pos}${m.fit.rank}.` +
         (m.staleRos
           ? ` The rest-of-season board (${m.pos}${m.staleRos.rank}) was last updated ${m.staleRos.updatedAt.replace(/, \d{4}$/, "") || "on an unknown date"} and is not used for current advice.`
           : "");
@@ -855,7 +870,7 @@ function paragraphs(m: Model, data: PlayerPageData): string[] {
     const weak = weakDriver(m);
     if (m.now) {
       let p = m.projected ? `We projected ${m.last} in the ${m.pos}${m.projected} range this summer. ` : "";
-      p += `Through ${m.now.gp} game${m.now.gp === 1 ? "" : "s"} he's ${m.pos}${m.now.rank ?? "-"} at ${one(m.now.ppg)} ${m.scoring} points per game`;
+      p += `Through ${m.now.gp} game${m.now.gp === 1 ? "" : "s"} he's ${m.pos}${m.now.rank ?? "-"}${m.rankBasis === "total" ? " in total points," : ""} at ${one(m.now.ppg)} ${m.scoring} points per game`;
       if (m.prior) {
         p += `, against ${one(m.prior.ppg)} over ${m.prior.gp} games last season${m.prior.rank ? ` (${m.pos}${m.prior.rank})` : ""}.`;
         const diff = m.now.ppg - m.prior.ppg;
@@ -1222,6 +1237,20 @@ function driverRows(m: Model): DriverRow[] {
   return (order[m.pos] ?? []).map(by).filter((d): d is DriverRow => Boolean(d));
 }
 
+/** A driver row ranked in the usage field: its label is one the usage report ranks. */
+function usageRanked(m: Model, d: DriverRow): boolean {
+  const metric: Partial<Record<string, UsageMetric>> = {
+    "Target share": "targetShare",
+    "Downfield role": "airYardsShare",
+    "Expected points": "xfpPerGame",
+    "Points over expected": "fpoePerGame",
+    "First-read share": "firstReadShare",
+  };
+  const k = metric[d.label];
+  const r = k ? m.usage?.ranks[k] : undefined;
+  return Boolean(r && r.rank === d.rank && r.of === d.of);
+}
+
 /** The drivers section's model: its rows, the field they are ranked in, the advanced cells, and its words. */
 export interface DriversModel {
   rows: DriverRow[];
@@ -1245,9 +1274,16 @@ function driversModel(m: Model): DriversModel | null {
   const games = `${word(min)} game${min === 1 ? "" : "s"}`;
   // Two tables feed the rows (the advanced table and the usage report), each
   // with its own field, so the lede does not name one count; each row does.
-  const mixed = rows.some((d) => d.of !== rows[0]!.of);
-  const field = mixed || !ms?.field ? `the ${n1}s` : `the ${ms.field} ${n1}s`;
+  const counted = rows.filter((d) => d.of > 0);
+  const mixed = counted.some((d) => d.of !== counted[0]!.of);
+  // One field for every row: its own count, and when it is the usage field
+  // (target share, expected points, first-read and air-yards share since
+  // WEB-035) its own rule, not the advanced table's (2026-11-26: the lede
+  // read "the 145 receivers" over rows ranked of 114).
+  const usageField = !mixed && counted.length > 0 && m.usage && counted.every((d) => usageRanked(m, d));
+  const field = mixed || !counted.length ? `the ${n1}s` : `the ${counted[0]!.of} ${n1}s`;
   const each = mixed ? ` Each row names its field.` : "";
+  const rule = usageField && m.usage!.fieldNote ? `with ${m.usage!.fieldNote}` : null;
   return {
     rows,
     season,
@@ -1257,9 +1293,11 @@ function driversModel(m: Model): DriversModel | null {
     advanced: ms?.advanced ?? [],
     title: `What drives ${possessive(m.name)} fantasy value?`,
     lede:
-      week !== null
-        ? `His ${season} rank through Week ${week} among ${field} who have played at least ${games}.${each} Each bar is one ${n1}, best on the left; his is highlighted.`
-        : `His ${season} rank among ${field} who played at least ${games}.${each} Each bar is one ${n1}, best on the left; his is highlighted.`,
+      rule
+        ? `His ${season} rank${week !== null ? ` through Week ${week}` : ""} among ${field} ${rule}. Each bar is one ${n1}, best on the left; his is highlighted.`
+        : week !== null
+          ? `His ${season} rank through Week ${week} among ${field} who have played at least ${games}.${each} Each bar is one ${n1}, best on the left; his is highlighted.`
+          : `His ${season} rank among ${field} who played at least ${games}.${each} Each bar is one ${n1}, best on the left; his is highlighted.`,
   };
 }
 
@@ -1402,15 +1440,19 @@ function scheduleModel(m: Model): ScheduleModel | null {
     const kind = band === "soft" ? "good" : band === "tough" ? "bad" : "mid";
     return { g, band, kind, word: BAND_WORD[band], opp: `${g.homeAway === "away" ? "at" : "vs"} ${g.opponentCode}`, rankText: `${ordinal(g.matchup!.rank)} vs ${m.pos}s` };
   });
-  const verdict =
-    s.verdict === "tough"
+  // On a reserve list (WEB-034, 2026-11-26: Hayden Large, on IR, read "A
+  // mixed stretch" and a playoff read): the cards stay as schedule facts,
+  // the verdict says why they are not advice yet, and the playoff read goes.
+  const verdict = m.reserve
+    ? `He is ${m.injured ? m.injured.split(",")[0]!.toLowerCase() : "on a reserve list"}, so these matchups matter only once he is activated.`
+    : s.verdict === "tough"
       ? `A difficult stretch: ${word(s.tough.length)} of the next ${word(s.next.length)} are bottom-12 matchups for ${m.pos}s${s.soft.length ? `, with ${word(s.soft.length)} top-12 matchup to break it up` : ""}.`
       : s.verdict === "soft"
         ? `A favorable stretch: ${word(s.soft.length)} of the next ${word(s.next.length)} are top-12 matchups for ${m.pos}s${s.tough.length ? `, against ${word(s.tough.length)} tough one` : ""}.`
         : s.soft.length || s.tough.length
           ? `A mixed stretch: ${word(s.soft.length)} top-12 matchup${s.soft.length === 1 ? "" : "s"} and ${word(s.tough.length)} bottom-12 in the next ${word(s.next.length)}.`
           : `A neutral stretch: none of the next ${word(s.next.length)} is a top-12 or a bottom-12 matchup for ${m.pos}s.`;
-  const playoffs = s.playoffs.length
+  const playoffs = s.playoffs.length && !m.reserve
     ? `Fantasy playoffs (Weeks 15 to 17): ${listWords(
         s.playoffs.map((g) => `${g.homeAway === "away" ? "at" : "vs"} ${oppName(g)} in Week ${g.week} (${ordinal(g.matchup!.rank)})`),
       )}; ${(() => {
@@ -1539,7 +1581,7 @@ function outlookPool(m: Model, data: PlayerPageData, options: PlayerRenderOption
       key: "rosrank",
       q: `What is ${possessive(m.name)} rest-of-season fantasy ranking?`,
       a:
-        `${m.name} is the ${m.pos}${m.rank} in ${m.scoring} points per game${through}` +
+        `${m.name} is the ${m.pos}${m.rank} ${rankBasisWords(m.rankBasis ?? "ppg", m.scoring)}${through}` +
         (m.ros ? `, and ${m.pos}${m.ros.rank} on the StatChasers rest-of-season board` : m.projected ? `, against a preseason projection of about ${m.pos}${m.projected}` : "") +
         `. That puts him in ${bucket(m.pos, m.fit?.rank ?? m.rank)} territory, ${chipPhrase(m.chips![1])} in ${PROSE_LEAGUES[m.pos]![1]} leagues.`,
     });
@@ -1614,12 +1656,15 @@ function outlookPool(m: Model, data: PlayerPageData, options: PlayerRenderOption
 
   // 7. Upside.
   const bestWeek = log.length ? [...log].sort((x, y) => getEntryPoints(y.stats, data.format) - getEntryPoints(x.stats, data.format))[0] : null;
-  const softUp = s.soft.length > s.tough.length ? s.soft : [];
-  if (bestWeek || (top && top.tier === "good") || softUp.length || unpaid(m)) {
+  // Sidelined (out, IR): no upside that assumes he plays this week or the
+  // next few (WEB-034, 2026-11-26) - no soft schedule, no "weekly floor".
+  const softUp = s.soft.length > s.tough.length && !m.injured ? s.soft : [];
+  const floor = top && top.tier === "good" && !m.injured;
+  if (bestWeek || floor || softUp.length || unpaid(m)) {
     const parts: string[] = [];
     if (row && unpaid(m)) parts.push(`his ${one(row.xfpPerGame!)} expected points a game say the role is worth more than the ${one(row.fpPerGame!)} he has scored`);
     if (bestWeek) parts.push(`his ceiling this season is ${one(getEntryPoints(bestWeek.stats, data.format))} ${m.scoring} points (Week ${bestWeek.week}${bestWeek.pos_rank ? `, ${m.pos}${bestWeek.pos_rank}` : ""})`);
-    if (top && top.tier === "good") parts.push(`his ${drv(top)} gives him a weekly floor to build on`);
+    if (floor && top) parts.push(`his ${drv(top)} gives him a weekly floor to build on`);
     if (softUp.length) parts.push(`${matchupList(softUp)} ${softUp.length === 1 ? "is a top-12 matchup" : "are top-12 matchups"} for ${m.pos}s`);
     pool.push({
       key: "upside",
@@ -1646,8 +1691,9 @@ function outlookPool(m: Model, data: PlayerPageData, options: PlayerRenderOption
     });
   }
 
-  // 9. The remaining schedule, and 10. the playoffs - the same read as the section.
-  if (s.next.length >= 3) {
+  // 9. The remaining schedule, and 10. the playoffs - the same read as the
+  // section, and like it not for a player on a reserve list (WEB-034).
+  if (s.next.length >= 3 && !m.reserve) {
     pool.push({
       key: "schedule",
       q: `How difficult is ${possessive(m.name)} remaining fantasy schedule?`,
@@ -1656,7 +1702,7 @@ function outlookPool(m: Model, data: PlayerPageData, options: PlayerRenderOption
       }.`,
     });
   }
-  if (s.playoffs.length >= 2) {
+  if (s.playoffs.length >= 2 && !m.reserve) {
     const soft = s.playoffs.filter((g) => matchupBand(g.matchup!.rank) === "soft").length;
     pool.push({
       key: "playoffs",

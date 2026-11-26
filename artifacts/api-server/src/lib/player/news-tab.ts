@@ -523,7 +523,6 @@ function renderNewsPremium(data: PlayerPageData, ctx: NewsContext, items: FeedIt
       (folded.length
         ? `<details class="scp-nwp-fold"><summary class="scp-nwp-more-summary"><span>${escapeHtml(`View ${folded.length} more ${ctx.last} ${folded.length === 1 ? "update" : "updates"}`)}</span></summary>${grid(folded)}</details>`
         : "") +
-      `<p class="scp-nwp-empty" id="scp-nw-empty" role="status" hidden>No updates of this type yet this season.</p>` +
       `</section>`
     : "";
   const none = featured

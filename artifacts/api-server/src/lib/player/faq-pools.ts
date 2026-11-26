@@ -217,9 +217,11 @@ export function overviewPool(data: PlayerPageData, options: PlayerRenderOptions)
     });
   }
 
-  // 6. Upcoming matchups.
+  // 6. Upcoming matchups. Not for a player on a reserve list (WEB-034,
+  // 2026-11-26): "two of them are favorable" is advice that assumes he plays.
   const strip = (data.upcomingStrip ?? []).filter((g) => g.matchup).slice(0, 3);
-  if (strip.length >= 2) {
+  const reserve = data.currentStatus?.kind === "reserve" || /^(ir|pup|nfi|injured reserve|sus)/i.test(c.status);
+  if (strip.length >= 2 && !reserve) {
     const parts = strip.map((g) => {
       const opp = g.opponent?.nickname ?? g.opponentName;
       const band = matchupBand(g.matchup!.rank);
@@ -446,7 +448,7 @@ export function statsPool(data: PlayerPageData, options: PlayerRenderOptions): F
         ? `${whole(k.passYd)} passing yards, ${count(k.passTd, "touchdown pass", "touchdown passes")} and ${count(k.passInt, "interception")}, plus ${whole(k.rushYd)} rushing yards`
         : c.pos === "RB"
           ? `${whole(k.rushYd)} rushing yards and ${k.rushTd} rushing touchdowns, plus ${k.rec} catches for ${whole(k.recYd)} yards`
-          : `${k.rec} catches for ${whole(k.recYd)} yards and ${count(k.recTd, "touchdown")}`;
+          : `${k.rec} catches for ${whole(k.recYd)} yards and ${count(k.recTd, "receiving touchdown")}`;
     out.push({
       key: "career",
       q: `What are ${possessive(c.name)} career NFL stats?`,

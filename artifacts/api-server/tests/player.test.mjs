@@ -1514,7 +1514,10 @@ describe("the outlook tab", () => {
     const found = new Map();
     for (const player of roster.slice(0, 220)) {
       if (found.size >= limit) break;
-      const res = await get(`/player/${player.slug}`);
+      // The tab's own address: since 2026-11-26 (WEB-044) the profile's
+      // hidden Outlook panel carries no FAQ, and the spec's FAQ is part of
+      // what these tests read.
+      const res = await get(`/player/${player.slug}/outlook/`);
       if (res.status !== 200 || !res.body.includes('id="outlook"')) continue;
       const doc = new JSDOM(res.body).window.document;
       const position = doc
@@ -1541,7 +1544,8 @@ describe("the outlook tab", () => {
         ![...outlook.querySelectorAll("h2")].some((h) => /^\d{4} Outlook$/.test(h.textContent.trim())),
         `${player.slug}: the season Outlook heading still renders`,
       );
-      assert.ok(outlook.querySelector(".scp-ol"), `${player.slug}: the spec sections are missing`);
+      // The spec's FAQ wrapper follows the panel on the tab's own address.
+      assert.ok(doc.querySelector(".scp-ol"), `${player.slug}: the spec sections are missing`);
     }
   });
 
@@ -1589,7 +1593,8 @@ describe("the injury tab", () => {
     const found = [];
     for (const player of roster.slice(0, 160)) {
       if (found.length >= limit) break;
-      const res = await get(`/player/${player.slug}`);
+      // The tab's own address, which carries its FAQ (WEB-044, 2026-11-26).
+      const res = await get(`/player/${player.slug}/injury/`);
       if (res.status !== 200 || !res.body.includes('id="injury"')) continue;
       found.push({ player, doc: new JSDOM(res.body).window.document });
     }
@@ -1688,7 +1693,7 @@ describe("the injury tab", () => {
     for (const { player, doc } of found) {
       // One FAQ since 2026-09-30: the spec's block, with the record's other
       // questions folded in.
-      const items = [...doc.querySelectorAll("#injury .scp-in-faq details")];
+      const items = [...doc.querySelectorAll(".scp-in-faq details")];
       if (items.length === 0) continue;
 
       for (const item of items) {
@@ -1722,7 +1727,7 @@ describe("the injury tab", () => {
     let checked = 0;
 
     for (const { player, doc } of found) {
-      const questions = [...doc.querySelectorAll("#injury .scp-in-faq summary")].map((el) =>
+      const questions = [...doc.querySelectorAll(".scp-in-faq summary")].map((el) =>
         el.textContent.trim(),
       );
       if (questions.length === 0) continue;
@@ -1756,7 +1761,7 @@ describe("the injury tab", () => {
     let checked = 0;
 
     for (const { player, doc } of found) {
-      const answers = [...doc.querySelectorAll("#injury .scp-in-faq details")].map((item) => [
+      const answers = [...doc.querySelectorAll(".scp-in-faq details")].map((item) => [
         item.querySelector("summary").textContent.trim(),
         item.querySelector("p").textContent.trim(),
       ]);
@@ -1954,7 +1959,7 @@ describe("the news tab", () => {
     }
   });
 
-  test("filters and the empty note are in place for the client", async () => {
+  test("filters are in place for the client, with no empty note", async () => {
     const found = await withNews();
     const tab = found.doc.querySelector(".scp-nwp");
     const group = tab.querySelector("[data-scp-news-filter]");
@@ -1963,9 +1968,9 @@ describe("the news tab", () => {
     assert.equal(group.getAttribute("aria-label"), "Filter updates");
     assert.equal(group.querySelector('[aria-pressed="true"]').dataset.f, "all");
     assert.ok(tab.querySelector(".scp-nwp-feed [data-scp-news-item]"));
-    const empty = tab.querySelector("#scp-nw-empty");
-    assert.equal(empty.getAttribute("role"), "status");
-    assert.ok(empty.hasAttribute("hidden"));
+    // The filters list only kinds the feed has, so a filter never comes up
+    // empty and the hidden "No updates of this type" note is gone (WEB-044).
+    assert.equal(tab.querySelector("#scp-nw-empty"), null);
   });
 
   test("the Current Outlook card is gone (mak, 2026-10-22)", async () => {
@@ -2607,18 +2612,17 @@ describe("the positional peers rail", () => {
       news: '.scp-tab-faq[data-faq-tab="news"]',
       bio: '.scp-tab-faq[data-faq-tab="bio"]',
     };
+    // Since 2026-11-26 (WEB-044) the profile prints the rail and the FAQ
+    // once, in the Overview: its other panels carry neither (each tab's own
+    // address does, checked below).
+    assert.equal(doc.querySelectorAll(".scp-peers").length, 1, "one rail on the profile");
+    assert.equal(doc.querySelectorAll(".scp-tab-faq").length, 1, "one FAQ on the profile");
     let tabs = 0;
     for (const [id, faq] of Object.entries(FAQ)) {
-      const rail = doc.querySelector(`#${id} > .scp-peers`);
-      if (!rail) continue;
+      if (!doc.querySelector(`#${id}`)) continue;
       tabs += 1;
-      const panelFaq = doc.querySelector(`#${id} ${faq}`);
-      if (panelFaq) {
-        assert.ok(
-          rail.compareDocumentPosition(panelFaq) & 4, // DOCUMENT_POSITION_FOLLOWING
-          `${id}: the rail precedes the FAQ`,
-        );
-      }
+      assert.equal(doc.querySelector(`#${id} > .scp-peers`), null, `${id}: no rail in the profile's panel`);
+      assert.equal(doc.querySelector(`#${id} ${faq}`), null, `${id}: no FAQ in the profile's panel`);
       if (id === "injury") {
         assert.equal(doc.querySelector("#injury .scp-st-foot"), null, "injury: no footer since 2026-10-22");
       }
@@ -2747,7 +2751,7 @@ describe("the embedded fragment", () => {
     }
   });
 
-  test("one FAQPage for the document, however many tabs carry questions", async () => {
+  test("one FAQPage for the document, the Overview's questions as printed", async () => {
     // The profile mounts every tab at once, and each of four of them carries an
     // FAQ. Emitted per block that was four FAQPage nodes in one document, which
     // is the case a crawler drops outright rather than merging - so the node is
@@ -2784,11 +2788,11 @@ describe("the embedded fragment", () => {
         seen.add(key);
         return true;
       });
-    // Only meaningful while the profile really does carry more than one tab's
-    // worth; a fixture that lost its FAQs would otherwise pass this silently.
+    // Since 2026-11-26 (WEB-044) the profile prints the Overview's FAQ only
+    // (it carried every tab's, 64 questions on the Gibbs hub), at most 10.
     assert.ok(
-      rendered.length > 8,
-      `expected several tabs of questions, got ${rendered.length}`,
+      rendered.length >= 3 && rendered.length <= 10,
+      `expected the Overview's questions, got ${rendered.length}`,
     );
 
     const asked = nodes[0].mainEntity.map((q) => ({

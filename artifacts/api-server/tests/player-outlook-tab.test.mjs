@@ -311,6 +311,7 @@ function usage(overrides = {}) {
     season: 2026, throughWeek: 8, builtAt: "2026-11-04T12:00:00Z", teamCode: "ARI", row,
     ts: trend("ts"), snap: trend("snap"),
     ranks: { xfpPerGame: { rank: 5, of: 97 }, fpoePerGame: { rank: 97, of: 97 }, firstReadShare: { rank: 7, of: 97 }, targetShare: { rank: 10, of: 97 }, airYardsShare: { rank: 7, of: 97 }, snapShare: { rank: 4, of: 97 } },
+    fieldNote: "6+ games and 1.5+ targets per team game",
     leadsRz: true, rzCoLead: false, aheadOfHim: [],
     ...overrides,
   };
@@ -422,7 +423,14 @@ describe("the forward-looking rebuild (the brief, 2026-11-05)", () => {
     assert.ok(!labels.includes("Target volume"));
     const fpoe = [...doc.querySelectorAll(".scp-olp-drv")].find((d) => d.querySelector("h3").textContent === "Points over expected");
     assert.equal(fpoe.querySelector(".scp-olp-tier").textContent, "Under expected");
-    assert.match(doc.querySelector(".scp-olp-sec.is-drivers .scp-olp-bar-sub").textContent, /Each row names its field/);
+    // WEB-035 (2026-11-26): the Downfield row ranks in the usage field like
+    // the rest, so every row is out of one field and the lede names it and
+    // its rule (it read "Each row names its field" over 97 and the advanced
+    // table's count).
+    assert.match(doc.querySelector(".scp-olp-sec.is-drivers .scp-olp-bar-sub").textContent, /among the 97 receivers with 6\+ games and 1\.5\+ targets per team game\./);
+    const air = [...doc.querySelectorAll(".scp-olp-drv")].find((d) => d.querySelector("h3").textContent === "Downfield role");
+    assert.match(air.textContent, /39\.6%/);
+    assert.match(air.textContent, /7th of 97/);
   });
 
   test("what could change: catalysts with evidence, the gap first", () => {
@@ -644,4 +652,66 @@ test("Outlook FAQ: a club that played Thursday reads through the week in progres
   const s = state({ leagueWeek: 4, upcoming: state().upcoming.slice(1) });
   const text = render(s).body.textContent;
   assert.match(text, /through Week 4\b/);
+});
+
+/* ------------------------------------- audit WEB-030 / WEB-034 / WEB-035, 2026-11-26 */
+
+describe("rank basis, ROS freshness and an unavailable player (audit 2026-11-26)", () => {
+  const all = (doc) => doc.body.textContent.replace(/\s+/g, " ");
+  const faqAnswer = (doc, q) => {
+    const item = [...doc.querySelectorAll("details, .scp-faq-item, [itemprop='mainEntity']")].find((d) => d.textContent.includes(q));
+    return item ? item.textContent.replace(/\s+/g, " ") : "";
+  };
+
+  test("a fresh ROS board sets the advice and is dated", () => {
+    const doc = render(wr({ rosRank: { rank: 23, position: "WR", updatedAt: "November 24, 2026", updatedAtIso: "2026-11-24", stale: false } }));
+    assert.match(doc.querySelector(".scp-olr-fit-note").textContent, /^Based on his StatChasers rest-of-season rank, WR23 \(updated November 24\)/);
+    assert.match(all(doc), /WR23 on the StatChasers rest-of-season board/);
+  });
+
+  test("a stale ROS board is dated, excluded from advice, and nowhere else on the tab", () => {
+    const doc = render(wr({ rosRank: { rank: 3, position: "WR", updatedAt: "October 22, 2026", updatedAtIso: "2026-10-22", stale: true } }));
+    const note = doc.querySelector(".scp-olr-fit-note").textContent;
+    assert.match(note, /^Based on his PPR points-per-game rank this season, WR24\./);
+    assert.match(note, /The rest-of-season board \(WR3\) was last updated October 22 and is not used for current advice\./);
+    // WR3 appears in that one dated sentence and nowhere else: not in the
+    // chips, the FAQ, the drivers or the generated recommendations.
+    const mentions = all(doc).match(/\bWR3\b/g) ?? [];
+    assert.equal(mentions.length, 1, all(doc));
+    assert.doesNotMatch(faqAnswer(doc, "rest-of-season fantasy ranking"), /board/);
+    // The chips are the season rank's (WR24), not the stale WR3's.
+    assert.deepEqual([...doc.querySelectorAll(".scp-olr-fit-row .scp-olr-pill")].map((c) => c.textContent), ol.fitChips("WR", 24).map((c) => c.label));
+  });
+
+  test("no ROS board: no board sentence, season rank advice", () => {
+    const doc = render(wr({ rosRank: null }));
+    assert.doesNotMatch(all(doc), /rest-of-season board/);
+    assert.match(doc.querySelector(".scp-olr-fit-note").textContent, /^Based on his PPR points-per-game rank this season, WR24\./);
+  });
+
+  test("a total-points rank is labeled by total points everywhere on the tab", () => {
+    const doc = render(wr({ production: [{ season: 2026, posFinishTotal: 133 }], seasonRank: null, seasonRankTotal: 133, rosRank: null }));
+    const txt = all(doc);
+    assert.match(doc.querySelector(".scp-olr-fit-note").textContent, /^Based on his total PPR points rank this season, WR133\./);
+    assert.match(txt, /the WR133 in total PPR points/);
+    assert.doesNotMatch(txt, /WR133 (in|by) (PPR )?points per game/);
+  });
+
+  test("on IR with no game: status first, no schedule advice, no playoff read", () => {
+    const s = wr({
+      gameLog: [], logCareer: [{ season: 2025, weeks: Array.from({ length: 17 }, (_, i) => wrGame(i + 1, 13, 8)), finish: 10 }],
+      production: [], seasonRank: null, usage: null, rosRank: null,
+      designation: { injuryStatus: "IR", injuryBodyPart: null },
+      currentStatus: { kind: "reserve", message: "On IR." },
+      upcoming: [game(9, "SEA", "Seahawks", 2), game(10, "LAR", "Rams", 5, "home"), game(11, "KC", "Chiefs", 8), game(12, "WAS", "Commanders", 11, "home")],
+    });
+    const doc = render(s);
+    const txt = all(doc);
+    assert.match(txt, /Michael Wilson has not played in 2026\. On IR\./);
+    assert.match(txt, /He is on injured reserve, so these matchups matter only once he is activated\./);
+    assert.doesNotMatch(txt, /favorable stretch|Fantasy playoffs \(Weeks 15 to 17\)/);
+    assert.doesNotMatch(txt, /remaining fantasy schedule\?|good fantasy playoff option\?/);
+    // No upside built on the soft schedule he cannot play.
+    assert.doesNotMatch(txt, /top-12 matchups? for WRs/);
+  });
 });

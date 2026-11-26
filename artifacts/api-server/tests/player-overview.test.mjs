@@ -402,3 +402,61 @@ describe("overview sections (mak's Overview redesign, 2026-11-05)", () => {
     assert.equal(rail.nextElementSibling.firstElementChild.getAttribute("aria-labelledby"), "scp-faq-overview-h");
   });
 });
+
+/* ------------------------------------- audit WEB-030 / WEB-034 / WEB-035, 2026-11-26 */
+
+describe("rank basis, unavailable players and stale advice (audit 2026-11-26)", () => {
+  const prose = (doc) => text(doc.querySelector(".scp-ox-prose"));
+  const call = (doc) => text(doc.querySelector(".scp-ox-call-sub"));
+  const faqQs = (doc) => [...doc.querySelectorAll(".scp-faq summary, .scp-faq h3, details summary")].map(text);
+
+  test("below four games the rank is by total points, and says so", () => {
+    const doc = render(state({ production: [{ season: 2026, posFinishTotal: 33 }], seasonRank: null, seasonRankTotal: 33 }));
+    assert.equal(call(doc), "QB33 by total points, 3 games");
+    assert.match(prose(doc), /ranks QB33 in total fantasy points, averaging 16\.5 a game\./);
+    assert.doesNotMatch(doc.body.textContent, /QB33 (by|in) (fantasy )?points per game/);
+  });
+
+  test("the per-game rank is labeled per game", () => {
+    const doc = render(state());
+    assert.equal(call(doc), "QB17 by points per game, 3 games");
+    assert.match(prose(doc), /ranks QB17 in fantasy points per game \(16\.5\)\./);
+  });
+
+  test("on IR with no game this season: availability leads, no June advice, no matchup FAQ", () => {
+    const doc = render(state({
+      gameLog: [], production: [], seasonRank: null, meters: null,
+      designation: { injuryStatus: "IR", injuryBodyPart: null },
+      currentStatus: { kind: "reserve", message: "On IR (undisclosed)." },
+    }));
+    assert.equal(prose(doc), "Jacoby Brissett has not played in 2026. On IR (undisclosed). Brissett cannot be started until he is activated.");
+    assert.doesNotMatch(doc.body.textContent, /Arizona hands him the keys/);
+    assert.ok(!faqQs(doc).some((q) => /upcoming fantasy football matchups/.test(q)), faqQs(doc).join(" | "));
+  });
+
+  test("healthy with no game this season: the June take follows, dated", () => {
+    const doc = render(state({
+      gameLog: [], production: [], seasonRank: null, meters: null,
+      fantasyOutlook2026: { quickTake: "Arizona hands him the keys again.", generatedAt: "2026-06-16T12:00:00Z" },
+    }));
+    assert.equal(prose(doc), "Jacoby Brissett has not played in 2026. From our preseason outlook (June 2026): Arizona hands him the keys again.");
+  });
+
+  test("an active player with current data still gets a full read", () => {
+    const doc = render(state());
+    assert.match(prose(doc), /ranks QB17/);
+    assert.match(prose(doc), /finished as a top-12 QB/);
+    assert.ok(doc.querySelectorAll(".scp-ox-eff").length >= 2);
+  });
+
+  test("a preseason rest-of-season tier never reaches the in-season read", () => {
+    const doc = render(state({ fantasyOutlook2026: { body: "Last year.\n\nArizona.", restOfSeason: "QB2 with weekly upside" } }));
+    assert.doesNotMatch(doc.body.textContent, /rest-of-season tier|QB2 with weekly upside/);
+  });
+
+  test("the meters' own footnote, when they are the Stats card's", () => {
+    const meters = { ...state().meters, note: "Percentile among the 40 qualified QBs on his Stats tab (50+ pass attempts)." };
+    const doc = render(state({ meters }));
+    assert.equal(text(doc.querySelector(".scp-ox-effs .scp-ow-note")), meters.note);
+  });
+});

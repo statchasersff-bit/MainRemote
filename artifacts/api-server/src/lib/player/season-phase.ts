@@ -51,8 +51,36 @@ export function inSeason(data: PlayerPageData): boolean {
  * headerBoard() in header.ts and currentRank() in outlook-tab.ts.
  */
 export function currentRank(data: PlayerPageData): number | null {
+  return publishedRank(data)?.rank ?? null;
+}
+
+/**
+ * The published positional rank AND the sort key it was taken from (audit
+ * WEB-030, 2026-11-26: Nate Carter, two games, read "RB133 by points per
+ * game" in the Overview and "RB133 in PPR total points" in the FAQ - one
+ * number, the total-points rank, under two labels). Every component that
+ * prints the rank names it from `basis`, never from what it assumes:
+ *   - "ppg":   ranks.ts ppgPositionTable (four games played, ties share the
+ *              better rank), or a season snapshot's posFinishPpg;
+ *   - "total": his rank by total points, until the rate rank exists.
+ */
+export interface PublishedRank {
+  rank: number;
+  basis: "ppg" | "total";
+}
+
+export function publishedRank(data: PlayerPageData): PublishedRank | null {
   const row = data.production?.find((r) => r.season === data.season);
-  return row?.posFinishPpg ?? data.seasonRank ?? row?.posFinishTotal ?? data.seasonRankTotal ?? null;
+  const ppg = row?.posFinishPpg ?? data.seasonRank ?? null;
+  if (ppg != null) return { rank: ppg, basis: "ppg" };
+  const total = row?.posFinishTotal ?? data.seasonRankTotal ?? null;
+  return total != null ? { rank: total, basis: "total" } : null;
+}
+
+/** "in PPR points per game" / "in total PPR points": the words a rank's basis earns. */
+export function rankBasisWords(basis: PublishedRank["basis"], scoring: string): string {
+  const s = scoring ? `${scoring} ` : "";
+  return basis === "ppg" ? `in ${s}points per game` : `in total ${s}points`;
 }
 
 /** The club's next fixture, when the schedule has one. */
