@@ -1279,8 +1279,8 @@ describe("the game log tab", () => {
     // the phrase it defines is the way there.
     const link = note.querySelector("a.scp-caption-link");
     assert.ok(link, "the caption carries a link");
-    // In the page's format (WEB-033): the FPA page opens in Half-PPR.
-    assert.equal(link.getAttribute("href"), "/fpa?format=ppr");
+    // In the page's format (WEB-033): PPR, which the FPA page opens in.
+    assert.equal(link.getAttribute("href"), "/fpa");
     assert.equal(link.textContent, "fantasy points allowed");
     assert.match(note.textContent, /1st allows the most, 32nd the fewest/);
 
@@ -1288,7 +1288,7 @@ describe("the game log tab", () => {
     // the FPA page is mounted - a link back to /fpa from a WordPress page
     // would drop the reader onto the bare tool.
     const frag = await get(`/embed/player/${fixture.slug}?section=game-log`);
-    assert.match(frag.body, /class="scp-caption-link" href="\/fpa\?embed=1&amp;format=ppr"/);
+    assert.match(frag.body, /class="scp-caption-link" href="\/fpa\?embed=1"/);
   });
 
   test("every fixture opens the pair's page, at its canonical address", async () => {

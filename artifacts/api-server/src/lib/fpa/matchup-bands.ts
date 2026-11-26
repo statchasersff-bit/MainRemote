@@ -17,6 +17,8 @@
  * "13th" on the FPA page.
  */
 
+import { DEFAULT_FPA_FORMAT } from "./blend";
+
 export type MatchupTier = "soft-2" | "soft-1" | "mid" | "tough-1" | "tough-2";
 export type MatchupBand = "soft" | "mid" | "tough";
 
@@ -73,13 +75,14 @@ export function oppRankScope(input: {
 /**
  * The Fantasy Points Allowed page in a given scoring format (WEB-033).
  *
- * The FPA page opens in Half-PPR and the player pages are PPR, so a bare link
- * landed a reader on a different column than the one every rank there quotes:
- * the 2026-11-25 audit's seven "disagreements" for Gibbs were the Half-PPR
- * RB ranks. The link names the format the way the FPA page's own Scoring
- * control does (Half-PPR carries no parameter there, so none here either).
+ * The FPA page opened in Half-PPR while the player pages are PPR, so a bare
+ * link landed a reader on a different column than the one every rank there
+ * quotes: the 2026-11-25 audit's seven "disagreements" for Gibbs were the
+ * Half-PPR RB ranks. The page now opens in PPR (DEFAULT_FPA_FORMAT), so a PPR
+ * link is the bare, canonical address; any other format names itself the way
+ * the FPA page's own Scoring control does.
  */
 export function fpaFormatHref(base: string, format: string): string {
-  if (format === "half") return base;
+  if (format === DEFAULT_FPA_FORMAT) return base;
   return `${base}${base.includes("?") ? "&" : "?"}format=${encodeURIComponent(format)}`;
 }

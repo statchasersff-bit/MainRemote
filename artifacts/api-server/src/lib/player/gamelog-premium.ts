@@ -332,8 +332,8 @@ function renderTable(data: PlayerPageData, deps: PremiumLogDeps): string {
   // Say what the rank measures and when (audit WEB-033): position, format,
   // per game and the cutoff, in the words every rank label shares. The
   // current season's rank is today's FPA table rank, the same figure as the
-  // Fantasy Points Allowed page in this format (linked in this format, since
-  // that page opens in Half-PPR), not the rank entering each game.
+  // Fantasy Points Allowed page in this format (linked in this format; the
+  // bare FPA page is PPR since 2026-11-26), not the rank entering each game.
   const ranked = seasonLog.find((entry) => entry.opp_rank_vs_pos);
   const source = ranked?.opp_rank_source ?? (seasonLog.some((entry) => entry.opp_rank_source === "unavailable") ? "unavailable" : null);
   const scope = oppRankScope({

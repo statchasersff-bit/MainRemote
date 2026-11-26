@@ -23,19 +23,19 @@ import {
   type ScoringFormat,
 } from "./nflverse";
 import { computeFpaTable, rankFpaValues } from "./math";
-import { describeDataMode, type FpaView } from "./blend";
+import { DEFAULT_FPA_FORMAT, describeDataMode, type FpaView } from "./blend";
 import { fpaWeekCoverage, heldClubWeeks, partialGameWords } from "./week-coverage";
 import { slateGames } from "../data-coverage";
 
 // Re-exported so callers have one import for "the FPA read layer" - the split
 // between this file and blend.ts exists to keep the pure half free of a
 // database import, not to give consumers two places to look.
-export { describeDataMode, parseFpaView, FPA_VIEWS, type FpaView } from "./blend";
+export { describeDataMode, parseFpaView, FPA_VIEWS, DEFAULT_FPA_FORMAT, type FpaView } from "./blend";
 
 export function parseFpaFormat(value: unknown): ScoringFormat {
   return value === "standard" || value === "ppr" || value === "half"
     ? value
-    : "half";
+    : DEFAULT_FPA_FORMAT;
 }
 
 export interface FpaRow {
@@ -145,7 +145,7 @@ export async function getFpaTable(
   const season = query.season ?? currentFpaSeason();
   const baselineSeason =
     query.baselineSeason ?? Number(process.env["FPA_BASELINE_SEASON"] ?? 2025);
-  const format = query.format ?? "half";
+  const format = query.format ?? DEFAULT_FPA_FORMAT;
   const view = query.view ?? "raw";
 
   const key = `${season}|${baselineSeason}|${format}|${view}`;

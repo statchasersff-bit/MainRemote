@@ -17,6 +17,15 @@ export type FpaView = "raw" | "adjusted";
 
 export const FPA_VIEWS: readonly FpaView[] = ["raw", "adjusted"] as const;
 
+/**
+ * The scoring format the FPA page, its fragment and its CSV serve when the
+ * request names none: PPR, the house scoring (mak, 2026-11-26, WEB-033). It
+ * was Half-PPR, while the player, matchup and SOS pages all quote PPR, so a
+ * reader opening the FPA page bare compared a different column. The format
+ * the default names carries no query parameter in any link.
+ */
+export const DEFAULT_FPA_FORMAT = "ppr" as const;
+
 export function parseFpaView(value: unknown): FpaView {
   return value === "adjusted" ? "adjusted" : "raw";
 }

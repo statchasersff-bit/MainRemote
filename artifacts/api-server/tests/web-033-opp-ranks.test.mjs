@@ -111,13 +111,42 @@ describe("labels and the unavailable state", () => {
     assert.equal(log[0].opp_rank_source, "unavailable");
   });
 
-  test("the FPA link carries the page's format (the FPA page opens in Half-PPR)", () => {
-    assert.equal(bands.fpaFormatHref("/fpa", "ppr"), "/fpa?format=ppr");
-    assert.equal(bands.fpaFormatHref("/fpa?embed=1", "ppr"), "/fpa?embed=1&format=ppr");
+  test("the FPA link opens the page's format: PPR is the bare page, others name themselves", () => {
+    assert.equal(bands.fpaFormatHref("/fpa", "ppr"), "/fpa");
+    assert.equal(bands.fpaFormatHref("/fpa?embed=1", "ppr"), "/fpa?embed=1");
+    assert.equal(bands.fpaFormatHref("/fpa", "half"), "/fpa?format=half");
+    assert.equal(bands.fpaFormatHref("/fpa?embed=1", "standard"), "/fpa?embed=1&format=standard");
     assert.equal(
-      bands.fpaFormatHref("https://statchasers.com/nfl/fantasy-points-allowed-by-position/", "ppr"),
-      "https://statchasers.com/nfl/fantasy-points-allowed-by-position/?format=ppr",
+      bands.fpaFormatHref("https://statchasers.com/nfl/fantasy-points-allowed-by-position/", "half"),
+      "https://statchasers.com/nfl/fantasy-points-allowed-by-position/?format=half",
     );
-    assert.equal(bands.fpaFormatHref("/fpa", "half"), "/fpa");
+  });
+});
+
+describe("the FPA page opens in PPR (mak, 2026-11-26)", () => {
+  test("the default format is PPR, in one constant both halves read", async () => {
+    const blend = await importModule("lib/fpa/blend");
+    assert.equal(blend.DEFAULT_FPA_FORMAT, "ppr");
+  });
+
+  test("bare /fpa is PPR, ?format=half and standard still work, PPR links are bare", async () => {
+    const { startServer } = await import("./helpers/server.mjs");
+    const srv = await startServer({ SC_LIVE_WARM: "0", SC_EDGE_PREFETCH: "0", SC_WATCHDOG: "0" });
+    try {
+      const bare = await (await fetch(`${srv.origin}/embed/fpa`)).text();
+      if (!/data-scf-root/.test(bare)) return; // nothing ingested in this database
+      assert.match(bare, /data-format="ppr"/);
+      assert.match(bare, /PPR scoring, raw view/);
+      assert.match(bare, /<a class="scf-opt is-active" href="\/fpa"[^>]*data-scf-format="ppr"/);
+      assert.match(bare, /href="\/fpa\?format=half"[^>]*data-scf-format="half"[^>]*rel="nofollow"/);
+      const ppr = await (await fetch(`${srv.origin}/embed/fpa?format=ppr`)).text();
+      assert.equal(ppr.replace(/\s+/g, " "), bare.replace(/\s+/g, " "), "?format=ppr is the bare page");
+      for (const f of ["half", "standard"]) {
+        const html = await (await fetch(`${srv.origin}/embed/fpa?format=${f}`)).text();
+        assert.match(html, new RegExp(`data-format="${f}"`));
+      }
+    } finally {
+      await srv.stop();
+    }
   });
 });

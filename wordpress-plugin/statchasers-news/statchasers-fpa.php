@@ -61,6 +61,14 @@ const STATCHASERS_FPA_TIMEOUT = 6;
 /** The scoring formats the API understands. Anything else falls back. */
 const STATCHASERS_FPA_FORMATS = array( 'standard', 'half', 'ppr' );
 
+/**
+ * The format the page shows when neither the shortcode nor the URL names one:
+ * PPR, the house scoring (mak, 2026-11-26, WEB-033; was Half-PPR). Must match
+ * DEFAULT_FPA_FORMAT in the API (lib/fpa/blend.ts): the default carries no
+ * query parameter in the table's own links, and the redirect below drops it.
+ */
+const STATCHASERS_FPA_DEFAULT_FORMAT = 'ppr';
+
 /** The two views. */
 const STATCHASERS_FPA_VIEWS = array( 'raw', 'adjusted' );
 
@@ -112,7 +120,7 @@ function statchasers_fpa_args( array $atts ): array {
 
 	$atts = shortcode_atts(
 		array(
-			'format' => 'half',
+			'format' => STATCHASERS_FPA_DEFAULT_FORMAT,
 			'view'   => 'raw',
 			'season' => '',
 		),
@@ -128,7 +136,7 @@ function statchasers_fpa_args( array $atts ): array {
 		}
 	}
 	if ( ! in_array( $format, STATCHASERS_FPA_FORMATS, true ) ) {
-		$format = 'half';
+		$format = STATCHASERS_FPA_DEFAULT_FORMAT;
 	}
 
 	$view = strtolower( trim( (string) $atts['view'] ) );
@@ -829,7 +837,7 @@ function statchasers_fpa_redirect_target( array $get, int $page_season, int $cur
 			continue;
 		}
 		$value = strtolower( trim( (string) $get[ $key ] ) );
-		if ( in_array( $value, $allowed, true ) && $value !== ( 'format' === $key ? 'half' : 'raw' ) ) {
+		if ( in_array( $value, $allowed, true ) && $value !== ( 'format' === $key ? STATCHASERS_FPA_DEFAULT_FORMAT : 'raw' ) ) {
 			$keep[ $key ] = $value;
 		}
 	}
@@ -1401,7 +1409,7 @@ function statchasers_fpa_sitemap_entries(): string {
 	}
 	// The page's own table, not this request's: the sitemap is built on a
 	// request of its own, where no address names a season.
-	$data = statchasers_fpa_fetch( array( 'format' => 'half', 'view' => 'raw', 'season' => 0 ) );
+	$data = statchasers_fpa_fetch( array( 'format' => STATCHASERS_FPA_DEFAULT_FORMAT, 'view' => 'raw', 'season' => 0 ) );
 	$copy = statchasers_fpa_parse_copy( null === $data ? '' : (string) $data['html'] );
 	if ( empty( $copy['archiveSeasons'] ) || ! is_array( $copy['archiveSeasons'] ) ) {
 		return '';
