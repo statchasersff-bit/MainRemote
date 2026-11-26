@@ -51,15 +51,14 @@ const DESCRIPTION_MAX = 155;
 /**
  * How long a title may run when it ends in " | StatChasers".
  *
- * mak's player-entity brief (2026-11-03) puts the brand on every player
- * title: "{Name} Stats, News, Bio & Fantasy Outlook | StatChasers". The
- * sixty-character rule of 2026-10-08 still governs the words before the
- * brand; the brand itself is the one thing a results page may cut without
- * losing meaning, so a branded title is allowed ten more characters and the
- * brand is the first rung to go for a long name. The plugin's stored copy
- * (statchasers_player_title_ladder) is built the same way.
+ * Sixty, the same as a bare title, since the 2026-11-26 audit (WEB-029):
+ * the brand had been allowed ten characters past the sixty-character rule
+ * (mak's player-entity brief, 2026-11-03), and 443 of 632 sampled hub
+ * titles ran over sixty. The brand is still the first thing to go for a
+ * long name; it just no longer takes a title over the line. The plugin's
+ * stored copy (statchasers_branded_title) is built the same way.
  */
-const BRANDED_MAX = TITLE_MAX + 10;
+const BRANDED_MAX = TITLE_MAX;
 
 /**
  * The first wording that fits, branded where the brand still fits.
@@ -73,6 +72,9 @@ const BRANDED_MAX = TITLE_MAX + 10;
  * MIRRORED in statchasers_branded_title() in the WordPress plugin.
  */
 export function brandedTitle(cores: string[]): string {
+  // Stray whitespace from a feed's name ("D'Andre  Swift ", a non-breaking
+  // space) never reaches a title (2026-11-26 audit, WEB-022).
+  cores = cores.map((core) => core.replace(/\s+/g, " ").trim());
   for (const core of cores) {
     const branded = `${core} | ${SITE_NAME}`;
     if (branded.length <= BRANDED_MAX) return branded;
@@ -285,8 +287,8 @@ function sectionMeta(
  * The profile's own title and description.
  *
  * mak's player-entity brief (2026-11-03): the hub is the player's page, not
- * a fantasy page, so the title is the evergreen "{Name} Stats, News, Bio &
- * Fantasy Outlook | StatChasers" with no year - the URL does not change
+ * a fantasy page, so the title is evergreen, with no year (since the
+ * 2026-11-26 audit "{Name} NFL Stats & News | StatChasers", hubTitleLadder) - the URL does not change
  * with the season and the title should not either. The year lives in the
  * section headings ("{Name} 2026 Stats"), which roll with the league season.
  * The brand gives way first for a long name, then the wording shortens.
@@ -300,17 +302,29 @@ function sectionMeta(
  * MIRRORED in statchasers_player_page_meta() in the WordPress plugin, which
  * writes the stored copy; the plugin prefers this live one when it has it.
  */
+/**
+ * The hub title's rungs, fullest first (2026-11-26 audit, WEB-029).
+ *
+ * The hub is the player's NFL page - stats and news - and says so: "{Name}
+ * NFL Stats & News | StatChasers". The fantasy layer has its own pages, each
+ * titled for its own query (the Outlook tab here, the Dynasty profile for
+ * long-term value, Redraft Command's start/sit page for this week), so the
+ * hub no longer promises a "Fantasy Outlook" it summarizes. The words that
+ * were in the old title are still the tabs' titles.
+ *
+ * MIRRORED in statchasers_player_title_ladder() in the WordPress plugin and
+ * in scripts/create-player-pages.sh.
+ */
+export function hubTitleLadder(name: string): string[] {
+  return [`${name} NFL Stats & News`, `${name} Stats & News`];
+}
+
 export function profileMeta(data: PlayerPageData): { title: string; description: string } {
   const { player } = data;
   const pos = player.position ?? "";
   const team = data.team;
 
-  const title = brandedTitle([
-    `${player.name} Stats, News, Bio & Fantasy Outlook`,
-    `${player.name} Stats, News & Fantasy Outlook`,
-    `${player.name} Stats, News & Outlook`,
-    `${player.name} Stats & News`,
-  ]);
+  const title = brandedTitle(hubTitleLadder(player.name));
 
   const tail =
     "stats, game logs, news, injury updates, bio, career numbers and fantasy " +

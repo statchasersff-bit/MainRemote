@@ -119,6 +119,14 @@ import { headArt, headIcon } from "./player/tab-head";
 
 export interface PlayerRenderOptions {
   /**
+   * Where the client fetches another season's Game Log from, when the page
+   * is embedded: the fragment endpoint (through the WordPress proxy in
+   * production), with this render's section, heading mode and format already
+   * in its query. The client adds `log=<year>`. Unset on the standalone
+   * page, which reloads its own address with `?log=` instead.
+   */
+  logEndpoint?: string;
+  /**
    * Embedded inside a statchasers.com page. Drops the standalone page's chrome
    * and demotes the player's name to an <h2>, because the host page supplies
    * the H1 - the same reasoning as the team hub's embed mode.
@@ -620,51 +628,6 @@ function renderNav(
  * the canonical on the PPR URL keep the three variants from becoming three
  * competing pages; PPR is the default and the one address that ranks.
  */
-/**
- * This page's own URL, with one piece of its state changed.
- *
- * Every control that is a real link - the game log's season selector, and the
- * scoring toggle before the control bar traded it for the start/sit button -
- * builds its href here, so none of them can drop the state the others own.
- * Assembling them by hand is how `?format=half` used to lose `?embed=1`, which
- * silently unframed the page it was rendered into. The format is still carried
- * through every link this builds: nothing on the page changes it any more, but
- * a reader who arrived on `?format=half` must not be walked back to PPR by
- * pinning a season.
- *
- * Only the parameters this page actually carries are emitted, and each is
- * omitted at its default: the PPR profile of the active season is the bare
- * slug, which is the address the canonical points at.
- */
-function pageUrl(
-  data: PlayerPageData,
-  options: PlayerRenderOptions,
-  changes: { format?: ScoringFormat; log?: number; hash?: string } = {},
-): string {
-  const prefix = options.playerPathPrefix ?? "/player/";
-  const params = new URLSearchParams();
-
-  if ((options.linkQuery ?? "").includes("embed=1")) params.set("embed", "1");
-
-  const format = changes.format ?? data.format;
-  if (format !== "ppr") params.set("format", format);
-
-  const log = changes.log ?? data.logSeason;
-  if (log !== data.season) params.set("log", String(log));
-
-  const query = params.toString();
-  // The section is a path segment now, not a parameter. It used to be
-  // `?section=`, which is still what the WordPress plugin fetches a fragment
-  // with, but it is no longer an address - so a control on a section page has
-  // to rebuild the section's own URL or following it would land the reader back
-  // on the full profile with their format change and none of their place.
-  const section = options.section ? `${options.section}/` : "";
-  // A control inside a panel on the FULL profile has to name that panel, or
-  // following it reopens the page on the first tab - changing the season on the
-  // game log and landing on Overview. A section URL is already that page.
-  const hash = !options.section && changes.hash ? `#${changes.hash}` : "";
-  return `${prefix}${data.player.slug}/${section}${query ? `?${query}` : ""}${hash}`;
-}
 
 /* --------------------------------------------------------------- overview */
 
@@ -1408,7 +1371,7 @@ function renderGameLog(
 function premiumLogDeps(data: PlayerPageData, options: PlayerRenderOptions): PremiumLogDeps {
   const layout = logLayout(data);
   return {
-    seasonHref: (year) => pageUrl(data, options, { log: year, hash: "game-log" }),
+    logSrc: options.logEndpoint ?? "",
     layout,
     summary: logSummaryValues(data),
     averages: logAverageValues(data, layout.columns),

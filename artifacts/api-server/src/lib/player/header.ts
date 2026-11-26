@@ -38,7 +38,6 @@ import { getEntryPoints } from "./scoring";
 import { heroCells, playedEntries, seasonTotals } from "./season-line";
 import { passerRating } from "./stats-profile";
 import type { UpcomingGame } from "./upcoming";
-import { redraftPlayerUrl } from "./redraft-link";
 
 const DASH = "-";
 
@@ -330,7 +329,7 @@ export function seasonNotStarted(data: PlayerPageData): boolean {
 export function headerFixture(
   data: PlayerPageData,
 ): { game: UpcomingGame; bye: number | null } | null {
-  const game = data.upcoming[0];
+  const game = (data.upcoming ?? [])[0];
   if (!game) return null;
   const bye = data.byeWeek ?? null;
   const byeNext = bye !== null && bye > (data.leagueWeek ?? 0) && bye < game.week;
@@ -739,6 +738,9 @@ export function renderHero(
   const cta = ctaTab(tab);
   const last = lastName(player.name);
   const pos = player.position ?? "";
+  // His weekly start/sit page, or "" (see startSitHref): the header's one
+  // fantasy action at every width.
+  const startHref = startSitHref(data, options);
 
   /* ---- the tag row ---- */
 
@@ -848,24 +850,36 @@ export function renderHero(
     // The phone's one fantasy door (mak, 2026-11-06): the header leads with
     // the NFL profile, so the FPPG / rank / rostered row and its separate
     // Redraft Command arrow are gone and this outlined button under the
-    // college opens the player's Redraft Command profile instead.
-    `<a class="scp-pm-fp" href="${escapeHtml(redraftPlayerUrl(player))}"` +
-    ` aria-label="${escapeHtml(`View ${possessive(player.name)} fantasy profile in Redraft Command`)}"` +
-    ` data-cta="redraft-command-header-${cta}-mobile" data-scp-cta="redraft-command-header">` +
-    `View fantasy profile<span class="scp-pm-fp-arrow" aria-hidden="true">→</span></a>` +
+    // college is the fantasy action. It opened his Redraft Command player
+    // page until the 2026-11-26 audit (WEB-017): that page is a noindex
+    // shell with no player content, so the button now opens his weekly
+    // start/sit page - the one player-specific Redraft destination with a
+    // real answer on it - and is left out when there is no week to start
+    // him in (see startSitHref).
+    (startHref
+      ? `<a class="scp-pm-fp" href="${escapeHtml(startHref)}"` +
+        ` aria-label="${escapeHtml(`Should I start ${player.name} this week? Start/sit in Redraft Command`)}"` +
+        ` data-cta="startsit-header-${cta}-mobile" data-scp-cta="startsit-header">` +
+        `${escapeHtml(`Should I start ${last}?`)}<span class="scp-pm-fp-arrow" aria-hidden="true">→</span></a>`
+      : "") +
     `</div>`;
 
   /* ---- the actions ---- */
 
-  const next = headerFixture(data);
   const outlookHref = sectionHref(data, options, "outlook");
-  const redraft =
-    `<a class="scp-pbtn scp-pbtn--gold" href="${escapeHtml(redraftPlayerUrl(player))}"` +
-    ` data-cta="redraft-command-header-${cta}" data-scp-cta="redraft-command-header">` +
-    `<span class="scp-pbtn-icon" aria-hidden="true">${ICON.trend}</span>View Fantasy Football Profile` +
-    `<span class="scp-pbtn-arrow" aria-hidden="true">${ICON.arrow}</span></a>`;
-  // Start/sit while there is a week to start him in; before Week 1, or once
-  // the schedule has run out, the question is the season rather than a week.
+  // The gold button is the fantasy action: his weekly start/sit page while
+  // there is a week to start him in. It was "View Fantasy Football Profile"
+  // into Redraft Command's player page until the 2026-11-26 audit (WEB-017,
+  // a noindex shell), and the white button carried the start/sit link; the
+  // two were the same decision twice. Now gold = start/sit, white = the
+  // injury status (on IR, PUP...) or the outlook, and a player with no week
+  // ahead gets the white button alone.
+  const redraft = startHref
+    ? `<a class="scp-pbtn scp-pbtn--gold" href="${escapeHtml(startHref)}"` +
+      ` data-cta="startsit-header-${cta}" data-scp-cta="startsit-header">` +
+      `<span class="scp-pbtn-icon" aria-hidden="true">${ICON.trend}</span>${escapeHtml(`Should I start ${last}?`)}` +
+      `<span class="scp-pbtn-arrow" aria-hidden="true">${ICON.arrow}</span></a>`
+    : "";
   let second = "";
   const injuryHref = sectionHref(data, options, "injury");
   if (rosterDesignation(data) && injuryHref) {
@@ -875,12 +889,6 @@ export function renderHero(
       `<a class="scp-pbtn scp-pbtn--white" href="${escapeHtml(injuryHref)}" target="_top"` +
       ` data-cta="injury-header-${cta}" data-scp-cta="injury-header">` +
       `<span class="scp-pbtn-icon" aria-hidden="true">${ICON.question}</span>${escapeHtml(`${possessive(last)} injury status`)}</a>`;
-  } else if (team && next && !seasonNotStarted(data) && !rosterDesignation(data)) {
-    const href = `${options.startSitBase ?? STARTSIT_BASE}${encodeURIComponent(player.slug)}`;
-    second =
-      `<a class="scp-pbtn scp-pbtn--white" href="${escapeHtml(href)}"` +
-      ` data-cta="startsit-header-${cta}" data-scp-cta="startsit-header">` +
-      `<span class="scp-pbtn-icon" aria-hidden="true">${ICON.question}</span>${escapeHtml(`Should I start ${last}?`)}</a>`;
   } else if (outlookHref) {
     second =
       `<a class="scp-pbtn scp-pbtn--white" href="${escapeHtml(outlookHref)}" target="_top"` +

@@ -10,11 +10,12 @@
  *      place by the `http_request_args` filter. No fetch site in the other
  *      files had to change, and a new one is covered automatically.
  *
- *   2. Six widgets fetch from the reader's browser, where a key cannot live:
+ *   2. Seven widgets fetch from the reader's browser, where a key cannot live:
  *      the Player Stats table, FPA, RB Handcuffs player cards, the Strength of
- *      Schedule view switch, the Rookie Hit Rates dataset and the news refresh. They call this site instead,
+ *      Schedule view switch, the Rookie Hit Rates dataset, the news refresh and the player Game Log's
+ *      season buttons. They call this site instead,
  *      at /wp-json/statchasers/v1/p/<path>, and this forwards the request to
- *      the app with the key. Only those six paths are forwarded. The app points
+ *      the app with the key. Only those paths are forwarded. The app points
  *      the widgets here once SC_BROWSER_PROXY is set on it.
  *
  * Set the key in wp-config.php, the same value as SC_EMBED_KEY on the app:
@@ -43,6 +44,9 @@ const STATCHASERS_PROXY_TIMEOUT = 8;
 const STATCHASERS_PROXY_PATHS = array(
 	'#^embed/fpa$#',
 	'#^embed/player-stats$#',
+	// The Game Log's season buttons (2026-11-26 audit, WEB-020): the player
+	// fragment, with section / h1 / format / log in the query.
+	'#^embed/player/[a-z0-9][a-z0-9-]{0,79}$#',
 	'#^embed/sos$#',
 	'#^embed/rookie-hit-rates/data$#',
 	'#^embed/redraft-strategy/data/(?:combo|trends)/[a-z0-9_]{1,60}$#',
@@ -154,7 +158,10 @@ function statchasers_proxy( WP_REST_Request $request ) {
 		if ( 'rest_route' === $name || ! is_string( $value ) ) {
 			continue;
 		}
-		if ( preg_match( '/^[a-z_]{1,32}$/', (string) $name ) && strlen( $value ) <= 100 ) {
+		// A digit after the first letter is allowed for `h1`, the player
+		// fragment's heading mode, which the Game Log's season swap must
+		// keep or the swapped-in root loses its H1.
+		if ( preg_match( '/^[a-z_][a-z0-9_]{0,31}$/', (string) $name ) && strlen( $value ) <= 100 ) {
 			$query[ $name ] = $value;
 		}
 	}

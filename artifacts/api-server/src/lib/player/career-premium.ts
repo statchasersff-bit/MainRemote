@@ -206,12 +206,14 @@ export function renderPremiumCareer(data: PlayerPageData, options: PlayerRenderO
       `<h2 class="scp-ox-h2 scp-cp-h" id="scp-st-read-h"><span class="scp-stp-card-icon scp-cp-h-icon" aria-hidden="true">${ICON.chart}</span><span class="scp-stp-xs">What His Career Numbers Say</span></h2>` +
       m.paragraphs.map((p) => `<p>${p}</p>`).join("") +
       `</div>` +
-      `<aside class="scp-cp-rc" aria-label="${escapeHtml(`${m.last} in Redraft Command`)}">` +
-      `<span class="scp-cp-rc-icon" aria-hidden="true">${ICON.bolt}</span>` +
-      `<h3 class="scp-cp-rc-h">${escapeHtml(m.redraft.heading)}</h3>` +
-      `<p>${escapeHtml(m.redraft.body)}</p>` +
-      `<a class="scp-cp-rc-btn" href="${escapeHtml(m.redraft.href)}" data-cta="redraft-command-stats-sidebar">${escapeHtml(m.redraft.cta)}<span class="scp-cp-rc-arrow" aria-hidden="true">${ICON.arrow}</span></a>` +
-      `</aside>` +
+      (m.redraft
+        ? `<aside class="scp-cp-rc" aria-label="${escapeHtml(`${m.last} in Redraft Command`)}">` +
+          `<span class="scp-cp-rc-icon" aria-hidden="true">${ICON.bolt}</span>` +
+          `<h3 class="scp-cp-rc-h">${escapeHtml(m.redraft.heading)}</h3>` +
+          `<p>${escapeHtml(m.redraft.body)}</p>` +
+          `<a class="scp-cp-rc-btn" href="${escapeHtml(m.redraft.href)}" data-cta="startsit-stats-sidebar">${escapeHtml(m.redraft.cta)}<span class="scp-cp-rc-arrow" aria-hidden="true">${ICON.arrow}</span></a>` +
+          `</aside>`
+        : "") +
       `</div>`
     : "";
 

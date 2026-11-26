@@ -35,8 +35,14 @@ import { headArt, headIcon } from "./tab-head";
 
 /** What the tab hands this block, so the two versions share one computation. */
 export interface PremiumLogDeps {
-  /** The season chip's href, from pageUrl() - the same link the tab's chips carry. */
-  seasonHref: (year: number) => string;
+  /**
+   * Where the client fetches another season's log from (data-scp-log-src),
+   * or "" on the standalone page, where the client reloads the same address
+   * with `?log=`. The season options are buttons, not links (2026-11-26
+   * audit, WEB-020): one link per season on every Game Log was a crawlable
+   * `?log=` variant per player-season.
+   */
+  logSrc: string;
   /** The columns the tab's table draws this season (logLayout). */
   layout: { columns: LogColumn[]; scored: boolean; span: number };
   /** The summary strip's figures (logSummaryValues); null with no played week. */
@@ -148,10 +154,16 @@ function difficultyCell(entry: GameLogEntry, deps: PremiumLogDeps, data: PlayerP
 /**
  * The phone's season selector (mak, 2026-11-06): a dropdown on the heading's
  * row in place of the chip strip, which the CSS hides under 560px (this one
- * is hidden above it). The options are .scp-season-opt links with the chips'
- * hrefs, so the client's state swap handles them the same way and the menu
- * works with scripting off. Not in .scp-seasons: the chips stay the one
- * group the swap restores focus to, and no option carries .is-active.
+ * is hidden above it). The options are .scp-season-opt buttons like the
+ * chips, so the client's season swap handles both. Not in .scp-seasons: the
+ * chips stay the one group the swap restores focus to, and no option
+ * carries .is-active.
+ *
+ * Buttons since the 2026-11-26 audit (WEB-020): they used to be links to
+ * `?log=<year>`, a crawlable variant per player-season (Gibbs' hub printed
+ * six, a long career dozens). The season a reader picks lives in the
+ * address bar's `#log=<year>`, which a reload or a shared link reopens;
+ * old `?log=` links 301 there (the plugin).
  */
 function renderSeasonMenu(data: PlayerPageData, deps: PremiumLogDeps): string {
   if (data.logSeasons.length < 2) return "";
@@ -160,18 +172,28 @@ function renderSeasonMenu(data: PlayerPageData, deps: PremiumLogDeps): string {
     .map((year) => {
       const on = year === data.logSeason;
       return (
-        `<li><a class="scp-season-opt scp-glp-yr-opt"` +
-        (year === data.season ? "" : ` rel="nofollow"`) +
-        ` data-season="${year}"${on ? ` aria-current="true"` : ""}` +
-        ` href="${escapeHtml(deps.seasonHref(year))}">${year}</a></li>`
+        `<li><button type="button" class="scp-season-opt scp-glp-yr-opt"` +
+        ` data-season="${year}" aria-pressed="${on ? "true" : "false"}"${on ? ` aria-current="true"` : ""}>${year}</button></li>`
       );
     })
     .join("");
   return (
-    `<details class="scp-glp-yr" data-scp-yr>` +
+    `<details class="scp-glp-yr" data-scp-yr${seasonAttrs(data, deps)}>` +
     `<summary class="scp-glp-yr-btn" aria-label="${escapeHtml(`Season: ${data.logSeason}`)}"><b>${data.logSeason}</b></summary>` +
     `<ul class="scp-glp-yr-list">${options}</ul>` +
     `</details>`
+  );
+}
+
+/**
+ * What the client needs to swap a season in: the season the bare page
+ * shows (no `#log=` for it), the one on screen, and where to fetch the
+ * others.
+ */
+function seasonAttrs(data: PlayerPageData, deps: PremiumLogDeps): string {
+  return (
+    ` data-scp-log-default="${data.season}" data-scp-log-shown="${data.logSeason}"` +
+    (deps.logSrc ? ` data-scp-log-src="${escapeHtml(deps.logSrc)}"` : "")
   );
 }
 
@@ -182,16 +204,14 @@ function renderSeasons(data: PlayerPageData, deps: PremiumLogDeps): string {
     .map((year) => {
       const on = year === data.logSeason;
       return (
-        `<a class="scp-season-opt scp-glp-chip${on ? " is-active" : ""}"` +
-        (year === data.season ? "" : ` rel="nofollow"`) +
-        ` data-season="${year}"${on ? ` aria-current="true"` : ""}` +
-        ` href="${escapeHtml(deps.seasonHref(year))}">${year}</a>`
+        `<button type="button" class="scp-season-opt scp-glp-chip${on ? " is-active" : ""}"` +
+        ` data-season="${year}" aria-pressed="${on ? "true" : "false"}"${on ? ` aria-current="true"` : ""}>${year}</button>`
       );
     })
     .join("");
   return (
-    `<nav class="scp-seasonnav scp-glp-seasons" aria-label="Game log seasons (new design)">` +
-    `<div class="scp-seasons">${chips}</div></nav>`
+    `<nav class="scp-seasonnav scp-glp-seasons" aria-label="Game log seasons (new design)"${seasonAttrs(data, deps)}>` +
+    `<div class="scp-seasons" role="group" aria-label="Game log season">${chips}</div></nav>`
   );
 }
 

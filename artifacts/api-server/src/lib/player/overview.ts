@@ -60,7 +60,6 @@ import {
 } from "./header";
 import { headArt, headIcon } from "./tab-head";
 import { SOFT_MAX_RANK, TOUGH_MIN_RANK } from "../fpa/matchup-bands";
-import { redraftPlayerUrl } from "./redraft-link";
 import { publishedRank, rankBasisWords, type PublishedRank } from "./season-phase";
 
 const DASH = "-";
@@ -688,7 +687,6 @@ function renderOutlook(data: PlayerPageData, s: Season, options: PlayerRenderOpt
   const name = data.player.name;
   const last = lastName(name);
   const pos = s.pos;
-  const redraft = redraftPlayerUrl(data.player);
   const rank = s.played.length ? seasonRank(data) : null;
 
   let call = "";
@@ -740,7 +738,10 @@ function renderOutlook(data: PlayerPageData, s: Season, options: PlayerRenderOpt
     `<div class="scp-ox-read-main">${call}<p class="scp-ox-prose">${para}</p></div>` +
     renderMeters(data, s) +
     `</div>` +
-    more(redraft, "Analyze in Redraft Command", ` data-cta="redraft-command-sidebar"`) +
+    // "Analyze in Redraft Command" closed this section until the 2026-11-26
+    // audit (WEB-017): it opened Redraft Command's player page, a noindex
+    // shell, and repeated the header's fantasy action. The phone's start/sit
+    // link above and the header's gold button are the fantasy doors now.
     SECTION_END
   );
 }

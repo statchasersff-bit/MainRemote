@@ -143,8 +143,10 @@ export function renderOutlookPremium(data: PlayerPageData): string {
         bar(ICON.route, "What Could Change His Value", "") +
         `<div class="scp-olp-body">` +
         `<div class="scp-olp-factors">${card("up", "Upside", up)}${card("risk", "Risk", risk)}</div>` +
-        `<div class="scp-olp-cta"><span class="scp-olp-cta-text">${e(m.cta)}</span>` +
-        `<a class="scp-olp-cta-btn" href="${e(m.rc)}" data-cta="redraft-command-outlook-premium">Compare them in Redraft Command<span class="scp-olp-cta-arrow">${ICON.arrow}</span></a></div>` +
+        // "Compare them in Redraft Command" closed this section until the
+        // 2026-11-26 audit (WEB-017): it opened Redraft Command's player page,
+        // which compares nothing, and the tab's projection card above already
+        // carries the one fantasy action (his start/sit page).
         `</div></section>`,
     );
   }

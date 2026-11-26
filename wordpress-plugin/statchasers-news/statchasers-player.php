@@ -137,13 +137,12 @@ function statchasers_player_args( array $atts ): array {
 		$format = 'ppr';
 	}
 
-	// Which season the Game Log tab is pinned to, from the URL only - there is
-	// no attribute for it, because it is a reader's choice on the page rather
-	// than something an editor sets when placing the shortcode. Constrained to a
-	// plausible NFL season; the API drops anything this player did not play.
-	$log  = statchasers_player_query_value( 'log' );
-	$year = (int) $log;
-	$log  = ( $year >= 1999 && $year <= (int) gmdate( 'Y' ) + 1 ) ? (string) $year : '';
+	// The Game Log's season is no longer read from the URL (2026-11-26 audit,
+	// WEB-020): a `?log=` page address 301s to `/game-log/#log=<year>`
+	// (statchasers_player_normalize_redirect), and the page's season buttons
+	// fetch the other seasons through the proxy's `embed/player/<slug>`. So
+	// the page renders the current season only, one cached copy per URL.
+	$log = '';
 
 	// Which season the Advanced section shows, the same way and for the same
 	// reason: the API prints `?adv=<season>` chips on that section as real
@@ -2215,7 +2214,77 @@ add_filter(
  * @return array<string,mixed>|false
  */
 function statchasers_player_sitemap_drop_left( $url, $type = '', $object = null ) {
-	return 'post' === $type && statchasers_player_post_left_roster( $object ) ? false : $url;
+	if ( 'post' !== $type ) {
+		return $url;
+	}
+	return statchasers_player_post_left_roster( $object ) || statchasers_player_post_is_shadowed( $object ) ? false : $url;
+}
+
+/**
+ * The page WordPress serves at each profile slug: slug => the oldest
+ * published page under the container. Memoized for the request.
+ *
+ * Two published pages can share a slug (D'Andre Swift 4928/4929, Tyson
+ * Bagent 4926/4927, both from the 2026-09-20 race). get_page_by_path()
+ * answers the URL with the oldest; the other is unreachable, and the
+ * sitemap listed both - the profile entry twice and each section twice.
+ *
+ * @param bool $fresh Read again (tests; a request reads it once).
+ * @return array<string,int>
+ */
+function statchasers_player_resolved_ids( bool $fresh = false ): array {
+	static $ids = null;
+	if ( null !== $ids && ! $fresh ) {
+		return $ids;
+	}
+
+	global $wpdb;
+	$ids       = array();
+	$container = statchasers_player_container();
+	if ( ! $container ) {
+		return $ids;
+	}
+
+	$rows = $wpdb->get_results(
+		$wpdb->prepare(
+			"SELECT ID, post_name FROM {$wpdb->posts}
+			 WHERE post_type = 'page' AND post_parent = %d AND post_status = 'publish'
+			 ORDER BY ID ASC",
+			$container
+		)
+	);
+	foreach ( (array) $rows as $row ) {
+		$name = (string) $row->post_name;
+		$id   = (int) $row->ID;
+		if ( ! isset( $ids[ $name ] ) || $id < $ids[ $name ] ) {
+			$ids[ $name ] = $id;
+		}
+	}
+	return $ids;
+}
+
+/**
+ * Is this a profile page another, older page at the same slug shadows?
+ *
+ * Such a page is never served (the URL resolves to the older one), so its
+ * sitemap entry is a second listing of somebody else's address.
+ *
+ * @param mixed $post Any shape statchasers_player_post_fields() takes.
+ */
+function statchasers_player_post_is_shadowed( $post ): bool {
+	$fields = statchasers_player_post_fields( $post );
+	if ( null === $fields || ! $fields['id'] ) {
+		return false;
+	}
+	static $container = null;
+	if ( null === $container ) {
+		$container = statchasers_player_container();
+	}
+	if ( ! $container || $fields['parent'] !== $container ) {
+		return false;
+	}
+	$winner = statchasers_player_resolved_ids()[ $fields['name'] ] ?? 0;
+	return $winner && $winner !== $fields['id'];
 }
 add_filter( 'rank_math/sitemap/entry', 'statchasers_player_sitemap_drop_left', 10, 3 );
 
@@ -2324,10 +2393,18 @@ function statchasers_player_sitemap_sections( $content ) {
 	);
 
 	$extra = '';
+	// One profile per slug. The posts come oldest first, and the oldest is the
+	// page the address resolves to; a second published page at the same slug
+	// (the 2026-09-20 race) listed each of the six sections twice.
+	$seen = array();
 	foreach ( $posts as $post ) {
 		if ( ! $post instanceof WP_Post || ! has_shortcode( (string) $post->post_content, STATCHASERS_PLAYER_SHORTCODE ) ) {
 			continue;
 		}
+		if ( isset( $seen[ (string) $post->post_name ] ) ) {
+			continue;
+		}
+		$seen[ (string) $post->post_name ] = true;
 		$id      = (int) $post->ID;
 		$profile = trailingslashit( (string) get_permalink( (int) $id ) );
 		$lastmod = (string) get_post_modified_time( 'c', true, (int) $id );

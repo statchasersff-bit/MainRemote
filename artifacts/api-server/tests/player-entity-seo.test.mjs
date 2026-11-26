@@ -99,7 +99,7 @@ describe("the profile is the player's page", () => {
       // The title template of the brief, with no year and the brand where it fits.
       assert.match(
         title,
-        new RegExp(`^${player.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")} Stats, News(?:, Bio)? & (?:Fantasy )?Outlook(?: \\| StatChasers)?$`),
+        new RegExp(`^${player.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")} (?:NFL )?Stats & News(?: \\| StatChasers)?$`),
         title,
       );
       assert.ok(title.replace(/ \| StatChasers$/, "").length <= 60, title);

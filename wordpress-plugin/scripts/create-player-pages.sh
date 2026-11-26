@@ -117,9 +117,32 @@ ensure_page() { # slug title parent_id content -> echoes ID
 	fi
 
 	# shellcheck disable=SC2086
-	"$WP" $WP_ARGS post create --post_type=page --post_status=publish \
+	id="$("$WP" $WP_ARGS post create --post_type=page --post_status=publish \
 		--post_title="$title" --post_name="$slug" --post_parent="$parent" \
-		--post_content="$content" --porcelain
+		--post_content="$content" --porcelain)" || return 1
+
+	# Two creators at once (this script and the plugin's builder, or two runs
+	# of either) can each see the slug free and BOTH publish it - WordPress
+	# checks slugs with a SELECT, not a constraint. That is how D'Andre Swift
+	# got pages 4928 and 4929 on 2026-09-20. So read back every page holding
+	# the slug: the oldest wins (it is the one the URL resolves to, and the
+	# plugin's statchasers_player_settle_slug_race() picks the same one), and
+	# if ours is not it, ours is deleted. A renamed page (-2) is ours too.
+	local got oldest
+	got="$(wpq post get "$id" --field=post_name)"
+	if [ "$got" != "$slug" ]; then
+		"$WP" $WP_ARGS post delete "$id" --force >/dev/null
+		page_id "$slug" "$parent"
+		return 0
+	fi
+	oldest="$(wpq post list --post_type=page --post_status=publish,draft,pending,private,future \
+		--name="$slug" --post_parent="$parent" --orderby=ID --order=ASC --field=ID --format=ids | awk '{print $1}')"
+	if [ -n "$oldest" ] && [ "$oldest" != "$id" ]; then
+		"$WP" $WP_ARGS post delete "$id" --force >/dev/null
+		printf '%s' "$oldest"
+		return 0
+	fi
+	printf '%s' "$id"
 }
 
 meta_is_empty() { # id key
@@ -246,12 +269,13 @@ while IFS='|' read -r slug name position team team_name player_id; do
 	# the difference between a profile that ranks and one that quietly doesn't.
 	# The same ladder as statchasers_player_page_meta() in the plugin (mak's
 	# player-entity brief, 2026-11-03): evergreen, no year; each wording is
-	# tried with " | StatChasers" within seventy characters, then bare within
-	# sixty, before the next, shorter wording.
+	# tried with " | StatChasers", then bare, both within sixty characters
+	# (the 2026-11-26 audit, WEB-029; the brand had seventy), before the next,
+	# shorter wording.
 	seo_title=""
-	for core in "$name Stats, News, Bio & Fantasy Outlook" "$name Stats, News & Fantasy Outlook" "$name Stats, News & Outlook" "$name Stats & News"; do
+	for core in "$name NFL Stats & News" "$name Stats & News"; do
 		branded="$core | StatChasers"
-		if [ "${#branded}" -le 70 ]; then seo_title="$branded"; break; fi
+		if [ "${#branded}" -le 60 ]; then seo_title="$branded"; break; fi
 		if [ "${#core}" -le 60 ]; then seo_title="$core"; break; fi
 	done
 	[ -z "$seo_title" ] && seo_title="$name Stats & News"

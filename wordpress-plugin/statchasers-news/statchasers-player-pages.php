@@ -735,53 +735,20 @@ function statchasers_player_build_batch_locked( int $offset, array $roster, arra
 		}
 
 		if ( ! $id ) {
-			// The stored title, which on a normal template is the H1. The
-			// position is in it because six hundred names in an admin list are
-			// hard to tell apart; statchasers_player_heading() takes it back off
-			// for the heading a reader sees.
-			$title = '' === $row['position']
-				? $row['name']
-				: sprintf( '%s (%s)', $row['name'], $row['position'] );
+			$made = statchasers_player_create_page( $row, $container );
 
-			$id = wp_insert_post(
-				array(
-					'post_type'    => 'page',
-					'post_status'  => 'publish',
-					'post_title'   => $title,
-					'post_name'    => $row['slug'],
-					'post_parent'  => $container,
-					'post_content' => '[' . STATCHASERS_PLAYER_SHORTCODE . ']',
-				),
-				true
-			);
-
-			if ( is_wp_error( $id ) ) {
-				$result['errors'][] = sprintf( '%s: %s', $row['name'], $id->get_error_message() );
+			if ( '' !== $made['error'] ) {
+				$result['errors'][] = sprintf( '%s: %s', $row['name'], $made['error'] );
 				continue;
 			}
 
-			$id = (int) $id;
-
-			// WordPress never refuses a taken slug; it appends -2 and publishes.
-			// That is how twenty-seven `<slug>-2` pages came to exist. So the
-			// address the page actually got is checked against the one asked
-			// for, and a renamed page is undone on the spot - it is seconds old,
-			// empty, and ours - in favor of the sibling that won the slug.
-			$made = get_post( $id );
-			$got  = $made instanceof WP_Post ? (string) $made->post_name : (string) $row['slug'];
-			if ( $got !== (string) $row['slug'] ) {
-				wp_delete_post( $id, true );
-				$id = statchasers_player_sibling_page( (string) $row['slug'], $container );
-				if ( ! $id ) {
-					$result['errors'][] = sprintf( '%s: the slug "%s" was taken by a page that could not be found.', $row['name'], $row['slug'] );
-					continue;
-				}
-				++$result['existing'];
-				$status['present'][ $row['slug'] ] = $id;
-			} else {
+			$id = (int) $made['id'];
+			if ( $made['created'] ) {
 				++$result['created'];
-				$status['present'][ $row['slug'] ] = $id;
+			} else {
+				++$result['existing'];
 			}
+			$status['present'][ $row['slug'] ] = $id;
 		}
 
 		$meta = statchasers_player_page_meta( $row );
@@ -799,6 +766,276 @@ function statchasers_player_build_batch_locked( int $offset, array $roster, arra
 	}
 
 	return $result;
+}
+
+/**
+ * Publish one profile page, or find the one that won the race to it.
+ *
+ * Called with no page at the slug a moment ago (the caller's fresh check).
+ * Two things can still go wrong between that check and the insert, and both
+ * have happened:
+ *
+ *  - Another process publishes the slug first. WordPress never refuses a
+ *    taken slug; it appends -2 and publishes. That is how twenty-seven
+ *    `<slug>-2` pages came to exist on 2026-09-20.
+ *  - Both processes insert at once. wp_unique_post_slug() is a SELECT before
+ *    the INSERT, not a constraint, so two inserts in the same instant each
+ *    see the slug free and BOTH keep it. That is D'Andre Swift (4928, 4929)
+ *    and Tyson Bagent (4926, 4927): the same slug, the same parent, the same
+ *    second, from the same 2026-09-20 build. The rename check above could
+ *    not see them - neither page was renamed - and the 2026-10-14 cleanup,
+ *    which looked for `-2` slugs, missed them for the same reason.
+ *
+ * So after the insert every page under the container holding the slug is
+ * read back, oldest first, and the OLDEST wins: it is the one WordPress
+ * resolves the address to (get_page_by_path() takes the first match, and the
+ * live site serves 4926 and 4928). A process whose page is not the oldest
+ * deletes its own - seconds old, empty, ours - and reports the winner. Each
+ * racer decides from the same ordering, so all of them agree on one page
+ * whichever order they finish in, with or without the build lock.
+ *
+ * @param array<string,mixed> $row       Roster row.
+ * @param int                 $container The /nfl/players/ page.
+ * @return array{id:int,created:bool,error:string}
+ */
+function statchasers_player_create_page( array $row, int $container ): array {
+	$slug = (string) $row['slug'];
+
+	// The stored title, which on a normal template is the H1. The position is
+	// in it because six hundred names in an admin list are hard to tell apart;
+	// statchasers_player_heading() takes it back off for the heading a reader
+	// sees.
+	$title = '' === (string) ( $row['position'] ?? '' )
+		? (string) $row['name']
+		: sprintf( '%s (%s)', $row['name'], $row['position'] );
+
+	$id = wp_insert_post(
+		array(
+			'post_type'    => 'page',
+			'post_status'  => 'publish',
+			'post_title'   => $title,
+			'post_name'    => $slug,
+			'post_parent'  => $container,
+			'post_content' => '[' . STATCHASERS_PLAYER_SHORTCODE . ']',
+		),
+		true
+	);
+
+	if ( is_wp_error( $id ) ) {
+		return array( 'id' => 0, 'created' => false, 'error' => $id->get_error_message() );
+	}
+
+	$id = (int) $id;
+
+	// Renamed: somebody else holds the slug. Undo ours and use theirs.
+	$made = get_post( $id );
+	$got  = $made instanceof WP_Post ? (string) $made->post_name : $slug;
+	if ( $got !== $slug ) {
+		wp_delete_post( $id, true );
+		$winner = statchasers_player_sibling_page( $slug, $container );
+		if ( ! $winner ) {
+			return array( 'id' => 0, 'created' => false, 'error' => sprintf( 'the slug "%s" was taken by a page that could not be found.', $slug ) );
+		}
+		return array( 'id' => $winner, 'created' => false, 'error' => '' );
+	}
+
+	// Not renamed, but maybe not alone: the same-instant race.
+	$kept = statchasers_player_settle_slug_race( $id, $slug, $container );
+
+	return array( 'id' => $kept, 'created' => $kept === $id, 'error' => '' );
+}
+
+/**
+ * Every page under the container at this slug, oldest first (any status but trash).
+ *
+ * @return int[]
+ */
+function statchasers_player_same_slug_pages( string $slug, int $container ): array {
+	if ( '' === $slug || ! $container ) {
+		return array();
+	}
+
+	$ids = get_posts(
+		array(
+			'post_type'        => 'page',
+			'post_parent'      => $container,
+			'post_status'      => array( 'publish', 'draft', 'pending', 'private', 'future' ),
+			'name'             => $slug,
+			'numberposts'      => -1,
+			'orderby'          => 'ID',
+			'order'            => 'ASC',
+			'fields'           => 'ids',
+			'no_found_rows'    => true,
+			'suppress_filters' => false,
+			'cache_results'    => false,
+		)
+	);
+
+	$ids = array_map( 'intval', (array) $ids );
+	sort( $ids );
+	return $ids;
+}
+
+/**
+ * Keep the oldest page at a slug; delete ours if it is not that one.
+ *
+ * Only ever deletes $id, the page this process created a moment ago. A
+ * second page found here that is NOT ours is left for the duplicate report
+ * (statchasers_player_duplicate_plan) - this function cleans up after its
+ * own insert and nothing else.
+ *
+ * @return int The page that holds the slug.
+ */
+function statchasers_player_settle_slug_race( int $id, string $slug, int $container ): int {
+	$ids = statchasers_player_same_slug_pages( $slug, $container );
+	if ( count( $ids ) < 2 || ! in_array( $id, $ids, true ) ) {
+		return $id;
+	}
+
+	$oldest = $ids[0];
+	if ( $oldest !== $id ) {
+		wp_delete_post( $id, true );
+	}
+	return $oldest;
+}
+
+/**
+ * The duplicate profile pages already published, as a dry-run plan.
+ *
+ * Groups the container's children by slug; any slug held by two or more
+ * pages is a duplicate group. The page to keep is the OLDEST, which is the
+ * one WordPress resolves the public URL to (see statchasers_player_create_page);
+ * the others are listed to retire, with what would be lost if they went: a
+ * body other than the bare shortcode, a Rank Math field that differs from
+ * the keeper's, or an old slug (a redirect) the keeper does not carry.
+ * Nothing here writes. statchasers_player_duplicate_apply() does, and only
+ * for the ids it is handed.
+ *
+ *     wp eval 'echo wp_json_encode( statchasers_player_duplicate_plan(), JSON_PRETTY_PRINT );'
+ *
+ * @return array<int,array{slug:string,keep:int,retire:int[],differences:array<int,string[]>}>
+ */
+function statchasers_player_duplicate_plan(): array {
+	global $wpdb;
+
+	$container = statchasers_player_container();
+	if ( ! $container ) {
+		return array();
+	}
+
+	$rows = $wpdb->get_results(
+		$wpdb->prepare(
+			"SELECT ID, post_name FROM {$wpdb->posts}
+			 WHERE post_type = 'page' AND post_parent = %d AND post_status != 'trash'
+			 ORDER BY ID ASC",
+			$container
+		)
+	);
+
+	$by_slug = array();
+	foreach ( (array) $rows as $row ) {
+		$by_slug[ (string) $row->post_name ][] = (int) $row->ID;
+	}
+
+	$plan = array();
+	foreach ( $by_slug as $slug => $ids ) {
+		if ( count( $ids ) < 2 ) {
+			continue;
+		}
+		sort( $ids );
+		$keep        = array_shift( $ids );
+		$differences = array();
+		foreach ( $ids as $other ) {
+			$differences[ $other ] = statchasers_player_duplicate_differences( $keep, $other );
+		}
+		$plan[] = array(
+			'slug'        => (string) $slug,
+			'keep'        => $keep,
+			'retire'      => $ids,
+			'differences' => $differences,
+		);
+	}
+
+	return $plan;
+}
+
+/**
+ * What a retired duplicate holds that its keeper does not. Empty = nothing lost.
+ *
+ * @return string[]
+ */
+function statchasers_player_duplicate_differences( int $keep, int $other ): array {
+	$out = array();
+
+	$a = get_post( $keep );
+	$b = get_post( $other );
+	if ( ! $a instanceof WP_Post || ! $b instanceof WP_Post ) {
+		return array( 'unreadable' );
+	}
+
+	if ( trim( (string) $a->post_content ) !== trim( (string) $b->post_content ) ) {
+		$out[] = 'post_content';
+	}
+	if ( (string) $a->post_title !== (string) $b->post_title ) {
+		$out[] = 'post_title';
+	}
+	foreach ( array( 'rank_math_title', 'rank_math_description', 'rank_math_robots', 'rank_math_canonical_url', 'rank_math_focus_keyword' ) as $key ) {
+		if ( get_post_meta( $keep, $key, true ) != get_post_meta( $other, $key, true ) ) { // phpcs:ignore Universal.Operators.StrictComparisons -- serialized arrays compare by value.
+			$out[] = $key;
+		}
+	}
+	$old_keep  = (array) get_post_meta( $keep, '_wp_old_slug', false );
+	$old_other = (array) get_post_meta( $other, '_wp_old_slug', false );
+	if ( array_diff( $old_other, $old_keep ) ) {
+		$out[] = '_wp_old_slug';
+	}
+	if ( (int) get_post_thumbnail_id( $other ) && ! (int) get_post_thumbnail_id( $keep ) ) {
+		$out[] = '_thumbnail_id';
+	}
+
+	return $out;
+}
+
+/**
+ * Retire the duplicates a plan lists - only the ids authorized.
+ *
+ * Trash, not delete: a mistake is one click to undo. An id is retired only
+ * when the CURRENT plan still lists it as a duplicate to retire (so a stale
+ * list cannot trash a page that has since become the only one at its slug)
+ * and nothing would be lost (no differences); anything else is reported and
+ * left alone. Returns what happened to each id asked about.
+ *
+ *     wp eval 'print_r( statchasers_player_duplicate_apply( array( 4927, 4929 ) ) );'
+ *
+ * @param int[] $authorized Page ids somebody has approved retiring.
+ * @return array<int,string> id => 'trashed' | 'skipped: <why>'
+ */
+function statchasers_player_duplicate_apply( array $authorized ): array {
+	$retire = array();
+	foreach ( statchasers_player_duplicate_plan() as $group ) {
+		foreach ( $group['retire'] as $id ) {
+			$retire[ $id ] = $group['differences'][ $id ] ?? array();
+		}
+	}
+
+	$done = array();
+	foreach ( array_map( 'intval', $authorized ) as $id ) {
+		if ( ! isset( $retire[ $id ] ) ) {
+			$done[ $id ] = 'skipped: not a duplicate the current plan retires';
+			continue;
+		}
+		if ( $retire[ $id ] ) {
+			$done[ $id ] = 'skipped: holds ' . implode( ', ', $retire[ $id ] ) . ' the keeper does not';
+			continue;
+		}
+		$done[ $id ] = wp_trash_post( $id ) ? 'trashed' : 'skipped: wp_trash_post failed';
+	}
+
+	if ( in_array( 'trashed', $done, true ) && function_exists( 'statchasers_news_flush' ) ) {
+		statchasers_news_flush();
+	}
+
+	return $done;
 }
 
 /**
@@ -831,8 +1068,8 @@ function statchasers_player_page_meta( array $row ): array {
 
 	return array(
 		// mak's player-entity brief of 2026-11-03: the hub is the player's
-		// page, so its title is the evergreen "{Name} Stats, News, Bio &
-		// Fantasy Outlook | StatChasers" with no year; the brand gives way
+		// page, so its title is evergreen with no year - "{Name} NFL Stats &
+		// News | StatChasers" since the 2026-11-26 audit; the brand gives way
 		// first for a long name (statchasers_branded_title), then the wording
 		// shortens. statchasers_player_retitle_apply() moves the stored
 		// titles over.
@@ -859,10 +1096,12 @@ function statchasers_player_page_meta( array $row ): array {
  * @return string[]
  */
 function statchasers_player_title_ladder( string $name ): array {
+	// The 2026-11-26 audit (WEB-029): the hub is the player's NFL page, stats
+	// and news, within sixty characters brand included. "Stats, News, Bio &
+	// Fantasy Outlook | StatChasers" put 443 of 632 sampled titles over.
+	$name = trim( (string) preg_replace( '/\s+/u', ' ', $name ) );
 	return array(
-		sprintf( '%s Stats, News, Bio & Fantasy Outlook', $name ),
-		sprintf( '%s Stats, News & Fantasy Outlook', $name ),
-		sprintf( '%s Stats, News & Outlook', $name ),
+		sprintf( '%s NFL Stats & News', $name ),
 		sprintf( '%s Stats & News', $name ),
 	);
 }
@@ -871,8 +1110,9 @@ function statchasers_player_title_ladder( string $name ): array {
  * The first wording that fits, branded where the brand still fits.
  *
  * MIRRORS brandedTitle() in the API's src/lib/player-seo.ts: each rung is
- * tried with " | StatChasers" (within seventy characters), then bare
- * (within sixty), before the next rung is tried at all. mak's player-entity
+ * tried with " | StatChasers", then bare, both within sixty characters
+ * (since the 2026-11-26 audit; the brand had seventy), before the next rung
+ * is tried at all. mak's player-entity
  * brief (2026-11-03) puts the brand on every player title; the brand is the
  * one part a results page may cut without losing meaning, so it is allowed
  * ten characters past the sixty-character rule of 2026-10-08 and is the
@@ -882,8 +1122,12 @@ function statchasers_player_title_ladder( string $name ): array {
  */
 function statchasers_branded_title( array $cores ): string {
 	foreach ( $cores as $core ) {
+		// Stray whitespace from a feed's name never reaches a title (WEB-022).
+		$core    = trim( (string) preg_replace( '/\s+/u', ' ', (string) $core ) );
 		$branded = $core . ' | StatChasers';
-		if ( strlen( $branded ) <= 70 ) {
+		// Sixty with the brand since the 2026-11-26 audit (WEB-029); it was
+		// seventy, ten characters past the bare rule.
+		if ( strlen( $branded ) <= 60 ) {
 			return $branded;
 		}
 		if ( strlen( $core ) <= 60 ) {
@@ -1036,6 +1280,135 @@ function statchasers_player_write_index( int $container ): void {
 }
 
 /* ----------------------------------------------------------------- redirects */
+
+/**
+ * The one permanent redirect a player URL variant deserves, or ''.
+ *
+ * The 2026-11-26 audit (WEB-008/WEB-005): `/nfl/players/Jahmyr-Gibbs/`,
+ * `/NFL/Players/jahmyr-gibbs/` and `/nfl/players//jahmyr-gibbs/` all answered
+ * 200 (MySQL matches the slug case-insensitively, and WordPress collapses the
+ * empty segment), each a copy of the page under a lowercase canonical; and
+ * `/nfl/players/jahmyr-gibbs/Stats/` was a 404 for a page that exists. Each
+ * variant now goes to the canonical address in ONE hop, with:
+ *
+ *  - lowercase path, single slashes, trailing slash;
+ *  - `/overview/` folded into the profile (it 301s there anyway);
+ *  - a retired `-2`..`-9` duplicate slug (the 2026-09-20 race) folded into
+ *    the slug it duplicated, when that one is published and the suffixed one
+ *    is not - the Rank Math regex redirect does the same for the plain case;
+ *  - `?log=YYYY` (the Game Log's season links until WEB-020) moved to the
+ *    Game Log with the season in the fragment, `/game-log/#log=YYYY`, which
+ *    the page reads to open that season. An unreadable `?log=` is dropped.
+ *    Every other query parameter is kept as it was.
+ *
+ * Nothing is redirected that would not resolve: the slug must be a
+ * published profile and the section one of STATCHASERS_PLAYER_SECTIONS, so
+ * an unknown player or an invalid tab keeps its 404 rather than gaining a
+ * redirect to one. The retired `/nfl/players/<section>/<slug>/` layout is
+ * left to statchasers_player_legacy_target().
+ *
+ * @param string $uri The request URI as the client sent it (path and query).
+ * @return string Absolute target, or '' for no redirect.
+ */
+function statchasers_player_canonical_target( string $uri ): string {
+	$uri   = (string) preg_replace( '/#.*$/s', '', $uri );
+	$qpos  = strpos( $uri, '?' );
+	$path  = false === $qpos ? $uri : substr( $uri, 0, $qpos );
+	$query = false === $qpos ? '' : substr( $uri, $qpos + 1 );
+
+	$base_parts = explode( '/', statchasers_player_url_base() );
+	$segments   = array_values( array_filter( explode( '/', $path ), 'strlen' ) );
+	$lower      = array_map( 'strtolower', $segments );
+
+	if ( array_slice( $lower, 0, count( $base_parts ) ) !== $base_parts ) {
+		return '';
+	}
+
+	$rest = array_slice( $lower, count( $base_parts ) );
+	if ( count( $rest ) < 1 || count( $rest ) > 2 ) {
+		return '';
+	}
+
+	$slug    = (string) $rest[0];
+	$section = (string) ( $rest[1] ?? '' );
+
+	if ( in_array( $slug, STATCHASERS_PLAYER_SECTIONS, true ) ) {
+		return ''; // The retired section-first layout; see the legacy redirect.
+	}
+	if ( '' !== $section && ! in_array( $section, STATCHASERS_PLAYER_SECTIONS, true ) ) {
+		return ''; // An invalid tab stays a 404.
+	}
+
+	$published = statchasers_player_published_slugs();
+	if ( ! isset( $published[ $slug ] ) ) {
+		if ( 1 === preg_match( '/^(.+)-[2-9]$/', $slug, $m ) && isset( $published[ $m[1] ] ) ) {
+			$slug = $m[1];
+		} else {
+			return ''; // An unknown player stays a 404.
+		}
+	}
+
+	$kept = array();
+	$log  = '';
+	foreach ( explode( '&', $query ) as $pair ) {
+		if ( '' === $pair ) {
+			continue;
+		}
+		$parts = explode( '=', $pair, 2 );
+		$key   = strtolower( urldecode( $parts[0] ) );
+		// `log`, and the array spellings PHP also files under it.
+		if ( 1 === preg_match( '/^log(\[.*)?$/', $key ) ) {
+			$value = trim( urldecode( $parts[1] ?? '' ) );
+			if ( 1 === preg_match( '/^(19|20)\d{2}$/', $value ) ) {
+				$log = $value;
+			}
+			continue;
+		}
+		$kept[] = $pair;
+	}
+
+	if ( '' !== $log ) {
+		$section = 'game-log';
+	}
+	if ( 'overview' === $section ) {
+		$section = '';
+	}
+
+	$target_path = '/' . implode( '/', $base_parts ) . '/' . $slug . '/' . ( '' === $section ? '' : $section . '/' );
+	$target      = $target_path . ( $kept ? '?' . implode( '&', $kept ) : '' );
+
+	if ( '' === $log && $target === $path . ( '' === $query ? '' : '?' . $query ) ) {
+		return '';
+	}
+
+	return home_url( $target ) . ( '' === $log ? '' : '#log=' . $log );
+}
+
+/**
+ * 301 a player URL variant to its canonical address. See the function above.
+ *
+ * At template_redirect priority 1, ahead of the legacy (8), old-slug and
+ * overview (9) redirects and core's redirect_canonical (10), so a reader gets
+ * one hop to the final address rather than a chain.
+ */
+function statchasers_player_normalize_redirect(): void {
+	if ( is_admin() ) {
+		return;
+	}
+	// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+	$method = strtoupper( (string) ( $_SERVER['REQUEST_METHOD'] ?? 'GET' ) );
+	if ( 'GET' !== $method && 'HEAD' !== $method ) {
+		return;
+	}
+	// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+	$target = statchasers_player_canonical_target( (string) ( $_SERVER['REQUEST_URI'] ?? '' ) );
+	if ( '' === $target ) {
+		return;
+	}
+	wp_safe_redirect( $target, 301 );
+	exit;
+}
+add_action( 'template_redirect', 'statchasers_player_normalize_redirect', 1 );
 
 /**
  * A profile that has moved answers at its old address, as a 301.
@@ -1597,9 +1970,11 @@ function statchasers_player_generated_title( string $title ): string {
 	if ( 1 === preg_match( '/^(.+) Fantasy(?: Football)? (\d{4}): Stats(?:, Outlook & News| & Outlook)$/', $title, $m ) ) {
 		return statchasers_branded_title( statchasers_player_title_ladder( $m[1] ) );
 	}
-	// The evergreen ladder since 2026-11-03 (mak's player-entity brief):
-	// any rung, with or without the brand.
-	if ( 1 === preg_match( '/^(.+) Stats(?:, News(?:, Bio)? & (?:Fantasy )?Outlook| & News)(?: \| StatChasers)?$/', $title, $m ) ) {
+	// The evergreen ladders since 2026-11-03 (mak's player-entity brief) and
+	// 2026-11-26 ("{Name} NFL Stats & News", WEB-029): any rung, with or
+	// without the brand. The name is matched lazily so " NFL" is never read
+	// as part of it.
+	if ( 1 === preg_match( '/^(.+?)(?: NFL)? Stats(?:, News(?:, Bio)? & (?:Fantasy )?Outlook| & News)(?: \| StatChasers)?$/', $title, $m ) ) {
 		return statchasers_branded_title( statchasers_player_title_ladder( $m[1] ) );
 	}
 	return '';
@@ -1649,7 +2024,7 @@ function statchasers_player_retitle_plan(): array {
 
 		if ( '' === $current ) {
 			if ( isset( $roster[ $slug ] ) ) {
-				$plan['eligible'][ $id ] = statchasers_fit_title( statchasers_player_title_ladder( $roster[ $slug ] ) );
+				$plan['eligible'][ $id ] = statchasers_branded_title( statchasers_player_title_ladder( $roster[ $slug ] ) );
 			}
 			continue;
 		}
@@ -1663,6 +2038,42 @@ function statchasers_player_retitle_plan(): array {
 	}
 
 	return $plan;
+}
+
+/**
+ * The retitle as a dry run: what would change, nothing written.
+ *
+ * For a reviewer before the button is pressed (or before the apply runs
+ * from WP-CLI): counts, how many titles are over sixty characters now and
+ * after, and every change as old => new.
+ *
+ *     wp eval 'echo wp_json_encode( statchasers_player_retitle_report(), JSON_PRETTY_PRINT );'
+ *
+ * @return array{pages:int,changes:int,custom:int,over_60_before:int,over_60_after:int,rows:array<int,array{old:string,new:string,len:int}>}
+ */
+function statchasers_player_retitle_report(): array {
+	$plan   = statchasers_player_retitle_plan();
+	$rows   = array();
+	$before = 0;
+	$after  = 0;
+	foreach ( $plan['eligible'] as $id => $title ) {
+		$old = trim( (string) get_post_meta( $id, 'rank_math_title', true ) );
+		if ( strlen( $old ) > 60 ) {
+			++$before;
+		}
+		if ( strlen( $title ) > 60 ) {
+			++$after;
+		}
+		$rows[ $id ] = array( 'old' => $old, 'new' => $title, 'len' => strlen( $title ) );
+	}
+	return array(
+		'pages'          => count( $plan['eligible'] ) + count( $plan['custom'] ),
+		'changes'        => count( $plan['eligible'] ),
+		'custom'         => count( $plan['custom'] ),
+		'over_60_before' => $before,
+		'over_60_after'  => $after,
+		'rows'           => $rows,
+	);
 }
 
 /**

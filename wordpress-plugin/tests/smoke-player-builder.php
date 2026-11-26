@@ -325,3 +325,132 @@ is(
 	'<p>Allen Lazard and <a href="https://example.com/nfl/players/josh-allen/">Josh Allen</a></p>',
 	'and a fragment that links him prints his name instead'
 );
+
+/* ------------------------------------- the same-instant race (2026-11-26) */
+
+// 11. Both inserts checked the slug before either landed, so WordPress gave
+// BOTH the slug - no -2 for the rename check to see. D'Andre Swift (4928,
+// 4929) and Tyson Bagent (4926, 4927), 2026-09-20. The oldest page wins.
+echo "\ntwo inserts in the same instant keep one page, the oldest\n";
+
+$GLOBALS['options']          = array();
+$GLOBALS['deleted_posts']    = array();
+$GLOBALS['pages']            = array( 500 => $nfl, 501 => $players, 502 => sc_test_profile( 502, 'josh-allen' ), 504 => sc_test_profile( 504, 'cole-kmet' ) );
+$GLOBALS['insert_no_suffix'] = true;
+$GLOBALS['before_insert']    = static function ( array $args ): void {
+	// The other process, landing first and keeping the same slug.
+	$GLOBALS['pages'][600] = sc_test_profile( 600, (string) $args['post_name'] );
+};
+
+$result = statchasers_player_build_batch( 0 );
+$slugs  = array_map( static fn( $p ) => $p->post_name, $GLOBALS['pages'] );
+
+is( count( array_keys( $slugs, 'luther-burden', true ) ), 1, 'one luther-burden, not two with the same slug' );
+is( isset( $GLOBALS['pages'][600] ), true, 'the older page (the other process\'s) is kept' );
+is( count( $GLOBALS['deleted_posts'] ), 1, 'ours, the newer, is deleted' );
+is( $result['created'], 0, 'and not counted as created' );
+is( $result['existing'], 3, 'the kept page is counted as existing' );
+
+// 11b. The other order: ours lands first, the other process a moment later.
+// Ours is the oldest, so ours stays - and the other process, running the
+// same check, deletes its own (statchasers_player_settle_slug_race).
+$GLOBALS['deleted_posts'] = array();
+$GLOBALS['pages']         = array( 500 => $nfl, 501 => $players, 502 => sc_test_profile( 502, 'josh-allen' ), 504 => sc_test_profile( 504, 'cole-kmet' ) );
+$GLOBALS['after_insert']  = static function ( array $args ): void {
+	$GLOBALS['pages'][900] = sc_test_profile( 900, (string) $args['post_name'] );
+};
+$result = statchasers_player_build_batch( 0 );
+$ours   = array_keys( array_filter( $GLOBALS['pages'], static fn( $p ) => 'luther-burden' === $p->post_name && 900 !== $p->ID ) );
+is( $result['created'], 1, 'ours landed first: created' );
+is( count( $GLOBALS['deleted_posts'] ), 0, 'and kept' );
+is( statchasers_player_settle_slug_race( 900, 'luther-burden', 501 ), $ours[0] ?? -1, 'the later process, checking, is told ours is the page' );
+is( isset( $GLOBALS['pages'][900] ), false, 'and deletes its own' );
+is( statchasers_player_settle_slug_race( $ours[0] ?? 0, 'luther-burden', 501 ), $ours[0] ?? -1, 'alone at the slug: nothing to settle' );
+unset( $GLOBALS['insert_no_suffix'] );
+
+/* ------------------------------------------------- the duplicate dry run */
+
+echo "\nthe duplicate plan keeps the page the URL resolves to and retires only what is safe\n";
+
+$GLOBALS['pages'] = array(
+	500  => $nfl,
+	501  => $players,
+	4926 => sc_test_profile( 4926, 'tyson-bagent' ),
+	4927 => sc_test_profile( 4927, 'tyson-bagent' ),
+	4928 => sc_test_profile( 4928, 'dandre-swift' ),
+	4929 => sc_test_profile( 4929, 'dandre-swift' ),
+	5045 => sc_test_profile( 5045, 'jahmyr-gibbs' ),
+);
+$plan = statchasers_player_duplicate_plan();
+is( count( $plan ), 2, 'two duplicate groups' );
+is( array_map( static fn( $g ) => array( $g['slug'], $g['keep'], $g['retire'] ), $plan ), array( array( 'tyson-bagent', 4926, array( 4927 ) ), array( 'dandre-swift', 4928, array( 4929 ) ) ), 'keep the oldest (4926, 4928), retire the newer (4927, 4929)' );
+is( $plan[0]['differences'][4927], array(), 'the retired page holds nothing its keeper does not' );
+is( count( $GLOBALS['pages'] ), 7, 'the plan writes nothing' );
+
+$GLOBALS['trashed_posts'] = array();
+$done = statchasers_player_duplicate_apply( array( 4927, 4926, 5045 ) );
+is( $done[4927], 'trashed', 'an authorized duplicate is trashed' );
+is( 0 === strpos( $done[4926], 'skipped' ), true, 'the keeper is never trashed, even when named' );
+is( 0 === strpos( $done[5045], 'skipped' ), true, 'nor a page that is not a duplicate' );
+is( $GLOBALS['trashed_posts'], array( 4927 ), 'one page trashed, and only by trash' );
+is( isset( $done[4929] ), false, 'a duplicate nobody authorized is left alone' );
+is( $GLOBALS['pages'][4929]->post_status, 'publish', 'and stays published' );
+
+$GLOBALS['pages'][4929]->post_content = '<p>Hand-written notes.</p>[statchasers_player]';
+$held = statchasers_player_duplicate_apply( array( 4929 ) );
+is( 0 === strpos( $held[4929], 'skipped: holds post_content' ), true, 'a duplicate with content of its own is not trashed' );
+$GLOBALS['pages'][4929]->post_content = '[statchasers_player]';
+
+/* -------------------------------------------- one sitemap entry per slug */
+
+echo "\nthe sitemap lists the page the URL resolves to, once\n";
+
+$GLOBALS['pages'] = array(
+	500  => $nfl,
+	501  => $players,
+	4957 => sc_test_profile( 4957, 'cole-kmet' ),
+	4958 => sc_test_profile( 4958, 'cole-kmet' ),
+	502  => sc_test_profile( 502, 'josh-allen' ),
+);
+statchasers_player_resolved_ids( true ); // The request's list is read once; this is a new request.
+is( statchasers_player_sitemap_drop_left( $entry( 'cole-kmet' ), 'post', sc_test_row( $GLOBALS['pages'][4958] ) ), false, 'the shadowed duplicate\'s entry is dropped' );
+is( statchasers_player_sitemap_drop_left( $entry( 'cole-kmet' ), 'post', sc_test_row( $GLOBALS['pages'][4957] ) ), $entry( 'cole-kmet' ), 'the page the URL resolves to is kept' );
+is( statchasers_player_sitemap_drop_left( $entry( 'josh-allen' ), 'post', sc_test_row( $GLOBALS['pages'][502] ) ), $entry( 'josh-allen' ), 'a page alone at its slug is kept' );
+$GLOBALS['query']['sitemap_n'] = '';
+$xml = (string) apply_filters( 'rank_math/sitemap/page_content', '' );
+is( substr_count( $xml, '/p/4957/stats/' ), 1, 'the keeper\'s sections are listed once' );
+is( substr_count( $xml, '/p/4958/' ), 0, 'the duplicate\'s not at all' );
+
+/* ------------------------------------------- one hop to the canonical URL */
+
+echo "\nURL variants: one 301 to the canonical address, 404s left alone\n";
+
+// The published list was read once, above: josh-allen is the profile here.
+$cases = array(
+	'/nfl/players/Josh-Allen/'                       => 'https://example.com/nfl/players/josh-allen/',
+	'/NFL/Players/josh-allen/'                       => 'https://example.com/nfl/players/josh-allen/',
+	'/nfl/players//josh-allen/'                      => 'https://example.com/nfl/players/josh-allen/',
+	'/nfl/players/josh-allen'                        => 'https://example.com/nfl/players/josh-allen/',
+	'/nfl/players/josh-allen/Stats/'                 => 'https://example.com/nfl/players/josh-allen/stats/',
+	'/nfl/players/josh-allen//game-log'              => 'https://example.com/nfl/players/josh-allen/game-log/',
+	'/nfl/players/josh-allen/overview/'              => 'https://example.com/nfl/players/josh-allen/',
+	'/nfl/players/josh-allen/?log=2024'              => 'https://example.com/nfl/players/josh-allen/game-log/#log=2024',
+	'/nfl/players/josh-allen/game-log/?log=2023'     => 'https://example.com/nfl/players/josh-allen/game-log/#log=2023',
+	'/nfl/players/Josh-Allen/game-log/?log=2023&format=half' => 'https://example.com/nfl/players/josh-allen/game-log/?format=half#log=2023',
+	'/nfl/players/josh-allen/stats/?log=abc'         => 'https://example.com/nfl/players/josh-allen/stats/',
+	'/nfl/players/josh-allen/?log[]=2024'            => 'https://example.com/nfl/players/josh-allen/game-log/#log=2024',
+	'/nfl/players/josh-allen-2/news/'                => 'https://example.com/nfl/players/josh-allen/news/',
+	'/nfl/players/josh-allen/'                       => '',
+	'/nfl/players/josh-allen/stats/'                 => '',
+	'/nfl/players/josh-allen/?format=half'           => '',
+	'/nfl/players/zach-ertz-unknown/'                => '',
+	'/nfl/players/Zach-Ertz-Unknown/'                => '',
+	'/nfl/players/josh-allen/badtab/'                => '',
+	'/nfl/players/josh-allen/stats/extra/'           => '',
+	'/nfl/players/outlook/josh-allen/'               => '',
+	'/nfl/players/'                                  => '',
+	'/nfl/teams/buffalo-bills/'                      => '',
+);
+foreach ( $cases as $from => $want ) {
+	is( statchasers_player_canonical_target( $from ), $want, '' === $want ? "$from: no redirect" : "$from -> $want" );
+}

@@ -62,6 +62,8 @@ function rawGet(pathname, headers = {}) {
 let server;
 /** A player with a game log, picked once so every test looks at the same page. */
 let fixture;
+/** A player with two or more Game Log seasons, so the season buttons exist. */
+let veteran;
 let roster;
 
 before(async () => {
@@ -78,6 +80,14 @@ before(async () => {
     const html = await page.text();
     if (page.status === 200 && html.includes('id="game-log"')) {
       fixture = player;
+      break;
+    }
+  }
+  for (const player of roster.slice(0, 120)) {
+    const page = await fetch(`${server.origin}/player/${player.slug}/game-log/`);
+    const html = await page.text();
+    if (page.status === 200 && (html.match(/scp-glp-chip/g) ?? []).length >= 2) {
+      veteran = player;
       break;
     }
   }
@@ -156,6 +166,28 @@ async function hydrated(pathname) {
   jsdom.window.eval(playerBundle);
   await new Promise((r) => setTimeout(r, 50));
   return { window: jsdom.window, doc: jsdom.window.document, errors };
+}
+
+/** hydrated(), landing with a fragment in the address (a bookmark). */
+async function hydratedAt(pathname, hash) {
+  const res = await fetch(`${server.origin}${pathname}`);
+  assert.equal(res.status, 200, pathname);
+  playerBundle ??= fs.readFileSync(path.join(APP_DIR, "public", "dist", "statchasers-player.js"), "utf8");
+  const jsdom = new JSDOM(await res.text(), {
+    runScripts: "outside-only",
+    url: `${server.origin}${pathname}${hash}`,
+    pretendToBeVisual: true,
+  });
+  windows.push(jsdom.window);
+  jsdom.window.fetch = async (input, init) => {
+    const target = new URL(String(input), jsdom.window.location.href);
+    const response = await fetch(target, { headers: init?.headers });
+    const body = await response.text();
+    return { ok: response.ok, status: response.status, text: async () => body };
+  };
+  jsdom.window.eval(playerBundle);
+  await new Promise((r) => setTimeout(r, 50));
+  return { window: jsdom.window, doc: jsdom.window.document };
 }
 
 describe("player routes", () => {
@@ -292,12 +324,17 @@ describe("player page content", () => {
 
   test("the header's buttons say where they go and tag the tab", async () => {
     const { doc } = await dom(`/player/${fixture.slug}/game-log/`);
-    const redraft = doc.querySelector(".scp-pbtn--gold");
-    assert.equal(redraft.textContent.trim(), "View Fantasy Football Profile");
-    assert.ok(redraft.getAttribute("href").endsWith(`/redraft-command/players/${fixture.id}`));
-    assert.equal(redraft.getAttribute("data-cta"), "redraft-command-header-gamelog");
-    const start = doc.querySelector(".scp-pbtn--white");
-    if (start) assert.match(start.getAttribute("data-cta"), /^(startsit|outlook)-header-gamelog$/);
+    // The gold button is his weekly start/sit page (2026-11-26 audit,
+    // WEB-017), never Redraft Command's player shell.
+    assert.equal(doc.querySelector('a[href*="/redraft-command/players/"]'), null, "no link to the Redraft player shell");
+    const start = doc.querySelector(".scp-pbtn--gold");
+    if (start) {
+      assert.match(start.textContent.trim(), /^Should I start .+\?$/);
+      assert.ok(start.getAttribute("href").endsWith(`/redraft-command/who-should-i-start/${fixture.slug}`));
+      assert.equal(start.getAttribute("data-cta"), "startsit-header-gamelog");
+    }
+    const second = doc.querySelector(".scp-pbtn--white");
+    if (second) assert.match(second.getAttribute("data-cta"), /^(injury|outlook)-header-gamelog$/);
 
     const chip = doc.querySelector(".scp-mchip");
     if (chip) {
@@ -933,10 +970,12 @@ describe("the game log tab", () => {
   test("the season selector offers every season, newest first, the one on screen lit", async () => {
     // One log on the page (the game-log audit, 2026-11-04): picking a year
     // REPLACES the log, so the current season is a chip like the rest and
-    // there is no "All".
-    const { doc } = await dom(`/player/${fixture.slug}`);
+    // there is no "All". Buttons since the 2026-11-26 audit (WEB-020): no
+    // `?log=` link per season for a crawler to follow.
+    assert.ok(veteran, "a multi-season player in the first 120");
+    const { doc } = await dom(`/player/${veteran.slug}/game-log/`);
     const chips = [...doc.querySelectorAll("#game-log .scp-seasonnav .scp-season-opt")];
-    if (chips.length === 0) return; // a single-season player gets no selector
+    assert.ok(chips.length >= 2);
 
     const shown = Number(doc.querySelector("[data-scp-root]")?.getAttribute("data-log-season"));
     const years = chips.map((a) => Number(a.textContent.trim()));
@@ -947,20 +986,41 @@ describe("the game log tab", () => {
     const lit = chips.filter((a) => a.classList.contains("is-active"));
     assert.equal(lit.length, 1);
     assert.equal(Number(lit[0].textContent.trim()), shown);
-    assert.equal(lit[0].getAttribute("aria-current"), "true");
-    assert.ok(!lit[0].getAttribute("href").includes("log="), "the current season is the bare address");
+    assert.equal(lit[0].getAttribute("aria-pressed"), "true");
     for (const chip of chips) {
-      // One game log is the page that ranks; a past season is a rendering of
-      // it rather than a second address competing with it.
-      const past = Number(chip.textContent.trim()) !== shown;
-      assert.equal(chip.getAttribute("rel"), past ? "nofollow" : null, `${chip.textContent.trim()}: nofollow only on a past year`);
-      if (past) assert.ok(chip.getAttribute("href").includes("log="), "a past year is ?log=");
+      assert.equal(chip.tagName, "BUTTON", "a season is a button");
+      assert.equal(chip.getAttribute("type"), "button");
+      assert.equal(chip.getAttribute("href"), null);
+      assert.equal(chip.getAttribute("data-season"), chip.textContent.trim());
     }
-    // The selector sits under the tab's heading and above the table.
+    const opts = [...doc.querySelectorAll("#game-log .scp-glp-yr-opt")];
+    assert.ok(opts.every((o) => o.tagName === "BUTTON"), "the phone menu's options are buttons too");
+    assert.equal(doc.querySelector('#game-log a[href*="log="]'), null, "no ?log= link anywhere in the Game Log");
     const nav = doc.querySelector("#game-log .scp-seasonnav");
+    assert.equal(nav.getAttribute("data-scp-log-default"), doc.querySelector("[data-scp-root]").getAttribute("data-season"));
+    assert.equal(nav.getAttribute("data-scp-log-src"), null, "the standalone page fetches its own address");
+    // The selector sits under the tab's heading and above the table.
     const table = doc.querySelector("#game-log table.scp-glp-table");
     assert.ok(nav.compareDocumentPosition(table) & 4, "the selector comes before the log it selects");
     assert.equal(doc.querySelector("#game-log .scp-archive"), null, "no second log block under the page");
+  });
+
+  test("the embedded Game Log names the fragment endpoint its season buttons fetch", async () => {
+    const { body } = await get(`/embed/player/${veteran.slug}?section=game-log&h1=1`);
+    const doc = new JSDOM(body).window.document;
+    const nav = doc.querySelector(".scp-glp-seasons");
+    const src = new URL(nav.getAttribute("data-scp-log-src"), server.origin);
+    assert.equal(src.pathname, `/embed/player/${veteran.slug}`);
+    assert.equal(src.searchParams.get("section"), "game-log");
+    assert.equal(src.searchParams.get("h1"), "1");
+    assert.equal(src.searchParams.get("log"), null, "the client adds the season");
+    assert.equal(doc.querySelector('a[href*="log="]'), null, "no ?log= link in the fragment");
+    // The endpoint answers each season with that season's log.
+    const past = [...doc.querySelectorAll(".scp-glp-seasons .scp-season-opt")].map((b) => b.dataset.season).find((y) => y !== nav.dataset.scpLogDefault);
+    src.searchParams.set("log", past);
+    const pinned = new JSDOM((await get(src.pathname + src.search)).body).window.document;
+    assert.equal(pinned.querySelector(".scp-glp-seasons").dataset.scpLogShown, past);
+    assert.equal(pinned.querySelector(".scp-glp-chip.is-active").dataset.season, past);
   });
 
   test("the season at a glance sits over the table, summed from the same rows", async () => {
@@ -979,13 +1039,15 @@ describe("the game log tab", () => {
   });
 
   test("a past season replaces the log: its heading, its table, no fixtures, the profile untouched", async () => {
-    const { doc } = await dom(`/player/${fixture.slug}`);
+    const { doc } = await dom(`/player/${veteran.slug}`);
     const chips = [...doc.querySelectorAll("#game-log .scp-seasonnav .scp-season-opt")];
     const other = chips.find((a) => !a.classList.contains("is-active"));
-    if (!other) return;
+    assert.ok(other);
 
+    // The standalone page still renders `?log=`, which is what the season
+    // swap fetches there (the plugin 301s it on WordPress).
     const year = Number(other.textContent.trim());
-    const pinned = await dom(`${other.getAttribute("href")}`);
+    const pinned = await dom(`/player/${veteran.slug}?log=${year}`);
     const gl = pinned.doc.querySelector("#game-log");
     assert.match(gl.querySelector(".scp-glp-title").textContent, new RegExp(`Game Log ${year}$`), "the heading names the year");
     assert.equal(gl.querySelectorAll("table.scp-glp-table").length, 1, "one log on the page");
@@ -997,8 +1059,9 @@ describe("the game log tab", () => {
     // The lit chip is the year; the current season's chip is the way back.
     const lit = gl.querySelector(".scp-season-opt.is-active");
     assert.equal(lit.textContent.trim(), String(year));
-    const back = [...gl.querySelectorAll(".scp-season-opt")].find((a) => !a.getAttribute("href").includes("log="));
-    assert.ok(back, "the current season's chip is the bare address");
+    const current = doc.querySelector("[data-scp-root]").getAttribute("data-season");
+    const back = [...gl.querySelectorAll(".scp-season-opt")].find((a) => a.dataset.season === current);
+    assert.ok(back, "the current season's chip is there to go back");
 
     // The rest of the profile is untouched: the hero and the title's year.
     assert.equal(
@@ -2977,7 +3040,8 @@ describe("the embedded fragment", () => {
     const own = profile.body.match(/<script type="application\/json" class="scp-page-data">(.*?)<\/script>/s);
     assert.ok(own, "the profile hands the plugin its own copy");
     const hub = JSON.parse(own[1]);
-    assert.match(hub.title, new RegExp(`^${fixture.name} Stats, News(?:, Bio)? & (?:Fantasy )?Outlook(?: \\| StatChasers)?$`), "the hub's evergreen title");
+    assert.match(hub.title, new RegExp(`^${fixture.name} (?:NFL )?Stats & News(?: \\| StatChasers)?$`), "the hub's evergreen title");
+    assert.ok(hub.title.length <= 60, "within sixty characters, brand included");
     assert.ok(hub.title.length <= 70, `hub title within 70: ${hub.title}`);
     assert.ok(hub.description.length <= 155, `hub description within 155: ${hub.description}`);
   });
@@ -3373,11 +3437,14 @@ describe("player section URLs", () => {
       "the H1's subtitle follows the tab",
     );
     const tag = target.replace(/[^a-z0-9]/gi, "");
-    assert.equal(
-      doc.querySelector(".scp-pbtn--gold").getAttribute("data-cta"),
-      `redraft-command-header-${tag}`,
-      "and so does the analytics tag on the header's buttons",
-    );
+    const gold = doc.querySelector(".scp-pbtn--gold");
+    if (gold) {
+      assert.equal(
+        gold.getAttribute("data-cta"),
+        `startsit-header-${tag}`,
+        "and so does the analytics tag on the header's buttons",
+      );
+    }
 
     // Nothing loaded: the other panels are still in the document, which is what
     // separates this from having navigated.
@@ -3530,17 +3597,13 @@ describe("player section URLs", () => {
  * disagreeing is the one failure a reader would believe rather than notice.
  */
 /**
- * A state control changes the page, not the address.
+ * A season button changes the log, not the page's path.
  *
- * `?log=2024` is still a real URL: the server renders it, the season chips
- * still link to it, and with scripting off following one is how the selection
- * changes - the tests above cover that side. What these cover is the side a
- * reader sees. One player is one page with one address, and pressing a control
- * on the page they are already on must not leave them holding a different one.
- *
- * These used to be driven through the scoring toggle, which was the first and
- * loudest member of this family. It is gone from the control bar, so the season chips - same wiring, same
- * pageUrl(), same swap - are what exercises it.
+ * Since the 2026-11-26 audit (WEB-020) the seasons are buttons. A click
+ * fetches the season's render (the fragment endpoint on WordPress, the
+ * page's own `?log=` here) and swaps the root in place; the address keeps
+ * its path and carries the season as `#log=<year>`, cleared for the default
+ * season, so a reload or a bookmark reopens it.
  */
 describe("a state swap", () => {
   /** Wait for the swapped-in render, which is a real request to the server. */
@@ -3552,121 +3615,82 @@ describe("a state swap", () => {
     return false;
   }
 
-  /** The game log's season chips, which a single-season player does not get. */
+  /** The game log's season chips. */
   function chips(doc) {
     return [...doc.querySelectorAll("#game-log .scp-seasonnav .scp-season-opt")];
   }
+  const shownSeason = (doc) => doc.querySelector("#game-log .scp-seasonnav")?.getAttribute("data-scp-log-shown") ?? "";
 
-  test("picking a season re-renders in place and leaves the URL alone", async () => {
-    const landed = `/player/${fixture.slug}`;
+  test("picking a season re-renders in place, keeps the path and writes #log=", async () => {
+    const landed = `/player/${veteran.slug}/game-log/`;
     const { window, doc, errors } = await hydrated(landed);
     assert.deepEqual(errors, [], "the bundle ran without throwing");
+    const current = doc.querySelector("[data-scp-root]").getAttribute("data-season");
+    assert.equal(shownSeason(doc), current, "the page arrives on the current season");
 
-    const pinned = () =>
-      doc.querySelector("[data-scp-root]").getAttribute("data-archive-season") ?? "";
-    assert.equal(pinned(), "", "the page arrives with nothing pinned");
-
-    // A past season: the chip that is not lit (since 2026-11-04 the current
-    // season is a chip too, and the lit one; there is no "all").
     const year = chips(doc).find((chip) => !chip.classList.contains("is-active"));
-    if (!year) return; // a single-season player has no selector to press
     const want = year.getAttribute("data-season");
+    year.dispatchEvent(new window.MouseEvent("click", { bubbles: true, cancelable: true }));
+    assert.ok(await settled(() => shownSeason(doc), want), `the page re-rendered on ${want}`);
 
-    year.dispatchEvent(
-      new window.MouseEvent("click", { bubbles: true, cancelable: true }),
-    );
-    assert.ok(await settled(pinned, want), `the page re-rendered on ${want}`);
-
-    assert.equal(window.location.pathname, landed, "the address bar did not move");
-    assert.equal(window.location.search, "", "and nothing was appended to it");
-
+    assert.equal(window.location.pathname, landed, "the path did not move");
+    assert.equal(window.location.search, "", "and no query was appended");
+    assert.equal(window.location.hash, `#log=${want}`, "the season is in the fragment");
     const active = doc.querySelector("#game-log .scp-seasonnav .scp-season-opt.is-active");
-    assert.equal(
-      active.getAttribute("data-season"),
-      want,
-      "the lit chip is the one the reader chose",
-    );
-    assert.ok(
-      doc.querySelectorAll("[data-scp-panel]").length > 1,
-      "and it is the whole profile that came back, not one section of it",
-    );
+    assert.equal(active.getAttribute("data-season"), want, "the lit chip is the one the reader chose");
+    assert.equal(doc.activeElement?.getAttribute("data-season"), want, "focus stays on the chosen season");
+
+    // Back to the current season: the fragment comes off.
+    chips(doc).find((chip) => chip.getAttribute("data-season") === current)
+      .dispatchEvent(new window.MouseEvent("click", { bubbles: true, cancelable: true }));
+    assert.ok(await settled(() => shownSeason(doc), current), "the current season is back");
+    assert.equal(window.location.pathname + window.location.search + window.location.hash, landed);
   });
 
-  test("clearing the pin is the bare slug again, not a cleaned-up query", async () => {
-    const landed = `/player/${fixture.slug}`;
-    const { window, doc } = await hydrated(landed);
-    const pinned = () =>
-      doc.querySelector("[data-scp-root]").getAttribute("data-archive-season") ?? "";
+  test("a #log= bookmark opens on that season; an unknown one is cleared", async () => {
+    const base = `/player/${veteran.slug}/game-log/`;
+    const probe = await dom(base);
+    const current = probe.doc.querySelector("[data-scp-root]").getAttribute("data-season");
+    const past = chips(probe.doc).map((c) => c.getAttribute("data-season")).find((y) => y !== current);
 
-    const pick = (season) =>
-      chips(doc).find((chip) => chip.getAttribute("data-season") === season);
+    const { window, doc } = await hydratedAt(base, `#log=${past}`);
+    assert.ok(await settled(() => shownSeason(doc), past), `the bookmark reopened ${past}`);
+    assert.equal(window.location.hash, `#log=${past}`);
 
-    // A past season: the chip that is not lit (since 2026-11-04 the current
-    // season is a chip too, and the lit one; there is no "all").
-    const year = chips(doc).find((chip) => !chip.classList.contains("is-active"));
-    if (!year) return;
-    const want = year.getAttribute("data-season");
-
-    year.dispatchEvent(new window.MouseEvent("click", { bubbles: true, cancelable: true }));
-    assert.ok(await settled(pinned, want), `${want} pinned`);
-
-    // The current season's chip is the bare address - the one the reader is
-    // standing on. Following it must still swap rather than navigate.
-    const current = doc.querySelector("[data-scp-root]").getAttribute("data-season");
-    pick(current).dispatchEvent(
-      new window.MouseEvent("click", { bubbles: true, cancelable: true }),
-    );
-    assert.ok(await settled(pinned, ""), "the pin came off");
-    assert.equal(window.location.pathname + window.location.search, landed);
+    const odd = await hydratedAt(base, "#log=1971");
+    await new Promise((r) => setTimeout(r, 300));
+    assert.equal(shownSeason(odd.doc), current, "a season he has no log for is ignored");
+    assert.equal(odd.window.location.hash, "", "and taken out of the address");
   });
 
   test("the tab the reader is on survives the swap", async () => {
-    const { window, doc } = await hydrated(`/player/${fixture.slug}`);
-    const pinned = () =>
-      doc.querySelector("[data-scp-root]").getAttribute("data-archive-season") ?? "";
-
+    const { window, doc } = await hydrated(`/player/${veteran.slug}`);
     const click = (el) =>
       el.dispatchEvent(new window.MouseEvent("click", { bubbles: true, cancelable: true }));
 
     click(doc.querySelector('.scp-nav-link[data-scp-panel-id="game-log"]'));
     assert.ok(doc.getElementById("game-log").classList.contains("is-active"));
 
-    // A past season: the chip that is not lit (since 2026-11-04 the current
-    // season is a chip too, and the lit one; there is no "all").
     const year = chips(doc).find((chip) => !chip.classList.contains("is-active"));
-    if (!year) return;
     click(year);
-    assert.ok(await settled(pinned, year.getAttribute("data-season")));
-
+    assert.ok(await settled(() => shownSeason(doc), year.getAttribute("data-season")));
     assert.ok(
       doc.getElementById("game-log").classList.contains("is-active"),
       "the reader is still looking at the game log, on the season they picked",
     );
   });
 
-  test("a modifier click is left to the browser", async () => {
-    // Ctrl- or cmd-clicking one of these is how a reader deliberately opens
-    // the other season in a new tab. Swallowing that would be taking a real
-    // link away from them.
-    const { window, doc } = await hydrated(`/player/${fixture.slug}`);
-    // A past season: the chip that is not lit (since 2026-11-04 the current
-    // season is a chip too, and the lit one; there is no "all").
-    const year = chips(doc).find((chip) => !chip.classList.contains("is-active"));
-    if (!year) return;
-
-    const event = new window.MouseEvent("click", {
-      bubbles: true,
-      cancelable: true,
-      metaKey: true,
-    });
-    year.dispatchEvent(event);
-
-    assert.equal(event.defaultPrevented, false, "the navigation was not canceled");
-    assert.equal(
-      doc.querySelector("[data-scp-root]").getAttribute("data-archive-season"),
-      null,
-      "and nothing was swapped underneath it",
-    );
+  test("two quick picks: the later one wins", async () => {
+    const { window, doc } = await hydrated(`/player/${veteran.slug}/game-log/`);
+    const years = chips(doc).map((c) => c.getAttribute("data-season"));
+    const [a, b] = [years[years.length - 1], years[1]];
+    const press = (y) => chips(doc).find((c) => c.getAttribute("data-season") === y)
+      .dispatchEvent(new window.MouseEvent("click", { bubbles: true, cancelable: true }));
+    press(a);
+    press(b);
+    assert.ok(await settled(() => shownSeason(doc), b), `${b} on screen`);
+    await new Promise((r) => setTimeout(r, 300));
+    assert.equal(shownSeason(doc), b, "the earlier answer never lands on top");
   });
 });
 

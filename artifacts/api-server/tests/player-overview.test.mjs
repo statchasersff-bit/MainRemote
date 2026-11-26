@@ -284,7 +284,8 @@ describe("overview sections (mak's Overview redesign, 2026-11-05)", () => {
     assert.ok(words >= 30 && words <= 90, `${words} words`);
     assert.equal(sec.querySelectorAll(".scp-ox-eff").length, 4);
     assert.doesNotMatch(text(sec), /Typical week|Floor|Ceiling|TD scoring/);
-    assert.equal(sec.querySelector("[data-cta='redraft-command-sidebar']").getAttribute("href"), "https://statchasers.com/redraft-command/players/1");
+    // "Analyze in Redraft Command" is gone (2026-11-26 audit, WEB-017).
+    assert.equal(sec.querySelector("[data-cta='redraft-command-sidebar']"), null);
   });
 
   test("fantasyCall: position-specific labels", () => {
@@ -375,10 +376,11 @@ describe("overview sections (mak's Overview redesign, 2026-11-05)", () => {
     assert.equal(doc.querySelector(".scp-ox-career-line"), null);
   });
 
-  test("the Redraft Command link carries the player", () => {
+  test("no link into Redraft Command's player shell (2026-11-26 audit, WEB-017)", () => {
     const doc = render(state());
     const tags = [...doc.querySelectorAll("[data-cta^='redraft-command']")].map((el) => el.getAttribute("data-cta"));
-    assert.deepEqual(tags, ["redraft-command-sidebar"]);
+    assert.deepEqual(tags, []);
+    assert.equal(doc.querySelector('a[href*="/redraft-command/players/"]'), null);
   });
 
   test("the FAQ is in the HTML, first one open, and goes to the schema word for word", () => {

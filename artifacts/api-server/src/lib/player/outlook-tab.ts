@@ -45,14 +45,13 @@ import { publishedRank, rankBasisWords, statsThroughWeek } from "./season-phase"
 import type { PlayerRenderOptions } from "../player-render";
 import type { PlayerPageData } from "./player-data";
 import { getEntryPoints, SCORING_SHORT } from "./scoring";
-import { lastName, matchupBand, teamInk } from "./header";
+import { lastName, matchupBand, startSitHref, teamInk } from "./header";
 import { outlookMeasures, tierOf, type AdvancedCell, type DriverRow, type OutlookMeasures, type Tier } from "./outlook-tab-data";
 import { sectionHref } from "./sections";
 import type { UpcomingGame } from "./upcoming";
 import { renderFaqSection, selectFaq, type FaqCandidate } from "./faq-engine";
 import { samePerson, type PlayerUsage, type RosRank, type StartingQb, type UsageMetric } from "./outlook-context";
 import { baseWords, surname, type Trend } from "../team/usage";
-import { redraftPlayerUrl } from "./redraft-link";
 
 
 /* ---- icons: the redesign's glyphs (mak's brief, 2026-11-05), inline so no
@@ -211,6 +210,7 @@ interface Model {
   last: string;
   pos: string;
   slug: string;
+  /** His weekly start/sit page, or "" when there is no week to start him in. */
   rc: string;
   season: number;
   week: number;
@@ -406,7 +406,10 @@ function model(data: PlayerPageData): Model | null {
     last: lastName(data.player.name),
     pos,
     slug: data.player.slug,
-    rc: redraftPlayerUrl(data.player),
+    // His weekly start/sit page (2026-11-26 audit, WEB-017), not Redraft
+    // Command's player page (a noindex shell); "" leaves every Redraft
+    // button on this tab out.
+    rc: startSitHref(data, {}),
     season,
     week,
     thruWeek: statsThroughWeek(data),
@@ -723,9 +726,10 @@ function renderFits(m: Model): string {
 
 /** The Redraft Command card's sentence, the same on the tab and in the premium block. */
 function rcCopy(m: Model): string {
-  // Not the StatChasers board quoted under Best fit: Redraft Command's player
-  // page ranks him by projected PPR points per game from here (audit WEB-029).
-  return `This outlook explains the why. Redraft Command gives you the number: ${possessive(m.last)} rank by projected PPR points per game for the rest of the season, and his trade value.`;
+  // What his start/sit page shows (2026-11-26 audit, WEB-017). The rest-of-
+  // season rank and trade value this promised were on Redraft Command's
+  // player page, which renders no player content.
+  return `This outlook explains the why. Redraft Command's start/sit page gives you this week: ${possessive(m.last)} projection, the matchup and a start or sit verdict.`;
 }
 
 /** What the supports / threatens cells say when the data gives them nothing. */
@@ -990,11 +994,12 @@ function renderRead(m: Model, data: PlayerPageData): string {
   const prose = preseasonParas.map((p) => escapeHtml(p));
   const byline = `By the StatChasers staff.${published ? ` Published <time datetime="${published.iso}">${published.text}</time>.` : ""}`;
 
-  const rc =
-    `<div class="scp-ox-panel is-rc"><h3><span class="scp-ol-panel-icon" aria-hidden="true">${ICON.crosshair}</span>Redraft Command</h3>` +
-    `<p>${escapeHtml(rcCopy(m))}</p>` +
-    `<a class="scp-ox-btn" href="${escapeHtml(m.rc)}" data-cta="redraft-command-outlook-sidebar">${escapeHtml(`Open ${m.last} in Redraft Command`)}<span class="scp-ol-btn-arrow" aria-hidden="true">${ICON.arrow}</span></a>` +
-    `</div>`;
+  const rc = m.rc
+    ? `<div class="scp-ox-panel is-rc"><h3><span class="scp-ol-panel-icon" aria-hidden="true">${ICON.crosshair}</span>Redraft Command</h3>` +
+      `<p>${escapeHtml(rcCopy(m))}</p>` +
+      `<a class="scp-ox-btn" href="${escapeHtml(m.rc)}" data-cta="startsit-outlook-sidebar">${escapeHtml(`Should I start ${m.last}?`)}<span class="scp-ol-btn-arrow" aria-hidden="true">${ICON.arrow}</span></a>` +
+      `</div>`
+    : "";
   if (m.noSeasonGames) {
     // The June piece is history here: its prose only, no league-fit chips
     // (they would judge a preseason rank as current advice).
@@ -1151,7 +1156,8 @@ export interface OutlookProjectionModel {
   threatens: string[];
   supportsEmpty: string;
   threatensEmpty: string;
-  rc: { href: string; copy: string; cta: string };
+  /** Null when there is no start/sit page to open this week. */
+  rc: { href: string; copy: string; cta: string } | null;
   fits: FitsModel | null;
   opportunity: OpportunityModel | null;
 }
@@ -1177,7 +1183,7 @@ export function outlookProjectionModel(data: PlayerPageData, options: PlayerRend
     threatens,
     supportsEmpty: empty.supports,
     threatensEmpty: empty.threatens,
-    rc: { href: m.rc, copy: rcCopy(m), cta: `Open ${m.last} in Redraft Command` },
+    rc: m.rc ? { href: m.rc, copy: rcCopy(m), cta: `Should I start ${m.last}?` } : null,
     fits: fitsModel(m),
     opportunity: opportunityModel(m, options),
   };
@@ -1571,7 +1577,9 @@ function outlookPool(m: Model, data: PlayerPageData, options: PlayerRenderOption
             ? ` His ${drv(top)} supports that.`
             : "") +
         (m.qbChange ? ` ${m.qbChange.to.name} taking over at quarterback makes the near term less predictable.` : weak ? ` His ${drv(weak)} holds him back.` : ""),
-      link: { href: m.rc, text: `See his live rank in Redraft Command.` },
+      // "See his live rank in Redraft Command." linked Redraft Command's
+      // player page, which shows no rank (2026-11-26 audit, WEB-017).
+      link: null,
     });
   }
 

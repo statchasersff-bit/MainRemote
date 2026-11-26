@@ -193,13 +193,15 @@ describe("in season", () => {
     assert.match(doc.querySelector(".scp-olp-sec.is-change").textContent, new RegExp(`in ${volume.season}\.`));
   });
 
-  test("exactly two Redraft Command links: the sidebar card and the risk-foot line", () => {
-    // mak, 2026-10-01: one main CTA plus one subtle bottom CTA. The expect-panel
-    // button and the prose link are gone; a third link reappearing is the bug.
-    const ctas = [...doc.querySelectorAll('a[href*="redraft-command"]')].map((a) => [a.getAttribute("data-cta"), a.href.endsWith("/redraft-command/players/3257")]);
+  test("exactly one Redraft Command link: the projection card", () => {
+    // mak, 2026-10-01: one main CTA plus one subtle bottom CTA. Since the
+    // 2026-11-26 audit (WEB-017) the main one opens his weekly start/sit page
+    // (Redraft Command's player page is a noindex shell) and the bottom one,
+    // "Compare them in Redraft Command", is gone: the shell compared nothing.
+    const ctas = [...doc.querySelectorAll('a[href*="redraft-command"]')].map((a) => [a.getAttribute("data-cta"), a.href.endsWith("/redraft-command/who-should-i-start/jacoby-brissett")]);
     for (const [, has] of ctas) assert.ok(has);
     const names = ctas.map(([c]) => c).filter(Boolean).sort();
-    assert.deepEqual(names, ["redraft-command-outlook-premium", "redraft-command-outlook-projection-premium"]);
+    assert.deepEqual(names, ["startsit-outlook-projection-premium"]);
   });
 
   test("no byline on the in-season take; the preseason piece is archived collapsed", () => {
@@ -509,8 +511,9 @@ describe("the premium comparison of the four closing sections (mak's brief, 2026
     assert.match(first.querySelector(".scp-olp-rail").getAttribute("aria-label"), new RegExp(`^Jacoby Brissett ranks \\d+(st|nd|rd|th) of ${volume.of} qualifying QBs in `));
     assert.equal(text(first.querySelector(".scp-olp-drv-value strong")), volume.value);
     assert.match(text(prm.querySelector(".is-drivers .scp-olp-bar-title")), /^What Drives Jacoby Brissett's Fantasy Value\?$/);
-    // The Redraft Command strip is the tab's one bottom link to it.
-    assert.match(prm.querySelector(".scp-olp-cta-btn").getAttribute("href"), /redraft-command/);
+    // The bottom "Compare them in Redraft Command" strip is gone (2026-11-26
+    // audit, WEB-017): the projection card is the tab's one link to it.
+    assert.equal(prm.querySelector(".scp-olp-cta-btn"), null);
     // Matchups: four cards, each a week, an opponent, a rank and a difficulty word.
     const games = [...prm.querySelectorAll(".scp-olp-game")];
     assert.equal(games.length, 4);
@@ -578,8 +581,8 @@ describe("the projection and opportunity sections (mak's brief, 2026-11-05, no p
     // Redraft Command: the same link, its own data-cta, the same copy.
     const btn = prm.querySelector(".scp-olr-btn");
     assert.equal(btn.getAttribute("href"), model.rc.href);
-    assert.equal(btn.getAttribute("data-cta"), "redraft-command-outlook-projection-premium");
-    assert.equal(text(btn), "Open Wilson in Redraft Command");
+    assert.equal(btn.getAttribute("data-cta"), "startsit-outlook-projection-premium");
+    assert.equal(text(btn), "Should I start Wilson?");
     assert.equal(text(prm.querySelector(".scp-olr-rc p")), model.rc.copy);
     // Best fit: the same rows and chips, the same assumptions line.
     assert.deepEqual(

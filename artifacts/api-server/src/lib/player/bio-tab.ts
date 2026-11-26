@@ -30,7 +30,7 @@ import { hasStatsTab } from "./stats-tab";
 import { escapeHtml } from "../render";
 import type { PlayerRenderOptions } from "../player-render";
 import type { PlayerPageData } from "./player-data";
-import { teamInk } from "./header";
+import { startSitHref, teamInk } from "./header";
 import { titleCase } from "./title-case";
 import { outlookShort } from "./outlook-tab";
 import { sectionHref } from "./sections";
@@ -38,7 +38,6 @@ import type { BioPageFacts, BioTransaction } from "./bio-tab-data";
 import { headshotImg } from "../headshot-html";
 import { COLLEGE_LOGO_VARIANTS } from "../image-urls";
 import { collegeLogoFor } from "../team/draft";
-import { redraftPlayerUrl } from "./redraft-link";
 
 
 
@@ -109,9 +108,14 @@ export function collegeCrest(page: BioPageFacts, className: string): string {
     : "";
 }
 
-/** The Redraft Command deep link for this player, shared with the premium block. */
+/**
+ * The Redraft Command link for this player, shared with the premium block:
+ * his weekly start/sit page, or "" when there is no week to start him in
+ * (2026-11-26 audit, WEB-017 - his Redraft Command player page is a
+ * noindex shell).
+ */
 export function redraftCommandHref(data: PlayerPageData): string {
-  return redraftPlayerUrl(data.player);
+  return startSitHref(data, {});
 }
 
 /* ----------------------------------------------------- 4. transactions */

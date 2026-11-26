@@ -135,10 +135,13 @@ describe("player header", () => {
     assert.equal(text(meta.querySelector(".scp-pm-meta-2")), "33 yrs·6'4\"·235 lbs");
     // The phone's fantasy door: one button under the college (mak, 2026-11-06
     // PM); the fantasy row and its separate Redraft arrow are gone.
+    // Since the 2026-11-26 audit (WEB-017) it opens his weekly start/sit
+    // page: Redraft Command's player page is a noindex shell.
     const fp = meta.querySelector("a.scp-pm-fp");
-    assert.equal(fp.getAttribute("href"), "https://statchasers.com/redraft-command/players/123");
-    assert.match(text(fp), /^View fantasy profile/);
-    assert.equal(fp.getAttribute("aria-label"), "View Jacoby Brissett's fantasy profile in Redraft Command");
+    assert.equal(fp.getAttribute("href"), "https://statchasers.com/redraft-command/who-should-i-start/jacoby-brissett");
+    assert.match(text(fp), /^Should I start Brissett\?/);
+    assert.equal(fp.getAttribute("aria-label"), "Should I start Jacoby Brissett this week? Start/sit in Redraft Command");
+    assert.equal(h.querySelector('a[href*="/redraft-command/players/"]'), null, "no link to the Redraft player shell");
     assert.equal(h.querySelector(".scp-pm-fan, .scp-pm-rc"), null, "no fantasy row on the phone");
     assert.equal(h.querySelectorAll("h1").length, 1, "the phone rows never repeat the heading");
 
@@ -155,16 +158,15 @@ describe("player header", () => {
     assert.equal(fan[2].querySelector("abbr").getAttribute("title"), "Share of redraft leagues where he is rostered");
     assert.equal(h.querySelector(".scp-pp-cards"), null, "no game log, no stat cards");
 
-    // The actions: Redraft Command in gold, the start/sit question in white.
-    const [redraft, start] = h.querySelectorAll(".scp-pbtn");
-    assert.ok(redraft.classList.contains("scp-pbtn--gold"));
-    assert.equal(text(redraft), "View Fantasy Football Profile");
-    assert.equal(redraft.getAttribute("href"), "https://statchasers.com/redraft-command/players/123");
-    assert.equal(redraft.getAttribute("data-cta"), "redraft-command-header-overview");
-    assert.equal(redraft.getAttribute("data-scp-cta"), "redraft-command-header");
-    assert.ok(start.classList.contains("scp-pbtn--white"));
+    // The actions (2026-11-26 audit, WEB-017): the start/sit question in
+    // gold is the fantasy action; no Outlook tab here, so no white button.
+    const buttons = h.querySelectorAll(".scp-pbtn");
+    assert.equal(buttons.length, 1);
+    const start = buttons[0];
+    assert.ok(start.classList.contains("scp-pbtn--gold"));
     assert.equal(text(start), "Should I start Brissett?");
     assert.equal(start.getAttribute("data-cta"), "startsit-header-overview");
+    assert.equal(start.getAttribute("data-scp-cta"), "startsit-header");
     assert.match(start.getAttribute("href"), /who-should-i-start\/jacoby-brissett$/);
 
     // The strip: the next fixture by its club's full name, the kickoff, the chip, the matchup page.
@@ -203,8 +205,7 @@ describe("player header", () => {
       assert.equal(text(h.querySelector(".scp-phead-kind")), kind, tab);
       assert.equal(text(h.querySelector(".scp-phead-h1")), `Jacoby Brissett ${kind}`, `${tab}: one heading`);
       const cta = tab.replace("-", "");
-      assert.equal(h.querySelector(".scp-pbtn--gold").getAttribute("data-cta"), `redraft-command-header-${cta}`);
-      assert.equal(h.querySelector(".scp-pbtn--white").getAttribute("data-cta"), `startsit-header-${cta}`);
+      assert.equal(h.querySelector(".scp-pbtn--gold").getAttribute("data-cta"), `startsit-header-${cta}`);
     }
     assert.equal(render.headerKind(state(), "overview"), "");
   });
@@ -261,7 +262,7 @@ describe("player header", () => {
     const next = { ...state().upcoming[0], week: 5 };
     const h = header(state({ byeWeek: 4, upcoming: [next] }));
     assert.equal(text(h.querySelector(".scp-pstrip-mu")), "Week 4: bye. Then Week 5 at New York Giants");
-    assert.equal(text(h.querySelector(".scp-pbtn--white")), "Should I start Brissett?");
+    assert.equal(text(h.querySelector(".scp-pbtn--gold")), "Should I start Brissett?");
     // Once the league has logged the bye week it is behind us, not next.
     const past = header(state({ byeWeek: 4, leagueWeek: 4, upcoming: [next] }));
     assert.ok(!text(past.querySelector(".scp-pstrip-mu")).includes("bye"));
@@ -312,7 +313,8 @@ describe("player header", () => {
     );
     assert.equal(h.querySelector(".scp-pbtn--white"), null);
     assert.equal(h.querySelector('a[href$="/outlook/"]'), null);
-    assert.ok(h.querySelector(".scp-pbtn--gold"), "the Redraft Command button stays");
+    assert.equal(h.querySelector(".scp-pbtn--gold"), null, "no week to start him in, no start/sit button");
+    assert.equal(h.querySelector("a.scp-pm-fp"), null, "nor its phone twin");
   });
 
   test("no games played: dashes, never 0.0", () => {
@@ -327,15 +329,15 @@ describe("player header", () => {
     assert.equal(text(h.querySelector(".scp-pp-under")), "Quarterback");
   });
 
-  test("a free agent: the stylesheet's ink, no link, no strip, the Redraft Command button alone", () => {
+  test("a free agent: the stylesheet's ink, no link, no strip, no start/sit button", () => {
     const h = header(state({ team: null, upcoming: [] }));
     assert.equal(h.getAttribute("style"), null, "the stylesheet's default ink answers");
     const team = h.querySelector(".scp-ptag-team");
     assert.equal(team.tagName, "SPAN");
     assert.equal(text(team), "Free agent");
     assert.equal(h.querySelector(".scp-pstrip"), null);
-    assert.equal(h.querySelector(".scp-pbtn--white"), null, "no club, no week to start him in");
-    assert.ok(h.querySelector(".scp-pbtn--gold"));
+    assert.equal(h.querySelector(".scp-pbtn--white"), null, "no Outlook tab in this state");
+    assert.equal(h.querySelector(".scp-pbtn--gold"), null, "no club, no week to start him in");
     const classed = header(state({ team: null, upcoming: [], bioPage: { status: "free-agent" } }));
     assert.equal(text(classed.querySelector(".scp-ptag-status")), "Free Agent");
     assert.ok(classed.querySelector(".scp-ptag-status").classList.contains("is-none"));
@@ -386,7 +388,8 @@ describe("player header", () => {
     assert.equal(text(withInjury("Sus").querySelector(".scp-pstrip-note-full")), "Suspended");
     // One game's status keeps the question: "Out" this week is still a sit.
     const out = withInjury("Out", "Ankle");
-    assert.equal(text(out.querySelector(".scp-pbtn--white")), "Should I start Brissett?");
+    assert.equal(text(out.querySelector(".scp-pbtn--gold")), "Should I start Brissett?");
+    assert.equal(ir.querySelector(".scp-pbtn--gold"), null, "on IR there is no start/sit button");
     assert.equal(out.querySelector(".scp-pstrip-note"), null);
     assert.equal(render.startSitHref(state({ designation: { injuryStatus: "IR" } }), {}), "");
     assert.notEqual(render.startSitHref(state({ designation: { injuryStatus: "Out" } }), {}), "");
@@ -414,7 +417,7 @@ describe("player header", () => {
     assert.ok([...rookie.querySelectorAll(".scp-pspec-i")].map(text).includes("Rookie"));
 
     const arsb = header(state({ player: { ...state().player, name: "Amon-Ra St. Brown" } }));
-    assert.equal(text(arsb.querySelector(".scp-pbtn--white")), "Should I start St. Brown?");
+    assert.equal(text(arsb.querySelector(".scp-pbtn--gold")), "Should I start St. Brown?");
 
     const owned = (value) =>
       text(header(state({ rosterPct: { owned: value } })).querySelector(".scp-pboard .scp-pstat:nth-child(3) b"));
