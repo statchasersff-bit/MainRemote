@@ -45,8 +45,7 @@ import { getEntryPoints, SCORING_SHORT } from "./scoring";
 import { passerRating } from "./stats-profile";
 import { collegeCard, type AdvCard, type AdvMetric, type CollegeCard, type LogSeason } from "./stats-tab-data";
 import type { GameLogEntry } from "./types";
-import { lastName, teamInk } from "./header";
-import { redraftPlayerUrl } from "./redraft-link";
+import { lastName, startSitHref, teamInk } from "./header";
 import { statsThroughWeek } from "./season-phase";
 
 const DASH = "-";
@@ -947,7 +946,8 @@ export interface CareerPremiumModel {
   careerGames: number;
   rates: RateTile[];
   paragraphs: string[];
-  redraft: RedraftCard;
+  /** Null when he has no week to start him in (no start/sit page to open). */
+  redraft: RedraftCard | null;
   highs: HighItem[];
 }
 
@@ -993,7 +993,7 @@ export function careerPremiumModel(data: PlayerPageData, options: PlayerRenderOp
     careerGames: c.total.gp,
     rates: careerRateTiles(data, c),
     paragraphs: readParagraphs(data, c, options),
-    redraft: redraftCard(data),
+    redraft: redraftCard(data, options),
     highs: careerHighItems(c),
   };
 }
@@ -1061,7 +1061,6 @@ function readParagraphs(data: PlayerPageData, c: Career, options: PlayerRenderOp
   if (rows.length === 0 || total.gp === 0) return [];
   const name = data.player.name;
   const last = lastName(name);
-  const redraft = redraftPlayerUrl(data.player);
   const ppg = (t: Line): number => (t.gp ? t.pts / t.gp : 0);
   const done = rows.filter((r) => !r.inProgress);
   const n = rows.length;
@@ -1138,12 +1137,11 @@ function readParagraphs(data: PlayerPageData, c: Career, options: PlayerRenderOp
   const written = (data.statsCopy?.career_paragraphs ?? []).map(own).filter((p): p is string => p !== null).slice(0, 3);
   if (written.length) paragraphs.splice(0, paragraphs.length, ...written.map(copyHtml));
 
-  // 3. The forward call.
-  paragraphs.push(
-    escapeHtml("Career numbers describe the past; for what he is worth from here, ") +
-      a(redraft, `see ${possessive(last)} projected rest-of-season rank and trade value in Redraft Command`, ` data-cta="redraft-command-stats-prose"`) +
-      ".",
-  );
+  // 3. The forward call ("for what he is worth from here, see his projected
+  // rest-of-season rank and trade value in Redraft Command") is gone since
+  // the 2026-11-26 audit (WEB-017): it linked Redraft Command's player page,
+  // a noindex shell that shows neither. The card beside the read carries
+  // the one fantasy action, to his weekly start/sit page.
   return paragraphs;
 }
 
@@ -1155,13 +1153,19 @@ export interface RedraftCard {
   cta: string;
 }
 
-function redraftCard(data: PlayerPageData): RedraftCard {
+function redraftCard(data: PlayerPageData, options: PlayerRenderOptions): RedraftCard | null {
+  // His weekly start/sit page (2026-11-26 audit, WEB-017), which shows what
+  // the card says: this week's projection, matchup and verdict. It pointed
+  // at Redraft Command's player page before, a noindex shell. No week to
+  // start him in, no card.
+  const href = startSitHref(data, options);
+  if (!href) return null;
   const last = lastName(data.player.name);
   return {
     heading: "Redraft Command",
-    body: `Career stats tell you who he's been. Redraft Command projects what he's worth from here: rest-of-season rank, trade value and waiver priority for your league settings.`,
-    href: redraftPlayerUrl(data.player),
-    cta: `Open ${last} in Redraft Command`,
+    body: `Career stats tell you who he's been. The start/sit page answers this week: his projection, the matchup and a start or sit verdict.`,
+    href,
+    cta: `Should I start ${last}?`,
   };
 }
 

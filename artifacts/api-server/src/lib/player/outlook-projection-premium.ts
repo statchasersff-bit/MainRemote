@@ -163,13 +163,14 @@ export function renderOutlookProjectionPremium(data: PlayerPageData, options: Pl
         factor("risk", "What threatens his value", m.threatens, m.threatensEmpty) +
         `</div>`
       : "";
-  const rc =
-    `<div class="scp-olr-rc">` +
-    `<h4 class="scp-olr-rc-h"><span class="scp-olr-rc-icon">${ICON.crosshair}</span>Redraft Command</h4>` +
-    `<span class="scp-olr-rc-rule" aria-hidden="true"></span>` +
-    `<p>${e(m.rc.copy)}</p>` +
-    `<a class="scp-olr-btn" href="${e(m.rc.href)}" data-cta="redraft-command-outlook-projection-premium">${e(m.rc.cta)}<span class="scp-olr-btn-arrow">${ICON.arrow}</span></a>` +
-    `</div>`;
+  const rc = m.rc
+    ? `<div class="scp-olr-rc">` +
+      `<h4 class="scp-olr-rc-h"><span class="scp-olr-rc-icon">${ICON.crosshair}</span>Redraft Command</h4>` +
+      `<span class="scp-olr-rc-rule" aria-hidden="true"></span>` +
+      `<p>${e(m.rc.copy)}</p>` +
+      `<a class="scp-olr-btn" href="${e(m.rc.href)}" data-cta="startsit-outlook-projection-premium">${e(m.rc.cta)}<span class="scp-olr-btn-arrow">${ICON.arrow}</span></a>` +
+      `</div>`
+    : "";
   const fits = m.fits
     ? `<div class="scp-olr-fit"><h4 class="scp-olr-fit-h"><span class="scp-olr-fit-icon">${ICON.layers}</span>Best fit</h4>` +
       `<div class="scp-olr-fit-rows" role="list" aria-label="Best fit by league type">` +

@@ -373,7 +373,14 @@ describe("rendered (Brissett)", async () => {
     const career = /In \d+ regular-season games since 2016, he has thrown for ([\d,]+) yards and (\d+) touchdowns/.exec(bo.textContent);
     assert.ok(career, "the career sentence");
     assert.ok(Number(career[1].replace(/,/g, "")) >= 16485 && Number(career[2]) >= 86, career[0]);
-    assert.ok(bo.querySelector('.is-rc [data-cta="redraft-command-bio-premium"]'), "the Redraft Command card");
+    // The Redraft Command card opens his weekly start/sit page, and is left
+    // out when he has no week ahead (2026-11-26 audit, WEB-017).
+    const rcLink = bo.querySelector(".is-rc a");
+    if (rcLink) {
+      assert.equal(rcLink.getAttribute("data-cta"), "startsit-bio-premium");
+      assert.match(rcLink.getAttribute("href"), /\/redraft-command\/who-should-i-start\/jacoby-brissett$/);
+    }
+    assert.equal(doc.querySelector('a[href*="/redraft-command/players/"]'), null, "no link to the Redraft player shell");
     assert.equal(bo.querySelector(".scp-bo-cta"), null, "the inline prompt went with the old sections");
     assert.match(bo.querySelector(".scp-bo-txlog").textContent, /Phillip Dorsett/);
     assert.match(bo.querySelector(".scp-bo-txlog").textContent, /2016 draft/);

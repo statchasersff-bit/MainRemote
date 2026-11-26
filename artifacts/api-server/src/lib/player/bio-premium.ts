@@ -272,16 +272,18 @@ function renderSidebar(data: PlayerPageData, page: BioPageFacts, options: Player
   const quick = facts ? card("is-facts", ICON.info, "Quick Facts", `<dl class="scp-bop-dl">${facts}</dl>`) : "";
 
   // One of the bio's three marked fantasy spots: `.is-rc`, as on the card above.
-  const rc =
-    page.status === "active"
-      ? card(
-          "is-rc",
-          ICON.trend,
-          "Redraft Command",
-          `<p class="scp-bop-rc-p">${e(`See how Redraft Command values ${last} for the rest of ${data.leagueSeason ?? data.season}.`)}</p>` +
-            `<a class="scp-bop-btn" href="${e(redraftCommandHref(data))}" data-cta="redraft-command-bio-premium">${e(`Open ${last} in Redraft Command`)}<span class="scp-bop-btn-icon">${ICON.arrow}</span></a>`,
-        )
-      : "";
+  // His start/sit page (2026-11-26 audit, WEB-017); the card promised his
+  // rest-of-season value on Redraft Command's player page, a noindex shell.
+  const rcHref = page.status === "active" ? redraftCommandHref(data) : "";
+  const rc = rcHref
+    ? card(
+        "is-rc",
+        ICON.trend,
+        "Redraft Command",
+        `<p class="scp-bop-rc-p">${e(`Is ${last} a start this week? His start/sit page has the projection, the matchup and a verdict.`)}</p>` +
+          `<a class="scp-bop-btn" href="${e(rcHref)}" data-cta="startsit-bio-premium">${e(`Should I start ${last}?`)}<span class="scp-bop-btn-icon">${ICON.arrow}</span></a>`,
+      )
+    : "";
 
   const rows = moreOnRows(data, page, options);
   const more = rows.length

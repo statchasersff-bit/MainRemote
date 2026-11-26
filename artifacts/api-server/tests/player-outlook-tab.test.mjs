@@ -196,10 +196,12 @@ describe("in season", () => {
   test("exactly two Redraft Command links: the sidebar card and the risk-foot line", () => {
     // mak, 2026-10-01: one main CTA plus one subtle bottom CTA. The expect-panel
     // button and the prose link are gone; a third link reappearing is the bug.
-    const ctas = [...doc.querySelectorAll('a[href*="redraft-command"]')].map((a) => [a.getAttribute("data-cta"), a.href.endsWith("/redraft-command/players/3257")]);
+    // Both open his weekly start/sit page since the 2026-11-26 audit (WEB-017):
+    // Redraft Command's player page is a noindex shell.
+    const ctas = [...doc.querySelectorAll('a[href*="redraft-command"]')].map((a) => [a.getAttribute("data-cta"), a.href.endsWith("/redraft-command/who-should-i-start/jacoby-brissett")]);
     for (const [, has] of ctas) assert.ok(has);
     const names = ctas.map(([c]) => c).filter(Boolean).sort();
-    assert.deepEqual(names, ["redraft-command-outlook-premium", "redraft-command-outlook-projection-premium"]);
+    assert.deepEqual(names, ["startsit-outlook-premium", "startsit-outlook-projection-premium"]);
   });
 
   test("no byline on the in-season take; the preseason piece is archived collapsed", () => {
@@ -570,8 +572,8 @@ describe("the projection and opportunity sections (mak's brief, 2026-11-05, no p
     // Redraft Command: the same link, its own data-cta, the same copy.
     const btn = prm.querySelector(".scp-olr-btn");
     assert.equal(btn.getAttribute("href"), model.rc.href);
-    assert.equal(btn.getAttribute("data-cta"), "redraft-command-outlook-projection-premium");
-    assert.equal(text(btn), "Open Wilson in Redraft Command");
+    assert.equal(btn.getAttribute("data-cta"), "startsit-outlook-projection-premium");
+    assert.equal(text(btn), "Should I start Wilson?");
     assert.equal(text(prm.querySelector(".scp-olr-rc p")), model.rc.copy);
     // Best fit: the same rows and chips, the same assumptions line.
     assert.deepEqual(

@@ -93,6 +93,8 @@ function state(overrides = {}) {
     ],
     statsAdvanced: { current: CURRENT, last: LAST },
     teammates: [{ name: "Trey McBride", slug: "trey-mcbride", position: "TE" }],
+    // A week ahead, so the Redraft Command card has a start/sit page to open.
+    upcoming: [{ week: 4, opp: "SEA", homeAway: "home", kickoffMs: null, timeConfirmed: false, matchup: null }],
     ...overrides,
   };
 }
@@ -370,16 +372,21 @@ describe("stats tab", () => {
     assert.equal(st.renderStatsTab(state({ logCareer: [] })), "");
   });
 
-  test("the read names his targets from data, and the Redraft Command links carry the slug and CTA", () => {
+  test("the read names his targets from data, and the Redraft Command card opens his start/sit page", () => {
     const doc = render(state());
     const prose = doc.querySelector(".scp-cp-prose");
     assert.match(text(prose), /Trey McBride/);
+    // One link since the 2026-11-26 audit (WEB-017): the prose's "projected
+    // rest-of-season rank and trade value" link opened Redraft Command's
+    // player page, a noindex shell, and is gone; the card opens his weekly
+    // start/sit page.
     const ctas = [...doc.querySelectorAll("[data-cta]")].map((el) => [el.dataset.cta, el.getAttribute("href")]);
     assert.deepEqual(ctas, [
-      ["redraft-command-stats-prose", "https://statchasers.com/redraft-command/players/1"],
-      ["redraft-command-stats-sidebar", "https://statchasers.com/redraft-command/players/1"],
+      ["startsit-stats-sidebar", "https://statchasers.com/redraft-command/who-should-i-start/jacoby-brissett"],
     ]);
-    assert.ok(doc.querySelector("a.scp-cp-rc-btn[data-cta='redraft-command-stats-sidebar']"), "the sidebar's button");
+    assert.ok(doc.querySelector("a.scp-cp-rc-btn[data-cta='startsit-stats-sidebar']"), "the sidebar's button");
+    // No week to start him in: no card.
+    assert.equal(render(state({ upcoming: [] })).querySelector(".scp-cp-rc"), null);
     // The KPI cards sit under the chart, ahead of the read.
     const kpis = doc.querySelector(".scp-cp-kpis");
     assert.ok(doc.querySelector(".scp-cp-chart").compareDocumentPosition(kpis) & 4, "cards after the chart");
@@ -481,8 +488,8 @@ describe("stats tab", () => {
     assert.ok(doc.querySelector(".scp-stp-bar-sub.is-moved"));
     const paras = [...doc.querySelectorAll(".scp-cp-prose p")].map(text);
     assert.deepEqual(paras.slice(0, 2), ["First.", "Second."]);
-    assert.equal(paras.length, 3, "blank paragraphs dropped, Redraft Command paragraph kept");
-    assert.ok(doc.querySelector('.scp-cp-prose [data-cta="redraft-command-stats-prose"]'));
+    assert.equal(paras.length, 2, "blank paragraphs dropped; no Redraft Command paragraph (2026-11-26 audit, WEB-017)");
+    assert.equal(doc.querySelector('.scp-cp-prose [data-cta]'), null);
     assert.equal(doc.querySelector(".scp-st-byline"), null, "an analyst's date prints no byline either");
     // A link to anything but http(s) or a root path stays text.
     const bad = render(state({ statsCopy: { prod_lede: "[x](javascript:alert(1))" } }));
@@ -626,7 +633,7 @@ describe("the career section (mak's briefs of 2026-11-05, approved the same day)
     assert.equal(text(d.querySelector(".scp-cp-rc-h")), "Redraft Command");
     assert.equal(d.querySelector(".scp-cp-rc-h").tagName, "H3");
     assert.match(text(d.querySelector(".scp-cp-rc p")), /^Career stats tell you who he's been/);
-    assert.match(text(d.querySelector("a.scp-cp-rc-btn")), /^Open Brissett in Redraft Command/);
+    assert.match(text(d.querySelector("a.scp-cp-rc-btn")), /^Should I start Brissett\?/);
     assert.deepEqual([...d.querySelectorAll(".scp-cp-high-l")].map(text).length, 4);
     assert.equal(d.querySelector(".scp-cp-h.is-highs").tagName, "H3");
   });

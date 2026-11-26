@@ -143,8 +143,14 @@ export function renderOutlookPremium(data: PlayerPageData): string {
         bar(ICON.route, "What Could Change His Value", "") +
         `<div class="scp-olp-body">` +
         `<div class="scp-olp-factors">${card("up", "Upside", up)}${card("risk", "Risk", risk)}</div>` +
-        `<div class="scp-olp-cta"><span class="scp-olp-cta-text">${e(m.cta)}</span>` +
-        `<a class="scp-olp-cta-btn" href="${e(m.rc)}" data-cta="redraft-command-outlook-premium">Compare them in Redraft Command<span class="scp-olp-cta-arrow">${ICON.arrow}</span></a></div>` +
+        // "Compare them in Redraft Command" opened Redraft Command's player
+        // page, which compares nothing (2026-11-26 audit, WEB-017): the
+        // button now opens his start/sit page, and goes with its line when
+        // there is no week to start him in.
+        (m.rc
+          ? `<div class="scp-olp-cta"><span class="scp-olp-cta-text">${e(m.cta)}</span>` +
+            `<a class="scp-olp-cta-btn" href="${e(m.rc)}" data-cta="startsit-outlook-premium">${e(`Should I start ${m.last}?`)}<span class="scp-olp-cta-arrow">${ICON.arrow}</span></a></div>`
+          : "") +
         `</div></section>`,
     );
   }
