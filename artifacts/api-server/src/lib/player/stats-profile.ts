@@ -20,6 +20,7 @@
 import type { CareerSeasonStat } from "./types";
 import { possessive } from "./title-case";
 import type { ProductionSeason, ProductionTotals } from "./player-data";
+import { HOUSE_RULES, RECEPTION_POINTS, roundPoints, type ScoringFormat } from "../scoring/house-rules";
 
 /** One row of the career table. */
 export interface CareerStatRow {
@@ -37,6 +38,19 @@ export interface CareerStatRow {
   topWeeks?: number;
   rankedWeeks?: number;
   bestWeek?: number;
+  /** Scoring with no column in the table (from the logs; absent for a production-only season). */
+  scoring?: CareerScoring;
+}
+
+/** A season's scoring events the career table has no column for (WEB-036). */
+export interface CareerScoring {
+  twoPt: number;
+  otherTd: number;
+  kickFgm: number;
+  kickXpm: number;
+  kickPts: number;
+  /** Points in the total the stat line does not record. */
+  unmodeled: number;
 }
 
 const EMPTY: ProductionTotals = {
@@ -119,6 +133,14 @@ export function careerStatRows(
       topWeeks: entry.top_weeks,
       rankedWeeks: entry.ranked_weeks,
       bestWeek: entry.best_week,
+      scoring: {
+        twoPt: entry.two_pt ?? 0,
+        otherTd: entry.other_td ?? 0,
+        kickFgm: entry.kick_fgm ?? 0,
+        kickXpm: entry.kick_xpm ?? 0,
+        kickPts: entry.kick_pts ?? 0,
+        unmodeled: entry.unmodeled ?? 0,
+      },
     });
   }
 
@@ -136,6 +158,71 @@ export function careerStatRows(
   }
 
   return [...rows.values()].sort((a, b) => b.season - a.season);
+}
+
+/** One part of FPTS the visible columns do not show, with its arithmetic. */
+export interface ScoringExtra {
+  label: string;
+  /** The counts behind it: "1 TD, 7 yds". */
+  detail: string;
+  points: number;
+}
+
+const plural = (n: number, one: string, many = `${one}s`): string => `${n.toLocaleString("en-US")} ${n === 1 ? one : many}`;
+
+/**
+ * What FPTS counts that the career row's visible columns do not (WEB-036,
+ * 2026-11-26): passing by a non-quarterback (the table shows no passing
+ * columns for him), receiving by a quarterback (no receiving columns), two-
+ * point conversions, return and fumble-recovery touchdowns, kicking, and any
+ * part of the total the stat line does not record. Every amount is the house
+ * rule applied to the season's own counts (lib/scoring/house-rules.ts), so the
+ * visible columns plus these reproduce the printed total. Zero parts dropped.
+ */
+export function careerScoringExtras(
+  row: Pick<CareerStatRow, "totals" | "scoring">,
+  position: string | null,
+  format: ScoringFormat,
+): ScoringExtra[] {
+  const r = HOUSE_RULES;
+  const t = row.totals;
+  const sc = row.scoring;
+  const out: ScoringExtra[] = [];
+  const push = (label: string, parts: string[], points: number): void => {
+    if (Math.abs(points) >= 0.005 || parts.length) out.push({ label, detail: parts.join(", "), points });
+  };
+  if (position !== "QB" && (t.passAtt > 0 || t.passYd !== 0 || t.passTd > 0 || t.passInt > 0)) {
+    const parts: string[] = [];
+    if (t.passTd) parts.push(plural(t.passTd, "TD"));
+    parts.push(`${t.passYd.toLocaleString("en-US")} yds`);
+    if (t.passInt) parts.push(plural(t.passInt, "INT"));
+    push("Passing", parts, t.passYd * r.passYd + t.passTd * r.passTd + t.passInt * r.passInt);
+  }
+  if (position === "QB" && (t.rec > 0 || t.recYd !== 0 || t.recTd > 0)) {
+    const parts = [plural(t.rec, "rec", "rec"), `${t.recYd.toLocaleString("en-US")} yds`];
+    if (t.recTd) parts.push(plural(t.recTd, "TD"));
+    push("Receiving", parts, t.rec * RECEPTION_POINTS[format] + t.recYd * r.recYd + t.recTd * r.recTd);
+  }
+  if (!sc) return out;
+  if (sc.twoPt) push("2-pt conversions", [String(sc.twoPt)], sc.twoPt * r.twoPt);
+  if (sc.otherTd) push("Return/fumble-recovery TD", [String(sc.otherTd)], sc.otherTd * r.otherTd);
+  if (sc.kickPts || sc.kickFgm || sc.kickXpm) {
+    push("Kicking", [plural(sc.kickFgm, "FG"), plural(sc.kickXpm, "XP")], sc.kickPts);
+  }
+  // A kicker week with no field-goal distances keeps the provider's total
+  // (scoring.ts getFantasyPoints); a provider total can also carry events the
+  // log has no field for. Named for what it is, never folded into "Other".
+  if (Math.abs(sc.unmodeled) >= 0.05) {
+    push(position === "K" ? "Kicking without FG distances (provider total)" : "Provider-scored events not in the stat line", [], sc.unmodeled);
+  }
+  return out;
+}
+
+/** "Passing 1 TD, 7 yds (+4.3)". */
+export function scoringExtraText(x: ScoringExtra): string {
+  const pts = roundPoints(x.points, 1);
+  const sign = pts < 0 ? "-" : "+";
+  return `${x.label}${x.detail ? ` ${x.detail}` : ""} (${sign}${Math.abs(pts).toFixed(1)})`;
 }
 
 /**

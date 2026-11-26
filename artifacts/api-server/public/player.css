@@ -5562,6 +5562,14 @@ button.scp-search-opt {
   line-height: 1.4;
 }
 
+/* The career table's scoring note (WEB-036): the same line, under the table,
+   inset to the card's padding; the icon stays on the first line when it wraps. */
+.scp .scp-stp p.scp-stp-scorenote {
+  align-items: flex-start;
+  margin: 0;
+  padding: 10px var(--sc-premium-padding, 16px) 14px;
+}
+
 .scp .scp-stp-note-icon {
   display: inline-flex;
   flex: 0 0 auto;

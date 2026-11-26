@@ -18,7 +18,8 @@
  * comment exists so the next person finds the answer rather than the surprise.
  */
 
-import { getEntryPoints, type ScoringFormat } from "./scoring";
+import { getEntryPoints, kickerBands, toScoringLine, type ScoringFormat } from "./scoring";
+import { scoreLine } from "../scoring/house-rules";
 import { hasParticipation, isGamePlayed } from "./ranks";
 import type {
   CareerSeasonStat,
@@ -297,6 +298,20 @@ export function careerSeasonTotals(
   const line = position === "RB" || position === "WR" ? 24 : 12;
   const ranked = played.filter((e) => typeof e.pos_rank === "number");
 
+  // The scoring events the career table has no column for (WEB-036): two-
+  // point conversions, return and fumble-recovery touchdowns, kicking, and
+  // whatever part of the printed total the stat line cannot account for (a
+  // provider total's extra events, or a kicker week with no distances).
+  let kick = 0;
+  let modeled = 0;
+  for (const e of played) {
+    const bands = kickerBands(e.stats);
+    if (bands && (e.stats.fga != null || e.stats.xpa != null || e.stats.fgm != null || e.stats.xpm != null)) {
+      kick += scoreLine(bands, format);
+    }
+    modeled += scoreLine(toScoringLine(e.stats), format);
+  }
+
   return {
     season,
     gp: played.length,
@@ -323,6 +338,12 @@ export function careerSeasonTotals(
     rec_td,
     total_td: pass_td + rush_td + rec_td,
     scrimmage_yd: rush_yd + rec_yd,
+    two_pt: total("pass_2pt") + total("rush_2pt") + total("rec_2pt"),
+    other_td: total("st_td") + total("fum_rec_td"),
+    kick_fgm: total("fgm"),
+    kick_xpm: total("xpm"),
+    kick_pts: Math.round(kick * 100) / 100,
+    unmodeled: Math.round((points - modeled) * 100) / 100,
   };
 }
 
