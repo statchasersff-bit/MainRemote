@@ -23,6 +23,10 @@ docs/WEB-012-005-020-008-017-025-029-022-PLAYER-2026-11-26.md.
 | 8 | 8204b917 | mak 11-26 decision 1: Overview meters restored |
 | 9 | 30cd9bc0 | mak 11-26 decision 3: career table week-range label |
 | 10 | 22346f37 | plugin smoke: retitle dry run touches titles only; explicit `?log=2025` case |
+| 11 | d19e4a21 | integration doc (first round) |
+| 12 | 7cba0163 | second round D: one availability predicate for IR matchup advice |
+| 13 | b9fbaed7 | second round A: verified alias slugs 301 in one hop |
+| 14 | f1f3b47a | second round B/C: release slot reserved, baseline script + baseline/candidate JSON |
 
 ### Merge conflicts and resolutions
 
@@ -184,6 +188,117 @@ candidate in the production shell.
   every `post_name` unchanged; the stored `rank_math_canonical_url` unchanged; a hand-written title left alone.
   Status: verified locally; the live dry run is production action 4.
 
+## Second-round decisions (mak, 2026-11-26), as applied
+
+### A. Verified alias slugs (b9fbaed7)
+
+**Verification of the reported pair.**
+- Data: `data/player/player_slugs.json` (the API's slug ledger, keyed by stable Sleeper id) has
+  `"11068": {"slug": "mitch-tinsley", "previous": ["mitchell-tinsley"]}`; `players.json` has no other player at
+  `mitchell-tinsley`; `mitch-tinsley` is in `indexed_players.json`. One stable id, both addresses.
+- WordPress (read-only MCP): page 7028 `mitchell-tinsley`, "Mitchell Tinsley (WR)", created 2026-10-05, parent 1139,
+  `[statchasers_player]`; page 4977 `mitch-tinsley`, same title and content sha, created 2026-09-20.
+- Production (read-only, 11-26, the baseline below): `/nfl/players/mitch-tinsley/` 200, `index, follow`, canonical
+  self; `/nfl/players/mitchell-tinsley/` 200, `noindex, follow`, no canonical, the same player's page. No Rank Math
+  redirect mentions tinsley; no post content links to `players/mitchell-tinsley` (only Optimization Detective URL
+  metrics rows).
+Status: verified in production (read-only) and in the data.
+
+**The rule** (plugin `statchasers_player_verified_alias()` + the URL normalizer, template_redirect priority 1):
+an alias is VERIFIED when exactly one roster player lists it in `previousSlugs` (same stable id), it is no roster
+player's current slug, and the destination is a published roster profile (indexed, self-canonical). Then every
+spelling 301s to the roster slug in one hop with the tab kept: `/nfl/players/mitchell-tinsley/game-log/` ->
+`/nfl/players/mitch-tinsley/game-log/`, `/nfl/players/Mitchell-Tinsley//Stats/` -> `/nfl/players/mitch-tinsley/stats/`,
+`?log=2025` -> `/game-log/#log=2025`, `/overview/` -> the profile, a tab the destination has no content for -> the
+profile; an invalid tab stays a 404. Anything else is ambiguous and keeps today's behavior (noindex by the
+left-roster rule, no redirect). Sitemaps: alias pages are off the roster, so they were already left out (baseline:
+0 `mitchell-tinsley` and 0 `chris-brazzell` rows); internal links are built from roster slugs (no alias slug in
+any generated link; WordPress content has none). Tests: smoke-player-builder "verified alias slugs" (hub, valid
+tab, case/double slash, overview, `?log=`, query kept, empty tab -> profile, invalid tab 404, two ambiguous cases,
+left-roster/sitemap) - all pass. Status: verified locally.
+
+**Inventory** (every ledger entry, 83, plus the two name-variant pairs WordPress holds):
+
+| Class | Count | Pairs |
+|---|---|---|
+| Verified (redirects once released) | 51 | aaron-jones -> aaron-jones-sr; anthony-richardson -> anthony-richardson-sr; anthony-tyus -> anthony-tyus-iii; antonio-williams-13301 -> antonio-williams; brandon-johnson-8756 -> brandon-johnson; brian-robinson -> brian-robinson-jr; brian-thomas -> brian-thomas-jr; calvin-austin -> calvin-austin-iii; carlos-washington -> carlos-washington-jr; chris-brazzell -> chris-brazzell-ii; chris-godwin -> chris-godwin-jr; chris-rodriguez -> chris-rodriguez-jr; deebo-samuel -> deebo-samuel-sr; donte-thornton -> donte-thornton-jr; efton-chism -> efton-chism-iii; emmanuel-henderson -> emmanuel-henderson-jr; erick-all -> erick-all-jr; frank-gore-11573 -> frank-gore-jr; gardner-minshew -> gardner-minshew-ii; gregory-desrosiers -> gregory-desrosiers-jr; harold-fannin -> harold-fannin-jr; harrison-wallace -> harrison-wallace-iii; irv-charles -> irvin-charles; james-cook -> james-cook-iii; jimmy-horn -> jimmy-horn-jr; john-metchie -> john-metchie-iii; kc-concepcion -> kc-concepcion-jr; kenneth-walker-8151 -> kenneth-walker-iii; kevin-coleman -> kevin-coleman-jr; kyle-pitts -> kyle-pitts-sr; kyle-williams-12547 -> kyle-williams; lequint-allen -> lequint-allen-jr; luther-burden -> luther-burden-iii; marvin-harrison -> marvin-harrison-jr; marvin-mims -> marvin-mims-jr; michael-penix -> michael-penix-jr; michael-pittman -> michael-pittman-jr; mike-washington -> mike-washington-jr; mitchell-tinsley -> mitch-tinsley; montorie-foster -> montorie-foster-jr; myles-white-3050 -> myles-white; odell-beckham -> odell-beckham-jr; ollie-gordon -> ollie-gordon-ii; omar-cooper -> omar-cooper-jr; pierre-strong -> pierre-strong-jr; robert-henry -> robert-henry-jr; stetson-bennett -> stetson-bennett-iv; ted-hurst -> ted-hurst-iii; travis-etienne -> travis-etienne-jr; tyrone-tracy -> tyrone-tracy-jr; velus-jones -> velus-jones-jr |
+| No destination (the current slug has no indexed profile, so no redirect) | 32 | antwane-wells -> antwane-wells-jr; chris-harper-2721 -> chris-harper; david-johnson-2391 -> david-johnson; david-sills -> david-sills-v; dean-patterson -> dean-patterson-iv; duplicate-player-5282 -> duplicate-player; eric-rivers -> eric-rivers-jr; ervin-philips-5407 -> ervin-philips; frank-gore-232 -> frank-gore; jalen-moreno-cropper -> jalen-cropper; james-butler-5785 -> james-butler; james-proche -> james-proche-ii; jj-jones-12913 -> jj-jones; joseph-manjack -> joseph-manjack-iv; kenneth-walker-4634 -> kenneth-walker; kenny-fletcher -> kenny-fletcher-jr; kevin-austin -> kevin-austin-jr; mecole-hardman -> mecole-hardman-jr; mike-williams-4068 -> mike-williams; phillip-dorsett-ii -> phillip-dorsett; player-invalid-9485 -> player-invalid; quincy-skinner -> quincy-skinner-jr; ricky-white -> ricky-white-iii; robert-burns-11260 -> robert-burns; rodney-smith-2892 -> rodney-smith; ronnie-brown-11413 -> ronnie-brown; sean-ryan-11387 -> sean-ryan; theo-wease -> theo-wease-jr; thomas-fidone -> thomas-fidone-ii; tyler-davis-7131 -> tyler-davis; vinny-anthony -> vinny-anthony-ii; zach-miller-749 -> zach-miller |
+| Ambiguous: different stable ids (two people), never redirect | 2 | kenneth-walker (id 4634, WP 5136, noindex) vs kenneth-walker-iii (8151, WP 7247); frank-gore (232, WP 4886, noindex) vs frank-gore-jr (11573, WP 7231) |
+
+WordPress pages that exist at a verified alias (read-only REST, parent 1139): 7028 `mitchell-tinsley` (-> 4977) and
+4909 `chris-brazzell` (-> 4910 `chris-brazzell-ii`). The other 49 verified aliases have no WordPress page; the rule
+answers them too. Live action: none required. Leave 7028 and 4909 in place (the plugin's 301 runs before WordPress
+serves them); no Rank Math redirect is needed. Optional later tidy-up (pending mak): trash 7028 and 4909 once the
+301s are confirmed live.
+
+Finding, not changed: 21 dynasty_rankings.json records and 45 bio_wikipedia.json records are keyed by an alias
+slug (e.g. `luther-burden`, `michael-pittman`), so those players' pages miss that data under the current slug. A
+data-key fix for the builders, listed as a follow-up.
+
+### B. Release slot (f1f3b47a)
+
+Reserved in docs/RELEASE-WINDOW.md ("Reserved slots"): **2026-12-15 (Tuesday) 14:00-16:00 UTC**.
+- Why: the player family's last SEO-surface change shipped 2026-11-24 19:45 (injury meta wording; before it the
+  2026-11-20 FAQ/dateModified/sitemap release). At most one per family per 3-4 weeks puts the earliest at 12-15.
+  Tuesday's window is clear of every game window.
+- Core update: Google's November 2026 core update began 2026-11-10 (Search Status Dashboard; "up to two weeks",
+  outlets project ~11-24, completion not confirmed in coverage found 11-26). Re-check the dashboard shows it
+  complete, and no new rollout, before the slot.
+- Rides: 648 hub titles + tab titles held to 60; FAQ/FAQPage reductions; one-hop 301s incl. verified aliases;
+  sitemap cleanup; FPA PPR default; then the retitle pass and the 4927/4929 trash. Unrelated releases stay out.
+- Not in the slot: the team candidate (plugin 1.10.73, integ/team1125). Note: the WEB-001 game-canonical "12-02
+  hold" in the memory index is stale; the log shows it released 2026-11-24 19:45 with the hold lifted.
+
+### C. Pre-release baseline
+
+Script: `scripts/player-audit-release-check.mjs` (`live` = production read-only, browser UA, 1.6 s apart;
+`candidate` = this checkout's API; `compare a.json b.json`). Output: docs/PLAYER-AUDIT-BASELINE-2026-11-26.json
+(production, 11-26) and docs/PLAYER-AUDIT-CANDIDATE-2026-11-26.json (candidate; its `expected` block holds the
+plugin-side expectations: redirects, canonical, robots, sitemap). After the release: run `live` again and
+`compare` it with the baseline.
+
+| Read | Production 11-26 | Candidate |
+|---|---|---|
+| Gibbs hub title | Jahmyr Gibbs Stats, News, Bio & Fantasy Outlook \| StatChasers | Jahmyr Gibbs NFL Stats & News \| StatChasers |
+| Gibbs hub FAQ (visible, first section / FAQPage) | 8 / 64 (seven panel FAQs 8+12+11+10+7+2+14) | 8 / 8 |
+| Gibbs /stats/, /game-log/ FAQ | 12/12, 11/11 | 10/10, 10/10 |
+| Gyllenborg hub title (long name) | John Michael Gyllenborg Stats, News, Bio & Fantasy Outlook (brand dropped) | John Michael Gyllenborg NFL Stats & News \| StatChasers |
+| Bo Nix hub FAQ | 8 / 60 | 8 / 8 |
+| Hayden Large hub FAQ | 2 / 18 | 1 / 1 |
+| Pacheco hub / outlook FAQ | 3 / 39, 6 / 6 | 2 / 2, 4 / 4 |
+| mitchell-tinsley | 200, noindex, no canonical | 301 -> /nfl/players/mitch-tinsley/ (tab kept) |
+| kenneth-walker (ambiguous) | 200, noindex | unchanged |
+| `/jahmyr-gibbs/?log=2025` | 200 (own page) | 301 -> /game-log/#log=2025 |
+| `//jahmyr-gibbs/stats/` | 200 (copy) | 301 -> /stats/ |
+| Page sitemaps | 4 files, 4,575 rows, 4,575 unique, 0 duplicates; tyson-bagent 7, dandre-swift 7, aliases 0 | same, 0 duplicates |
+| FPA bare | Half-PPR, DAL RB 25.3 (1), CAR 25.3 (2) | PPR, DAL 27.5 (2), CAR 27.8 (1) |
+| FPA ?format=ppr / half / standard | PPR 27.5(2)/27.8(1); Half 25.3(1)/25.3(2); Std 23.1(1)/22.7(3) | identical per format |
+
+Note: item 6's 11-26 03:00 read found 12 duplicate sitemap rows (Bagent/Swift tabs twice) over 5 files; this
+11-26 read (cache-busted) finds 0 duplicates over 4 files. The sitemap had been regenerated in between; the
+plugin's dedupe keeps it that way after the trash step.
+
+### D. IR Outlook: one availability predicate (7cba0163)
+
+`season-phase.ts matchupAdviceOff(data)`: true on a reserve list (IR, PUP, NFI) or a suspension, read from the
+shared `currentStatus` (kind "reserve") or the designation it feeds. While it holds, the Outlook prints no
+tough-matchup risk, soft-schedule upside, schedule tag, schedule read in "What could change", schedule or playoff
+verdict; the card, the visible FAQ and the FAQ schema read this one predicate (the Overview matchup FAQ and
+paragraph too). The Upcoming Matchups section keeps the games as facts with "He is on injured reserve, so these
+matchups matter only once he is activated." Rendered before (d19e4a21) and after, same data
+(/home/runner/pa1126/shots/ir-outlook/before-*.html, after-*.html):
+
+| Player | Before | After |
+|---|---|---|
+| Isiah Pacheco (IR, back) - risk card | "Injury: He's on injured reserve, back. **Tough matchups: The Bears in Week 12 (23rd) and the Vikings in Week 15 (29th) are among the stingiest defenses against RBs.** Weak efficiency ..." | "Injury: He's on injured reserve, back. Weak efficiency 1.60 yards after contact per carry, 71st of 95 RBs in 2025." |
+| Pacheco - FAQ (visible and schema) | "Isiah Pacheco's risks: he is on injured reserve, back, **the Bears in Week 12 (23rd) and the Vikings in Week 15 (29th) are tough matchups** and his efficiency ... limits his scoring." ("tough matchups" twice in the HTML: FAQ + schema data) | "Isiah Pacheco's risks: he is on injured reserve, back and his efficiency (1.60 yards after contact per carry, 71st of 95 RBs in 2025) limits his scoring." (0 occurrences) |
+| Hayden Large (IR, no games) | "Risk: Injury - He's on injured reserve, undisclosed."; FAQ "Hayden Large's risks: he is on injured reserve, undisclosed." | unchanged (he had no matchup advice; item 4's gates already applied) |
+| Jahmyr Gibbs (active, Week 12 vs CHI 23rd, tough) | Risk "Tough matchups: The Bears in Week 12 (23rd) and the Vikings in Week 15 (29th) ..."; tag "Tough upcoming schedule"; FAQ "How difficult is Jahmyr Gibbs' remaining fantasy schedule? Difficult: ..." | identical: the advice stays for an active player |
+
+Test: player-outlook-tab "on IR after playing: one predicate ..." checks card, visible FAQ, schema island and the
+uncapped FAQ pool, with an active control; it fails with the predicate switched off (2 failures). Status: verified
+locally.
+
 ## Tests
 
 Full API suite, `env -u INGEST_SECRET node --test --test-concurrency=1 tests/*.test.mjs`, one run at a time
@@ -193,7 +308,8 @@ Full API suite, `env -u INGEST_SECRET node --test --test-concurrency=1 tests/*.t
 |---|---|---|---|---|
 | Baseline main 4cb49ac (base45) | 1,989 | 1,985 | 3 | 1 |
 | integ after the merges (f5110ed5) | 2,030 | 2,026 | 3 | 1 |
-| integ final (22346f37, after mak's decisions) | 2,034 | 2,030 | 3 | 1 |
+| integ after mak's first-round decisions (22346f37) | 2,034 | 2,030 | 3 | 1 |
+| integ final (f1f3b47a, after the second round) | 2,035 | 2,031 | 3 | 1 |
 
 The three failures are the same tests on baseline and integ, so none is new:
 - tests/matchup.test.mjs:1963 "the Wild Card: one H1 in the hero, scores, table and JSON-LD in the source" (known, documented 11-24b)
@@ -203,8 +319,9 @@ The three failures are the same tests on baseline and integ, so none is new:
 Runtime cache files the suite rewrote (data/schedule/espn-layer-2026.json, data/matchup/lines/2026.json,
 data/schedule/espn-layer-2024.json) were reverted before every commit.
 
-Plugin smoke: `php tests/smoke.php` (runs every smoke-*.php group) - integ final: all passed, 3,554 ok
-(3,542 after the merges; +12 from the retitle scenario and the `?log=2025` case); baseline main: all passed, 3,474 ok.
+Plugin smoke: `php tests/smoke.php` (runs every smoke-*.php group) - integ final: all passed, 3,571 ok
+(3,542 after the merges; 3,554 after the retitle scenario and the `?log=2025` case; +17 alias cases); baseline main:
+all passed, 3,474 ok.
 Standalone files smoke-local-assets (33/33) and smoke-rhr-embed (36/36) pass on both; every other smoke-*.php runs
 only through smoke.php; cache-integration.php needs a throwaway WordPress (SC_WP_PATH) and was not run on either.
 `build-zip.sh` parse, load, version, loader and rhr smoke checks ok.
@@ -214,39 +331,44 @@ Typecheck: `tsc -p tsconfig.json --noEmit` and `tsc -p tsconfig.client.json` cle
 ## Zip
 
 `wordpress-plugin/dist/statchasers-news.zip` (copy: /home/runner/pa1126/statchasers-news-1.10.74.zip), version
-1.10.74, sha256 `e7bcadc59853f0562185c168ab3f8ba382b555480c5bf2286168c59f24246779` (api assets 975b115efeb8), built
-from the final tree. The sha in the f5110ed5 commit message is from an earlier build of the same plugin source (the
-zip embeds build timestamps); this one is the candidate.
+1.10.74, sha256 `560e9588d969e581212301ea047e9a8863e0e2673b8c6446ca40cafc6f2872b0` (api assets 975b115efeb8), built
+from the final tree after the second round (it carries the alias redirect). Earlier builds (f5110ed5 message,
+e7bcadc5...) are superseded; the zip embeds build timestamps.
 
 1.10.73 is taken by the unreleased team candidate integ/team1125: whichever ships second must merge the other
 first and keep the higher number.
 
-## Production actions (need mak; in this order)
+## Production actions (need mak; in this order, in the reserved slot 2026-12-15 14:00-16:00 UTC)
 
-1. **Release: API publish + plugin 1.10.74 upload, in the release window.** Publish the API (Replit) first, then
-   upload the zip, then `wp eval 'statchasers_news_run_upgrade_now();'`. The Game Log season buttons, the proxy path
-   and the API ship together.
-   Verify: `curl -sI` (browser UA) `/nfl/players/jahmyr-gibbs/?log=2025` -> 301 to `/game-log/#log=2025`;
-   `/wp-json/statchasers/v1/p/embed/player/jahmyr-gibbs?section=game-log&h1=1&log=2025` -> 200 with "in 2025 (Weeks
-   1-17)"; the Gibbs hub HTML has 0 `/redraft-command/players/` and 0 `?log=`; the plugin version in WP admin reads 1.10.74.
-2. **Purges.** Targeted FPA first: WP Rocket (desktop and mobile) then the Rocket.net edge for
-   /nfl/fantasy-points-allowed-by-position/ and /nfl/fantasy-points-allowed-by-position/2025/. Then the release's
-   general purge-and-warm: WP Rocket (mobile included) for the player pages and page sitemaps, then the Rocket.net
-   edge (it holds 200 copies of uppercase / double-slash / `?log=` variants for up to 30 days), then the live warm.
-   Verify: bare FPA page shows "PPR scoring" and Carolina 27.8 for RBs, `?format=half` shows Half-PPR; with an
-   iPhone UA the Gibbs hub shows one "Should I start Gibbs?" and the Overview meters Yards per carry / Yards per touch;
-   page-sitemap*.xml with a cache-buster lists /dandre-swift/ and /tyson-bagent/ and each of their tabs once.
-3. **Trash WP pages 4927 and 4929** (keepers 4926, 4928). Run the dry run first
-   (`wp eval 'print_r( statchasers_player_duplicate_plan() );'`), then
-   `statchasers_player_duplicate_apply( array( 4927, 4929 ) )` (trash only). Verify: both URLs still resolve with
-   `page-id-4926` / `page-id-4928`; sitemaps unchanged (already deduped by step 1).
+1. **Release: API publish, then plugin 1.10.74 upload.** Publish the API (Replit) first, wait for
+   `https://news.statchasers.com/api/status` to report the new build, then upload the zip and run
+   `wp eval 'statchasers_news_run_upgrade_now();'`. The Game Log season buttons, the proxy path and the API ship together.
+   Verify (browser UA, curl -sI): `/nfl/players/jahmyr-gibbs/?log=2025` -> one 301 to `/game-log/#log=2025`;
+   `/nfl/players/mitchell-tinsley/game-log/` -> one 301 to `/nfl/players/mitch-tinsley/game-log/`;
+   `/nfl/players/kenneth-walker/` still 200 noindex; `/wp-json/statchasers/v1/p/embed/player/jahmyr-gibbs?section=game-log&h1=1&log=2025`
+   -> 200 with "in 2025 (Weeks 1-17)"; the plugin version in WP admin reads 1.10.74.
+2. **Targeted FPA purges, then the general purge-and-warm.** WP Rocket (desktop and mobile) then the Rocket.net edge
+   for /nfl/fantasy-points-allowed-by-position/ and /nfl/fantasy-points-allowed-by-position/2025/. Then
+   `pnpm purge-and-warm` (WP Rocket incl. mobile, Rocket.net edge, then the phone and desktop warm; the edge holds
+   200 copies of the case / double-slash / `?log=` / alias variants for up to 30 days).
+   Verify: `node scripts/player-audit-release-check.mjs live after.json` then
+   `compare docs/PLAYER-AUDIT-BASELINE-2026-11-26.json after.json`: FPA bare = PPR (DAL 27.5 (2), CAR 27.8 (1)) and
+   equal to `?format=ppr`, half/standard unchanged; hub titles "{Name} NFL Stats & News | StatChasers"; hub FAQ
+   visible == FAQPage (Gibbs 8/8); every redirect row as in the candidate's `expected`; sitemaps 0 duplicates and 0
+   alias rows; with an iPhone UA the Gibbs hub shows one "Should I start Gibbs?" and the meters Yards per carry /
+   Yards per touch; Pacheco's Outlook has no "Tough matchups".
+3. **Trash WP pages 4927 and 4929** (keepers 4926, 4928). Dry run first
+   (`wp eval 'print_r( statchasers_player_duplicate_plan() );'` must list keep 4926 retire [4927], keep 4928 retire
+   [4929], differences empty), then `statchasers_player_duplicate_apply( array( 4927, 4929 ) )` (trash only).
+   Verify: both URLs still resolve with `page-id-4926` / `page-id-4928`; page sitemaps list each of their URLs once.
 4. **Stored-title update (retitle pass).** Review
    `wp eval 'echo wp_json_encode( statchasers_player_retitle_report(), JSON_PRETTY_PRINT );'` (counts, over-60 before
-   and after, every old => new), then the Tools-screen retitle button. Verify: a sample of hubs shows
-   `rank_math_title` = "{Name} NFL Stats & News | StatChasers", slugs and canonicals unchanged. This is the SEO
-   change under decision (e) and needs its own release slot (docs/RELEASE-WINDOW.md rule 5).
-5. **Live checks after deploy:** production lab run on the Gibbs hub (same settings as 11-25); Pacheco Durability
-   grid shows 10 missed.
+   and after, every old => new; rows carry titles only), then the Tools-screen retitle button.
+   Verify: a sample of hubs (Gibbs, Gyllenborg, Bo Nix, Bagent, Swift) stores `rank_math_title` = "{Name} NFL Stats &
+   News | StatChasers"; slugs and canonicals unchanged (re-run the check script).
+5. **After deploy:** production lab run on the Gibbs hub (same settings as 11-25); Pacheco Durability grid shows 10
+   missed. Optional, pending mak: trash the alias pages 7028 (mitchell-tinsley) and 4909 (chris-brazzell) once their
+   301s are confirmed.
 
 Visible follow-ups (not part of this release):
 - Standalone /injury-impact tool: gridiron.json rebuild (research pipeline, then buildData.mjs +
@@ -254,18 +376,15 @@ Visible follow-ups (not part of this release):
 - Injury check between Friday's final report and kickoff for a Sunday Week 12/13 player: header, Outlook, Injury tab
   and preview agree; the history row reads "Game not played yet"; the 2026 grid ends at the last completed week.
 - buildInjuryHistory.mjs still writes "played through" before the game (corrected at render).
+- dynasty_rankings.json (21) and bio_wikipedia.json (45) records keyed by an alias slug (builders).
 
 ## Open decisions for mak
 
-Settled 11-26: meters restored (1), in-place tabs kept (2), career totals full season with labeled ranges (3), FPA
-PPR default (4). Still open:
+Settled 11-26: meters restored, in-place tabs kept, career totals full season with labeled ranges, FPA PPR default,
+verified aliases 301 (ambiguous ones stay noindex), the IR matchup advice gated, the release slot reserved
+(2026-12-15). Still open:
 
-c. Alias-slug pairs (mitchell-tinsley / mitch-tinsley, kenneth-walker / kenneth-walker-iii, frank-gore /
-   frank-gore-jr, chris-brazzell / chris-brazzell-ii): keep noindex or 301 to the roster slug.
-e. Hub title: the live island prints "{Name} Stats, News, Bio & Fantasy Outlook | StatChasers" (Gibbs, checked live
-   11-26) and stored Rank Math titles read "{Name} Fantasy Football 2026: Stats, Outlook & News"; both become
-   "{Name} NFL Stats & News | StatChasers" on 648 indexed hubs, dropping "Fantasy Football 2026" / "Fantasy Outlook".
-   That is an SEO-surface change needing its own release slot per docs/RELEASE-WINDOW.md. This branch also carries
-   other SEO surfaces (FAQ/FAQPage reductions, tab titles held to 60, 301s, sitemap dedupe, FPA default format), so
-   mak decides whether 1.10.74 ships as one SEO release or the title ladder is split out.
-f. Pacheco-type IR players: whether the Outlook risk card / FAQ should also drop tough matchups (noted above).
+- The hub title change ("{Name} Stats, News, Bio & Fantasy Outlook" live, "{Name} Fantasy Football 2026: Stats,
+  Outlook & News" stored -> "{Name} NFL Stats & News | StatChasers", 648 hubs) rides the reserved SEO slot with the
+  other SEO surfaces; mak can still split the title ladder out of it.
+- Whether to trash the alias pages 7028 and 4909 after the 301s are live.
