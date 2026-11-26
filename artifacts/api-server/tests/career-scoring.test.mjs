@@ -97,6 +97,11 @@ describe("career FPTS reproduce from the printed figures (WEB-036)", () => {
     assert.equal(premium.careerScoringNote({ player: { position: "WR" }, format: "ppr", statsProfile: { career: [row(2023, "7547", "WR")] } }), "");
   });
 
+  test("the career table names its week range beside the leaderboards' (mak, 2026-11-26)", () => {
+    const html = premium.careerRangeNote();
+    assert.match(html, /Season rows count the full regular season, Week 18 included\. The NFL Player Stats leaderboards count Weeks 1-17, the fantasy season\./);
+  });
+
   test("league-wide: every player-season with logs reconciles from its columns plus the note", () => {
     const players = JSON.parse(fs.readFileSync(path.join(DATA, "players.json"), "utf8"));
     const pos = new Map((Array.isArray(players) ? players : Object.values(players)).map((p) => [String(p.id), p.position]));

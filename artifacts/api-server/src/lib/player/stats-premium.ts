@@ -287,6 +287,18 @@ function metricCards(m: StatsPremiumModel): string {
 /* ------------------------------------------------------------- the block */
 
 /**
+ * The career table's week range (mak, 2026-11-26): each season row counts
+ * his whole regular season, Week 18 included, while the NFL Player Stats
+ * leaderboards are cut to Weeks 1-17, the fantasy season (user's rule,
+ * 2026-09-23). St. Brown 2024: 302.5 there through Week 17, + 13.7 in
+ * Week 18 = 316.2 here. Said beside the table so the two never look like
+ * one total disagreeing with itself.
+ */
+export function careerRangeNote(): string {
+  return `<p class="scp-stp-note scp-stp-scorenote" data-scp-range-note><span class="scp-stp-note-icon" aria-hidden="true">${ICON.info}</span>${escapeHtml("Season rows count the full regular season, Week 18 included. The NFL Player Stats leaderboards count Weeks 1-17, the fantasy season.")}</p>`;
+}
+
+/**
  * The career table's scoring note (WEB-036, 2026-11-26): every season whose
  * FPTS counts scoring the row's columns do not show - a receiver's touchdown
  * pass, a two-point conversion, a return touchdown, a kicker's kicks - with
@@ -392,7 +404,7 @@ export function renderPremiumStats(data: PlayerPageData, inserts: { careerTable?
     // production cards it describes.
     `<section class="scp-ox-sec scp-stp-sec" aria-labelledby="scp-st-prod-h">${m.lede ? seasonHead.replace('<p class="scp-stp-bar-sub scp-up-dek">', '<p class="scp-stp-bar-sub scp-up-dek is-moved">') : seasonHead}<div class="scp-stp-body">${seasonBody}${m.lede && !ledeMoves ? `<p class="scp-stp-prod-lede">${m.lede}</p>` : ""}</div></section>` +
     (m.careerTable
-      ? `<section class="scp-ox-sec scp-stp-sec" aria-labelledby="scp-st-career-h">${careerHead}<div class="scp-stp-body scp-stp-tablewrap">${m.careerTable}</div>${careerScoringNote(data)}</section>`
+      ? `<section class="scp-ox-sec scp-stp-sec" aria-labelledby="scp-st-career-h">${careerHead}<div class="scp-stp-body scp-stp-tablewrap">${m.careerTable}</div>${careerRangeNote()}${careerScoringNote(data)}</section>`
       : "") +
     analysis +
     `</div>`
