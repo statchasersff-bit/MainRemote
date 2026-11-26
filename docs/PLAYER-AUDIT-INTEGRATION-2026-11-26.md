@@ -228,8 +228,8 @@ left-roster/sitemap) - all pass. Status: verified locally.
 WordPress pages that exist at a verified alias (read-only REST, parent 1139): 7028 `mitchell-tinsley` (-> 4977) and
 4909 `chris-brazzell` (-> 4910 `chris-brazzell-ii`). The other 49 verified aliases have no WordPress page; the rule
 answers them too. Live action: none required. Leave 7028 and 4909 in place (the plugin's 301 runs before WordPress
-serves them); no Rank Math redirect is needed. Optional later tidy-up (pending mak): trash 7028 and 4909 once the
-301s are confirmed live.
+serves them); no Rank Math redirect is needed. Approved by mak 2026-11-26 ("yes"): trash 7028 and 4909
+after the release, once the 301s are confirmed live (live action 6).
 
 Finding, not changed: 21 dynasty_rankings.json records and 45 bio_wikipedia.json records are keyed by an alias
 slug (e.g. `luther-burden`, `michael-pittman`), so those players' pages miss that data under the current slug. A
@@ -367,8 +367,11 @@ first and keep the higher number.
    Verify: a sample of hubs (Gibbs, Gyllenborg, Bo Nix, Bagent, Swift) stores `rank_math_title` = "{Name} NFL Stats &
    News | StatChasers"; slugs and canonicals unchanged (re-run the check script).
 5. **After deploy:** production lab run on the Gibbs hub (same settings as 11-25); Pacheco Durability grid shows 10
-   missed. Optional, pending mak: trash the alias pages 7028 (mitchell-tinsley) and 4909 (chris-brazzell) once their
-   301s are confirmed.
+   missed.
+6. **Alias pages (approved by mak 2026-11-26):** once `/nfl/players/mitchell-tinsley/` and `/nfl/players/chris-brazzell/`
+   (hub and a tab each) answer a single 301 to mitch-tinsley / chris-brazzell-ii on live, trash (not force-delete) WP
+   pages 7028 and 4909. Verify: both alias URLs still 301 in one hop after the trash (the plugin answers them, no WP
+   page needed), the destinations stay 200 + self-canonical, and neither alias appears in page-sitemap*.xml.
 
 Visible follow-ups (not part of this release):
 - Standalone /injury-impact tool: gridiron.json rebuild (research pipeline, then buildData.mjs +
@@ -386,5 +389,4 @@ verified aliases 301 (ambiguous ones stay noindex), the IR matchup advice gated,
 
 - The hub title change ("{Name} Stats, News, Bio & Fantasy Outlook" live, "{Name} Fantasy Football 2026: Stats,
   Outlook & News" stored -> "{Name} NFL Stats & News | StatChasers", 648 hubs) rides the reserved SEO slot with the
-  other SEO surfaces; mak can still split the title ladder out of it.
-- Whether to trash the alias pages 7028 and 4909 after the 301s are live.
+  other SEO surfaces (mak 2026-11-26: keep them together).
