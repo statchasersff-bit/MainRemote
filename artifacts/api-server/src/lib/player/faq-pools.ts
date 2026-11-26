@@ -12,6 +12,7 @@
 import { hasStatsTab } from "./stats-tab";
 import type { PlayerRenderOptions } from "../player-render";
 import { possessive } from "./title-case";
+import { matchupAdviceOff } from "./season-phase";
 import type { PlayerPageData } from "./player-data";
 import type { GameLogEntry } from "./types";
 import type { ScheduleGame } from "../team/schedule";
@@ -220,7 +221,7 @@ export function overviewPool(data: PlayerPageData, options: PlayerRenderOptions)
   // 6. Upcoming matchups. Not for a player on a reserve list (WEB-034,
   // 2026-11-26): "two of them are favorable" is advice that assumes he plays.
   const strip = (data.upcomingStrip ?? []).filter((g) => g.matchup).slice(0, 3);
-  const reserve = data.currentStatus?.kind === "reserve" || /^(ir|pup|nfi|injured reserve|sus)/i.test(c.status);
+  const reserve = matchupAdviceOff(data);
   if (strip.length >= 2 && !reserve) {
     const parts = strip.map((g) => {
       const opp = g.opponent?.nickname ?? g.opponentName;

@@ -41,7 +41,7 @@
 
 import { escapeHtml } from "../render";
 import { possessive, titleCase } from "./title-case";
-import { publishedRank, rankBasisWords, statsThroughWeek } from "./season-phase";
+import { matchupAdviceOff, publishedRank, rankBasisWords, statsThroughWeek } from "./season-phase";
 import type { PlayerRenderOptions } from "../player-render";
 import type { PlayerPageData } from "./player-data";
 import { getEntryPoints, SCORING_SHORT } from "./scoring";
@@ -416,7 +416,9 @@ function model(data: PlayerPageData): Model | null {
     preseason,
     noSeasonGames: week >= 1 && !now,
     staleRos: rosAny && rosAny.stale ? rosAny : null,
-    reserve: /^(ir|pup|nfi|injured reserve|sus)/i.test(status),
+    // The shared rule (season-phase.ts matchupAdviceOff): one predicate for
+    // the card, the visible FAQ and the FAQ schema.
+    reserve: matchupAdviceOff(data),
     statusMessage: data.currentStatus?.message ?? null,
     seasonMissed: data.injury?.availability?.missedInjury ?? null,
     now,
@@ -640,7 +642,9 @@ function tags(m: Model, depth: PlayerPageData["depth"]): Chip[] {
   if (m.injured) out.push({ label: m.injured.split(",")[0]!, kind: "bad" });
   else if (m.questionable) out.push({ label: "Questionable", kind: "mid" });
   if (m.qbChange) out.push({ label: "QB change", kind: "mid" });
-  if (m.sched.verdict === "tough") out.push({ label: "Tough upcoming schedule", kind: "bad" });
+  if (m.reserve) {
+    // No schedule verdict while he is on a reserve list (matchupAdviceOff).
+  } else if (m.sched.verdict === "tough") out.push({ label: "Tough upcoming schedule", kind: "bad" });
   else if (m.sched.verdict === "soft") out.push({ label: "Soft upcoming schedule", kind: "good" });
   const band = fpoeBand(m);
   const row = u(m);
@@ -835,7 +839,10 @@ function forwardParagraph(m: Model, depth: PlayerPageData["depth"]): string | nu
   }
   const s = m.sched;
   const withRank = (g: UpcomingGame): string => `the ${oppName(g)} in Week ${g.week} (${ordinal(g.matchup!.rank)})`;
-  if (s.verdict === "tough") {
+  if (m.reserve) {
+    // On a reserve list: the schedule section states the facts; no read of
+    // them here (matchupAdviceOff).
+  } else if (s.verdict === "tough") {
     parts.push(`${cap(word(s.tough.length))} of his next ${word(s.next.length)} opponents ${s.tough.length === 1 ? "is" : "are"} among the stingiest defenses against ${m.pos}s: ${listWords(s.tough.map(withRank))}.`);
     unsure.push({ text: "difficult upcoming matchups", plural: true });
   } else if (s.verdict === "soft") {
@@ -940,7 +947,9 @@ function supportsThreatens(m: Model, data: PlayerPageData): { supports: string[]
 
   if (m.injured) threatens.push(injuredPhrase(m.injured));
   else if (m.questionable) threatens.push(`a ${m.questionable.toLowerCase()} designation this week`);
-  if (m.sched.verdict === "tough") threatens.push(`${word(m.sched.tough.length)} difficult matchups in his next ${word(m.sched.next.length)}`);
+  if (m.reserve) {
+    // No matchup risk while he is on a reserve list (matchupAdviceOff).
+  } else if (m.sched.verdict === "tough") threatens.push(`${word(m.sched.tough.length)} difficult matchups in his next ${word(m.sched.next.length)}`);
   else if (m.sched.tough.length > m.sched.soft.length) threatens.push(`a tough matchup against the ${oppName(m.sched.tough[0]!)} in Week ${m.sched.tough[0]!.week}`);
   if (m.qbChange) threatens.push(`uncertainty over how targets are distributed with ${surname(m.qbChange.to.name)} starting`);
   if (usage?.ts.confirmed && (usage.ts.delta ?? 0) <= -3) threatens.push(`a target share down ${one(Math.abs(usage.ts.delta!))} points over his last three games`);
@@ -1349,7 +1358,7 @@ function triggerItems(m: Model, data: PlayerPageData): { up: TriggerItem[]; risk
   const s = m.sched;
   // Not for a player who is out or on a reserve list: a soft schedule is no
   // upside to a player not expected to play it (audit WEB-034).
-  if (s.soft.length > s.tough.length && !m.injured) {
+  if (s.soft.length > s.tough.length && !m.injured && !m.reserve) {
     up.push(b(s.soft.length >= 2 ? "A soft stretch." : "A soft spot.", `${cap(listWords(s.soft.map(withRank)))} ${s.soft.length === 1 ? "is a top-12 matchup" : "are top-12 matchups"} for ${m.pos}s.`));
   }
   // The drivers are restated here only when there is no catalyst at all - the
@@ -1374,7 +1383,7 @@ function triggerItems(m: Model, data: PlayerPageData): { up: TriggerItem[]; risk
       ),
     );
   }
-  if (s.tough.length > s.soft.length) {
+  if (s.tough.length > s.soft.length && !m.reserve) {
     const through = row && n(row.targetShare) && row.targetShare >= 20 ? ` His ${pct(row.targetShare)} target share is the way through them.` : "";
     risk.push(b(s.tough.length === 1 ? "A tough matchup." : "Tough matchups.", `${cap(listWords(s.tough.map(withRank)))} ${s.tough.length === 1 ? "is" : "are"} among the stingiest defenses against ${m.pos}s.${through}`));
   }
@@ -1666,7 +1675,7 @@ function outlookPool(m: Model, data: PlayerPageData, options: PlayerRenderOption
   const bestWeek = log.length ? [...log].sort((x, y) => getEntryPoints(y.stats, data.format) - getEntryPoints(x.stats, data.format))[0] : null;
   // Sidelined (out, IR): no upside that assumes he plays this week or the
   // next few (WEB-034, 2026-11-26) - no soft schedule, no "weekly floor".
-  const softUp = s.soft.length > s.tough.length && !m.injured ? s.soft : [];
+  const softUp = s.soft.length > s.tough.length && !m.injured && !m.reserve ? s.soft : [];
   const floor = top && top.tier === "good" && !m.injured;
   if (bestWeek || floor || softUp.length || unpaid(m)) {
     const parts: string[] = [];
@@ -1685,7 +1694,7 @@ function outlookPool(m: Model, data: PlayerPageData, options: PlayerRenderOption
   const risks: string[] = [];
   if (m.injured) risks.push(`he is ${m.injured.toLowerCase()}`);
   if (m.qbChange) risks.push(`${m.qbChange.to.name} has taken over at quarterback, so how the targets are shared is unsettled`);
-  if (s.tough.length > s.soft.length) risks.push(`${listWords(s.tough.slice(0, 2).map(withRank))} ${s.tough.length === 1 ? "is a tough matchup" : "are tough matchups"}`);
+  if (s.tough.length > s.soft.length && !m.reserve) risks.push(`${listWords(s.tough.slice(0, 2).map(withRank))} ${s.tough.length === 1 ? "is a tough matchup" : "are tough matchups"}`);
   if (usage?.ts.confirmed && (usage.ts.delta ?? 0) <= -3) risks.push(`his target share is down ${one(Math.abs(usage.ts.delta!))} points over his last three games`);
   if (row && band === "over" && row.fpoePerGame! >= 2) risks.push(`he is scoring ${signed(row.fpoePerGame!)} a game over his opportunity, which may not repeat`);
   if (depth && depth.order > 1 && !m.injured) risks.push(`he is ${depth.position}${depth.order} on the depth chart`);
@@ -1724,6 +1733,15 @@ function outlookPool(m: Model, data: PlayerPageData, options: PlayerRenderOption
 function renderFaq(m: Model, data: PlayerPageData, options: PlayerRenderOptions): string {
   const items = selectFaq(outlookPool(m, data, options));
   return renderFaqSection("outlook", data, items, options, "scp-ol-faq");
+}
+
+/**
+ * Every Outlook FAQ candidate before the 10-question cap, for tests: the
+ * visible FAQ and the FAQ schema are both a selection of these entries.
+ */
+export function outlookFaqCandidates(data: PlayerPageData, options: PlayerRenderOptions = {}): FaqCandidate[] {
+  const m = model(data);
+  return m ? outlookPool(m, data, options).filter((c): c is FaqCandidate => c !== null) : [];
 }
 
 /* ------------------------------------------------------------------ the tab */

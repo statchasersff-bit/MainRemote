@@ -717,4 +717,30 @@ describe("rank basis, ROS freshness and an unavailable player (audit 2026-11-26)
     // No upside built on the soft schedule he cannot play.
     assert.doesNotMatch(txt, /top-12 matchups? for WRs/);
   });
+
+  test("on IR after playing: one predicate drops matchup risk and upside from the card, the FAQ and the FAQ schema; the schedule facts stay (mak, 2026-11-26)", () => {
+    const active = render(wr());
+    const onIr = render(wr({ designation: { injuryStatus: "IR", injuryBodyPart: "Back" }, currentStatus: { kind: "reserve", message: "On IR." } }));
+    const risks = (doc) => [...doc.querySelectorAll(".scp-olp-card.is-risk .scp-olp-claim")].map((c) => c.textContent);
+    const island = (doc) => [...doc.querySelectorAll("script.scp-faq-data")].map((x) => x.textContent).join(" ");
+    const faq = (doc) => [...doc.querySelectorAll(".scp-ol-faq, .scp-tab-faq")].map((x) => x.textContent).join(" ");
+    // Every FAQ candidate, before the 10-question cap: the visible FAQ and the schema are a selection of these.
+    const pool = (st) => ol.outlookFaqCandidates(st, { playerPathPrefix: "/nfl/players/" }).map((c) => `${c.q} ${c.a}`).join(" ");
+    // Active (the control): the advice is there.
+    assert.ok(risks(active).includes("Tough matchups"), risks(active).join(" | "));
+    assert.match(pool(wr()), /tough matchups?/);
+    assert.match(pool(wr()), /remaining fantasy schedule\?/);
+    // On IR: not in the card, the visible FAQ or the schema island.
+    assert.ok(!risks(onIr).includes("Tough matchups"), risks(onIr).join(" | "));
+    assert.ok(risks(onIr).includes("Injury"), risks(onIr).join(" | "));
+    assert.doesNotMatch(faq(onIr), /tough matchups?|stingiest|remaining fantasy schedule\?|good fantasy playoff option\?/);
+    assert.doesNotMatch(island(onIr), /tough matchups?|stingiest|remaining fantasy schedule|good fantasy playoff option/);
+    assert.doesNotMatch(pool(wr({ designation: { injuryStatus: "IR", injuryBodyPart: "Back" }, currentStatus: { kind: "reserve", message: "On IR." } })), /tough matchups?|stingiest|remaining fantasy schedule\?|good fantasy playoff option\?|top-12 matchups?/);
+    assert.ok(![...onIr.querySelectorAll(".scp-olr-tag")].some((c) => /upcoming schedule/.test(c.textContent)));
+    assert.doesNotMatch(all(onIr), /difficult upcoming matchups/);
+    // The schedule section still lists the games, as facts.
+    const sched = onIr.querySelector(".scp-olp-sec.is-schedule");
+    assert.ok(sched && sched.querySelectorAll(".scp-olp-mu, li, article").length >= 3, "the matchups are still listed");
+    assert.match(sched.textContent, /matter only once he is activated/);
+  });
 });

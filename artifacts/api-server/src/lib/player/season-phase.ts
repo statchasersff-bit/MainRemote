@@ -108,3 +108,17 @@ export function oppPhrase(opp: string): string {
 export function oneDecimal(n: number): string {
   return (Math.round(n * 10) / 10).toFixed(1);
 }
+
+/**
+ * Whether matchup advice is off for this player (mak, 2026-11-26): he is on a
+ * reserve list (IR, PUP, NFI) or suspended, by the shared availability record
+ * (currentStatus, or the designation it feeds). While it holds, no
+ * current-week matchup risk, schedule upside, schedule or playoff verdict is
+ * printed anywhere on the Outlook or in the FAQs - the card, the visible FAQ
+ * and the FAQ schema all read this one predicate (Pacheco on IR read "Tough
+ * matchups: the Bears in Week 12..."). The schedule itself, as facts, stays.
+ */
+export function matchupAdviceOff(data: PlayerPageData): boolean {
+  if (data.currentStatus?.kind === "reserve") return true;
+  return /^(ir|pup|nfi|injured reserve|sus)/i.test((data.designation?.injuryStatus ?? "").trim());
+}

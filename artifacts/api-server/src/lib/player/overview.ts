@@ -59,7 +59,7 @@ import {
 } from "./header";
 import { headArt, headIcon } from "./tab-head";
 import { SOFT_MAX_RANK, TOUGH_MIN_RANK } from "../fpa/matchup-bands";
-import { publishedRank, rankBasisWords, type PublishedRank } from "./season-phase";
+import { matchupAdviceOff, publishedRank, rankBasisWords, type PublishedRank } from "./season-phase";
 
 const DASH = "-";
 
@@ -600,8 +600,8 @@ function outlookParagraph(data: PlayerPageData, s: Season, ranked: PublishedRank
   // ruled out gets his status instead: the schedule is moot until he returns.
   const status = (data.designation?.injuryStatus ?? "").trim();
   const ahead = s.next.filter((g): g is UpcomingGame => !("bye" in g) && Boolean(g.matchup));
-  if (status && designationSeverity(status) === "out") {
-    const listed = /^ir\b/i.test(status) || /injured reserve/i.test(status) ? "on injured reserve" : `listed ${status.toLowerCase()}`;
+  if (matchupAdviceOff(data) || (status && designationSeverity(status) === "out")) {
+    const listed = !status ? "on a reserve list" : /^ir\b/i.test(status) || /injured reserve/i.test(status) ? "on injured reserve" : `listed ${status.toLowerCase()}`;
     sentences.push(`He is ${listed}, so his value rests on the timing of his return.`);
   } else if (ahead.length >= 2) {
     const soft = ahead.filter((g) => matchupBand(g.matchup!.rank) === "soft").length;
