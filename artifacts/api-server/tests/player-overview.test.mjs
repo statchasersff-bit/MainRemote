@@ -383,6 +383,11 @@ describe("overview sections (mak's Overview redesign, 2026-11-05)", () => {
     assert.equal(doc.querySelector('a[href*="/redraft-command/players/"]'), null);
   });
 
+  test("no second start/sit button in the Overview body: the header carries it at every width (integration 2026-11-26)", () => {
+    const doc = render(state());
+    assert.equal(doc.querySelector(".scp-ox-startsit, [data-cta='startsit-overview-mobile']"), null);
+  });
+
   test("the FAQ is in the HTML, first one open, and goes to the schema word for word", () => {
     const sink = [];
     const doc = render(state(), { faqSink: sink });

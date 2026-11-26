@@ -55,7 +55,6 @@ import {
   designationSeverity,
   lastName,
   matchupBand,
-  startSitHref,
   teamInk,
 } from "./header";
 import { headArt, headIcon } from "./tab-head";
@@ -683,9 +682,8 @@ function preseasonMonth(o: PlayerPageData["fantasyOutlook2026"]): string | null 
   return new Date(at).toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "America/New_York" });
 }
 
-function renderOutlook(data: PlayerPageData, s: Season, options: PlayerRenderOptions): string {
+function renderOutlook(data: PlayerPageData, s: Season, _options: PlayerRenderOptions): string {
   const name = data.player.name;
-  const last = lastName(name);
   const pos = s.pos;
   const rank = s.played.length ? seasonRank(data) : null;
 
@@ -724,16 +722,14 @@ function renderOutlook(data: PlayerPageData, s: Season, options: PlayerRenderOpt
     para = escapeHtml(outlookParagraph(data, s, rank));
   }
 
-  const startHref = startSitHref(data, options);
-  // The phone's "Should I start" (mak, 2026-11-05): moved out of the header
-  // to where the answer is; player.css shows it at 560px and under.
-  const startLink = startHref
-    ? `<a class="scp-ox-startsit" href="${escapeHtml(startHref)}" data-cta="startsit-overview-mobile" data-scp-cta="startsit-header">${escapeHtml(`Should I start ${last}?`)}<span aria-hidden="true">→</span></a>`
-    : "";
+  // The phone's "Should I start" button (mak, 2026-11-05) lived here while
+  // the header's phone button opened the Redraft player page. Since the
+  // 2026-11-26 audit (WEB-017) the header's button IS "Should I start
+  // {Last}?" at every width, so a second one here was the same link twice
+  // on one phone screen; the header keeps it (integration, 2026-11-26).
 
   return (
     sectionOpen("scp-ox-read-h", `${name} fantasy outlook & efficiency`, "scp-ox-outlook", "outlook") +
-    startLink +
     `<div class="scp-ox-read">` +
     `<div class="scp-ox-read-main">${call}<p class="scp-ox-prose">${para}</p></div>` +
     renderMeters(data, s) +
