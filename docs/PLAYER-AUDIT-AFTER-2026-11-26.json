@@ -1,0 +1,423 @@
+{
+ "mode": "live",
+ "at": "2026-11-26T05:57:34.229Z",
+ "pages": [
+  {
+   "slug": "jahmyr-gibbs",
+   "tab": "hub",
+   "chain": "200 /nfl/players/jahmyr-gibbs/",
+   "final": "/nfl/players/jahmyr-gibbs/",
+   "title": "Jahmyr Gibbs NFL Stats & News | StatChasers",
+   "canonical": "https://statchasers.com/nfl/players/jahmyr-gibbs/",
+   "robots": "index, follow, max-snippet:-1, max-video-preview:-1, max-image-preview:large",
+   "faqVisible": [
+    8
+   ],
+   "faqSchema": 8
+  },
+  {
+   "slug": "jahmyr-gibbs",
+   "tab": "stats",
+   "chain": "200 /nfl/players/jahmyr-gibbs/stats/",
+   "final": "/nfl/players/jahmyr-gibbs/stats/",
+   "title": "Jahmyr Gibbs Stats: 2026 & Career NFL Stats | StatChasers",
+   "canonical": "https://statchasers.com/nfl/players/jahmyr-gibbs/stats/",
+   "robots": "index, follow, max-snippet:-1, max-video-preview:-1, max-image-preview:large",
+   "faqVisible": [
+    10
+   ],
+   "faqSchema": 10
+  },
+  {
+   "slug": "jahmyr-gibbs",
+   "tab": "game-log",
+   "chain": "200 /nfl/players/jahmyr-gibbs/game-log/",
+   "final": "/nfl/players/jahmyr-gibbs/game-log/",
+   "title": "Jahmyr Gibbs Game Log & Weekly Stats | StatChasers",
+   "canonical": "https://statchasers.com/nfl/players/jahmyr-gibbs/game-log/",
+   "robots": "index, follow, max-snippet:-1, max-video-preview:-1, max-image-preview:large",
+   "faqVisible": [
+    10
+   ],
+   "faqSchema": 10
+  },
+  {
+   "slug": "john-michael-gyllenborg",
+   "tab": "hub",
+   "chain": "200 /nfl/players/john-michael-gyllenborg/",
+   "final": "/nfl/players/john-michael-gyllenborg/",
+   "title": "John Michael Gyllenborg NFL Stats & News | StatChasers",
+   "canonical": "https://statchasers.com/nfl/players/john-michael-gyllenborg/",
+   "robots": "index, follow, max-snippet:-1, max-video-preview:-1, max-image-preview:large",
+   "faqVisible": [
+    1
+   ],
+   "faqSchema": 1
+  },
+  {
+   "slug": "john-michael-gyllenborg",
+   "tab": "stats",
+   "chain": "302 /nfl/players/john-michael-gyllenborg/stats/ -> 200 /nfl/players/john-michael-gyllenborg/",
+   "final": "/nfl/players/john-michael-gyllenborg/",
+   "title": "John Michael Gyllenborg NFL Stats & News | StatChasers",
+   "canonical": "https://statchasers.com/nfl/players/john-michael-gyllenborg/",
+   "robots": "index, follow, max-snippet:-1, max-video-preview:-1, max-image-preview:large",
+   "faqVisible": [
+    1
+   ],
+   "faqSchema": 1
+  },
+  {
+   "slug": "john-michael-gyllenborg",
+   "tab": "bio",
+   "chain": "200 /nfl/players/john-michael-gyllenborg/bio/",
+   "final": "/nfl/players/john-michael-gyllenborg/bio/",
+   "title": "John Michael Gyllenborg Bio: Age, Height, College & Draft",
+   "canonical": "https://statchasers.com/nfl/players/john-michael-gyllenborg/bio/",
+   "robots": "index, follow, max-snippet:-1, max-video-preview:-1, max-image-preview:large",
+   "faqVisible": [
+    9
+   ],
+   "faqSchema": 9
+  },
+  {
+   "slug": "bo-nix",
+   "tab": "hub",
+   "chain": "200 /nfl/players/bo-nix/",
+   "final": "/nfl/players/bo-nix/",
+   "title": "Bo Nix NFL Stats & News | StatChasers",
+   "canonical": "https://statchasers.com/nfl/players/bo-nix/",
+   "robots": "index, follow, max-snippet:-1, max-video-preview:-1, max-image-preview:large",
+   "faqVisible": [
+    8
+   ],
+   "faqSchema": 8
+  },
+  {
+   "slug": "bo-nix",
+   "tab": "stats",
+   "chain": "200 /nfl/players/bo-nix/stats/",
+   "final": "/nfl/players/bo-nix/stats/",
+   "title": "Bo Nix Stats: 2026 & Career NFL Stats | StatChasers",
+   "canonical": "https://statchasers.com/nfl/players/bo-nix/stats/",
+   "robots": "index, follow, max-snippet:-1, max-video-preview:-1, max-image-preview:large",
+   "faqVisible": [
+    10
+   ],
+   "faqSchema": 10
+  },
+  {
+   "slug": "bo-nix",
+   "tab": "outlook",
+   "chain": "200 /nfl/players/bo-nix/outlook/",
+   "final": "/nfl/players/bo-nix/outlook/",
+   "title": "Bo Nix Fantasy Outlook 2026: ROS Analysis | StatChasers",
+   "canonical": "https://statchasers.com/nfl/players/bo-nix/outlook/",
+   "robots": "index, follow, max-snippet:-1, max-video-preview:-1, max-image-preview:large",
+   "faqVisible": [
+    8
+   ],
+   "faqSchema": 8
+  },
+  {
+   "slug": "hayden-large",
+   "tab": "hub",
+   "chain": "200 /nfl/players/hayden-large/",
+   "final": "/nfl/players/hayden-large/",
+   "title": "Hayden Large NFL Stats & News | StatChasers",
+   "canonical": "https://statchasers.com/nfl/players/hayden-large/",
+   "robots": "index, follow, max-snippet:-1, max-video-preview:-1, max-image-preview:large",
+   "faqVisible": [
+    1
+   ],
+   "faqSchema": 1
+  },
+  {
+   "slug": "hayden-large",
+   "tab": "outlook",
+   "chain": "200 /nfl/players/hayden-large/outlook/",
+   "final": "/nfl/players/hayden-large/outlook/",
+   "title": "Hayden Large Fantasy Outlook 2026: ROS Analysis",
+   "canonical": "https://statchasers.com/nfl/players/hayden-large/outlook/",
+   "robots": "index, follow, max-snippet:-1, max-video-preview:-1, max-image-preview:large",
+   "faqVisible": [
+    2
+   ],
+   "faqSchema": 2
+  },
+  {
+   "slug": "hayden-large",
+   "tab": "news",
+   "chain": "200 /nfl/players/hayden-large/news/",
+   "final": "/nfl/players/hayden-large/news/",
+   "title": "Hayden Large News & Latest Updates | StatChasers",
+   "canonical": "https://statchasers.com/nfl/players/hayden-large/news/",
+   "robots": "index, follow, max-snippet:-1, max-video-preview:-1, max-image-preview:large",
+   "faqVisible": [],
+   "faqSchema": 0
+  },
+  {
+   "slug": "isiah-pacheco",
+   "tab": "hub",
+   "chain": "200 /nfl/players/isiah-pacheco/",
+   "final": "/nfl/players/isiah-pacheco/",
+   "title": "Isiah Pacheco NFL Stats & News | StatChasers",
+   "canonical": "https://statchasers.com/nfl/players/isiah-pacheco/",
+   "robots": "index, follow, max-snippet:-1, max-video-preview:-1, max-image-preview:large",
+   "faqVisible": [
+    2
+   ],
+   "faqSchema": 2
+  },
+  {
+   "slug": "isiah-pacheco",
+   "tab": "outlook",
+   "chain": "200 /nfl/players/isiah-pacheco/outlook/",
+   "final": "/nfl/players/isiah-pacheco/outlook/",
+   "title": "Isiah Pacheco Fantasy Outlook 2026: ROS Analysis",
+   "canonical": "https://statchasers.com/nfl/players/isiah-pacheco/outlook/",
+   "robots": "index, follow, max-snippet:-1, max-video-preview:-1, max-image-preview:large",
+   "faqVisible": [
+    4
+   ],
+   "faqSchema": 4
+  },
+  {
+   "slug": "isiah-pacheco",
+   "tab": "injury",
+   "chain": "200 /nfl/players/isiah-pacheco/injury/",
+   "final": "/nfl/players/isiah-pacheco/injury/",
+   "title": "Isiah Pacheco Injury Status & History | StatChasers",
+   "canonical": "https://statchasers.com/nfl/players/isiah-pacheco/injury/",
+   "robots": "index, follow, max-snippet:-1, max-video-preview:-1, max-image-preview:large",
+   "faqVisible": [
+    10
+   ],
+   "faqSchema": 10
+  },
+  {
+   "slug": "amon-ra-st-brown",
+   "tab": "hub",
+   "chain": "200 /nfl/players/amon-ra-st-brown/",
+   "final": "/nfl/players/amon-ra-st-brown/",
+   "title": "Amon-Ra St. Brown NFL Stats & News | StatChasers",
+   "canonical": "https://statchasers.com/nfl/players/amon-ra-st-brown/",
+   "robots": "index, follow, max-snippet:-1, max-video-preview:-1, max-image-preview:large",
+   "faqVisible": [
+    8
+   ],
+   "faqSchema": 8
+  },
+  {
+   "slug": "amon-ra-st-brown",
+   "tab": "stats",
+   "chain": "200 /nfl/players/amon-ra-st-brown/stats/",
+   "final": "/nfl/players/amon-ra-st-brown/stats/",
+   "title": "Amon-Ra St. Brown Stats: 2026 & Career NFL Stats",
+   "canonical": "https://statchasers.com/nfl/players/amon-ra-st-brown/stats/",
+   "robots": "index, follow, max-snippet:-1, max-video-preview:-1, max-image-preview:large",
+   "faqVisible": [
+    10
+   ],
+   "faqSchema": 10
+  },
+  {
+   "slug": "amon-ra-st-brown",
+   "tab": "game-log",
+   "chain": "200 /nfl/players/amon-ra-st-brown/game-log/",
+   "final": "/nfl/players/amon-ra-st-brown/game-log/",
+   "title": "Amon-Ra St. Brown Game Log & Weekly Stats | StatChasers",
+   "canonical": "https://statchasers.com/nfl/players/amon-ra-st-brown/game-log/",
+   "robots": "index, follow, max-snippet:-1, max-video-preview:-1, max-image-preview:large",
+   "faqVisible": [
+    10
+   ],
+   "faqSchema": 10
+  },
+  {
+   "slug": "tyson-bagent",
+   "tab": "hub",
+   "chain": "200 /nfl/players/tyson-bagent/",
+   "final": "/nfl/players/tyson-bagent/",
+   "title": "Tyson Bagent NFL Stats & News | StatChasers",
+   "canonical": "https://statchasers.com/nfl/players/tyson-bagent/",
+   "robots": "index, follow, max-snippet:-1, max-video-preview:-1, max-image-preview:large",
+   "faqVisible": [
+    8
+   ],
+   "faqSchema": 8
+  },
+  {
+   "slug": "tyson-bagent",
+   "tab": "stats",
+   "chain": "200 /nfl/players/tyson-bagent/stats/",
+   "final": "/nfl/players/tyson-bagent/stats/",
+   "title": "Tyson Bagent Stats: 2026 & Career NFL Stats | StatChasers",
+   "canonical": "https://statchasers.com/nfl/players/tyson-bagent/stats/",
+   "robots": "index, follow, max-snippet:-1, max-video-preview:-1, max-image-preview:large",
+   "faqVisible": [
+    10
+   ],
+   "faqSchema": 10
+  },
+  {
+   "slug": "dandre-swift",
+   "tab": "hub",
+   "chain": "200 /nfl/players/dandre-swift/",
+   "final": "/nfl/players/dandre-swift/",
+   "title": "D'Andre Swift NFL Stats & News | StatChasers",
+   "canonical": "https://statchasers.com/nfl/players/dandre-swift/",
+   "robots": "index, follow, max-snippet:-1, max-video-preview:-1, max-image-preview:large",
+   "faqVisible": [
+    8
+   ],
+   "faqSchema": 8
+  },
+  {
+   "slug": "dandre-swift",
+   "tab": "stats",
+   "chain": "200 /nfl/players/dandre-swift/stats/",
+   "final": "/nfl/players/dandre-swift/stats/",
+   "title": "D'Andre Swift Stats: 2026 & Career NFL Stats | StatChasers",
+   "canonical": "https://statchasers.com/nfl/players/dandre-swift/stats/",
+   "robots": "index, follow, max-snippet:-1, max-video-preview:-1, max-image-preview:large",
+   "faqVisible": [
+    10
+   ],
+   "faqSchema": 10
+  },
+  {
+   "slug": "mitch-tinsley",
+   "tab": "hub",
+   "chain": "200 /nfl/players/mitch-tinsley/",
+   "final": "/nfl/players/mitch-tinsley/",
+   "title": "Mitch Tinsley NFL Stats & News | StatChasers",
+   "canonical": "https://statchasers.com/nfl/players/mitch-tinsley/",
+   "robots": "index, follow, max-snippet:-1, max-video-preview:-1, max-image-preview:large",
+   "faqVisible": [
+    8
+   ],
+   "faqSchema": 8
+  },
+  {
+   "slug": "mitch-tinsley",
+   "tab": "game-log",
+   "chain": "200 /nfl/players/mitch-tinsley/game-log/",
+   "final": "/nfl/players/mitch-tinsley/game-log/",
+   "title": "Mitch Tinsley Game Log & Weekly Stats | StatChasers",
+   "canonical": "https://statchasers.com/nfl/players/mitch-tinsley/game-log/",
+   "robots": "index, follow, max-snippet:-1, max-video-preview:-1, max-image-preview:large",
+   "faqVisible": [
+    10
+   ],
+   "faqSchema": 10
+  },
+  {
+   "slug": "mitchell-tinsley",
+   "tab": "hub",
+   "chain": "301 /nfl/players/mitchell-tinsley/ -> 200 /nfl/players/mitch-tinsley/",
+   "final": "/nfl/players/mitch-tinsley/",
+   "title": "Mitch Tinsley NFL Stats & News | StatChasers",
+   "canonical": "https://statchasers.com/nfl/players/mitch-tinsley/",
+   "robots": "index, follow, max-snippet:-1, max-video-preview:-1, max-image-preview:large",
+   "faqVisible": [
+    8
+   ],
+   "faqSchema": 8
+  },
+  {
+   "slug": "mitchell-tinsley",
+   "tab": "game-log",
+   "chain": "301 /nfl/players/mitchell-tinsley/game-log/ -> 200 /nfl/players/mitch-tinsley/game-log/",
+   "final": "/nfl/players/mitch-tinsley/game-log/",
+   "title": "Mitch Tinsley Game Log & Weekly Stats | StatChasers",
+   "canonical": "https://statchasers.com/nfl/players/mitch-tinsley/game-log/",
+   "robots": "index, follow, max-snippet:-1, max-video-preview:-1, max-image-preview:large",
+   "faqVisible": [
+    10
+   ],
+   "faqSchema": 10
+  },
+  {
+   "slug": "chris-brazzell",
+   "tab": "hub",
+   "chain": "301 /nfl/players/chris-brazzell/ -> 200 /nfl/players/chris-brazzell-ii/",
+   "final": "/nfl/players/chris-brazzell-ii/",
+   "title": "Chris Brazzell II NFL Stats & News | StatChasers",
+   "canonical": "https://statchasers.com/nfl/players/chris-brazzell-ii/",
+   "robots": "index, follow, max-snippet:-1, max-video-preview:-1, max-image-preview:large",
+   "faqVisible": [
+    1
+   ],
+   "faqSchema": 1
+  },
+  {
+   "slug": "kenneth-walker",
+   "tab": "hub",
+   "chain": "200 /nfl/players/kenneth-walker/",
+   "final": "/nfl/players/kenneth-walker/",
+   "title": "Kenneth Walker NFL Stats & News | StatChasers",
+   "canonical": null,
+   "robots": "noindex, follow",
+   "faqVisible": [],
+   "faqSchema": 0
+  }
+ ],
+ "redirects": {
+  "/nfl/players/jahmyr-gibbs/?log=2025": "301 /nfl/players/jahmyr-gibbs/?log=2025 -> fragment /nfl/players/jahmyr-gibbs/game-log/#log=2025 -> 200 /nfl/players/jahmyr-gibbs/game-log/",
+  "/nfl/players/Jahmyr-Gibbs/": "301 /nfl/players/Jahmyr-Gibbs/ -> 200 /nfl/players/jahmyr-gibbs/",
+  "/nfl/players//jahmyr-gibbs/stats/": "200 /nfl/players//jahmyr-gibbs/stats/",
+  "/nfl/players/jahmyr-gibbs/overview/": "301 /nfl/players/jahmyr-gibbs/overview/ -> 200 /nfl/players/jahmyr-gibbs/",
+  "/nfl/players/dandre-swift-2/": "301 /nfl/players/dandre-swift-2/ -> 200 /nfl/players/dandre-swift/",
+  "/nfl/players/mitchell-tinsley/": "301 /nfl/players/mitchell-tinsley/ -> 200 /nfl/players/mitch-tinsley/",
+  "/nfl/players/mitchell-tinsley/game-log/": "301 /nfl/players/mitchell-tinsley/game-log/ -> 200 /nfl/players/mitch-tinsley/game-log/",
+  "/nfl/players/Mitchell-Tinsley//Stats/": "301 /nfl/players/Mitchell-Tinsley//Stats/ -> 301 /nfl/players/mitchell-tinsley/stats/ -> 200 /nfl/players/mitch-tinsley/stats/",
+  "/nfl/players/mitchell-tinsley/badtab/": "404 /nfl/players/mitchell-tinsley/badtab/",
+  "/nfl/players/chris-brazzell/": "301 /nfl/players/chris-brazzell/ -> 200 /nfl/players/chris-brazzell-ii/",
+  "/nfl/players/kenneth-walker/": "200 /nfl/players/kenneth-walker/"
+ },
+ "sitemap": {
+  "page-sitemap1.xml": 4020,
+  "page-sitemap2.xml": 177,
+  "page-sitemap3.xml": 178,
+  "page-sitemap4.xml": 182,
+  "total": 4557,
+  "unique": 4557,
+  "players": 4236,
+  "duplicates": 0,
+  "tysonBagentRows": 7,
+  "dandreSwiftRows": 7,
+  "mitchellTinsleyRows": 0,
+  "chrisBrazzellRows": 0
+ },
+ "fpa": {
+  "(bare)": {
+   "status": 200,
+   "format": "ppr",
+   "caption": "PPR",
+   "dalRb": "28.5 (1)",
+   "carRb": "26.2 (7)"
+  },
+  "?format=ppr": {
+   "status": 200,
+   "format": "ppr",
+   "caption": "PPR",
+   "dalRb": "28.5 (1)",
+   "carRb": "26.2 (7)"
+  },
+  "?format=half": {
+   "status": 200,
+   "format": "half",
+   "caption": "Half-PPR",
+   "dalRb": "26.5 (2)",
+   "carRb": "23.4 (7)"
+  },
+  "?format=standard": {
+   "status": 200,
+   "format": "standard",
+   "caption": "Standard",
+   "dalRb": "24.5 (2)",
+   "carRb": "20.7 (8)"
+  }
+ }
+}
