@@ -1030,7 +1030,8 @@ describe("the game log tab", () => {
       const chip = cell.querySelector(".scp-glp-diff b");
       if (!chip) { assert.equal(cell.textContent.trim(), "-"); continue; }
       const rank = Number.parseInt(chip.textContent, 10);
-      const want = rank <= 10 ? "Favorable" : rank >= 23 ? "Tough" : "Neutral";
+      // The FPA page's scale since 2026-11-19 (matchup-bands.ts): 1-12, 13-20, 21-32.
+      const want = rank <= 12 ? "Favorable" : rank >= 21 ? "Tough" : "Neutral";
       const word = cell.textContent.replace(chip.textContent, "").trim();
       assert.equal(word, want, `${chip.textContent}: ${cell.textContent}`);
     }
@@ -1278,6 +1279,7 @@ describe("the game log tab", () => {
     // the phrase it defines is the way there.
     const link = note.querySelector("a.scp-caption-link");
     assert.ok(link, "the caption carries a link");
+    // In the page's format (WEB-033): PPR, which the FPA page opens in.
     assert.equal(link.getAttribute("href"), "/fpa");
     assert.equal(link.textContent, "fantasy points allowed");
     assert.match(note.textContent, /1st allows the most, 32nd the fewest/);

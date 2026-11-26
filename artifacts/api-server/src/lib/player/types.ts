@@ -88,7 +88,7 @@ export interface GameLogEntry {
   pos_rank?: number | null;
   opp_rank_vs_pos?: number | null;
   /** Where opp_rank_vs_pos came from (ranks.ts OppRankSource). */
-  opp_rank_source?: "fpa-current" | "fpa-archive" | "gamelog";
+  opp_rank_source?: "fpa-current" | "fpa-archive" | "gamelog" | "unavailable";
   game_status?: "active" | "bye" | "out" | null;
   score?: GameScore | null;
 }

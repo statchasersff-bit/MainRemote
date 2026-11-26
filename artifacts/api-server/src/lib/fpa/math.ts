@@ -19,6 +19,23 @@ export const ROLLING_WINDOW_WEEKS = 10;
 
 /* ------------------------------------------------------------ the FPA table */
 
+/**
+ * Rank 1 = the most points allowed. Ties go to the team code, alphabetically,
+ * so a tie ranks the same on every read and in every process. The ONE ranking
+ * rule for points allowed: fpa-data.ts (the FPA page, the upcoming games, the
+ * game log) and player/ranks.ts buildOppRanks() both call it (WEB-033).
+ */
+export function rankFpaValues(rows: ReadonlyArray<{ team: string; value: number }>): number[] {
+  const order = rows
+    .map((row, index) => ({ row, index }))
+    .sort((a, b) => b.row.value - a.row.value || (a.row.team < b.row.team ? -1 : a.row.team > b.row.team ? 1 : 0));
+  const ranks = new Array<number>(rows.length);
+  order.forEach((entry, i) => {
+    ranks[entry.index] = i + 1;
+  });
+  return ranks;
+}
+
 export interface PositionFpa {
   /** Points allowed per game, as measured. */
   raw: number;

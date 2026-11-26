@@ -38,6 +38,7 @@
  */
 
 import { escapeHtml, escapeJsonLd } from "./render";
+import { DEFAULT_FPA_FORMAT } from "./fpa/blend";
 import type { FpaRow, FpaTableData, FpaView } from "./fpa/fpa-data";
 import { FANTASY_POSITIONS, type FantasyPosition, type ScoringFormat } from "./fpa/nflverse";
 import { fpaPageCopy, fpaScopeLabel, teamLabel, type FpaPageCopy } from "./fpa-seo";
@@ -221,7 +222,7 @@ function renderControls(data: FpaTableData, options: FpaRenderOptions): string {
 
   const url = (format: ScoringFormat, view: FpaView): string => {
     const params = new URLSearchParams();
-    if (format !== "half") params.set("format", format);
+    if (format !== DEFAULT_FPA_FORMAT) params.set("format", format);
     if (view !== "raw") params.set("view", view);
     const query = params.toString();
     return query ? `${base}?${query}` : base;

@@ -47,6 +47,7 @@ import {
   type FpaQuery,
   type FpaTableData,
 } from "./fpa/fpa-data";
+import { DEFAULT_FPA_FORMAT } from "./fpa/blend";
 import { FANTASY_POSITIONS, type FantasyPosition } from "./fpa/nflverse";
 import { fpaPageMeta, renderFpaHeadTags } from "./fpa-seo";
 import { LruCache } from "./lru";
@@ -171,7 +172,7 @@ function optionKey(query: FpaQuery, options: FpaRenderOptions): string {
     // the table showed no logos (the team hub had the same bug, 2026-10-23).
     currentAssetOrigin(),
     query.season ?? 0,
-    query.format ?? "half",
+    query.format ?? DEFAULT_FPA_FORMAT,
     query.view ?? "raw",
     options.embed ?? false,
     options.basePath ?? "",

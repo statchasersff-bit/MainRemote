@@ -48,8 +48,8 @@ if ( 'fpaleak' === $group ) {
 	echo "\nthe redirect target is pure, so it answers anywhere\n";
 	is( statchasers_fpa_redirect_target( array( 'season' => '2025' ), 0, 2026 ), 'https://example.com/nfl/fantasy-points-allowed-by-position/2025/', '?season=2025 is the archive address' );
 	is( statchasers_fpa_redirect_target( array( 'season' => '2026' ), 0, 2026 ), 'https://example.com/nfl/fantasy-points-allowed-by-position/', '?season= naming the current season is the page' );
-	is( statchasers_fpa_redirect_target( array( 'season' => '2025', 'format' => 'ppr', 'view' => 'adjusted' ), 0, 2026 ), 'https://example.com/nfl/fantasy-points-allowed-by-position/2025/?format=ppr&view=adjusted', 'a non-default format and view ride along' );
-	is( statchasers_fpa_redirect_target( array( 'season' => '2025', 'format' => 'half', 'view' => 'raw' ), 0, 2026 ), 'https://example.com/nfl/fantasy-points-allowed-by-position/2025/', 'the defaults are dropped on the way' );
+	is( statchasers_fpa_redirect_target( array( 'season' => '2025', 'format' => 'half', 'view' => 'adjusted' ), 0, 2026 ), 'https://example.com/nfl/fantasy-points-allowed-by-position/2025/?format=half&view=adjusted', 'a non-default format and view ride along' );
+	is( statchasers_fpa_redirect_target( array( 'season' => '2025', 'format' => 'ppr', 'view' => 'raw' ), 0, 2026 ), 'https://example.com/nfl/fantasy-points-allowed-by-position/2025/', 'the defaults (PPR, raw) are dropped on the way' );
 	is( statchasers_fpa_redirect_target( array( 'season' => 'abc' ), 0, 2026 ), 'https://example.com/nfl/fantasy-points-allowed-by-position/', 'a season that is not one is dropped' );
 	is( statchasers_fpa_redirect_target( array( 'season' => '3000' ), 2025, 2026 ), 'https://example.com/nfl/fantasy-points-allowed-by-position/2025/', 'and on an archive the archive stays' );
 	is( statchasers_fpa_redirect_target( array(), 2026, 2026 ), 'https://example.com/nfl/fantasy-points-allowed-by-position/', '/2026/ - the current season by name - is the page' );
@@ -136,6 +136,14 @@ $GLOBALS['http_body'] =
 
 is( statchasers_fpa_request_season(), 0, 'the page itself names no season' );
 is( statchasers_fpa_args( array() ), array( 'format' => 'ppr', 'view' => 'raw', 'season' => 0 ), 'and asks for the current table' );
+$saved_get = $_GET;
+$_GET      = array();
+is( statchasers_fpa_args( array() ), array( 'format' => 'ppr', 'view' => 'raw', 'season' => 0 ), 'a bare address opens in PPR, the house scoring (WEB-033)' );
+$_GET = array( 'format' => 'half' );
+is( statchasers_fpa_args( array() ), array( 'format' => 'half', 'view' => 'raw', 'season' => 0 ), '?format=half still opens Half-PPR' );
+$_GET = array( 'format' => 'nonsense' );
+is( statchasers_fpa_args( array() ), array( 'format' => 'ppr', 'view' => 'raw', 'season' => 0 ), 'and a format that is not one falls back to PPR' );
+$_GET = $saved_get;
 $html = statchasers_fpa_shortcode( array() );
 is( $GLOBALS['remote_urls'][0] ?? '', 'https://api.example.com/embed/fpa?format=ppr&view=raw', 'fetched without a season' );
 is( str_contains( $html, 'scf-page-data' ), false, 'the page-data island is stripped' );
@@ -167,8 +175,10 @@ is( $graph['w']['dateModified'] ?? '', '2026-10-08', 'a WebPage Rank Math alread
 is( isset( $graph['statchasersFpaPage'] ), false, 'and no second one is added' );
 
 echo "\n?season= 301s\n";
+$_GET = array( 'season' => '2025', 'format' => 'half' );
+is( statchasers_fpa_redirect_target( $_GET, 0, 2026 ), 'https://example.com/nfl/fantasy-points-allowed-by-position/2025/?format=half', '?season=2025 goes to the archive, Half-PPR along for the ride' );
 $_GET = array( 'season' => '2025', 'format' => 'ppr' );
-is( statchasers_fpa_redirect_target( $_GET, 0, 2026 ), 'https://example.com/nfl/fantasy-points-allowed-by-position/2025/?format=ppr', '?season=2025 goes to the archive, PPR along for the ride' );
+is( statchasers_fpa_redirect_target( $_GET, 0, 2026 ), 'https://example.com/nfl/fantasy-points-allowed-by-position/2025/', 'PPR is the default now, so it is dropped' );
 $_GET = array( 'season' => '2026' );
 is( statchasers_fpa_redirect_target( $_GET, 0, 2026 ), 'https://example.com/nfl/fantasy-points-allowed-by-position/', 'and ?season=2026 to the page' );
 $_GET = array();

@@ -211,7 +211,7 @@ function wireControls(root: HTMLElement): void {
       return;
     }
 
-    const format = picked.format ?? root.dataset["format"] ?? "half";
+    const format = picked.format ?? root.dataset["format"] ?? "ppr";
     const view = picked.view ?? root.dataset["view"] ?? "raw";
     if (format === root.dataset["format"] && view === root.dataset["view"]) {
       // Already on it. Still ours to swallow - following the link would

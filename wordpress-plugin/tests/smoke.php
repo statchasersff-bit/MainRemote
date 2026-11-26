@@ -1456,12 +1456,12 @@ echo "\nfpa scoring and view fall back to the query string\n";
 
 $_GET = array();
 $args = statchasers_fpa_args( array() );
-is( $args['format'], 'half', 'no attribute and no query is the default' );
+is( $args['format'], 'ppr', 'no attribute and no query is the default (PPR since 2026-11-26)' );
 is( $args['view'], 'raw', 'and so is the view' );
 
-$_GET = array( 'format' => 'ppr', 'view' => 'adjusted' );
+$_GET = array( 'format' => 'half', 'view' => 'adjusted' );
 $args = statchasers_fpa_args( array() );
-is( $args['format'], 'ppr', 'the query string decides when the page did not' );
+is( $args['format'], 'half', 'the query string decides when the page did not' );
 is( $args['view'], 'adjusted', 'both halves of the combination' );
 
 $args = statchasers_fpa_args( array( 'format' => 'standard' ) );
@@ -1475,7 +1475,7 @@ is( $args['view'], 'adjusted', 'on both' );
 
 $_GET = array( 'format' => 'superflex', 'view' => '<script>' );
 $args = statchasers_fpa_args( array() );
-is( $args['format'], 'half', 'anything not one of the three is dropped, not corrected' );
+is( $args['format'], 'ppr', 'anything not one of the three is dropped, not corrected' );
 is( $args['view'], 'raw', 'and nothing from the URL reaches the API' );
 
 $_GET = array();

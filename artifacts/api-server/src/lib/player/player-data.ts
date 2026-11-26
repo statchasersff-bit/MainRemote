@@ -442,6 +442,14 @@ export interface PlayerPageData {
   upcomingMatchupMode: string | null;
   /** Fingerprint of the fixtures and their ranks, for the render cache. */
   upcomingStamp: string;
+  /**
+   * What the Game Log season's opponent ranks are measured through: "Week 11"
+   * (the live FPA table's last complete week, as the FPA page labels it),
+   * "Week 17" for an FPA archive season, null when no FPA table was read.
+   */
+  logOppRankThrough: string | null;
+  /** The versions of the FPA tables every rank on the page came from. */
+  fpaStamp: string;
   seasonLog: GameLogEntry[];
   seasonLogStats: GameLogSummary | null;
   /** Seasons this player actually appeared in, newest first. */
@@ -1255,7 +1263,7 @@ export async function getPlayerPageData(
   // (audit WEB-033): the live table for the current season, the archive for
   // a finished one. Fetched before the logs are built because buildLog is
   // synchronous; the game-log method is only the fallback.
-  const fpaRanks = new Map<number, { ranks: Map<string, number>; source: OppRankSource }>();
+  const fpaRanks = new Map<number, { ranks: Map<string, number>; source: OppRankSource; through: string | null; version: string }>();
   {
     const wanted = new Set<number>(seasons.slice(0, 2));
     if (options.logSeason !== undefined) wanted.add(options.logSeason);
@@ -1266,7 +1274,19 @@ export async function getPlayerPageData(
         : getFpaTable({ season: year, format, view: "raw" })
       ).catch(() => null);
       if (table && table.rows.length && table.season === year) {
-        fpaRanks.set(year, { ranks: fpaOppRanks(table.rows), source: current ? "fpa-current" : "fpa-archive" });
+        fpaRanks.set(year, {
+          ranks: fpaOppRanks(table.rows),
+          source: current ? "fpa-current" : "fpa-archive",
+          // The cutoff the reader is shown: "Week 11" (the table's last
+          // complete week, the FPA page's own label), "weeks 1-17" for an
+          // archive. Null in preseason, when there is no week to name.
+          through: current
+            ? table.weekNumber !== null && !table.isPreseason
+              ? table.dataMode
+              : null
+            : "Week 17",
+          version: table.version,
+        });
       }
     }
   }
@@ -1285,8 +1305,14 @@ export async function getPlayerPageData(
             buildWeeklyRanks(candidate, logs, allPlayers, format),
           ),
           player.position,
-          fpaRanks.get(candidate)?.ranks ?? buildOppRanks(candidate, logs, allPlayers, format),
-          fpaRanks.get(candidate)?.source ?? "gamelog",
+          // The current season reads the FPA table or nothing (WEB-033): a
+          // second calculation printed under the FPA page's label is how the
+          // two disagreed. A finished season the archive does not hold
+          // (2024 and earlier) falls back to the same arithmetic over the
+          // stored logs, labelled as that season's full-season rank.
+          fpaRanks.get(candidate)?.ranks ??
+            (candidate === currentFpaSeason() ? new Map<string, number>() : buildOppRanks(candidate, logs, allPlayers, format)),
+          fpaRanks.get(candidate)?.source ?? (candidate === currentFpaSeason() ? "unavailable" : "gamelog"),
         ),
         player.team,
         candidate,
@@ -1491,6 +1517,11 @@ export async function getPlayerPageData(
     logSeasonLabel: labelFor(seasonLog, logSeason),
     upcoming,
     upcomingMatchupMode: fpaTable?.dataMode ?? null,
+    logOppRankThrough: fpaRanks.get(logSeason)?.through ?? null,
+    // Every FPA table the page's ranks came from: a fresh ingest that moves
+    // a past opponent's rank must invalidate the page even when the
+    // upcoming opponents' ranks did not move (upcomingStamp alone missed it).
+    fpaStamp: [fpaTable?.version ?? "", ...[...fpaRanks.entries()].map(([year, r]) => `${year}:${r.version}`)].join("|"),
     upcomingStamp: upcomingStamp(upcoming),
     seasonLog,
     seasonLogStats:
@@ -1659,6 +1690,7 @@ export function playerDataVersion(
     // is covered by dataStamp() - a finished game and a fresh FPA ingest both
     // have to invalidate this page and nothing else would notice.
     data.upcomingStamp,
+    data.fpaStamp,
     // The header's week line reads both: a bye is only "next" until the league
     // has logged it.
     data.leagueWeek,

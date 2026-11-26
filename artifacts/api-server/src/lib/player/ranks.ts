@@ -18,6 +18,7 @@ import { seasonYear } from "../seo";
 import { getEntryPoints, type ScoringFormat } from "./scoring";
 import { scoringTotalsSource } from "../scoring/house-rules";
 import { loadByeWeeks, loadGameLogs, loadGameScores } from "./data";
+import { rankFpaValues } from "../fpa/math";
 import type { GameLogEntry, GameLogStats, GameScore, Player } from "./types";
 
 /**
@@ -167,17 +168,21 @@ const oppRanksCache = new Map<string, Map<string, number>>();
 /**
  * How generous each defense is to each position, ranked 1 (softest) to 32.
  *
- * Season-long points allowed per game to the position, which is the crude but
- * honest version of this number. It is used only to tint a matchup column; the
- * page never presents it as a projection.
+ * The game-log fallback for a season the FPA tables do not hold (2024 and
+ * earlier; the archive starts at 2025). It is the FPA table's own raw
+ * arithmetic (fpa/math.ts computeFpaTable) over the stored weekly logs: for
+ * each defense, every point the position scored against it, summed, divided
+ * by the games that defense played. A per-game average of TEAM totals - not a
+ * season total (a club with a bye still to come would rank softer than it
+ * is), and not an average of single player lines (a defense that faced a
+ * three-back committee would rank stingier than one that faced a bell cow,
+ * which is what this function did before 2026-11-26, WEB-033).
  *
  * **Rank 1 allows the MOST.** Same direction as lib/fpa/fpa-data.ts, and for
  * the same reason it gives: it is the industry convention, and it is what a
- * reader looking for a matchup to attack expects at the top. It is also the
- * only direction this number may have, because the player page prints it a few
- * inches above the upcoming-games cards, which rank the same quantity from the
- * FPA snapshots - two opposed scales on one tab is a rank column that means
- * whichever thing the reader guessed.
+ * reader looking for a matchup to attack expects at the top. Ties go to the
+ * team code, alphabetically, as on the FPA table (fpa/math.ts rankFpaValues), so the
+ * order never depends on the order rows were read in.
  */
 export function buildOppRanks(
   season: number,
@@ -192,34 +197,41 @@ export function buildOppRanks(
   const infoById = new Map<string, string>();
   for (const p of players) if (p.position && p.team) infoById.set(p.id, p.position);
 
-  const allowed = new Map<string, number[]>();
+  // Points allowed per (defense, position), and the weeks each defense played.
+  const totals = new Map<string, number>();
+  const weeks = new Map<string, Set<number>>();
   for (const [id, entries] of Object.entries(logs)) {
     const pos = infoById.get(id);
     if (!pos) continue;
     for (const entry of entries) {
       if (!hasParticipation(entry.stats, pos)) continue;
-      const key = `${teamCode(entry.opp)}:${pos}`;
-      const list = allowed.get(key);
-      const pts = getEntryPoints(entry.stats, format);
-      if (list) list.push(pts);
-      else allowed.set(key, [pts]);
+      const defense = teamCode(entry.opp);
+      if (!defense) continue;
+      let played = weeks.get(defense);
+      if (!played) {
+        played = new Set();
+        weeks.set(defense, played);
+      }
+      played.add(entry.week);
+      const key = `${defense}:${pos}`;
+      totals.set(key, (totals.get(key) ?? 0) + getEntryPoints(entry.stats, format));
     }
   }
 
-  const byPosition = new Map<string, { team: string; avg: number }[]>();
-  for (const [key, points] of allowed) {
+  const byPosition = new Map<string, { team: string; value: number }[]>();
+  for (const [key, total] of totals) {
     const [team, pos] = key.split(":");
-    const avg = points.reduce((sum, v) => sum + v, 0) / points.length;
+    const games = weeks.get(team!)?.size || 1;
     const group = byPosition.get(pos!);
-    if (group) group.push({ team: team!, avg });
-    else byPosition.set(pos!, [{ team: team!, avg }]);
+    const row = { team: team!, value: total / games };
+    if (group) group.push(row);
+    else byPosition.set(pos!, [row]);
   }
 
   const ranks = new Map<string, number>();
   for (const [pos, teams] of byPosition) {
-    // Descending: most points allowed first, so rank 1 is the softest defense.
-    teams.sort((a, b) => b.avg - a.avg);
-    teams.forEach((row, i) => ranks.set(`${row.team}:${pos}`, i + 1));
+    const order = rankFpaValues(teams);
+    teams.forEach((row, i) => ranks.set(`${row.team}:${pos}`, order[i]!));
   }
 
   oppRanksCache.set(cacheKey, ranks);
@@ -249,10 +261,12 @@ export function fpaOppRanks(
  *   fpa-current  the live FPA table: today's season-to-date rank, NOT the
  *                rank the defense had before that game was played
  *   fpa-archive  a finished season's FPA archive, weeks 1-17
- *   gamelog      the game-log fallback (buildOppRanks), only when the FPA
- *                table is unavailable for that season
+ *   gamelog      the game-log fallback (buildOppRanks), for a finished
+ *                season the FPA archive does not hold; same arithmetic
+ *   unavailable  the current season with no FPA table to read: no rank is
+ *                printed, never one from a second calculation
  */
-export type OppRankSource = "fpa-current" | "fpa-archive" | "gamelog";
+export type OppRankSource = "fpa-current" | "fpa-archive" | "gamelog" | "unavailable";
 
 export function attachOppRanks(
   entries: GameLogEntry[],
