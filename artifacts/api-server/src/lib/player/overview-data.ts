@@ -54,39 +54,69 @@ export interface OverviewMeters {
 }
 
 /**
- * The Overview meters per position, as Stats card metric keys (the first key
- * a card fills wins). Since 2026-11-26 (audit WEB-035) the meters are the
- * Stats tab's own readings for this season: the same figure, the same
- * qualified pool and the same percentile rule, and target share the usage
- * field's (stats-tab-data.ts withUsageField). Before, the Overview ranked a
- * third pool of its own (every receiver with 3 targets a week logged), so
- * one 22.0% target share was the 62nd percentile here, 27th of 110 on the
- * Stats card and 25th of 114 in the Outlook.
+ * The Overview meters per position. Since 2026-11-26 (audit WEB-035) a meter
+ * the Stats card also prints is the card's reading for this season: the same
+ * figure, the same qualified pool and the same percentile rule, and target
+ * share the usage field's (stats-tab-data.ts withUsageField). Before, the
+ * Overview ranked a third pool of its own (every receiver with 3 targets a
+ * week logged), so one 22.0% target share was the 62nd percentile here, 27th
+ * of 110 on the Stats card and 25th of 114 in the Outlook.
+ *
+ * The metrics themselves are the ones readers have always seen here (mak,
+ * 2026-11-26: "restore the original Overview meters"; EPA per play answers a
+ * different question). A "log:" entry is a metric the card does not carry -
+ * a back's yards per carry and yards per touch, a passer's fantasy points per
+ * play - and keeps the game logs' own pool (METERS below), named in the
+ * footnote beside the card's.
  */
-const CARD_METERS: Record<string, string[][]> = {
-  QB: [["cmp"], ["ypa"], ["tdr"], ["epa"]],
-  RB: [["yaco"], ["expl"], ["tgts"], ["ppo"]],
-  WR: [["tgts"], ["yprr", "ypt"], ["catch"], ["ppt"]],
-  TE: [["tgts"], ["yprr", "ypt"], ["catch"], ["ppt"]],
+const CARD_METERS: Record<string, string[]> = {
+  QB: ["cmp", "ypa", "tdr", "log:ppp"],
+  RB: ["log:ypc", "log:ypt", "tgts", "ppo"],
+  WR: ["tgts", "ypt", "catch", "ppt"],
+  TE: ["tgts", "ypt", "catch", "ppt"],
 };
 
-function metersFromCard(position: string, card: AdvCard, usage: PlayerUsage | null): OverviewMeters {
-  const base = { position, season: card.season, threshold: 0, unit: "", qualified: card.qualifiedCount };
+function listWords(items: string[]): string {
+  if (items.length <= 1) return items.join("");
+  return `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`;
+}
+
+function metersFromCard(position: string, card: AdvCard, usage: PlayerUsage | null, logs: OverviewMeters): OverviewMeters {
+  const base = { position, season: card.season, threshold: logs.threshold, unit: logs.unit, qualified: card.qualifiedCount };
   const pool = card.all?.length ? card.all : card.metrics;
   const meters: OverviewMeter[] = [];
+  const fromLogs: string[] = [];
   let share = false;
-  for (const keys of CARD_METERS[position] ?? []) {
-    const m = keys.map((k) => pool.find((x) => x.key === k && x.pct != null && x.value !== "-")).find(Boolean);
+  let fromCard = 0;
+  for (const key of CARD_METERS[position] ?? []) {
+    if (key.startsWith("log:")) {
+      const m = logs.meters?.find((x) => x.key === key.slice(4));
+      if (!m) continue;
+      meters.push(m);
+      fromLogs.push(/^[A-Z][a-z]/.test(m.label) ? m.label.charAt(0).toLowerCase() + m.label.slice(1) : m.label);
+      continue;
+    }
+    const m = pool.find((x) => x.key === key && x.pct != null && x.value !== "-");
     if (!m) continue;
     if (m.key === "tgts" && card.shareField) share = true;
+    fromCard++;
     meters.push({ key: m.key!, label: m.label, value: m.value, percentile: m.pct! });
   }
   if (!card.qualified || meters.length < 2) return { ...base, meters: null };
   const plural = `${position}s`;
-  const note =
-    `Percentile among the ${card.qualifiedCount} qualified ${plural} on his Stats tab${card.qualifyNote ? ` (${card.qualifyNote})` : ""}` +
-    (share && card.shareField ? `; target share among the ${card.shareField.of} ${plural} with ${usage?.fieldNote ?? card.shareField.note}.` : ".");
-  return { ...base, meters, note };
+  const parts: string[] = [];
+  if (fromCard) {
+    parts.push(`Percentile among the ${card.qualifiedCount} qualified ${plural} on his Stats tab${card.qualifyNote ? ` (${card.qualifyNote})` : ""}`);
+  }
+  if (share && card.shareField) {
+    parts.push(`target share among the ${card.shareField.of} ${plural} with ${usage?.fieldNote ?? card.shareField.note}`);
+  }
+  if (fromLogs.length) {
+    const lead = fromCard ? "" : "Percentile: ";
+    parts.push(`${lead}${listWords(fromLogs)} among the ${logs.qualified} ${plural} with at least ${logs.threshold} ${logs.unit} in ${logs.season}`);
+  }
+  const note = parts.join("; ") + ".";
+  return { ...base, meters, note: note.charAt(0).toUpperCase() + note.slice(1) };
 }
 
 interface Totals {
@@ -246,9 +276,21 @@ export function overviewMeters(
   const position = player.position ?? "";
   const spec = METERS[position];
   if (!spec) return null;
+  const logs = logsMeters(player, season, format, allPlayers, spec, position);
   // This season's Stats card when there is one: one pool per comparison.
-  if (card && card.season === season && CARD_METERS[position]) return metersFromCard(position, card, usage);
+  if (card && card.season === season && CARD_METERS[position]) return metersFromCard(position, card, usage, logs);
+  return logs;
+}
 
+/** The meters from the season's game logs, ranked in their own pool. */
+function logsMeters(
+  player: Player,
+  season: number,
+  format: ScoringFormat,
+  allPlayers: Player[],
+  spec: (typeof METERS)[string],
+  position: string,
+): OverviewMeters {
   const weeks = Math.max(1, Math.min(18, leagueWeeksLogged(season) || 18));
   const threshold = Math.round(spec.perWeek * weeks);
   const positionById = new Map(allPlayers.map((p) => [p.id, p.position]));

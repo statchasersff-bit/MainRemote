@@ -51,3 +51,34 @@ describe("target share: one field on Overview, Stats and Outlook", () => {
     assert.match(squash(doc.querySelector(".scp-stp-note")?.textContent ?? ""), new RegExp(`target share[^;]* among the ${of} WRs with \\d+\\+ games`));
   });
 });
+
+describe("Overview meters keep the metrics readers saw before (mak, 2026-11-26)", () => {
+  const labels = async (slug) => {
+    const res = await fetch(`${server.origin}/embed/player/${slug}`);
+    assert.equal(res.status, 200);
+    const doc = new JSDOM(await res.text()).window.document;
+    return {
+      labels: [...doc.querySelectorAll(".scp-ox-eff .scp-ox-eff-l")].map((e) => squash(e.textContent)),
+      note: squash(doc.querySelector(".scp-ox-effs .scp-ow-note")?.textContent ?? ""),
+    };
+  };
+
+  test("RB: yards per carry and yards per touch, not yards after contact or explosive runs", async () => {
+    const { labels: l, note } = await labels("jahmyr-gibbs");
+    assert.deepEqual(l, ["Yards per carry", "Yards per touch", "Target share", "PPR points per opportunity"]);
+    assert.match(note, /target share among the \d+ RBs with/);
+    assert.match(note, /yards per carry and yards per touch among the \d+ RBs with at least \d+ carries and targets in \d{4}\.$/);
+  });
+
+  test("QB: fantasy points per play, not EPA per play", async () => {
+    const { labels: l, note } = await labels("jared-goff");
+    assert.deepEqual(l, ["Completion rate", "Yards per attempt", "TD rate", "PPR points per play"]);
+    assert.ok(!l.includes("EPA per play"));
+    assert.match(note, /PPR points per play among the \d+ QBs with at least \d+ pass attempts in \d{4}\.$/);
+  });
+
+  test("WR: yards per target, as before", async () => {
+    const { labels: l } = await labels("luther-burden-iii");
+    assert.deepEqual(l, ["Target share", "Yards per target", "Catch rate", "PPR points per target"]);
+  });
+});
