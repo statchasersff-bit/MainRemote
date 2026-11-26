@@ -1282,6 +1282,48 @@ function statchasers_player_write_index( int $container ): void {
 /* ----------------------------------------------------------------- redirects */
 
 /**
+ * The roster row a VERIFIED alias slug belongs to, or null (mak, 2026-11-26).
+ *
+ * An alias is an address a player used to publish at: the API's slug ledger
+ * (data/player/player_slugs.json, keyed by the stable Sleeper id) lists it in
+ * that player's `previousSlugs`, and the API already drops an old slug that
+ * some other player answers at now. Verified here means all of:
+ *
+ *  - exactly one roster player claims it (same stable id on both addresses);
+ *  - it is not any roster player's current slug;
+ *  - the destination is a published profile on the roster, so its canonical
+ *    is itself and it is indexed (the left-roster rule never applies to it).
+ *
+ * Anything else is ambiguous (two people with one name, e.g. kenneth-walker
+ * and kenneth-walker-iii, or frank-gore and frank-gore-jr, are different ids)
+ * and keeps today's behavior: the alias page stays where it is, noindex by
+ * the left-roster rule, and nothing redirects.
+ *
+ * @param string $slug A lowercase slug.
+ * @return array<string,mixed>|null
+ */
+function statchasers_player_verified_alias( string $slug ): ?array {
+	if ( '' === $slug ) {
+		return null;
+	}
+	$current = array();
+	$claims  = array();
+	foreach ( statchasers_player_roster() as $row ) {
+		$current[ (string) $row['slug'] ] = true;
+		foreach ( (array) ( $row['previous'] ?? array() ) as $old ) {
+			if ( (string) $old === $slug ) {
+				$claims[] = $row;
+			}
+		}
+	}
+	if ( isset( $current[ $slug ] ) || 1 !== count( $claims ) ) {
+		return null;
+	}
+	$published = statchasers_player_published_slugs();
+	return isset( $published[ (string) $claims[0]['slug'] ] ) ? $claims[0] : null;
+}
+
+/**
  * The one permanent redirect a player URL variant deserves, or ''.
  *
  * The 2026-11-26 audit (WEB-008/WEB-005): `/nfl/players/Jahmyr-Gibbs/`,
@@ -1296,6 +1338,10 @@ function statchasers_player_write_index( int $container ): void {
  *  - a retired `-2`..`-9` duplicate slug (the 2026-09-20 race) folded into
  *    the slug it duplicated, when that one is published and the suffixed one
  *    is not - the Rank Math regex redirect does the same for the plain case;
+ *  - a VERIFIED alias slug (statchasers_player_verified_alias: an old
+ *    address of the same player, by stable id) folded into the roster slug,
+ *    tab kept; a tab the destination has no content for goes to its profile
+ *    rather than through the missing-section redirect;
  *  - `?log=YYYY` (the Game Log's season links until WEB-020) moved to the
  *    Game Log with the season in the fragment, `/game-log/#log=YYYY`, which
  *    the page reads to open that season. An unreadable `?log=` is dropped.
@@ -1337,6 +1383,14 @@ function statchasers_player_canonical_target( string $uri ): string {
 	}
 	if ( '' !== $section && ! in_array( $section, STATCHASERS_PLAYER_SECTIONS, true ) ) {
 		return ''; // An invalid tab stays a 404.
+	}
+
+	$alias = statchasers_player_verified_alias( $slug );
+	if ( null !== $alias ) {
+		$slug = (string) $alias['slug'];
+		if ( '' !== $section && in_array( $section, (array) ( $alias['empty'] ?? array() ), true ) ) {
+			$section = '';
+		}
 	}
 
 	$published = statchasers_player_published_slugs();

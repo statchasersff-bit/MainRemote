@@ -497,3 +497,47 @@ $cases = array(
 foreach ( $cases as $from => $want ) {
 	is( statchasers_player_canonical_target( $from ), $want, '' === $want ? "$from: no redirect" : "$from -> $want" );
 }
+
+echo "\nverified alias slugs: one 301 to the roster slug, tab kept; ambiguous ones left alone\n";
+
+$roster_body          = $GLOBALS['http_body'];
+$GLOBALS['http_body'] = json_encode(
+	array(
+		'ok'      => true,
+		'players' => array(
+			// joshua-allen: an old address of the same player (one stable id).
+			array( 'id' => '1', 'slug' => 'josh-allen', 'name' => 'Josh Allen', 'position' => 'QB', 'team' => 'BUF', 'teamName' => 'Buffalo Bills', 'previousSlugs' => array( 'joshua-allen' ), 'emptySections' => array( 'injury' ) ),
+			// josh-allen-buf: claimed by two players - ambiguous.
+			array( 'id' => '2', 'slug' => 'cole-kmet', 'name' => 'Cole Kmet', 'position' => 'TE', 'team' => 'CHI', 'teamName' => 'Chicago Bears', 'previousSlugs' => array( 'josh-allen-buf' ) ),
+			// cole-kmet is a live roster slug, so it can never be an alias.
+			array( 'id' => '3', 'slug' => 'luther-burden', 'name' => 'Luther Burden', 'position' => 'WR', 'team' => 'CHI', 'teamName' => 'Chicago Bears', 'previousSlugs' => array( 'josh-allen-buf', 'cole-kmet' ) ),
+		),
+	)
+);
+$alias_cases = array(
+	'/nfl/players/joshua-allen/'                => 'https://example.com/nfl/players/josh-allen/',
+	'/nfl/players/joshua-allen/game-log/'       => 'https://example.com/nfl/players/josh-allen/game-log/',
+	'/nfl/players/Joshua-Allen/Stats/'          => 'https://example.com/nfl/players/josh-allen/stats/',
+	'/nfl/players//joshua-allen//news'          => 'https://example.com/nfl/players/josh-allen/news/',
+	'/nfl/players/joshua-allen/overview/'       => 'https://example.com/nfl/players/josh-allen/',
+	'/nfl/players/joshua-allen/?log=2025'       => 'https://example.com/nfl/players/josh-allen/game-log/#log=2025',
+	'/nfl/players/joshua-allen/?format=half'    => 'https://example.com/nfl/players/josh-allen/?format=half',
+	// A tab the destination has nothing behind: its profile, in one hop.
+	'/nfl/players/joshua-allen/injury/'         => 'https://example.com/nfl/players/josh-allen/',
+	// An invalid tab stays a 404, never a redirect to a tab that does not exist.
+	'/nfl/players/joshua-allen/badtab/'         => '',
+	// Ambiguous: claimed twice, or a live player's slug.
+	'/nfl/players/josh-allen-buf/'              => '',
+	'/nfl/players/josh-allen-buf/game-log/'     => '',
+	'/nfl/players/cole-kmet/'                   => '',
+);
+foreach ( $alias_cases as $from => $want ) {
+	is( statchasers_player_canonical_target( $from ), $want, '' === $want ? "$from: no redirect" : "$from -> $want" );
+}
+is( statchasers_player_verified_alias( 'joshua-allen' )['id'] ?? '', '1', 'the alias and its destination are one stable id' );
+is( statchasers_player_verified_alias( 'josh-allen-buf' ), null, 'two claimants: not verified' );
+is( statchasers_player_verified_alias( 'cole-kmet' ), null, 'a live slug: not verified' );
+// The alias page itself is off the roster, so the left-roster rule keeps it noindex and out of the sitemap.
+is( statchasers_player_left_roster( 'joshua-allen', statchasers_player_roster() ), true, 'the alias page has left the roster: noindex, no sitemap row' );
+is( statchasers_player_left_roster( 'josh-allen', statchasers_player_roster() ), false, 'its destination has not' );
+$GLOBALS['http_body'] = $roster_body;
