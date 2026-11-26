@@ -79,6 +79,13 @@ export interface Availability {
   report: WeekReport;
   /** What the status slot says: the designation, the reserve list, or "No designation (yet)". */
   label: string;
+  /**
+   * The injury this week's official report names ("Thigh"), when the report
+   * has him; absent otherwise. A designation from the report is described
+   * with the report's injury, not Sleeper's tag (WEB-039, 2026-11-26: Bo
+   * Melton "questionable for Week 12 with an injury" beside the report's Thigh).
+   */
+  injury?: string | null;
 }
 
 /**
@@ -313,7 +320,7 @@ export function gameAvailability(
       const practice = row ? practiceLine(row) : null;
       if (row?.gameStatus && GAME.has(row.gameStatus.toLowerCase())) {
         const status = row.gameStatus.charAt(0).toUpperCase() + row.gameStatus.slice(1).toLowerCase();
-        set(r.id, { ...base, practice, kind: kindOf(status), status, source: "nfl-report", note: null });
+        set(r.id, { ...base, practice, kind: kindOf(status), status, source: "nfl-report", note: null, injury: row.injury ?? null });
       } else if (row && lastGame && !lastGame.played && (raw || prior)) {
         set(r.id, {
           ...base,

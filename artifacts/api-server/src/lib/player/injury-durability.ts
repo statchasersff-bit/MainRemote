@@ -21,6 +21,7 @@ import { classify, regionChips, riskModel, severityColor, type Region } from "..
 import type { InjuryRow, PlayerSlice } from "../injury-impact/types";
 import { escapeHtml } from "../render";
 import { assetUrl } from "../asset-origin";
+import { gameToCome, type InjuryWindow, type SeasonAvailability } from "./games-missed";
 import type { PlayerPageData } from "./player-data";
 
 /* ------------------------------------------------------------- episodes */
@@ -39,6 +40,15 @@ export interface RegionEpisode {
   returnedInPlayoffs: boolean;
   /** Weeks named on the injury report. */
   reportWeeks: number;
+  /** The last week the report named it, when a report run backs the episode. */
+  lastReportWeek?: number | null;
+  /**
+   * The season on the page only: every week the report named it is still to
+   * be played (this week's report), so whether it costs a game is not known
+   * yet (WEB-039, 2026-11-26: Bo Melton's Week 12 thigh read "Listed
+   * Questionable but didn't miss a game" before the game).
+   */
+  pending?: boolean;
   /** Worst game designation (Out > Doubtful > Questionable), when any. */
   worstStatus: string | null;
   /** Worst practice participation, short form ("Did Not Participate"), when any. */
@@ -110,6 +120,7 @@ export function regionEpisodes(slice: Pick<PlayerSlice, "rows" | "inGame">, inju
       returnWeek: t.returnWeek,
       returnedInPlayoffs: t.returnedInPlayoffs,
       reportWeeks: run?.weeks.length ?? 0,
+      lastReportWeek: run ? run.weeks[run.weeks.length - 1]! : null,
       worstStatus: run?.status ?? null,
       worstPractice: run?.practice ?? null,
       inGame: null,
@@ -127,6 +138,7 @@ export function regionEpisodes(slice: Pick<PlayerSlice, "rows" | "inGame">, inju
       returnWeek: null,
       returnedInPlayoffs: false,
       reportWeeks: r.weeks.length,
+      lastReportWeek: r.weeks[r.weeks.length - 1]!,
       worstStatus: r.status,
       worstPractice: r.practice,
       inGame: null,
@@ -180,6 +192,9 @@ export function tellEpisode(ep: RegionEpisode, prev: RegionEpisode | null, index
     parts.push(ep.gamesMissed > 0 ? `Missed the rest of the season (${games(ep.gamesMissed)}).` : "Ended the season.");
   } else if (ep.ongoing) {
     parts.push(`Still out, ${games(ep.gamesMissed)} missed so far.`);
+  } else if (ep.pending) {
+    const on = ep.worstStatus ? `Listed ${ep.worstStatus}` : "On the injury report";
+    parts.push(`${on} for Week ${ep.week}; that game has not been played yet.`);
   } else if (ep.gamesMissed > 0) {
     const back = ep.returnWeek != null ? ` and returned in Week ${ep.returnWeek}` : ep.returnedInPlayoffs ? " and returned for the playoffs" : "";
     parts.push(`Missed ${games(ep.gamesMissed)}${back}.`);
@@ -259,61 +274,137 @@ export interface DurabilityModel {
   worst: string | null;
 }
 
-/** The card's inputs for a page's player, or null when he has no profile. */
 /**
- * An episode still open in the season the page shows counts its games from
- * the page's own games-missed record (games-missed.ts), not the durability
- * pack's figure, which is as old as the pack's last refresh: Isiah Pacheco's
- * read "Still out, 5 games missed so far" while the injury history said 9
- * (audit WEB-039). Closed and past-season episodes keep the pack's count.
+ * The season on the page counts its episodes from the page's own record
+ * (games-missed.ts windows over the stored injury history), not from the
+ * durability pack, which is as old as its last repack (gridiron.json: 2026
+ * through Week 6). Without this the pack's figures stood beside the page's:
+ * Isiah Pacheco's "Still out, 5 games missed so far" beside 10, and an
+ * injury after the pack's last week read as played through (Jauan Jennings'
+ * Week 9 calf: "Listed Out across 3 weeks but didn't miss a game" beside
+ * "2 games missed"). WEB-039, 2026-11-24 and 11-26.
+ *
+ * An episode takes the windows of the season's injury entries that start
+ * from the week before its first report week to its last one, whose body
+ * part falls in the region (an entry with no body part, a reserve stint,
+ * matches on the week alone). A window counts once across the card
+ * (`claimed`). An episode no window matches keeps the pack's count, unless
+ * the pack still calls it open, when it counts the injury weeks since it
+ * began. Past seasons keep the pack's count.
  */
-function currentSeasonCounts(episodes: RegionEpisode[], data: PlayerPageData): RegionEpisode[] {
-  const avail = data.injury?.availability;
+export function currentSeasonCounts(
+  episodes: RegionEpisode[],
+  regionKey: string,
+  avail: SeasonAvailability | null | undefined,
+  claimed: Set<InjuryWindow> = new Set(),
+): RegionEpisode[] {
   if (!avail) return episodes;
+  const playedAfter = (week: number): number | null => {
+    for (let w = week + 1; w <= avail.weekCodes.length; w += 1) if (avail.weekCodes[w - 1] === "P") return w;
+    return null;
+  };
   return episodes.map((ep) => {
-    if (ep.season !== avail.season || !ep.ongoing || ep.week == null) return ep;
+    if (ep.season !== avail.season || ep.week == null) return ep;
     const start = ep.week;
-    // The open window that covers the episode (games-missed.ts), else every
-    // injury week since it began.
-    const win = [...(avail.windows ?? [])].filter((w) => w.open && w.week <= start + 3).pop();
-    return { ...ep, gamesMissed: win ? win.missedWeeks.length : avail.weeksMissedInjury.filter((w) => w >= start).length };
+    const end = Math.max(start, ep.lastReportWeek ?? start);
+    const wins = avail.windows.filter((w) => {
+      if (claimed.has(w) || w.week < start - 1 || w.week > end) return false;
+      const keys = classify([w.bodyPart, w.type].filter(Boolean).join(" "));
+      return keys.length === 0 || keys.includes(regionKey);
+    });
+    if (!wins.length) {
+      const pending = ep.gamesMissed === 0 && gameToCome(avail, start);
+      if (!ep.ongoing) return pending ? { ...ep, pending } : ep;
+      return { ...ep, gamesMissed: avail.weeksMissedInjury.filter((w) => w >= start).length };
+    }
+    for (const w of wins) claimed.add(w);
+    const missed = [...new Set(wins.flatMap((w) => w.missedWeeks))].sort((x, y) => x - y);
+    const back = missed.length ? playedAfter(missed[missed.length - 1]!) : null;
+    const ongoing = wins.some((w) => w.open) || (missed.length > 0 && back == null);
+    return {
+      ...ep,
+      gamesMissed: missed.length,
+      ongoing,
+      seasonEnding: ep.seasonEnding && ongoing,
+      returnWeek: ongoing ? null : back,
+      returnedInPlayoffs: false,
+      pending: missed.length === 0 && gameToCome(avail, start),
+    };
   });
 }
 
 /**
- * The pack's season count replaced by the page's for the season on the
- * page, so the "Games Missed" tile adds up the same games the season KPI and
- * the history count (WEB-039, 2026-11-24: Pacheco's tile carried the pack's
- * 5 for 2026 beside the history's 10).
+ * The pack with the season on the page replaced by the page's own record:
+ * that season's [played, missed to injury] and its week string, and the
+ * career totals and availability rate summed again over them. So the grid's
+ * row, the "Games Missed" tile, the per-season rate and the career
+ * availability count the same games as the "2026 games missed" figure and
+ * the injury history (WEB-039, 2026-11-26: Pacheco's 2026 row drew five
+ * missed games, the pack's Week 6 state, beside 10). The durability score
+ * and tier stay the pack's: they rank him against the whole set, which is
+ * scored as of the pack.
  */
-function seasonDelta(gm: GmPlayer, data: PlayerPageData): number {
-  const avail = data.injury?.availability;
-  // `avail` is the league season's record (player-data), whichever season
-  // the page's tabs show.
-  if (!avail) return 0;
-  // Only a season the tile's total sums (the scored seasons, not `extra`).
-  if (!gm.seasonYears.map(Number).includes(avail.season)) return 0;
-  const pack = (gm.seasons as Record<string, [number, number] | undefined>)[String(avail.season)];
-  if (!pack) return 0;
-  return avail.missedInjury - pack[1];
+export function withSeasonOnPage(gm: GmPlayer, avail: SeasonAvailability | null | undefined): GmPlayer {
+  // The regular season only: the week string's playoffs follow a "|".
+  if (!avail || !avail.weekCodes || avail.throughWeek > 18) return gm;
+  const y = avail.season;
+  const pack: [number, number] = [avail.played, avail.missedInjury];
+  const codes = avail.weekCodes.replace(/N/g, "-");
+  if (gm.seasonYears.includes(y)) {
+    const seasons = { ...gm.seasons, [y]: pack };
+    let gpTot = 0;
+    let gmTot = 0;
+    for (const s of gm.seasonYears) {
+      gpTot += seasons[s]![0];
+      gmTot += seasons[s]![1];
+    }
+    const possTot = gpTot + gmTot;
+    return {
+      ...gm,
+      seasons,
+      w: { ...(gm.w ?? {}), [y]: codes },
+      gpTot,
+      gmTot,
+      possTot,
+      availPct: possTot > 0 ? (100 * gpTot) / possTot : 0,
+      perYearRate: gm.seasonYears.length ? gmTot / gm.seasonYears.length : 0,
+    };
+  }
+  if (gm.extra.seasons[y]) {
+    const old = gm.extra.seasons[y]!;
+    return {
+      ...gm,
+      extra: {
+        ...gm.extra,
+        seasons: { ...gm.extra.seasons, [y]: pack },
+        w: { ...gm.extra.w, [y]: codes },
+        gpTot: gm.extra.gpTot - old[0] + pack[0],
+        gmTot: gm.extra.gmTot - old[1] + pack[1],
+      },
+    };
+  }
+  return gm;
 }
 
 export function durabilityModel(data: PlayerPageData): DurabilityModel | null {
   const gsis = gsisForSleeper(data.player.id);
   if (!gsis) return null;
-  const gm = getDurability()?.byKey[gsis] ?? null;
+  const packed = getDurability()?.byKey[gsis] ?? null;
   const slice = getPlayerSlice(gsis);
-  if (!gm || !slice) return null;
+  if (!packed || !slice) return null;
+  const avail = data.injury?.availability;
+  const gm = withSeasonOnPage(packed, avail);
   const injuries = [...gm.inj, ...gm.extra.inj];
   const chips = regionChips(riskModel(slice.rows, slice.impacts, slice.unscored));
+  const claimed = new Set<InjuryWindow>();
   const regions: RegionView[] = chips
     .map(({ region, stat }) => {
-      const raw = regionEpisodes(slice, injuries, region.key);
-      const episodes = currentSeasonCounts(raw, data);
-      // The region's total moves with its open episode, so the pill and the
-      // record under it say the same number.
-      const shift = episodes.reduce((n, ep, i) => n + ep.gamesMissed - raw[i]!.gamesMissed, 0);
-      const gamesMissed = Math.max(0, stat.gamesMissed + shift);
+      const episodes = currentSeasonCounts(regionEpisodes(slice, injuries, region.key), region.key, avail, claimed);
+      // The region's total is its episodes' sum, so the pill, the marker,
+      // the summary line and the record under it say one number (Jennings'
+      // calf read 3 in the summary beside 1 on its record). A region with no
+      // episode keeps the study's figure.
+      const gamesMissed = episodes.length ? episodes.reduce((n, ep) => n + ep.gamesMissed, 0) : stat.gamesMissed;
       return { region, gamesMissed, severe: stat.severe, episodes, color: severityColor(gamesMissed, stat.severe) };
     })
     .sort((a, b) => b.gamesMissed - a.gamesMissed || b.episodes.length - a.episodes.length);
@@ -386,7 +477,10 @@ export function renderAvailGrid(
   const rowFor = (y: number): string => {
     const key = String(y);
     const marked = highlight?.[key] ? new Set(highlight[key]) : null;
-    const futureFrom = current && current.season === y ? current.week : null;
+    // `current.week` is the last week the logs hold (leagueWeeksLogged), so
+    // the weeks still to come start after it. It read as the first week to
+    // come, which drew the last completed week as "not played yet".
+    const futureFrom = current && current.season === y ? current.week + 1 : null;
     const po = gm.post[y];
     const ws = weeks[key];
     const season = seasons[key];
@@ -407,7 +501,8 @@ export function renderAvailGrid(
         g += 1;
         out += box(k, `${y}, game ${g}: ${t}`, y, i + 1, k === "r" && !!marked?.has(i + 1));
       });
-      for (let i = reg.length; i < 18; i += 1) out += box("d", `${y}: beyond this season's game count`);
+      for (let i = reg.length; i < 18; i += 1)
+        out += futureFrom != null ? box("f", `${y}, week ${i + 1}: not played yet`) : box("d", `${y}: beyond this season's game count`);
       if (playoff) {
         out += spacer;
         [...playoff].forEach((ch, i) => {
@@ -634,7 +729,9 @@ export function labelWords(r: Pick<RegionView, "region" | "episodes" | "gamesMis
   const base = names.length === 0 ? r.region.label : names.length === 1 ? (prefix ? `${prefix}${names[0]}` : capFirst(names[0]!)) : shown;
   const games = r.episodes.reduce((n, e) => n + e.gamesMissed, 0);
   const years = [...new Set(r.episodes.map((e) => e.season))].sort((a, b) => a - b).join(", ");
-  const outcome = games === 0 ? "played thru" : `${games} game${games === 1 ? "" : "s"}`;
+  // Only this week's report, its game not played yet: not "played thru" either.
+  const toCome = games === 0 && r.episodes.length > 0 && r.episodes.every((e) => e.pending);
+  const outcome = toCome ? "game to come" : games === 0 ? "played thru" : `${games} game${games === 1 ? "" : "s"}`;
   const sub = !years
     ? r.gamesMissed > 0
       ? `${r.gamesMissed} game${r.gamesMissed === 1 ? "" : "s"}`
@@ -716,7 +813,8 @@ function renderFigure(data: PlayerPageData, regions: RegionView[], worst: string
       const c = REGION_COORDS[r.region.key];
       if (!c) return "";
       const size = r.severe || r.gamesMissed > 0 ? 20 : 15;
-      const note = r.severe ? "season-ending" : r.gamesMissed > 0 ? `${r.gamesMissed} missed` : "no time missed";
+      const toCome = r.gamesMissed === 0 && r.episodes.length > 0 && r.episodes.every((ep) => ep.pending);
+      const note = r.severe ? "season-ending" : r.gamesMissed > 0 ? `${r.gamesMissed} missed` : toCome ? "game to come" : "no time missed";
       const on = r.region.key === worst;
       return (
         `<button type="button" class="scp-in-mk${on ? " is-on" : ""}" data-region="${escapeHtml(r.region.key)}" aria-pressed="${on ? "true" : "false"}" ` +
@@ -759,12 +857,27 @@ export interface DurabilityParts {
   availPct: number;
   seasons: number;
   tiles: DurabilityTile[];
-  regions: Array<{ key: string; label: string; episodes: number; gamesMissed: number; severe: boolean; latest: number | null; color: { stroke: string; fill: string } }>;
+  regions: Array<{
+    key: string;
+    label: string;
+    episodes: number;
+    gamesMissed: number;
+    severe: boolean;
+    latest: number | null;
+    /** Every episode is on this week's report for a game not played yet. */
+    toCome: boolean;
+    color: { stroke: string; fill: string };
+  }>;
   worst: string | null;
   figure: string;
   pills: string;
   details: string;
   grid: string;
+}
+
+/** Playoff games the pack counts as missed to injury, over the scored seasons. */
+function postMissed(gm: GmPlayer): number {
+  return gm.seasonYears.reduce((n, y) => n + (gm.post[y]?.[1] ?? 0), 0);
 }
 
 export function durabilityParts(data: PlayerPageData): DurabilityParts | null {
@@ -775,7 +888,7 @@ export function durabilityParts(data: PlayerPageData): DurabilityParts | null {
   const worstView = regions.find((r) => r.region.key === worst) ?? null;
   const highlight = worstView ? regionLostWeeks(worstView.episodes) : null;
   const seasons = gm.seasonYears.length;
-  const gmTot = Math.max(0, gm.gmTot + seasonDelta(gm, data));
+  const gmTot = gm.gmTot;
   return {
     score: gm.score,
     tier: { key: gm.tier.key, name: gm.tier.name, color: TIER_COLOR[gm.tier.key] },
@@ -784,7 +897,14 @@ export function durabilityParts(data: PlayerPageData): DurabilityParts | null {
     tiles: [
       { value: String(gm.major), label: "Major Injuries", title: null },
       { value: String(gm.soft), label: "Soft-Tissue Events", title: null },
-      { value: String(gmTot), label: "Games Missed", title: `Over ${seasons} season${seasons === 1 ? "" : "s"}` },
+      // The pack counts playoff games in its season totals; the injury
+      // history counts regular-season games only, so the tile says when the
+      // two differ (WEB-039, 2026-11-26: label each counter's period).
+      {
+        value: String(gmTot),
+        label: "Games Missed",
+        title: `Over ${seasons} season${seasons === 1 ? "" : "s"}${postMissed(gm) > 0 ? ", playoffs included" : ""}`,
+      },
       { value: n1(seasons ? gmTot / seasons : 0), label: "Missed / Season", title: null },
     ],
     regions: regions.map((r) => ({
@@ -794,6 +914,7 @@ export function durabilityParts(data: PlayerPageData): DurabilityParts | null {
       gamesMissed: r.gamesMissed,
       severe: r.severe,
       latest: r.episodes.length ? Math.max(...r.episodes.map((ep) => ep.season)) : null,
+      toCome: r.gamesMissed === 0 && r.episodes.length > 0 && r.episodes.every((ep) => ep.pending),
       color: { stroke: r.color.stroke, fill: r.color.fill },
     })),
     worst,

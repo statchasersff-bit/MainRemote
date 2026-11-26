@@ -263,9 +263,11 @@ function model(data: PlayerPageData, options: PlayerRenderOptions): Model | null
   const inSeason = next !== null && data.schedule.some((g) => g.kickoffMs !== null && g.kickoffMs < now);
   const code = statusCode(data.designation?.injuryStatus, next !== null);
 
-  const playedThisSeason = (data.season === data.leagueSeason ? data.gameLog : []).filter(
-    (e) => e.game_status === "active",
-  ).length;
+  // The season count's played rule (games-missed.ts), as "Last played" uses.
+  const playedThisSeason =
+    data.season !== data.leagueSeason
+      ? 0
+      : (injury.availability?.played ?? data.gameLog.filter((e) => e.game_status === "active").length);
 
   const report = reportRows(loadPracticeReports(data.leagueSeason), teamCode, player.name);
   const prefix = options.playerPathPrefix ?? "/player/";
@@ -676,7 +678,7 @@ function statusCells(m: Model, data: PlayerPageData): StatusCell[] {
       label: "Latest injury",
       // "Undisclosed", not "Undisclosed injury": the label already says injury (mak, 2026-11-06).
       value: latest.category === OTHER_CATEGORY ? cap(injuryName(latest.type)).replace(/^Undisclosed injury$/, "Undisclosed") : latest.category.split(" / ")[0]!,
-      sub: `${when}, ${latest.games ? `${games(latest.games)} missed` : latest.pending ? "no report yet" : "played through"}`,
+      sub: `${when}, ${latest.games ? `${games(latest.games)} missed` : latest.upcoming ? "game not played yet" : latest.pending ? "no report yet" : "played through"}`,
     });
   }
   if (m.next) {
@@ -899,7 +901,7 @@ export function eventWords(ev: InjuryEvent): { title: string; side: string; meta
   const side = ev.side ? (ev.side === "R" ? "Right" : "Left") : "";
   const title = /\b(surgery)\b/i.test(ev.type) || !ev.surgery ? ev.type : `${ev.type}, surgery`;
   const chip =
-    ev.phase === "POST" ? { kind: "mid", text: "Postseason" } : ev.games > 0 ? { kind: "bad", text: `${games(ev.games)} missed` } : ev.pending ? { kind: "mid", text: "No report yet" } : { kind: "mid", text: "Played through" };
+    ev.phase === "POST" ? { kind: "mid", text: "Postseason" } : ev.games > 0 ? { kind: "bad", text: `${games(ev.games)} missed` } : ev.upcoming ? { kind: "mid", text: "Game not played yet" } : ev.pending ? { kind: "mid", text: "No report yet" } : { kind: "mid", text: "Played through" };
   return { title, side, meta: metaFor(ev), chip };
 }
 
@@ -1062,7 +1064,7 @@ function injuryPool(m: Model, data: PlayerPageData, options: PlayerRenderOptions
       key: "latest",
       q: `What was ${possessive(m.name)} most recent injury?`,
       a: `${possessive(m.name)} most recent logged injury was ${article(named(latest))} in ${when}. ` +
-        (latest.games > 0 ? `It cost him ${games(latest.games)}.` : latest.pending ? "No injury report has listed it yet." : "He played through it and missed no regular-season games."),
+        (latest.games > 0 ? `It cost him ${games(latest.games)}.` : latest.upcoming ? "He is listed for a game that has not been played yet." : latest.pending ? "No injury report has listed it yet." : "He played through it and missed no regular-season games."),
     });
   }
   const byCat = new Map<string, InjuryEvent[]>();

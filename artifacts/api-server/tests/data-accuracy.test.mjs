@@ -490,6 +490,37 @@ describe("one games-missed count per window (WEB-039 follow-up)", () => {
     assert.deepEqual(a.windows[0].missedWeeks, [6, 8]);
     assert.equal(a.missedInjury, 2);
     assert.equal(a.notPlayedOther, 0, "Week 8 was the injury's, not reason unknown");
+    // The durability grid's week string is the same games (WEB-039, 11-26).
+    assert.equal(a.weekCodes, "PPPPPXBXP");
+    assert.equal(a.windows[0].type, "Ankle");
+  });
+
+  test("Pacheco: the week string the grid draws is the season count's ten games, the bye apart (WEB-039, 11-26)", () => {
+    const a = missed.seasonAvailability({ season: 2026, playerId: PACHECO, currentTeam: "DET", injuries: ir(9), logs: logs11(), stillOut: true });
+    // Which games make up each displayed count: Detroit's completed games,
+    // Weeks 1-5 and 7-11 (Week 6 bye). The "2026 games missed" tile, the
+    // open IR stint ("10 games missed so far") and the grid's red boxes
+    // are this one list.
+    assert.deepEqual(a.weeksMissedInjury, [1, 2, 3, 4, 5, 7, 8, 9, 10, 11]);
+    assert.equal(a.weekCodes, "XXXXXBXXXXX");
+    assert.equal([...a.weekCodes].filter((c) => c === "X").length, a.missedInjury);
+    assert.equal(a.windows[0].missedWeeks.length, a.missedInjury);
+  });
+
+  test("a week whose game is still to come: past the last completed week, or no club game logged yet", () => {
+    const a = { weekCodes: "PPPPBPPPPPP" };
+    assert.equal(missed.gameToCome(a, 12), true, "this week's game");
+    assert.equal(missed.gameToCome(a, 11), false);
+    // Wednesday's game logged (week 12 in the logs), Sunday's club not yet: its week reads B.
+    assert.equal(missed.gameToCome({ weekCodes: "PPPPPPPPBPPB" }, 12), true);
+  });
+
+  test("a player who joined mid-season: the weeks before his first row are N, not charged", () => {
+    const club = (w) => ({ week: w, opp: "X", team: "ZZZ", stats: { pts_ppr: 1, gp: 1, off_snp: 30 } });
+    const logs = { mate: [1, 2, 3, 4, 5, 6].map(club), late: [4, 5, 6].map(club) };
+    const a = missed.seasonAvailability({ season: 2026, playerId: "late", currentTeam: "ZZZ", logs, injuries: [] });
+    assert.equal(a.weekCodes, "NNNPPP");
+    assert.equal(a.teamGames, 3);
   });
 });
 

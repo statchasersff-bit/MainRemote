@@ -43,6 +43,9 @@ export interface InjuryWindow {
   missedWeeks: number[];
   /** Still running: the caller said he is out, and he has not played since. */
   open: boolean;
+  /** The entry's injury ("Calf", "Injured reserve") and body part, so a reader can tie the window to a body region. */
+  type: string;
+  bodyPart: string | null;
 }
 
 export interface SeasonAvailability {
@@ -61,6 +64,15 @@ export interface SeasonAvailability {
   weeksNotPlayedOther: number[];
   /** The season's injury entries' windows, in the entries' order (season entries only). */
   windows: InjuryWindow[];
+  /**
+   * One letter per week 1..throughWeek, the durability grid's alphabet
+   * (injury-impact gridiron.json `w`): P played, X missed to injury, - not
+   * played for a reason no injury record names, B no club game (a bye), N not
+   * yet on a club (a week before his first row that no record covers). The
+   * Durability Profile draws the season on the page from it, so its boxes
+   * are the same games as the season count (WEB-039, 2026-11-26).
+   */
+  weekCodes: string;
 }
 
 const clubWeeksCache = new WeakMap<object, Map<string, Set<number>>>();
@@ -156,7 +168,7 @@ export function seasonAvailability(input: {
       if (!open && missedWeeks.length >= recorded && !reportWeeks.has(w)) break;
       missedWeeks.push(w);
     }
-    return { week: start, recorded, missedWeeks, open };
+    return { week: start, recorded, missedWeeks, open, type: e.type, bodyPart: e.bodyPart ?? null };
   });
 
   const injuryWeeks = new Set<number>();
@@ -173,26 +185,49 @@ export function seasonAvailability(input: {
     weeksMissedInjury: [],
     weeksNotPlayedOther: [],
     windows,
+    weekCodes: "",
   };
   for (let w = 1; w <= through; w += 1) {
     const club = teamFor(w);
-    if (!club || !clubs.get(club)?.has(w)) continue;
+    if (!club || !clubs.get(club)?.has(w)) {
+      out.weekCodes += "B";
+      continue;
+    }
     const row = rowByWeek.get(w);
     // Before his first row: on the roster only if a record says so.
-    if (!row && (firstRow === null || w < firstRow) && !injuryWeeks.has(w)) continue;
+    if (!row && (firstRow === null || w < firstRow) && !injuryWeeks.has(w)) {
+      out.weekCodes += "N";
+      continue;
+    }
     out.teamGames += 1;
     if (played(w)) {
       out.played += 1;
+      out.weekCodes += "P";
       continue;
     }
     out.notPlayed += 1;
     if (injuryWeeks.has(w)) {
       out.missedInjury += 1;
       out.weeksMissedInjury.push(w);
+      out.weekCodes += "X";
     } else {
       out.notPlayedOther += 1;
       out.weeksNotPlayedOther.push(w);
+      out.weekCodes += "-";
     }
   }
   return out;
+}
+
+/**
+ * His club's game in `week` is still to be played: past the season's last
+ * completed week, or a week his club has no completed game in yet. A week
+ * on the injury report never is a bye, so "B" there is a game to come
+ * (Wednesday's Packers game logged, Sunday's still to play). An injury
+ * listed only for such a week has cost no game yet, and has not been
+ * played through either (WEB-039, 2026-11-26: Bo Melton's Week 12 quad read
+ * "played through it without missing time" before the game).
+ */
+export function gameToCome(avail: Pick<SeasonAvailability, "weekCodes">, week: number): boolean {
+  return week > avail.weekCodes.length || avail.weekCodes[week - 1] === "B";
 }

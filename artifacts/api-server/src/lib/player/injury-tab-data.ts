@@ -160,6 +160,8 @@ export interface InjuryEvent {
   play: NflInjuryEntry["play"] | null;
   /** In-game only, no report yet: never described as "played through". */
   pending: boolean;
+  /** On this week's report for a game still to be played: not "played through" either. */
+  upcoming: boolean;
   /** The weekly report rows, when the record has them. */
   reports: NonNullable<NflInjuryEntry["reports"]>;
 }
@@ -226,6 +228,7 @@ export function buildEvents(
       prior.surgery ||= /surgery/i.test(text);
       prior.ir ||= /injured reserve|\bIR\b/.test(text);
       prior.play ??= e.play ?? null;
+      prior.upcoming &&= e.gameToCome === true && prior.games === 0;
       for (const r of e.reports ?? []) if (!prior.reports.some((p) => p.week === r.week)) prior.reports.push(r);
       prior.reports.sort((a, b) => a.week - b.week);
       continue;
@@ -241,6 +244,7 @@ export function buildEvents(
       type: (e.type ?? "").trim() || category,
       games,
       pending: e.source === "play-by-play",
+      upcoming: e.gameToCome === true && games === 0,
       recordedGames: recorded,
       surgery: /surgery/i.test(text),
       ir: /injured reserve|\bIR\b/.test(text),

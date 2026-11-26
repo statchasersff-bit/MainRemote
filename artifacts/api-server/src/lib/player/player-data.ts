@@ -49,7 +49,7 @@ import { currentStatus, displayedStatus, type CurrentStatus } from "./current-st
 import { lastIngestedMs } from "../dataset-meta";
 import { scoringTotalsSource } from "../scoring/house-rules";
 import { currentFpaSeason, getFpaTable } from "../fpa/fpa-data";
-import { seasonAvailability, type SeasonAvailability } from "./games-missed";
+import { gameToCome, seasonAvailability, type SeasonAvailability } from "./games-missed";
 import {
   depthRole,
   overviewMeters,
@@ -1140,6 +1140,35 @@ function withOpenWindows(
   return changed ? { ...history, nfl } : history;
 }
 
+/**
+ * A current-season entry listed only for games still to be played (this
+ * week's report) is marked `gameToCome`, and the builder's "played through
+ * it without missing time" is reworded: the game has not happened, so the
+ * record cannot say he played (WEB-039, 2026-11-26: Bo Melton's Week 12 quad).
+ */
+function withGamesToCome(
+  history: PlayerInjuryHistory,
+  season: number,
+  availability: SeasonAvailability,
+): PlayerInjuryHistory {
+  let changed = false;
+  const nfl = history.nfl.map((e) => {
+    if (e.season !== season || typeof e.week !== "number" || (e.gamesMissed ?? 0) > 0 || e.source === "play-by-play") return e;
+    const weeks = (e.reports ?? []).map((r) => r.week);
+    if (!weeks.length) weeks.push(e.week);
+    if (!weeks.every((w) => gameToCome(availability, w))) return e;
+    changed = true;
+    return {
+      ...e,
+      gameToCome: true,
+      description: e.description
+        ?.replace(/ from Week (\d+) and played through it without missing time\./, " for Week $1, a game not played yet.")
+        .replace(/ and played through it without missing time\./, "; that game has not been played yet."),
+    };
+  });
+  return changed ? { ...history, nfl } : history;
+}
+
 function buildInjuryProfile(
   playerId: string,
   name: string,
@@ -1167,15 +1196,20 @@ function buildInjuryProfile(
   // so the history, the latest-injury card and the season total say one
   // number (Pacheco: "9 games missed so far" beside "2026 games missed 10",
   // the builder's count a week old).
-  const history = withOpenWindows(stored, season, availability);
+  const history = withGamesToCome(withOpenWindows(stored, season, availability), season, availability);
 
   const summary = summarizeInjuries(history);
   const counted = gameLog.length > 0 || availability.teamGames > 0;
   const seasonMissed = counted ? availability.missedInjury : null;
   const seasonOut = counted ? availability.notPlayed : null;
   const played = gameLog.filter((entry) => entry.game_status === "active");
+  // "Last played" reads the same played rule as the season count (a snap or
+  // the game-played flag, games-missed.ts), so a returner with no offensive
+  // touch is not "last played Week 9" beside "played every game" (Bo Melton,
+  // Week 10, 2026).
+  const lastP = availability.weekCodes.lastIndexOf("P");
   const lastPlayedWeek =
-    played.length > 0 ? Math.max(...played.map((entry) => entry.week)) : null;
+    lastP >= 0 ? lastP + 1 : played.length > 0 ? Math.max(...played.map((entry) => entry.week)) : null;
 
   return {
     history,
@@ -1460,7 +1494,7 @@ export async function getPlayerPageData(
   });
   const shown = displayedStatus(status);
   const designation: RosterPlayer | null =
-    rosterRow && shown ? { ...rosterRow, injuryStatus: shown } : null;
+    rosterRow && shown ? { ...rosterRow, injuryStatus: shown, injuryBodyPart: status.injury ?? rosterRow.injuryBodyPart } : null;
 
   const production = houseProduction(productionSeasons(player.id, format), player, format, allPlayers);
   const careerRows = careerStatRows(production, careerSeasons, season);
