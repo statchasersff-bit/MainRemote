@@ -42,12 +42,20 @@ export function teamCode(abbr: string | null | undefined): string {
  * Averaging the second kind in is how a "points per game" quietly becomes
  * "points per game on the roster", which is a different and much less useful
  * number.
+ *
+ * Since 2026-11-27 (mak) this is the Stats tab's rule (isGamePlayed below):
+ * every game Sleeper lists him active for (`gp`), snap or not, or failing
+ * that a snap or touch. Before, a special-teams-only game counted on the
+ * Stats tab but not in the header, hub, Game Log or PPG ranks (Nate Carter:
+ * "0.4 FPPG ... 2 games" over "3 GP, 0.3 PPG"). One rule now feeds every
+ * games-played count, every per-game figure and the PPG rank tables.
  */
 export function hasParticipation(
   stats: GameLogStats,
   position: string | null,
 ): boolean {
-  return hasTouch(stats, position);
+  const gp = (stats as { gp?: number }).gp;
+  return (typeof gp === "number" && gp > 0) || hasTouch(stats, position);
 }
 
 /**

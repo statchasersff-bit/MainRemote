@@ -146,3 +146,61 @@ player-stats 39/39; player-faq-through-week 8/8; web-033-opp-ranks 17/17. `tsc -
    defense total (nflverse has no return-fumble column); fullbacks are RB on player pages, FB (excluded) in FPA. Keep as is?
 3. The header's "POS RANK" is a PPG rank from four games and a total-points rank before that; the basis is in the
    tooltip only. Print it (header is item 4's area)?
+
+## Games played: one rule (mak's decision, 2026-11-27)
+
+Decision: games played = the Stats tab's definition, every game Sleeper lists him active for (`gp`), snap or not
+(the 11-04 rule), falling back to a snap or touch for rows without `gp`. Merged `integ/player-audit-2026-11-27`
+(58bd29cd) first; no plugin bump.
+
+Change: `ranks.ts hasParticipation()` now returns `gp > 0 || hasTouch()`, the same test as `isGamePlayed()`. It is
+the one function behind every non-Stats count, so one line moves all of them together:
+- header FPPG and POS RANK (PPG basis and the 4-game PPG gate, `ppgPositionTable`), hub Season Stats GP, Overview
+  recommendation and read, Outlook rank basis, FAQ answers and FAQPage schema (same entries), Game Log summary
+  (games, FPTS/G) and the Game Log rows' status (`game_status: "active"`), weekly finish tables, tier/finish rates,
+  benchmarks, peers rail, the player-pages FPA-style opponent table, and the team overview's contributor G and PPR/G
+  (it mirrors the player-page rule on purpose, release gate 11-19).
+- Games missed (`games-missed.ts playedRow`) already counted `gp > 0` (and any snap) as played, so a special-teams-only
+  game is now played on both sides; no change needed there.
+- The "Active, did not play" Game Log label no longer appears for a logged `gp` week; such a week is a played row
+  with its (usually 0.0) points.
+
+Pool gates, decided and why:
+- PPG rank gate (4+ games, `PPG_MIN_GAMES`): counts the new games, because it gates the same PPG whose denominator
+  those games are. One definition for that claim.
+- Stats card pool (17+ targets, 4+ games, 25%+ snaps) and the usage field (6+ games, 1.5+ targets per team game):
+  unchanged. They rank opportunity shares and rates computed over the games with an offensive snap in the
+  advanced/usage reports, so their gates count the games their own figures are taken over, and the criteria are
+  printed beside each metric. Counting special-teams-only games there would put games in the gate that are not in
+  the share.
+
+Before / after (local, repo data through Week 11, PPR):
+
+| Player | Surface | Before | After |
+|---|---|---|---|
+| Ameer Abdullah (3 ST-only weeks: 6, 10, 11) | Header | 1.6 FPPG, RB90 | 1.1 FPPG, RB95 |
+| | Hub season block | GP 7 | GP 10 |
+| | Overview | "RB90 by points per game, 7 games"; "ranks RB90 in PPR points per game (1.6)" | "RB95 by points per game, 10 games"; "(1.1)" |
+| | Game Log summary | 7 Games, 1.6 FPTS/G | 10 Games, 1.1 FPTS/G |
+| | FAQ | "averaging 1.6 ... 11.0 points across 7 games"; "RB90 in PPR points per game" | "averaging 1.1 ... across 10 games"; "RB95 ..." |
+| | Stats career row | 10 GP, 1.1 PPG | 10 GP, 1.1 PPG (unchanged; now agrees) |
+| Nate Carter | Header / Overview / Outlook / FAQ | RB134 by total points, 2 games, 0.4 | RB133 by total points, 2 games, 0.4 |
+| | Stats row | 2 GP, 0.4 | 2 GP, 0.4 |
+| Jahmyr Gibbs (control) | every surface | 28.1 FPPG, RB1, GP 10, 281.2 | unchanged |
+
+Carter: the repo data ends at Week 11, before his special-teams-only Week 12 game, so locally he has 2 games on every
+surface; his total-points rank moves 134 -> 133 because the field below him changed. Live (12:32 UTC) the header reads
+"0.4 FPPG ... 2 games" over Stats "3 GP, 0.3 PPG"; with this build the header, hub, Overview, Game Log and FAQ read
+3 games and 0.3, the Stats figures. The same case is a unit test (career-scoring "one games-played rule").
+
+Scale (repo data): 136 players in 2026 (QB 4, RB 43, WR 54, TE 35; plus 1 K) get a different displayed GP and PPG;
+294 of the 2026 published position ranks move (30 flip from the total-points basis to the PPG basis by reaching 4
+games). Across 2009-2026, 3,923 player-seasons change their Game Log summary games/FPTS-per-game (their Stats career
+rows already used this rule). Points totals do not change anywhere.
+
+FAQ: no template wording changed; answers whose numbers change are the games/PPG and rank answers ("How many fantasy
+points is X averaging", "Where does X rank"), visible and in FAQPage schema alike.
+
+Tests (local): career-scoring 12/12 (1 new), player-overview 29/29, player-header 24/24, ppg-rank-consistency 11/11,
+player-share-field 6/6, player-outlook-tab 42/42, player-injury-tab 34/34, player-faq-schema 4/4, data-accuracy 83/83,
+player 154 pass / 0 fail (1 skipped), release-gate 9/9. `tsc --noEmit` clean.
