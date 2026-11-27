@@ -1,6 +1,6 @@
 {
  "season": 2026,
- "updatedAt": "2026-11-24T02:03:23.394Z",
+ "updatedAt": "2026-11-27T13:39:51.716Z",
  "games": {
   "401873009": {
    "eventId": "401873009",
@@ -1694,22 +1694,22 @@
    "seasonType": "regular",
    "away": "den",
    "home": "pit",
-   "provider": "DraftKings",
-   "spread": 3,
+   "provider": "Draft Kings",
+   "spread": 4.5,
    "spreadOpen": 1.5,
-   "total": 38.5,
+   "total": 37.5,
    "totalOpen": 41.5,
    "moneyline": {
-    "home": 131,
-    "away": -155
+    "home": 202,
+    "away": -244
    },
    "indoor": false,
    "weather": {
-    "tempF": 44,
-    "condition": "Cloudy",
+    "tempF": 41,
+    "condition": "Rain",
     "precipPct": null
    },
-   "seenAt": 1795485803353
+   "seenAt": 1795786789428
   },
   "401873084": {
    "eventId": "401873084",
@@ -1717,22 +1717,22 @@
    "seasonType": "regular",
    "away": "atl",
    "home": "min",
-   "provider": "DraftKings",
-   "spread": -6.5,
+   "provider": "Draft Kings",
+   "spread": -7,
    "spreadOpen": -4.5,
-   "total": 42.5,
+   "total": 41.5,
    "totalOpen": 43.5,
    "moneyline": {
-    "home": -345,
-    "away": 276
+    "home": -311,
+    "away": 253
    },
    "indoor": true,
    "weather": {
-    "tempF": 37,
-    "condition": "Mostly cloudy",
+    "tempF": 36,
+    "condition": "Cloudy",
     "precipPct": null
    },
-   "seenAt": 1795485803353
+   "seenAt": 1795786789428
   },
   "401873085": {
    "eventId": "401873085",
@@ -1740,22 +1740,22 @@
    "seasonType": "regular",
    "away": "bal",
    "home": "hou",
-   "provider": "DraftKings",
+   "provider": "Draft Kings",
    "spread": -6.5,
    "spreadOpen": -1.5,
-   "total": 46.5,
+   "total": 47.5,
    "totalOpen": 45.5,
    "moneyline": {
-    "home": -310,
-    "away": 251
+    "home": -332,
+    "away": 267
    },
    "indoor": true,
    "weather": {
-    "tempF": 72,
-    "condition": "Intermittent clouds",
+    "tempF": 66,
+    "condition": "Mostly cloudy",
     "precipPct": null
    },
-   "seenAt": 1795485803353
+   "seenAt": 1795786789428
   },
   "401873086": {
    "eventId": "401873086",
@@ -1763,22 +1763,22 @@
    "seasonType": "regular",
    "away": "lv",
    "home": "cle",
-   "provider": "DraftKings",
+   "provider": "Draft Kings",
    "spread": -4.5,
    "spreadOpen": -2.5,
-   "total": 41.5,
+   "total": 39.5,
    "totalOpen": 39.5,
    "moneyline": {
-    "home": -221,
-    "away": 184
+    "home": -244,
+    "away": 201
    },
    "indoor": false,
    "weather": {
-    "tempF": 47,
-    "condition": "Intermittent clouds",
+    "tempF": 49,
+    "condition": "Rain",
     "precipPct": null
    },
-   "seenAt": 1795485803353
+   "seenAt": 1795786789428
   },
   "401873087": {
    "eventId": "401873087",
@@ -1786,22 +1786,22 @@
    "seasonType": "regular",
    "away": "no",
    "home": "cin",
-   "provider": "DraftKings",
+   "provider": "Draft Kings",
    "spread": -10,
    "spreadOpen": -6.5,
-   "total": 51.5,
+   "total": 49.5,
    "totalOpen": 48.5,
    "moneyline": {
-    "home": -610,
-    "away": 452
+    "home": -561,
+    "away": 422
    },
    "indoor": false,
    "weather": {
-    "tempF": 51,
-    "condition": "Intermittent clouds",
+    "tempF": 48,
+    "condition": "Rain",
     "precipPct": null
    },
-   "seenAt": 1795416567305
+   "seenAt": 1795786789428
   },
   "401873088": {
    "eventId": "401873088",
@@ -1809,22 +1809,22 @@
    "seasonType": "regular",
    "away": "nyg",
    "home": "ind",
-   "provider": "DraftKings",
-   "spread": 6.5,
+   "provider": "Draft Kings",
+   "spread": 6,
    "spreadOpen": -2.5,
    "total": 41.5,
    "totalOpen": 47.5,
    "moneyline": {
-    "home": 260,
-    "away": -322
+    "home": 233,
+    "away": -283
    },
    "indoor": true,
    "weather": {
-    "tempF": 49,
-    "condition": "Intermittent clouds",
+    "tempF": 46,
+    "condition": "Rain",
     "precipPct": null
    },
-   "seenAt": 1795485803353
+   "seenAt": 1795786789428
   },
   "401873089": {
    "eventId": "401873089",
@@ -1832,22 +1832,22 @@
    "seasonType": "regular",
    "away": "nyj",
    "home": "mia",
-   "provider": "DraftKings",
-   "spread": 3.5,
+   "provider": "Draft Kings",
+   "spread": 5.5,
    "spreadOpen": -1.5,
-   "total": 40.5,
+   "total": 39.5,
    "totalOpen": 41.5,
    "moneyline": {
-    "home": 178,
-    "away": -214
+    "home": 204,
+    "away": -246
    },
    "indoor": false,
    "weather": {
-    "tempF": 76,
-    "condition": "Mostly cloudy",
+    "tempF": 77,
+    "condition": "Cloudy",
     "precipPct": null
    },
-   "seenAt": 1795485803353
+   "seenAt": 1795786789428
   },
   "401873090": {
    "eventId": "401873090",
@@ -1855,10 +1855,10 @@
    "seasonType": "regular",
    "away": "ten",
    "home": "jax",
-   "provider": "DraftKings",
+   "provider": "Draft Kings",
    "spread": -14.5,
    "spreadOpen": -5.5,
-   "total": 47.5,
+   "total": 48.5,
    "totalOpen": 45.5,
    "moneyline": {
     "home": -1220,
@@ -1866,11 +1866,11 @@
    },
    "indoor": false,
    "weather": {
-    "tempF": 66,
-    "condition": "Cloudy",
+    "tempF": 62,
+    "condition": "Partly sunny",
     "precipPct": null
    },
-   "seenAt": 1795485803353
+   "seenAt": 1795786789428
   },
   "401873091": {
    "eventId": "401873091",
@@ -1878,22 +1878,22 @@
    "seasonType": "regular",
    "away": "sea",
    "home": "sf",
-   "provider": "DraftKings",
+   "provider": "Draft Kings",
    "spread": -3,
    "spreadOpen": -1.5,
-   "total": 46.5,
+   "total": 43.5,
    "totalOpen": 46.5,
    "moneyline": {
-    "home": -183,
-    "away": 153
+    "home": -152,
+    "away": 129
    },
    "indoor": false,
    "weather": {
-    "tempF": 66,
+    "tempF": 68,
     "condition": "Rain",
     "precipPct": null
    },
-   "seenAt": 1795485803353
+   "seenAt": 1795786789428
   },
   "401873092": {
    "eventId": "401873092",
@@ -1901,22 +1901,22 @@
    "seasonType": "regular",
    "away": "was",
    "home": "ari",
-   "provider": "DraftKings",
-   "spread": 7,
+   "provider": "Draft Kings",
+   "spread": 6.5,
    "spreadOpen": 4.5,
-   "total": 40.5,
+   "total": 41.5,
    "totalOpen": 47.5,
    "moneyline": {
-    "home": 283,
-    "away": -352
+    "home": 281,
+    "away": -350
    },
    "indoor": true,
    "weather": {
-    "tempF": 72,
+    "tempF": 77,
     "condition": "Mostly sunny",
     "precipPct": null
    },
-   "seenAt": 1795416567305
+   "seenAt": 1795786789428
   },
   "401873093": {
    "eventId": "401873093",
@@ -1924,22 +1924,22 @@
    "seasonType": "regular",
    "away": "ne",
    "home": "lac",
-   "provider": "DraftKings",
-   "spread": -1.5,
+   "provider": "Draft Kings",
+   "spread": 2.5,
    "spreadOpen": -2.5,
    "total": 35.5,
    "totalOpen": 45.5,
    "moneyline": {
-    "home": -115,
-    "away": -103
+    "home": 115,
+    "away": -137
    },
    "indoor": false,
    "weather": {
-    "tempF": 73,
-    "condition": "Cloudy",
+    "tempF": 72,
+    "condition": "Intermittent clouds",
     "precipPct": null
    },
-   "seenAt": 1795485803353
+   "seenAt": 1795786789428
   },
   "401873094": {
    "eventId": "401873094",
@@ -1947,22 +1947,22 @@
    "seasonType": "regular",
    "away": "car",
    "home": "tb",
-   "provider": "DraftKings",
+   "provider": "Draft Kings",
    "spread": -3,
    "spreadOpen": -3.5,
    "total": 43.5,
    "totalOpen": 44.5,
    "moneyline": {
-    "home": -155,
-    "away": 131
+    "home": -157,
+    "away": 132
    },
    "indoor": false,
    "weather": {
-    "tempF": 71,
-    "condition": "Cloudy",
+    "tempF": 67,
+    "condition": "Rain",
     "precipPct": null
    },
-   "seenAt": 1795485803353
+   "seenAt": 1795786789428
   },
   "401873095": {
    "eventId": "401873095",
@@ -1970,18 +1970,22 @@
    "seasonType": "regular",
    "away": "sf",
    "home": "nyg",
-   "provider": null,
-   "spread": null,
-   "spreadOpen": null,
-   "total": null,
-   "totalOpen": null,
+   "provider": "Draft Kings",
+   "spread": 6.5,
+   "spreadOpen": 3,
+   "total": 47.5,
+   "totalOpen": 47.5,
    "moneyline": {
-    "home": null,
-    "away": null
+    "home": 241,
+    "away": -295
    },
    "indoor": false,
-   "weather": null,
-   "seenAt": 1792675381479
+   "weather": {
+    "tempF": 49,
+    "condition": "Cloudy",
+    "precipPct": null
+   },
+   "seenAt": 1795786791661
   },
   "401873096": {
    "eventId": "401873096",
@@ -1989,18 +1993,22 @@
    "seasonType": "regular",
    "away": "kc",
    "home": "lar",
-   "provider": null,
-   "spread": null,
-   "spreadOpen": null,
-   "total": null,
-   "totalOpen": null,
+   "provider": "Draft Kings",
+   "spread": -1.5,
+   "spreadOpen": -3.5,
+   "total": 44.5,
+   "totalOpen": 47.5,
    "moneyline": {
-    "home": null,
-    "away": null
+    "home": -109,
+    "away": -108
    },
    "indoor": false,
-   "weather": null,
-   "seenAt": 1792675381479
+   "weather": {
+    "tempF": 67,
+    "condition": "Mostly cloudy",
+    "precipPct": null
+   },
+   "seenAt": 1795786791661
   },
   "401873097": {
    "eventId": "401873097",
@@ -2008,18 +2016,22 @@
    "seasonType": "regular",
    "away": "cin",
    "home": "cle",
-   "provider": null,
-   "spread": null,
-   "spreadOpen": null,
-   "total": null,
-   "totalOpen": null,
+   "provider": "Draft Kings",
+   "spread": 6,
+   "spreadOpen": 4.5,
+   "total": 46.5,
+   "totalOpen": 45.5,
    "moneyline": {
-    "home": null,
-    "away": null
+    "home": 212,
+    "away": -258
    },
    "indoor": false,
-   "weather": null,
-   "seenAt": 1792675381479
+   "weather": {
+    "tempF": 45,
+    "condition": "Cloudy",
+    "precipPct": null
+   },
+   "seenAt": 1795786791661
   },
   "401873098": {
    "eventId": "401873098",
@@ -2027,18 +2039,22 @@
    "seasonType": "regular",
    "away": "det",
    "home": "atl",
-   "provider": null,
-   "spread": null,
-   "spreadOpen": null,
-   "total": null,
-   "totalOpen": null,
+   "provider": "Draft Kings",
+   "spread": 3.5,
+   "spreadOpen": 3.5,
+   "total": 49.5,
+   "totalOpen": 47.5,
    "moneyline": {
-    "home": null,
-    "away": null
+    "home": 160,
+    "away": -191
    },
    "indoor": true,
-   "weather": null,
-   "seenAt": 1792675381479
+   "weather": {
+    "tempF": 56,
+    "condition": "Cloudy",
+    "precipPct": null
+   },
+   "seenAt": 1795786791661
   },
   "401873099": {
    "eventId": "401873099",
@@ -2046,18 +2062,22 @@
    "seasonType": "regular",
    "away": "gb",
    "home": "no",
-   "provider": null,
-   "spread": null,
-   "spreadOpen": null,
-   "total": null,
-   "totalOpen": null,
+   "provider": "Draft Kings",
+   "spread": 4.5,
+   "spreadOpen": 4.5,
+   "total": 46.5,
+   "totalOpen": 45.5,
    "moneyline": {
-    "home": null,
-    "away": null
+    "home": 189,
+    "away": -227
    },
    "indoor": true,
-   "weather": null,
-   "seenAt": 1792675381479
+   "weather": {
+    "tempF": 64,
+    "condition": "Partly sunny",
+    "precipPct": null
+   },
+   "seenAt": 1795786791661
   },
   "401873100": {
    "eventId": "401873100",
@@ -2065,18 +2085,22 @@
    "seasonType": "regular",
    "away": "jax",
    "home": "chi",
-   "provider": null,
-   "spread": null,
-   "spreadOpen": null,
-   "total": null,
-   "totalOpen": null,
+   "provider": "Draft Kings",
+   "spread": -3,
+   "spreadOpen": -2.5,
+   "total": 49.5,
+   "totalOpen": 47.5,
    "moneyline": {
-    "home": null,
-    "away": null
+    "home": -154,
+    "away": 130
    },
    "indoor": false,
-   "weather": null,
-   "seenAt": 1792675381479
+   "weather": {
+    "tempF": 42,
+    "condition": "Sunny",
+    "precipPct": null
+   },
+   "seenAt": 1795786791661
   },
   "401873101": {
    "eventId": "401873101",
@@ -2084,18 +2108,22 @@
    "seasonType": "regular",
    "away": "lac",
    "home": "tb",
-   "provider": null,
-   "spread": null,
-   "spreadOpen": null,
-   "total": null,
-   "totalOpen": null,
+   "provider": "Draft Kings",
+   "spread": -5.5,
+   "spreadOpen": 1.5,
+   "total": 40.5,
+   "totalOpen": 46.5,
    "moneyline": {
-    "home": null,
-    "away": null
+    "home": -253,
+    "away": 209
    },
    "indoor": false,
-   "weather": null,
-   "seenAt": 1792675381479
+   "weather": {
+    "tempF": 73,
+    "condition": "Sunny",
+    "precipPct": null
+   },
+   "seenAt": 1795786791661
   },
   "401873102": {
    "eventId": "401873102",
@@ -2103,18 +2131,22 @@
    "seasonType": "regular",
    "away": "was",
    "home": "ten",
-   "provider": null,
-   "spread": null,
-   "spreadOpen": null,
-   "total": null,
-   "totalOpen": null,
+   "provider": "Draft Kings",
+   "spread": 4.5,
+   "spreadOpen": 1.5,
+   "total": 47.5,
+   "totalOpen": 46.5,
    "moneyline": {
-    "home": null,
-    "away": null
+    "home": 191,
+    "away": -230
    },
    "indoor": false,
-   "weather": null,
-   "seenAt": 1792675381479
+   "weather": {
+    "tempF": 50,
+    "condition": "Intermittent clouds",
+    "precipPct": null
+   },
+   "seenAt": 1795786791661
   },
   "401873103": {
    "eventId": "401873103",
@@ -2122,18 +2154,22 @@
    "seasonType": "regular",
    "away": "mia",
    "home": "den",
-   "provider": null,
-   "spread": null,
-   "spreadOpen": null,
-   "total": null,
-   "totalOpen": null,
+   "provider": "Draft Kings",
+   "spread": -14.5,
+   "spreadOpen": -9.5,
+   "total": 39.5,
+   "totalOpen": 42.5,
    "moneyline": {
-    "home": null,
-    "away": null
+    "home": -1120,
+    "away": 710
    },
    "indoor": false,
-   "weather": null,
-   "seenAt": 1792675381479
+   "weather": {
+    "tempF": 48,
+    "condition": "Rain",
+    "precipPct": null
+   },
+   "seenAt": 1795786791661
   },
   "401873104": {
    "eventId": "401873104",
@@ -2141,18 +2177,22 @@
    "seasonType": "regular",
    "away": "phi",
    "home": "ari",
-   "provider": null,
-   "spread": null,
-   "spreadOpen": null,
-   "total": null,
-   "totalOpen": null,
+   "provider": "Draft Kings",
+   "spread": 3,
+   "spreadOpen": 8.5,
+   "total": 37.5,
+   "totalOpen": 43.5,
    "moneyline": {
-    "home": null,
-    "away": null
+    "home": 141,
+    "away": -167
    },
    "indoor": true,
-   "weather": null,
-   "seenAt": 1792675381479
+   "weather": {
+    "tempF": 63,
+    "condition": "Partly sunny",
+    "precipPct": null
+   },
+   "seenAt": 1795786791661
   },
   "401873105": {
    "eventId": "401873105",
@@ -2160,18 +2200,22 @@
    "seasonType": "regular",
    "away": "buf",
    "home": "ne",
-   "provider": null,
-   "spread": null,
-   "spreadOpen": null,
-   "total": null,
-   "totalOpen": null,
+   "provider": "Draft Kings",
+   "spread": 12.5,
+   "spreadOpen": -1.5,
+   "total": 44.5,
+   "totalOpen": 48.5,
    "moneyline": {
-    "home": null,
-    "away": null
+    "home": 557,
+    "away": -790
    },
    "indoor": false,
-   "weather": null,
-   "seenAt": 1792675381479
+   "weather": {
+    "tempF": 44,
+    "condition": "Mostly cloudy",
+    "precipPct": null
+   },
+   "seenAt": 1795786791661
   },
   "401873106": {
    "eventId": "401873106",
@@ -2179,18 +2223,22 @@
    "seasonType": "regular",
    "away": "car",
    "home": "min",
-   "provider": null,
-   "spread": null,
-   "spreadOpen": null,
-   "total": null,
-   "totalOpen": null,
+   "provider": "Draft Kings",
+   "spread": -5.5,
+   "spreadOpen": -3.5,
+   "total": 43.5,
+   "totalOpen": 42.5,
    "moneyline": {
-    "home": null,
-    "away": null
+    "home": -243,
+    "away": 201
    },
    "indoor": true,
-   "weather": null,
-   "seenAt": 1792675381479
+   "weather": {
+    "tempF": 39,
+    "condition": "Mostly sunny",
+    "precipPct": null
+   },
+   "seenAt": 1795786791661
   },
   "401873107": {
    "eventId": "401873107",
@@ -2198,18 +2246,22 @@
    "seasonType": "regular",
    "away": "hou",
    "home": "pit",
-   "provider": null,
-   "spread": null,
-   "spreadOpen": null,
-   "total": null,
-   "totalOpen": null,
+   "provider": "Draft Kings",
+   "spread": 4.5,
+   "spreadOpen": 1.5,
+   "total": 41.5,
+   "totalOpen": 41.5,
    "moneyline": {
-    "home": null,
-    "away": null
+    "home": 186,
+    "away": -224
    },
    "indoor": false,
-   "weather": null,
-   "seenAt": 1792675381479
+   "weather": {
+    "tempF": 39,
+    "condition": "Mostly cloudy",
+    "precipPct": null
+   },
+   "seenAt": 1795786791661
   },
   "401873108": {
    "eventId": "401873108",
@@ -2217,18 +2269,18 @@
    "seasonType": "regular",
    "away": "dal",
    "home": "sea",
-   "provider": null,
-   "spread": null,
-   "spreadOpen": null,
-   "total": null,
-   "totalOpen": null,
+   "provider": "Draft Kings",
+   "spread": -6,
+   "spreadOpen": -4.5,
+   "total": 51.5,
+   "totalOpen": 48.5,
    "moneyline": {
-    "home": null,
-    "away": null
+    "home": -272,
+    "away": 223
    },
    "indoor": false,
    "weather": null,
-   "seenAt": 1792675381479
+   "seenAt": 1795786791661
   },
   "401873109": {
    "eventId": "401873109",
