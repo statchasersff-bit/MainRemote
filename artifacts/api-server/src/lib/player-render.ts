@@ -38,6 +38,7 @@
  * palest step never has to carry meaning alone.
  */
 
+import { playerCriticalStyle } from "./player/critical-css";
 import { logger } from "./logger";
 import { scoringTotalsSource } from "./scoring/house-rules";
 import { escapeHtml, escapeJsonLd } from "./render";
@@ -1882,6 +1883,15 @@ const HOST_HEADER_STYLE =
   `}.scp .scp-search[hidden]{display:block!important;visibility:hidden}` +
   `@media (max-width:560px){.scp.scp.is-embed>.scp-search[hidden]+.scp-phead{margin-top:8px!important}}</style>`;
 
+/**
+ * What prints ahead of the player root: on a WordPress page (embed) the
+ * header's critical CSS (player/critical-css.ts) and the host fixes above. The
+ * app's own pages load player.css render-blocking and need only the latter.
+ */
+function hostStyles(options: PlayerRenderOptions): string {
+  return (options.embed ? playerCriticalStyle() : "") + HOST_HEADER_STYLE;
+}
+
 export function renderPlayerPage(
   data: PlayerPageData,
   options: PlayerRenderOptions = {},
@@ -1908,7 +1918,7 @@ export function renderPlayerPage(
    */
   function renderScoped(sections: Section[], id: string, parts: TabParts | undefined | null, panelHtml: string): string {
     return (
-      HOST_HEADER_STYLE +
+      hostStyles(options) +
           `<div class="scp${options.embed ? " is-embed" : ""}" data-scp-root="1"` +
       ` data-player="${escapeHtml(data.player.slug)}"` +
       ` data-position="${escapeHtml(data.player.position ?? "")}"` +
@@ -2121,7 +2131,7 @@ export function renderPlayerPage(
     // exists in the dictionary and has no recorded football. The hero alone is
     // the honest page: who they are, and nothing claimed beyond it.
     return (
-      HOST_HEADER_STYLE +
+      hostStyles(options) +
           `<div class="scp${options.embed ? " is-embed" : ""}" data-scp-root="1"${paletteAttrs(data.team)}>` +
       renderPlayerSearch(options) +
       renderHero(data, options) +
@@ -2179,7 +2189,7 @@ export function renderPlayerPage(
     .join("");
 
   return (
-    HOST_HEADER_STYLE +
+    hostStyles(options) +
       `<div class="scp${options.embed ? " is-embed" : ""}" data-scp-root="1"` +
     ` data-player="${escapeHtml(data.player.slug)}"` +
     ` data-position="${escapeHtml(data.player.position ?? "")}"` +
