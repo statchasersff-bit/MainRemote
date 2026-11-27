@@ -496,8 +496,9 @@ function battlesCard(p: Preview): string {
       // The Injury Watch's box (mak, 2026-11-06): team-color top edge, a
       // light header with the count at the right, divided rows.
       `<div class="sct-mpp-col sct-mpp-bt-block is-${o.key}">` +
-      `<p class="sct-mpp-colhead">` +
-      (o.team.logo ? `<img src="${e(o.team.logo)}" alt="" width="22" height="22" loading="lazy" decoding="async">` : "") +
+      // The section icon rather than the club logo (mak, 2026-11-27): the
+      // head reads like the main cards' (Game Preview, Team Comparison).
+      `<p class="sct-mpp-colhead"><span class="sct-mpp-colhead-ico" aria-hidden="true">${ICON.compare}</span>` +
       `<span>${e(`${o.team.nickname} Offense vs ${d.team.nickname} Defense`)}</span>` +
       `<small>${list.length} ${list.length === 1 ? "battle" : "battles"}</small></p>` +
       `<ol class="sct-mpp-bt-list">` +
@@ -948,8 +949,9 @@ function injuryCard(p: Preview): string {
     const final = report?.state === "final";
     return (
       `<div class="sct-mpp-col is-${s.key}">` +
-      `<p class="sct-mpp-colhead">` +
-      (s.team.logo ? `<img src="${e(s.team.logo)}" alt="" width="22" height="22" loading="lazy" decoding="async">` : "") +
+      // The section icon rather than the club logo (mak, 2026-11-27), as
+      // the main cards' heads.
+      `<p class="sct-mpp-colhead"><span class="sct-mpp-colhead-ico" aria-hidden="true">${ICON.injury}</span>` +
       `<span>${e(`${s.team.nickname} Injury Watch`)}</span><small>${e(`${listingCount(rows)} · ${reportTag(report, p.meeting.weekLabel)}`)}</small></p>` +
       (listed.length
         ? `<ul class="sct-mpp-inj-list">` +

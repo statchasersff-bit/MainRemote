@@ -467,6 +467,11 @@ const ID_ICON: Record<string, string> = {
   "gf-halves": "calendar",
   "gf-efficiency": "stats",
   "gf-calling": "play",
+  // The fallback Game Flow until the play-by-play is stored (2026-11-27).
+  wp: "swing",
+  "pc-calling": "play",
+  "pc-results": "scoring",
+  "pc-drives": "calendar",
   "pbp-full": "calendar",
   "sct-rb-scoring": "scoring",
   usage: "target",

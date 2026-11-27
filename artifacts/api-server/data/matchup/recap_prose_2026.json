@@ -2220,17 +2220,18 @@
    "checked": "house checks + checker agent"
   },
   "2026_11_JAX_NYG": {
-   "headline": "Giants intercept Lawrence twice, upset Jaguars 23–18",
+   "headline": "Giants hold off Jaguars 23–18 as Jacksonville stalls in the red zone",
    "paragraphs": [
-    "The New York Giants turned two interceptions of Trevor Lawrence into points and held off a late Jacksonville rally, beating the Jaguars 23–18 on Sunday. Jacksonville had been a 6-point favorite.",
-    "Deonte Banks picked off Lawrence midway through the first quarter, and Dominic Zvada converted the short field into a 53-yard field goal that tied the game. Jameis Winston's 1-yard touchdown run put New York ahead 10–3. J.J. McCarthy's 8-yard touchdown pass to Malik Nabers and Zvada's 54-yard field goal with 16 seconds left in the half sent the Giants into the break ahead 20–6.",
-    "Jacksonville moved the ball but kept settling for field goals. The Jaguars reached the red zone six times and scored one touchdown, and Cam Little made four field goals. After Little's 31-yarder early in the fourth quarter, Paulson Adebo intercepted Lawrence, and Zvada's 43-yard field goal made it 23–9.",
-    "Lawrence threw for 301 yards and led two scoring drives late, an 18-yard touchdown pass to Brian Thomas Jr. with 6:47 left and Little's 26-yard field goal with 3:43 left, but Jacksonville did not score again. Lawrence completed 25 of 47 passes, and Parker Washington caught eight for 103 yards. McCarthy finished 18 of 38 for 173 yards for New York, and Abdul Carter had two of the Giants' three sacks. The Giants moved to 6-3-1. The Jaguars fell to 7-3."
+    "Jacksonville reached the red zone six times and came away with one touchdown, and the New York Giants made that hold up. The Giants, 6-point underdogs, beat the Jaguars 23–18 on Sunday after building a 20–6 halftime lead.",
+    "New York's first points came off a takeaway. Deonte Banks intercepted Trevor Lawrence midway through the first quarter, setting up Dominic Zvada's 53-yard field goal. Jameis Winston scored on a 1-yard run late in the quarter, J.J. McCarthy found Malik Nabers for an 8-yard touchdown midway through the second, and Zvada's 54-yard field goal with 16 seconds left sent the Giants to the break.",
+    "Jacksonville moved the ball better, with 354 yards to New York's 238 and averaging 5.2 yards per play to the Giants' 3.7, but its drives kept ending in kicks. Cam Little made all four of his field goal tries. Lawrence threw for 301 yards, and Parker Washington caught eight passes for 103, but Paulson Adebo's interception early in the fourth quarter set up Zvada's 43-yard field goal and a 23–9 lead. Even a Cam Skattebo fumble late in the third quarter got the Jaguars nothing; they gave the ball back on downs.",
+    "Lawrence's 18-yard touchdown pass to Brian Thomas Jr. midway through the fourth made it 23–15 after a failed two-point try, and Little's 26-yarder with 3:43 left made it 23–18. Jacksonville did not get the ball back.",
+    "The Giants won with one turnover to the Jaguars' two and two sacks from Abdul Carter. New York moved to 6-3-1; Jacksonville fell to 7-3."
    ],
-   "hash": "ac8b456c3765c3ba",
+   "hash": "9c0312ce4f805998",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-23T06:09:37.825Z",
-   "words": 225,
+   "writtenAt": "2026-11-27T13:32:32.732Z",
+   "words": 255,
    "checked": "house checks + checker agent"
   },
   "2026_11_LV_DEN": {
@@ -2277,17 +2278,18 @@
    "checked": "house checks + checker agent"
   },
   "2026_11_NYJ_LAC": {
-   "headline": "Smith throws three touchdown passes as Jets edge Chargers 27–24",
+   "headline": "Geno Smith throws three touchdowns as Jets edge Chargers 27–24",
    "paragraphs": [
-    "The New York Jets did not punt, did not turn the ball over and converted nine of 11 third downs, and that was enough to beat the Los Angeles Chargers 27–24 on Sunday as 3-point underdogs. Geno Smith completed 17 of 21 passes for 176 yards and three touchdowns.",
-    "After the teams traded field goals in the first quarter, Smith threw a 7-yard touchdown pass to Breece Hall early in the second quarter and an 8-yard score to Sterling Shepard late in the half, 14 unanswered points for a 17–3 lead. Justin Herbert ran 10 yards for a touchdown with six seconds left in the half to make it 17–10, and Jason Sanders' 24-yard field goal late in the third quarter, at the end of an 18-play drive, pushed the lead back to 20–10.",
-    "The Chargers kept coming back. Herbert's 11-yard touchdown pass to Ladd McConkey early in the fourth quarter cut it to 20–17, but the Jets answered with a six-play, 62-yard drive that ended with Smith's 16-yard touchdown pass to Shepard midway through the quarter. Shepard's two catches were both touchdowns. Hall ran for 86 yards and finished with 100 yards from scrimmage as the Jets rushed for 165 yards.",
-    "Los Angeles was sacked six times, two by David Bailey, and managed 261 yards. Its last answer, a 16-play drive that ended with Herbert's 6-yard touchdown pass to McConkey with 2:01 left, made it a three-point game, but the Jets ran out the clock. New York improved to 3-8. Los Angeles fell to 1-9."
+    "The New York Jets never punted in Los Angeles, and that steady offense carried them past the Chargers 27–24 on Sunday as 3-point underdogs. Geno Smith completed 17 of 21 passes for three touchdowns, and the Jets converted nine of 11 third downs.",
+    "After the teams traded long field goals in the first quarter, Smith threw touchdown passes to Breece Hall and Sterling Shepard in the second, the second an 8-yarder that made it 17–3. Justin Herbert ran for a 10-yard score with 6 seconds left in the half, but the Jets answered with an 18-play, 75-yard drive in the third quarter that ended in Jason Sanders' 24-yard field goal.",
+    "Los Angeles cut it to 20–17 early in the fourth quarter on Herbert's 11-yard touchdown pass to Ladd McConkey. New York needed six plays to respond, and Shepard's 16-yard touchdown catch midway through the quarter made it 27–17. Shepard finished with two catches, both for touchdowns.",
+    "The Chargers ran for 158 yards, 89 of them by Omarion Hampton, but they managed only 103 passing yards and were sacked six times, two by David Bailey. Hall ran for 86 yards and Braelon Allen for 75, and New York held the ball for 32:12.",
+    "Herbert's second touchdown pass to McConkey, a 6-yarder at the end of a 16-play drive with 2:01 left, made it 27–24, but the Jets kept the ball until time ran out. Neither team turned it over. New York improved to 3-8; Los Angeles fell to 1-9."
    ],
-   "hash": "adda1bd847a558fa",
+   "hash": "cb755c294b65ecf3",
    "model": "claude-code-session",
-   "writtenAt": "2026-11-23T05:48:46.130Z",
-   "words": 256,
+   "writtenAt": "2026-11-27T13:32:32.850Z",
+   "words": 248,
    "checked": "house checks + checker agent"
   },
   "2026_11_NO_CHI": {
@@ -2364,7 +2366,67 @@
    "writtenAt": "2026-11-24T13:06:01.465Z",
    "words": 261,
    "checked": "house checks + checker agent"
+  },
+  "2026_12_CHI_DET": {
+   "headline": "Williams finds Odunze late as Bears rally past Lions 39–35",
+   "paragraphs": [
+    "Jahmyr Gibbs' 70-yard touchdown run put Detroit up 35–24 midway through the fourth quarter, and the Chicago Bears still found a way. Caleb Williams threw two touchdown passes to Rome Odunze in the last 7:27, the go-ahead score coming from 6 yards with 9 seconds left, and the Bears beat the Lions 39–35 on Thursday.",
+    "Detroit led 19–10 at halftime after Derrick Moore sacked Williams in the end zone for a safety and Jared Goff found Sam LaPorta for an 11-yard touchdown with 10 seconds left in the half. Chicago pulled within 26–24 late in the third quarter on D'Andre Swift's 30-yard touchdown run, but Jake Bates' field goal and Gibbs' long run, after which the extra point was missed, pushed the lead back to 11.",
+    "Chicago answered in three plays. Williams hit Odunze for a 41-yard touchdown and the two-point try was good, making it 35–32. Dillon Thieneman then intercepted Goff, and after the Bears turned it over on downs, Detroit's last drive also ended on a failed fourth down. Williams took over at his own 32 with 2:17 left and drove 13 plays for the winning touchdown.",
+    "Gibbs ran for 205 yards and three touchdowns, and Amon-Ra St. Brown caught seven passes for 146 yards as Detroit averaged 8.1 yards per play. Williams answered by completing 30 of 44 passes for 345 yards without an interception, and Swift had 162 yards from scrimmage.",
+    "The Bears scored the final 15 points to win the division game, improving to 9-2 with their sixth straight win. The Lions fell to 8-3."
+   ],
+   "hash": "de3d7cdb8458b51d",
+   "model": "claude-code-session",
+   "writtenAt": "2026-11-27T13:32:32.840Z",
+   "words": 260,
+   "checked": "house checks + checker agent"
+  },
+  "2026_12_GB_LA": {
+   "headline": "Corum runs for 184 yards as Rams pull away from Packers 26–13",
+   "paragraphs": [
+    "The Los Angeles Rams leaned on Blake Corum, and the Green Bay Packers never found an answer. Corum carried 32 times for 184 yards and a touchdown, and the Rams scored the game's last 13 points to beat Green Bay 26–13 on Wednesday night.",
+    "The first half ended tied at 13. Brandon McManus kicked two first-quarter field goals, the second after Tucker Kraft fumbled, before Trey Smack answered from 54 yards. Kyren Williams scored on a 7-yard run, Jordan Love found Christian Watson for a 6-yard touchdown, and Smack's 48-yarder pulled Green Bay even. Watson was hurt late in the second quarter and did not return.",
+    "Corum broke the tie with a 1-yard run midway through the third quarter to cap a 14-play drive. Late in the quarter, Ty'Ron Hopper intercepted Matthew Stafford, but Jaylen McCollough picked off Love on the next possession, and Green Bay never scored after the break.",
+    "Los Angeles ran for 241 yards on 47 carries and held the ball for 40:40. Green Bay ran 14 times for 55 yards and converted two of eight third downs. McManus made all four of his field goals, including a 40-yarder midway through the fourth quarter, and Emmanuel Forbes Jr.'s interception of Love late in the game set up McManus' 30-yarder with 30 seconds left.",
+    "Stafford threw for 140 yards, and Corum finished with 205 yards from scrimmage. Los Angeles improved to 7-4 with its fifth straight win. Green Bay, with three turnovers, fell to 6-5 and has lost two straight."
+   ],
+   "hash": "56b90f20bbc60c42",
+   "model": "claude-code-session",
+   "writtenAt": "2026-11-27T13:32:33.085Z",
+   "words": 252,
+   "checked": "house checks + checker agent"
+  },
+  "2026_12_KC_BUF": {
+   "headline": "Bass hits 57-yard field goal on final play as Bills edge Chiefs 13–10",
+   "paragraphs": [
+    "Kansas City went three plays without a yard from its own 11 in the final minute, and its punt gave the Buffalo Bills one snap from the Chiefs' 39. Tyler Bass made it count, and his 57-yard field goal as time expired beat Kansas City 13–10 on Thursday night.",
+    "Points were scarce in a game with 12 punts. James Cook III gave Buffalo a 7–0 lead on a 5-yard run early in the second quarter, and Harrison Butker answered with a 26-yard field goal with 5 seconds left in the half. Emmett Johnson's 1-yard touchdown run early in the third quarter put the Chiefs ahead 10–7, and Bass tied it with a 54-yard field goal early in the fourth.",
+    "Josh Allen threw for 81 yards and was intercepted twice, once in the end zone by Alohi Gilman in the second quarter and again by Nohl Williams in the third. Kansas City punted after both, so neither cost Buffalo points. The Bills leaned on Cook instead, and he carried 32 times for 117 yards as Buffalo held the ball for 36:55.",
+    "Kansas City's offense rarely sustained anything. Patrick Mahomes threw for 174 yards, Travis Kelce caught four passes for 71, and the Chiefs converted two of 11 third downs while punting seven times. Butker made one of his two field goal tries.",
+    "Buffalo improved to 10-1 with its seventh straight win. Kansas City fell to 8-3."
+   ],
+   "hash": "daa0c352589d7b30",
+   "model": "claude-code-session",
+   "writtenAt": "2026-11-27T13:32:33.091Z",
+   "words": 235,
+   "checked": "house checks + checker agent"
+  },
+  "2026_12_PHI_DAL": {
+   "headline": "Eagles erase 21-point deficit, edge Cowboys 39–38 on late field goal",
+   "paragraphs": [
+    "The Philadelphia Eagles trailed Dallas 31–10 late in the third quarter, then outscored the Cowboys 29–7 the rest of the way. Jake Elliott's 59-yard field goal with 7 seconds left gave Philadelphia a 39–38 win on Thursday, a division game in which Dallas was favored by 9.5 points.",
+    "Dallas led 14–0 after one quarter and 28–10 at halftime. Javonte Williams ran for two scores and caught a third, and Dak Prescott threw a 31-yard touchdown pass to KaVontae Turpin. Brandon Aubrey's 59-yard field goal made it 31–10.",
+    "DeVonta Smith started the comeback with a 45-yard touchdown catch from Joe Milton with 24 seconds left in the third quarter, and Kenny Moore II scored a defensive touchdown early in the fourth to make it 31–24. Prescott's 14-yard touchdown run made it 38–24, and Milton answered with a 15-yard touchdown run. After Cobie Durant intercepted Milton, Dallas missed a field goal, and Milton found Makai Lemon for a 24-yard touchdown with 2:17 left. Both two-point tries failed, leaving Philadelphia down 38–36.",
+    "The Eagles got the ball back at their own 48 with 50 seconds left, and an 11-yard drive put Elliott in range. Andrew Mukuba intercepted Prescott with 2 seconds left to end it.",
+    "Smith caught 11 passes for 200 yards and two touchdowns, and Milton threw for 331 yards and three scores while the Eagles were sacked five times. Philadelphia improved to 4-7 with its second straight win; Dallas fell to 5-7."
+   ],
+   "hash": "30277724a0156222",
+   "model": "claude-code-session",
+   "writtenAt": "2026-11-27T13:32:33.096Z",
+   "words": 241,
+   "checked": "house checks + checker agent"
   }
  },
- "updatedAt": "2026-11-24T13:06:01.465Z"
+ "updatedAt": "2026-11-27T13:32:33.096Z"
 }

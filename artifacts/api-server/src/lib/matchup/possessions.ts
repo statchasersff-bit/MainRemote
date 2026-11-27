@@ -370,7 +370,6 @@ export function renderPossessions(input: PossessionsInput): string {
   const table =
     input.drives.length
       ? `<div class="sct-pc-card is-results">` +
-        `<h3 class="sct-rb-h3">Possession results</h3>` +
         `<table class="sct-pc-results" style="--pc-away:${colors.away.ink};--pc-home:${colors.home.ink}">` +
         `<caption class="sct-rb-sr">${escapeHtml(`How each possession ended, ${game.away.short} vs ${game.home.short}`)}</caption>` +
         `<thead><tr><th scope="col"><span class="sct-rb-sr">Result</span></th><th scope="col" class="is-away">${escapeHtml(game.away.abbr)}</th>` +
@@ -400,9 +399,6 @@ export function renderPossessions(input: PossessionsInput): string {
         : "";
 
   const notes = possessionNotes(input);
-  const noteList = notes.length
-    ? `<ul class="sct-pc-notes">${notes.map((n) => `<li>${escapeHtml(n)}</li>`).join("")}</ul>`
-    : "";
 
   const chartRows = input.drives
     .map((d) => {
@@ -420,7 +416,9 @@ export function renderPossessions(input: PossessionsInput): string {
     })
     .join("");
   const driveChart = input.drives.length
-    ? `<details class="sct-pc-drives"><summary>${escapeHtml(`All ${input.drives.length} possessions, drive by drive`)}</summary>` +
+    ? `<details class="sct-gfp-more sct-pc-drives"><summary class="sct-gfp-toggle">` +
+      `<span class="sct-gfp-toggle-show">Show breakdown</span><span class="sct-gfp-toggle-hide">Hide breakdown</span>` +
+      `<span class="sct-rb-sr"> for the drive chart</span></summary>` +
       `<div class="sct-ss-wrap"><table class="sct-rb-mini is-wide">` +
       `<caption class="sct-rb-sr">Drive chart</caption>` +
       `<thead><tr><th scope="col">Team</th><th scope="col">Start</th><th scope="col">Plays</th>` +
@@ -443,29 +441,46 @@ export function renderPossessions(input: PossessionsInput): string {
             : "") + "Possessions that ended with the clock running out at the half or the end of the game aren't counted.",
         )}</p>`
     : "";
-  // Two modules side by side, about 70/30 (mak, 2026-09-30): the comparison
-  // card with its takeaway and top targets, then the possession results.
+  // Cards in the rebuilt Game Flow's design (mak, 2026-11-27: "match the
+  // other tabs"): this block prints only until the game's play-by-play is
+  // stored, then game-flow-premium.ts replaces it. Each part is a section
+  // card like the rebuilt tab's (icon, title, the read beside it, the rule;
+  // icons by heading id in recap-premium.ts ID_ICON), stacked, and the drive
+  // list folds behind the same "Show breakdown" toggle.
+  const head = (id: string, title: string, read: string): string =>
+    `<div class="sct-fp-head sct-gfp-head"><h2 class="sct-rb-h2" id="${id}">${escapeHtml(title)}</h2>` +
+    (read ? `<p class="sct-gfp-read">${escapeHtml(read)}</p>` : "") +
+    `</div>`;
   const callingCard = compare
-    ? `<div class="sct-pc-card is-calling">` +
+    ? `<section class="sct-rb-section sct-gfp-sec sct-pc-sec is-calling" aria-labelledby="pc-calling">` +
+      head("pc-calling", "Play Calling", take ?? "") +
       compare +
-      (take
-        ? `<p class="sct-pc-take"><span class="sct-pc-take-h">Efficiency edge</span> ${escapeHtml(take)}</p>`
-        : "") +
       (shareLines ? `<ul class="sct-pc-shares"><li class="sct-pc-shares-h">Top targets</li>${shareLines}</ul>` : "") +
-      `</div>`
+      `</section>`
+    : "";
+  const resultsCard = table
+    ? `<section class="sct-rb-section sct-gfp-sec sct-pc-sec is-results" aria-labelledby="pc-results">` +
+      head("pc-results", "Possession Results", notes.join(" ")) +
+      table +
+      `</section>`
+    : "";
+  const drivesCard = driveChart
+    ? `<section class="sct-rb-section sct-gfp-sec sct-pc-sec is-drives is-collapsible" aria-labelledby="pc-drives">` +
+      head("pc-drives", "Drive by Drive", `All ${input.drives.length} possessions: where each started, its plays, yards and time, and how it ended.`) +
+      driveChart +
+      // The fine print, one click away.
+      `<details class="sct-info"><summary>About these numbers</summary>` +
+      resultNote +
+      `<p class="sct-rb-note">Personnel groupings, average depth of target and pass rate over expected appear when the tracking feed is connected.</p>` +
+      `</details>` +
+      `</section>`
     : "";
   return (
-    // No card or title of its own (mak, 2026-11-09): it sits inside the Game
-    // flow tab's container, under the tab header. The id stays as an anchor.
-    `<section class="sct-rb-section sct-pc is-bare" id="possessions" aria-label="Play calling and possessions">` +
-    `<div class="sct-pc-row">${callingCard}${table}</div>` +
-    noteList +
-    driveChart +
-    // The fine print, one click away.
-    `<details class="sct-info"><summary>About these numbers</summary>` +
-    resultNote +
-    `<p class="sct-rb-note">Personnel groupings, average depth of target and pass rate over expected appear when the tracking feed is connected.</p>` +
-    `</details>` +
-    `</section>`
+    // The id stays as an anchor.
+    `<div class="sct-pc" id="possessions">` +
+    callingCard +
+    resultsCard +
+    drivesCard +
+    `</div>`
   );
 }
