@@ -866,10 +866,23 @@ function advancedModel(data: PlayerPageData, c: Career): AdvancedModel | null {
     // The share rows rank in the Outlook's usage field (WEB-035): said here,
     // beside the card's own pool, because the two counts differ.
     if (cur.shareField) {
-      const labels = cur.shareField.labels.map((l, i) => (i === 0 ? l : l.toLowerCase()));
-      const list = labels.length > 1 ? `${labels.slice(0, -1).join(", ")} and ${labels[labels.length - 1]}` : labels[0]!;
+      const sf = cur.shareField;
+      const join = (xs: string[]) => (xs.length > 1 ? `${xs.slice(0, -1).join(", ")} and ${xs[xs.length - 1]}` : xs[0]!);
+      // A field member with no figure for a metric (no snap count) is not
+      // ranked on it, so that row's count is smaller: say it beside the
+      // field rather than print one count for every row (2026-11-27).
+      const countOf = (i: number) => sf.ofs?.[i] || sf.of;
+      const full = sf.labels.filter((_, i) => countOf(i) === sf.of).map((l) => l.toLowerCase());
+      const fewer = sf.labels
+        .map((l, i) => ({ l: l.toLowerCase(), n: countOf(i) }))
+        .filter((x) => x.n !== sf.of)
+        .map((x) => `${x.l} among the ${x.n} of them with ${x.l === "snap share" ? "snap counts" : "that figure"}`);
       // Appended to the column's own note: notes line up with cols by index.
-      notes[notes.length - 1] += `; ${list.charAt(0).toLowerCase()}${list.slice(1)} among the ${cur.shareField.of} ${pos}s with ${cur.shareField.note}, the same field as his Outlook`;
+      // Outside the field (too few games yet) the rows read "Not ranked", and
+      // the note says why instead of "among the 0 WRs" (2026-11-27).
+      notes[notes.length - 1] += sf.of
+        ? `; ${join(full)} among the ${sf.of} ${pos}s with ${sf.note}, the same field as his Outlook${fewer.length ? ` (${join(fewer)})` : ""}`
+        : `; ${join(sf.labels.map((l) => l.toLowerCase()))} rank only ${pos}s with ${sf.note}, the same field as his Outlook, which he has not reached yet`;
     }
   }
   if (college) {
@@ -1322,10 +1335,11 @@ function renderFooter(data: PlayerPageData): string {
   return (
     `<footer class="scp-st-foot"><p>${escapeHtml(
       `Stats are official NFL regular-season data processed by StatChasers. Fantasy points use ${SCORING_WORDS[data.format]} scoring: ` +
-        `${rec}1 per 25 passing yards, 4 per passing TD, ${MINUS}1 per interception, 1 per 10 rushing or receiving yards and 6 per rushing or receiving TD.` +
-        // PPR and half-PPR are Sleeper's stored points (scoring.ts), which also
-        // count what the formula above leaves out.
-        (data.format === "standard" ? "" : " Two-point conversions and lost fumbles are counted too."),
+        `${rec}1 per 25 passing yards, 4 per passing TD, ${MINUS}1 per interception, 1 per 10 rushing or receiving yards, 6 per rushing or receiving TD, ` +
+        // Every weight of the house rule (scoring/house-rules.ts), in every
+        // format: the fumble, two-point and return weights were left unstated
+        // (and dropped for Standard) until 2026-11-27.
+        `2 per two-point conversion, ${MINUS}2 per fumble lost and 6 per return or fumble-recovery TD.`,
     )}</p></footer>`
   );
 }

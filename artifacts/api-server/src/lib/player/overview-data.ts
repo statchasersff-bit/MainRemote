@@ -86,7 +86,8 @@ function metersFromCard(position: string, card: AdvCard, usage: PlayerUsage | nu
   const pool = card.all?.length ? card.all : card.metrics;
   const meters: OverviewMeter[] = [];
   const fromLogs: string[] = [];
-  let share = false;
+  /** The target-share meter's field count, 0 when it has none. */
+  let share = 0;
   let fromCard = 0;
   for (const key of CARD_METERS[position] ?? []) {
     if (key.startsWith("log:")) {
@@ -98,7 +99,8 @@ function metersFromCard(position: string, card: AdvCard, usage: PlayerUsage | nu
     }
     const m = pool.find((x) => x.key === key && x.pct != null && x.value !== "-");
     if (!m) continue;
-    if (m.key === "tgts" && card.shareField) share = true;
+    // The target-share meter's own count: the field's per-metric counts can differ (2026-11-27).
+    if (m.key === "tgts" && card.shareField) share = m.of ?? card.shareField.of;
     fromCard++;
     meters.push({ key: m.key!, label: m.label, value: m.value, percentile: m.pct! });
   }
@@ -109,7 +111,7 @@ function metersFromCard(position: string, card: AdvCard, usage: PlayerUsage | nu
     parts.push(`Percentile among the ${card.qualifiedCount} qualified ${plural} on his Stats tab${card.qualifyNote ? ` (${card.qualifyNote})` : ""}`);
   }
   if (share && card.shareField) {
-    parts.push(`target share among the ${card.shareField.of} ${plural} with ${usage?.fieldNote ?? card.shareField.note}`);
+    parts.push(`target share among the ${share} ${plural} with ${usage?.fieldNote ?? card.shareField.note}`);
   }
   if (fromLogs.length) {
     const lead = fromCard ? "" : "Percentile: ";

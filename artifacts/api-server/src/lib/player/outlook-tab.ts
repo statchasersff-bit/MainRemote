@@ -1135,7 +1135,17 @@ function opportunityModel(m: Model, options: PlayerRenderOptions): OpportunityMo
   const teamPrefix = options.teamPathPrefix ?? "/team/";
   const q = options.linkQuery ?? "";
   const link = m.teamSlug ? { href: `${teamPrefix}${m.teamSlug}/usage/${q}`, text: `See the ${m.nickname ?? "team"} usage report` } : null;
-  const lede = `Through Week ${usage.throughWeek}, PPR. Expected points (xFP) is the fantasy value of the opportunities he is given; points over expected (FPOE) is what he has scored above or below that. Ranks are among qualifying ${posWord} league-wide.`;
+  // The field in words beside its count (WEB-035 re-check, 2026-11-27); a
+  // member with no snap count is not ranked on snap share, so say that count.
+  const counts = Object.values(usage.ranks).map((r) => r!.of);
+  const fieldOf = counts.length ? Math.max(...counts) : 0;
+  const snapOf = tiles.some((t) => t.label === "Snap share") ? uRank(m, "snapShare")?.of : undefined;
+  const field = fieldOf
+    ? `Ranks are among the ${fieldOf} ${posWord} with ${usage.fieldNote}${snapOf && snapOf !== fieldOf ? `; snap share among the ${snapOf} of them with snap counts` : ""}.`
+    : usage.fieldNote
+      ? `Ranks need ${usage.fieldNote}; he has not reached that line yet, so none are shown.`
+      : `Ranks are among qualifying ${posWord} league-wide.`;
+  const lede = `Through Week ${usage.throughWeek}, PPR. Expected points (xFP) is the fantasy value of the opportunities he is given; points over expected (FPOE) is what he has scored above or below that. ${field}`;
   return { lede, tiles, takes, link };
 }
 
