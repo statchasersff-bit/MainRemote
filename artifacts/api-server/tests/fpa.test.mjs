@@ -253,8 +253,21 @@ describe("fpa routes", () => {
     assert.equal(doc.querySelectorAll(".scf-row").length, 32, "the whole season's table");
     assert.equal(doc.querySelector("[data-scf-root]").getAttribute("data-kind"), "archive");
     assert.equal(doc.querySelector(".scf-season-link").textContent, `Current ${liveDoc.querySelector("[data-scf-root]").getAttribute("data-season")} data`);
-    assert.equal(doc.querySelector(".scf-faq"), null, "the FAQ belongs to the current page only");
-    assert.equal(doc.querySelector('script[type="application/ld+json"]'), null, "and so does its schema");
+    // WEB-030 (2026-11-27): the archive carries its own FAQ about its own
+    // season - coverage, method, its place in the next table - not the
+    // current page's answers at a second address, and nothing about a
+    // current week. The season before the current one has three questions.
+    const archiveQs = [...doc.querySelectorAll(".scf-faq-q")].map((q) => q.textContent.trim());
+    assert.equal(archiveQs.length, 3);
+    assert.equal(archiveQs[0], `What does the ${season} Fantasy Points Allowed table cover?`);
+    const liveQs = new Set([...liveDoc.querySelectorAll(".scf-faq-q")].map((q) => q.textContent.trim()));
+    for (const q of archiveQs) assert.ok(!liveQs.has(q), `"${q}" is not one of the current page's questions`);
+    const archiveFaqText = doc.querySelector(".scf-faq").textContent;
+    assert.doesNotMatch(archiveFaqText, /updated|this week|right now|the current table:/i, "no current-week language");
+    assert.match(archiveFaqText, /Weeks 1-17/, "names its coverage");
+    const archiveSchema = [...doc.querySelectorAll('script[type="application/ld+json"]')];
+    assert.equal(archiveSchema.length, 1, "one FAQPage, for its own questions");
+    assert.deepEqual(JSON.parse(archiveSchema[0].textContent).mainEntity.map((e) => e.name), archiveQs);
     assert.equal(doc.querySelectorAll(".scf-season-link").length, 1, "an archive links to the current table, not to itself");
 
     // The current season under its own name is the default table, and a season
@@ -421,6 +434,38 @@ describe("fpa routes", () => {
     }
   });
 
+  test("WEB-030: five distinct questions, every figure the answers quote read from the code", async () => {
+    requireData();
+    const res = await get("/fpa");
+    const doc = new JSDOM(res.body).window.document;
+    const questions = [...doc.querySelectorAll(".scf-faq-q")].map((q) => q.textContent.trim());
+    assert.deepEqual(questions, [
+      "What does Fantasy Points Allowed (FPA) measure?",
+      "How does the scoring format change FPA?",
+      "What is the difference between raw FPA and adjusted FPA (aFPA)?",
+      "How do games played, byes and last season affect the figure?",
+      "When is the FPA table updated?",
+    ]);
+    const answers = [...doc.querySelectorAll(".scf-faq-a")].map((a) => a.textContent.replace(/\s+/g, " "));
+    // Ranking basis: rank 1 = most allowed, ties by team code (rankFpaValues).
+    assert.match(answers[0], /Rank 1 has allowed the most points/);
+    assert.match(answers[0], /alphabetically by team abbreviation/);
+    // The house rules, receptions the only difference.
+    assert.match(answers[1], /0\.04 points per passing yard, 4 per passing touchdown, -1 per interception/);
+    assert.match(answers[1], /Half-PPR adds 0\.5 points per reception and PPR adds 1\./);
+    assert.match(answers[1], /opens in PPR/);
+    // The blend schedule as blend.ts applies it, and the table's own mix.
+    assert.match(answers[3], /25% after one week of games, 40% after two, 60% after three and 80% after four, then 2 percentage points more each week up to 90%/);
+    assert.match(answers[3], /Once a 12th week of games is in, \d{4} drops out and the table reads only the most recent 10 weeks/);
+    assert.match(answers[3], /The current table: (\d+% \d{4} baseline and \d+% \d{4} data|A rolling ten-week window|No \d{4} regular-season games)/);
+    // Not the table's values: no team named anywhere in the FAQ.
+    const faqText = doc.querySelector(".scf-faq").textContent;
+    for (const name of doc.querySelectorAll(".scf-team-name-full")) {
+      assert.ok(!faqText.includes(name.textContent.trim()), `the FAQ names no team (${name.textContent.trim()})`);
+    }
+    assert.doesNotMatch(faqText, /\u2014/, "no em dash");
+  });
+
   test("the other three tools are untouched", async () => {
     for (const [path, marker] of [
       ["/", "statchasers-news.js"],
@@ -540,7 +585,9 @@ describe("the embedded fpa fragment", () => {
       assert.equal(island.kind, "archive");
       assert.equal(island.title, `Fantasy Points Allowed by Position ${copy.archiveSeasons[0]} (Full Season)`);
       assert.equal(island.h1, `${copy.archiveSeasons[0]} Fantasy Points Allowed by Position`);
-      assert.doesNotMatch(archive.body, /scf-faq-data/);
+      // Its own FAQ island (WEB-030): the archive's questions, not the live page's.
+      const archiveIsland = JSON.parse(archive.body.match(/class="scf-faq-data">(.*?)<\/script>/s)[1]);
+      assert.equal(archiveIsland[0].q, `What does the ${copy.archiveSeasons[0]} Fantasy Points Allowed table cover?`);
     }
   });
 
@@ -576,7 +623,7 @@ describe("the embedded fpa fragment", () => {
 
     // The block itself does not fold - the questions are the index, and
     // somebody scanning for the one they arrived with has to see them without
-    // opening anything. Each ANSWER folds instead, which is what keeps nineteen
+    // opening anything. Each ANSWER folds instead, which is what keeps the
     // answers from stacking up under the table. The question sits in the
     // <summary>, so the outline is the same open or shut, and the answers stay
     // in the DOM either way: a crawler reads the DOM, not the open state.

@@ -84,7 +84,11 @@ if ( 'pageids' === $group ) {
 		// unrelated query argument, with an image an editor set, a pre-1.7.0
 		// team route (a 301), junk under the path (a 404), and the /nfl/ hub
 		// page the same plugin provisions (not the tool).
-		array( 'depth:hub', 'depth:hub?utm_source=x', 'depth:hub+thumb', 'depth:legacy', 'depth:invalid', 'depth:nfl-hub' )
+		array( 'depth:hub', 'depth:hub?utm_source=x', 'depth:hub+thumb', 'depth:legacy', 'depth:invalid', 'depth:nfl-hub' ),
+		// Fantasy points allowed (2026-11-27): the current table, the same
+		// with a format and view in the query (one canonical), the 2025
+		// archive, and a season with no table (a 404).
+		array( 'fpa:hub', 'fpa:hub?format=half&view=adjusted', 'fpa:2025', 'fpa:2001' )
 	);
 
 	foreach ( $routes as $route ) {
@@ -470,6 +474,67 @@ if ( 'sched' === $family ) {
 		$GLOBALS['hooks']['rank_math/opengraph/facebook/add_images'][] = $featured;
 		$GLOBALS['hooks']['rank_math/opengraph/twitter/add_images'][]  = $featured;
 	}
+} elseif ( 'fpa' === $family ) {
+	// Page 2094 on the live site: the current table at the page's own
+	// address, /2025/ (the rewrite's sc_fpa_season on the same page), and a
+	// season the API has no table for (a 404). The fragment carries the FAQ
+	// island the API ships (fpa-render.ts fpaFaq(): five questions on the
+	// current page, three on the archive) and the page copy.
+	$post->ID           = 2094;
+	$post->post_name    = 'fantasy-points-allowed-by-position';
+	$post->post_title   = 'Fantasy Points Allowed by Position';
+	$post->post_content = '[statchasers_fpa]';
+	$base_canonical     = get_permalink( 2094 );
+	$crumbs             = array( array( 'Home', SC_PID_HOME ), array( 'NFL', SC_PID_HOME . '/nfl/' ), array( 'Fantasy Points Allowed by Position', $base_canonical ) );
+	$fpa_archive        = 'hub' !== $which;
+	if ( $fpa_archive ) {
+		$GLOBALS['query'][ STATCHASERS_FPA_SEASON_VAR ] = $which;
+	}
+	if ( '2001' === $which ) {
+		// No table: the API answers 404 and the plugin has no backup.
+		$GLOBALS['http_code'] = 404;
+		$GLOBALS['http_body'] = '';
+	} else {
+		$copy = $fpa_archive
+			? array(
+				'title'       => "Fantasy Points Allowed by Position $which (Full Season)",
+				'h1'          => "$which Fantasy Points Allowed by Position",
+				'description' => "Fantasy points allowed over the full $which season.",
+				'updatedLine' => "Full $which season, Weeks 1-17",
+				'updatedIso'  => '',
+				'season'      => (int) $which,
+				'kind'        => 'archive',
+				'weekNumber'  => 17,
+			)
+			: array(
+				'title'          => 'Fantasy Points Allowed by Position 2026 (Weeks 1-11)',
+				'h1'             => 'Fantasy Points Allowed by Position: Weeks 1-11, 2026',
+				'description'    => 'Fantasy points allowed through Week 11 of 2026.',
+				'updatedLine'    => 'Updated Nov 26, through Week 11',
+				'updatedIso'     => '2026-11-26',
+				'updatedAt'      => '2026-11-26T22:04:29.821Z',
+				'season'         => 2026,
+				'kind'           => 'live',
+				'weekNumber'     => 11,
+				'archiveSeasons' => array( 2025 ),
+			);
+		$faq = array();
+		for ( $i = 1; $i <= ( $fpa_archive ? 3 : 5 ); $i++ ) {
+			$faq[] = array( 'q' => ( $fpa_archive ? "$which question $i?" : "FPA question $i?" ), 'a' => "Answer $i." );
+		}
+		$GLOBALS['http_body'] = '<div class="scf is-embed" data-scf-root="1" data-season="' . ( $fpa_archive ? $which : '2026' ) . '"><p>table</p>' .
+			'<details class="scf-faq-item"><summary><h3 class="scf-faq-q">' . $faq[0]['q'] . '</h3></summary></details></div>' .
+			'<script type="application/json" class="scf-faq-data">' . json_encode( $faq ) . '</script>' .
+			'<script type="application/json" class="scf-page-data">' . json_encode( $copy ) . '</script>';
+		// A real /embed/fpa fragment instead of the fixture, for the
+		// before/after report (docs/FPA-AUDIT-WEB-030-021-2026-11-27.md):
+		// STATCHASERS_FPA_FRAGMENT=<file>; its page copy replaces $copy.
+		$fpa_fragment = (string) getenv( 'STATCHASERS_FPA_FRAGMENT' );
+		if ( '' !== $fpa_fragment && is_readable( $fpa_fragment ) ) {
+			$GLOBALS['http_body'] = (string) file_get_contents( $fpa_fragment );
+			$copy                 = statchasers_fpa_parse_copy( $GLOBALS['http_body'] );
+		}
+	}
 } else {
 	// An ordinary article carrying the tools' query words.
 	$post->ID           = 92;
@@ -477,7 +542,7 @@ if ( 'sched' === $family ) {
 	$post->post_content = '<p>Pick up these players.</p>';
 	$base_canonical     = SC_PID_HOME . '/waiver-wire-week-5/';
 	$crumbs             = array( array( 'Home', SC_PID_HOME ), array( 'Waiver Wire Week 5', $base_canonical ) );
-	$GLOBALS['query']   = array( 'sc_sched_week' => '12', 'sc_sos_page' => 'rb', 'sc_stats_pos' => 'wr', 'sc_rank_pos' => 'rb' );
+	$GLOBALS['query']   = array( 'sc_sched_week' => '12', 'sc_sos_page' => 'rb', 'sc_stats_pos' => 'wr', 'sc_rank_pos' => 'rb', 'sc_fpa_season' => '2025' );
 	$_GET               = array( 'tab' => 'player', 'scoring' => 'std' );
 }
 
@@ -500,6 +565,11 @@ $GLOBALS['wp_query'] = new class() {
 // SCDC_Route turns junk under the tool's path into a 404 on `wp`
 // (send_404(), which needs a real WP_Query); the same outcome here.
 if ( 'depth' === $family && 'invalid' === $which && 'invalid' === SCDC_Route::type() ) {
+	$GLOBALS['wp_query']->set_404();
+}
+// The same for an FPA season with no table: statchasers_fpa_season_404() on
+// `wp` at 0 sets the 404 on the real WP_Query, which this stand-in is not.
+if ( 'fpa' === $family && statchasers_fpa_season_not_found() ) {
 	$GLOBALS['wp_query']->set_404();
 }
 foreach ( $GLOBALS['hooks']['template_redirect'] ?? array() as $fn ) {
@@ -846,6 +916,18 @@ if ( 'ros' === $family && 'xyz' === $which ) {
 	return;
 }
 
+if ( 'fpa' === $family && '2001' === $which ) {
+	is( (bool) ( $GLOBALS['page']['is404'] ?? false ), true, "$label: a season with no table is a 404" );
+	is( statchasers_page_identity_family(), '', "$label: not a valid route" );
+	is( apply_filters( 'rank_math/schema/add_global_entities', false ), false, "$label: the plugin does not opt it in" );
+	is( count( $fb ) + count( $tw ), 0, "$label: no share image" );
+	is( isset( $graph['primaryImage'] ), false, "$label: no primaryImageOfPage" );
+	is( count( $graph['BreadcrumbList']['itemListElement'] ), 3, "$label: no season crumb" );
+	is( count( $typed( 'FAQPage' ) ), 0, "$label: no FAQ" );
+	is( $canonical, false, "$label: no canonical (WEB-013)" );
+	return;
+}
+
 if ( 'ros' === $family && $thumb ) {
 	is( statchasers_page_identity_family(), 'ros', "$label: a rest-of-season route" );
 	is( count( $fb ), 1, "$label: one og:image" );
@@ -870,6 +952,11 @@ if ( 'sched' === $family ) {
 	$want_title     = $copy['title'] . ' | StatChasers';
 	$want_faq       = 4;
 	is( statchasers_page_identity_family(), 'ros', "$label: a rest-of-season route" );
+} elseif ( 'fpa' === $family ) {
+	$want_canonical = 'hub' === $which ? $base_canonical : SC_PID_HOME . "/nfl/fantasy-points-allowed-by-position/$which/";
+	$want_title     = $copy['title'];
+	$want_faq       = 'hub' === $which ? 5 : 3;
+	is( statchasers_page_identity_family(), 'fpa', "$label: a fantasy points allowed route" );
 } else {
 	$want_canonical = 'hub' === $which ? $base_canonical : SC_PID_HOME . "/nfl/nfl-player-stats/$which/";
 	$want_title     = $copy['title'] . ' | StatChasers';
@@ -919,6 +1006,45 @@ if ( 'stats' === $family && 'hub' !== $which ) {
 if ( 'ros' === $family && 'hub' !== $which ) {
 	is( $last['item']['name'] ?? '', $copy['h1'], "$label: the last crumb is the board's H1" );
 	is( $bcs[0]['itemListElement'][2]['item']['@id'] ?? '', $base_canonical, "$label: after the rankings page" );
+}
+if ( 'fpa' === $family ) {
+	if ( 'hub' !== $which ) {
+		is( $last['item']['name'] ?? '', $copy['h1'], "$label: the last crumb is the archive's H1" );
+		is( $bcs[0]['itemListElement'][2]['item']['@id'] ?? '', $base_canonical, "$label: after the FPA page" );
+		is( isset( $page['dateModified'] ), false, "$label: a finished season carries no dateModified" );
+	} else {
+		is( $page['dateModified'] ?? '', '2026-11-26', "$label: dateModified is the data's, on Rank Math's WebPage" );
+	}
+	is( count( $typed( 'FAQPage' ) ), 1, "$label: one FAQ entity" );
+	is( count( $typed( 'WebPage' ) ), 0, "$label: and no second WebPage beside it (statchasers-fpa.php's own page node stays out)" );
+	$fpa_qs = array_map(
+		static function ( $q ) {
+			return $q['name'] ?? '';
+		},
+		$page['mainEntity'] ?? array()
+	);
+	$fpa_real = '' !== (string) getenv( 'STATCHASERS_FPA_FRAGMENT' );
+	if ( ! $fpa_real ) {
+		is( $fpa_qs[0] ?? '', 'hub' === $which ? 'FPA question 1?' : "$which question 1?", "$label: the questions are this season's own" );
+	}
+	// STATCHASERS_FPA_RENDER_OUT=<file>: the printed table plus the graph, as
+	// the WordPress page would carry them, for scripts/fpa-faq-schema-check.mjs.
+	$fpa_out = (string) getenv( 'STATCHASERS_FPA_RENDER_OUT' );
+	if ( '' !== $fpa_out ) {
+		file_put_contents(
+			$fpa_out,
+			'<!doctype html><html><head><link rel="canonical" href="' . $canonical . '"><meta property="og:url" content="' . $og_url . '">' .
+				'<meta property="og:image" content="' . ( $fb[0]['url'] ?? '' ) . '"><meta name="twitter:image" content="' . ( $tw[0]['url'] ?? '' ) . '">' .
+				'<script type="application/ld+json" class="rank-math-schema">' . wp_json_encode( $json ) . '</script></head><body>' .
+				statchasers_fpa_shortcode( array() ) . '</body></html>'
+		);
+	}
+	// The fallback printer: nothing beside Rank Math, only the FAQPage without it.
+	$GLOBALS['hooks']['statchasers_news_graph_provider_present'] = array( static function () { return true; } );
+	ob_start();
+	statchasers_fpa_print_fallback_schema();
+	is( (string) ob_get_clean(), '', "$label: the fallback printer prints nothing with Rank Math present" );
+	unset( $GLOBALS['hooks']['statchasers_news_graph_provider_present'] );
 }
 is( $page['primaryImageOfPage']['@id'] ?? '', STATCHASERS_PAGE_IDENTITY_IMAGE['url'], "$label: primaryImageOfPage is the share image" );
 is( isset( $by_id[ STATCHASERS_PAGE_IDENTITY_IMAGE['url'] ] ), true, "$label: and that ImageObject is in the graph" );
