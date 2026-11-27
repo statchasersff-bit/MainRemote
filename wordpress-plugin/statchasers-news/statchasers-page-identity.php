@@ -126,6 +126,33 @@
  * hub prints no FAQ schema, so its page entity stays a WebPage. Its trail
  * (Home > NFL > the page) is Rank Math's own and is left as it is.
  *
+ * ## Fantasy points allowed (WEB-021, 2026-11-27)
+ *
+ * The FPA page (page 2094, /nfl/fantasy-points-allowed-by-position/) and its
+ * season archives (/2025/, the rewrite's sc_fpa_season on the same page) are
+ * the seventh family, 'fpa'. Live on 2026-11-27 the current page's graph was a
+ * WebPage statchasers-fpa.php had built itself (no isPartOf, no publisher), a
+ * BreadcrumbList and a second, id-less FAQPage of nineteen questions; /2025/
+ * had a BreadcrumbList ending at the base page and nothing else. Both already
+ * printed the brand card as og:image (Rank Math's site default, the same media
+ * 7458 this file hands over), so the image part changes nothing they print.
+ *
+ * - Global entities on, so Rank Math builds the Organization, the WebSite and
+ *   the WebPage at the canonical statchasers-fpa.php already sets per season:
+ *   the base URL on the current page, /2025/ on the archive. Each season is
+ *   its own WebPage, @id and url its own address, name its own title.
+ * - statchasers-fpa.php's FAQPage (priority 20, from the fragment's
+ *   scf-faq-data island, the same list the visible FAQ is printed from) folds
+ *   into that WebPage at 99. Its own page node (statchasers_fpa_modified_schema)
+ *   is now only a fallback for a graph with no page node; with one present it
+ *   puts dateModified on Rank Math's WebPage and adds nothing.
+ * - The archive is appended as the last crumb at its own address
+ *   (statchasers_fpa_breadcrumbs), named with its H1.
+ * - A season with no table is a 404 (statchasers_fpa_season_404) and gets
+ *   none of this.
+ *
+ * tests/smoke-page-identity.php models both seasons and the 404.
+ *
  * @package StatChasers\News
  */
 
@@ -163,7 +190,7 @@ const STATCHASERS_PAGE_IDENTITY_DEPTH_IMAGE = array(
 
 /**
  * Which family this request is a valid route of: 'schedule', 'sos', 'stats',
- * 'ros', 'depth', 'team' or ''.
+ * 'ros', 'depth', 'fpa', 'team' or ''.
  *
  * Valid means the page that mounts the tool, rendered as a page: a week the
  * season does not have is a 404 (statchasers-schedule.php's
@@ -201,6 +228,13 @@ function statchasers_page_identity_family(): string {
 	// 404s on `wp`, before the head).
 	if ( class_exists( 'SCDC_Route' ) && SCDC_Route::is_main() ) {
 		return 'depth';
+	}
+	// Fantasy points allowed: the page and its season archives (/2025/). A
+	// season with no table is a 404 by now (statchasers_fpa_season_404, on
+	// `wp` at 0) and was answered above, and is asked again here in case
+	// anything ever clears that 404; ?season= and /2026/ 301 first.
+	if ( function_exists( 'statchasers_fpa_post_has_shortcode' ) && statchasers_fpa_post_has_shortcode() ) {
+		return function_exists( 'statchasers_fpa_season_not_found' ) && statchasers_fpa_season_not_found() ? '' : 'fpa';
 	}
 	if ( statchasers_page_identity_is_team() ) {
 		return 'team';
@@ -242,10 +276,10 @@ function statchasers_page_identity_image(): ?array {
 	}
 	/**
 	 * Filters the share image of a schedule, SOS, team, player stats,
-	 * rest-of-season rankings or depth charts route. Return null for none.
+	 * rest-of-season rankings, depth charts or fantasy points allowed route. Return null for none.
 	 *
 	 * @param array  $image  url, width, height, alt, type.
-	 * @param string $family 'schedule', 'sos', 'team', 'stats', 'ros' or 'depth'.
+	 * @param string $family 'schedule', 'sos', 'team', 'stats', 'ros', 'depth' or 'fpa'.
 	 */
 	$image = apply_filters(
 		'statchasers_page_identity_image',
@@ -468,3 +502,34 @@ function statchasers_ros_rankings_breadcrumbs( $crumbs ) {
 	return $crumbs;
 }
 add_filter( 'rank_math/frontend/breadcrumb/items', 'statchasers_ros_rankings_breadcrumbs', 20 );
+
+/**
+ * A fantasy points allowed season archive as the last breadcrumb, at its own
+ * address.
+ *
+ * /2025/ resolves to the FPA page, so Rank Math's trail ended at "Fantasy
+ * Points Allowed by Position" at the base address while the archive's
+ * canonical, title and H1 said 2025 (live 2026-11-27). Same fix as
+ * statchasers_sos_breadcrumbs(), scoped by statchasers_fpa_request_season():
+ * the FPA page only, an archive address only. The base page keeps its trail
+ * as it is. The crumb is the archive's H1, as an SOS sub-page's is.
+ *
+ * @param array<int,array<int|string,mixed>> $crumbs Rank Math's crumbs.
+ * @return array<int,array<int|string,mixed>>
+ */
+function statchasers_fpa_breadcrumbs( $crumbs ) {
+	if ( ! is_array( $crumbs ) || is_404() || ! function_exists( 'statchasers_fpa_request_season' ) ) {
+		return $crumbs;
+	}
+	$season = statchasers_fpa_request_season();
+	if ( $season <= 0 ) {
+		return $crumbs;
+	}
+	$name = function_exists( 'statchasers_fpa_h1' ) ? statchasers_fpa_h1() : '';
+	if ( '' === $name ) {
+		$name = sprintf( '%d Fantasy Points Allowed by Position', $season );
+	}
+	$crumbs[] = array( $name, statchasers_fpa_page_url( $season ), 'hide_in_schema' => false );
+	return $crumbs;
+}
+add_filter( 'rank_math/frontend/breadcrumb/items', 'statchasers_fpa_breadcrumbs', 20 );

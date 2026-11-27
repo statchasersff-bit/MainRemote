@@ -38,7 +38,9 @@
  */
 
 import { escapeHtml, escapeJsonLd } from "./render";
-import { DEFAULT_FPA_FORMAT } from "./fpa/blend";
+import { DEFAULT_FPA_FORMAT, currentSeasonWeight } from "./fpa/blend";
+import { ROLLING_WINDOW_WEEKS } from "./fpa/math";
+import { HOUSE_RULES, RECEPTION_POINTS } from "./scoring/house-rules";
 import type { FpaRow, FpaTableData, FpaView } from "./fpa/fpa-data";
 import { FANTASY_POSITIONS, type FantasyPosition, type ScoringFormat } from "./fpa/nflverse";
 import { fpaPageCopy, fpaScopeLabel, teamLabel, type FpaPageCopy } from "./fpa-seo";
@@ -487,211 +489,221 @@ function renderLegend(): string {
  * Below the table, not above it. Somebody who arrived from a search for "what
  * is adjusted fantasy points allowed" gets their answer either way; somebody
  * who came to read the table should not have to scroll past an essay first.
+ *
+ * Five questions on the current page, three on a finished season's (WEB-030,
+ * 2026-11-27). It was nineteen, most of them one question asked per position
+ * ("Which teams allow the most fantasy points to RBs?" and so on) with answers
+ * that only said to look at the table. What is left is what the table cannot
+ * say about itself: what the number is, how scoring moves it, what the
+ * adjustment does, what a bye and last season do to it, and when it changes.
+ *
+ * Built from the table rather than written as a constant, for two reasons.
+ * The season names are the table's own, so an archive's questions talk about
+ * its season and nothing on it mentions a current week. And the figures the
+ * answers quote - the scoring coefficients, the blend weights, the rolling
+ * window - are read from the code that applies them (house-rules.ts,
+ * blend.ts, math.ts), so the prose cannot describe arithmetic the ingest does
+ * not do. The visible FAQ and the FAQPage data both come from this one list.
  */
-const FAQ: readonly (readonly [string, readonly string[]])[] = [
-  [
-    "What is Fantasy Points Allowed by position?",
-    [
-      "Fantasy Points Allowed by position shows how many fantasy points each NFL " +
-        "defense allows to opposing quarterbacks, running backs, wide receivers " +
-        "and tight ends.",
-      "It helps fantasy managers identify favorable and difficult weekly matchups " +
-        "by position.",
-    ],
-  ],
-  [
-    "Which NFL teams allow the most fantasy points by position?",
-    [
-      "Teams near the top of the Fantasy Points Allowed rankings have surrendered " +
-        "the most fantasy production to that position. The table opens sorted by " +
-        "OFF, so the softest overall matchups are already at the top.",
-      "Sort by the QB, RB, WR or TE column to put the defenses that have been the " +
-        "most favorable matchups for that one position first.",
-    ],
-  ],
-  [
-    "Which NFL teams allow the fewest fantasy points by position?",
-    [
-      "Teams allowing the fewest fantasy points to a position have generally been " +
-        "tougher fantasy matchups. They rank nearest 32 and carry the red tints in " +
-        "the table.",
-      "A low FPA can help identify difficult matchups, but player workload, talent, " +
-        "injuries and game environment should still be considered.",
-    ],
-  ],
-  [
-    "Which teams allow the most fantasy points to RBs?",
-    [
-      "Use the RB Fantasy Points Allowed rankings to see which NFL defenses have " +
-        "surrendered the most fantasy production to opposing running backs.",
-      "You can compare teams in either the FPA or aFPA view and select the scoring " +
-        "format that matches your league.",
-    ],
-  ],
-  [
-    "Which teams allow the most fantasy points to WRs?",
-    [
-      "The WR Fantasy Points Allowed rankings show which defenses have allowed the " +
-        "most fantasy production to opposing wide receivers.",
-      "This can help identify favorable wide receiver matchups for weekly start/sit " +
-        "decisions.",
-    ],
-  ],
-  [
-    "Which teams allow the most fantasy points to QBs?",
-    [
-      "The QB Fantasy Points Allowed rankings show which NFL defenses have allowed " +
-        "the most fantasy production to opposing quarterbacks.",
-      "A higher FPA generally indicates a more favorable quarterback matchup.",
-    ],
-  ],
-  [
-    "Which teams allow the most fantasy points to TEs?",
-    [
-      "The TE Fantasy Points Allowed rankings show which defenses have surrendered " +
-        "the most fantasy production to opposing tight ends.",
-      "Because tight end production can be volatile, matchup data can be especially " +
-        "useful when choosing between similarly projected players.",
-    ],
-  ],
-  [
-    "What does FPA mean in fantasy football?",
-    [
-      "FPA stands for Fantasy Points Allowed.",
-      "It measures the fantasy production an NFL defense has allowed to opposing " +
-        "players, and is usually broken down by position.",
-    ],
-  ],
-  [
-    "Is a higher Fantasy Points Allowed number better?",
-    [
-      "Generally, yes. A higher FPA means a defense has allowed more fantasy points " +
-        "to that position, which usually represents a more favorable matchup.",
-      "A lower FPA usually indicates a more difficult matchup.",
-    ],
-  ],
-  [
-    "What is Adjusted Fantasy Points Allowed?",
-    [
-      "Adjusted Fantasy Points Allowed, or aFPA, accounts for the strength of the " +
-        "opponents a defense has faced.",
-      "A defense that has faced several elite offenses may have a high raw FPA even " +
-        "if the defense itself is not particularly weak. Adjusted FPA adds that " +
-        "opponent context to provide a better view of matchup difficulty.",
-    ],
-  ],
-  [
-    "What is the difference between Raw FPA and Adjusted FPA?",
-    [
-      "Raw FPA measures how many fantasy points a defense has actually allowed. " +
-        "Adjusted FPA accounts for the quality of the opponents that produced those " +
-        "points.",
-      "Raw FPA tells you what happened. Adjusted FPA helps provide context for why " +
-        "it happened. The View switch above the table holds both, labeled FPA and " +
-        "aFPA.",
-    ],
-  ],
-  [
-    "How do I use Fantasy Points Allowed for start/sit decisions?",
-    [
-      "Fantasy Points Allowed can help separate close lineup decisions.",
-      "If two players have similar projections and expected workloads, the player " +
-        "facing a defense that allows more fantasy points to his position may have " +
-        "the more favorable matchup. FPA should be used alongside projections, " +
-        "usage, injuries and game environment rather than as the only factor.",
-    ],
-  ],
-  [
-    "Can I see Fantasy Points Allowed for PPR, Half-PPR and Standard scoring?",
-    [
-      "Yes. Fantasy Points Allowed changes with the scoring format, because " +
-        "receptions are worth different amounts in PPR, Half-PPR and Standard " +
-        "leagues.",
-      "Use the scoring controls above the table to select the format that matches " +
-        "your league before comparing defensive matchups.",
-    ],
-  ],
-  [
-    "Does Fantasy Points Allowed predict future fantasy performance?",
-    [
-      "Not by itself.",
-      "Fantasy Points Allowed describes how defenses have performed against a " +
-        "position so far. Future results also depend on player usage, injuries, " +
-        "offensive strength, game script and other factors. FPA is best used as a " +
-        "matchup indicator rather than a standalone fantasy projection.",
-    ],
-  ],
-  [
-    "How are Fantasy Points Allowed rankings calculated?",
-    [
-      "Teams are ranked by the amount of fantasy production they allow at each " +
-        "position. StatChasers tracks FPA separately for quarterbacks, running " +
-        "backs, wide receivers and tight ends, then ranks every NFL defense against " +
-        "the rest of the league.",
-      "Rank 1 is the most points allowed, which is the softest matchup, and rank 32 " +
-        "is the fewest.",
-    ],
-  ],
-  [
-    "Why are early-season FPA rankings blended with last season?",
-    [
-      "Early in the NFL season, one or two games can create misleading rankings.",
-      "StatChasers uses the previous season as a preseason baseline and gradually " +
-        "increases the weight of current-season data as the sample becomes more " +
-        "reliable. The note above the table always says what the figures currently " +
-        "are a mix of.",
-    ],
-  ],
-  [
-    "When does current-season data fully replace the preseason baseline?",
-    [
-      "The weighting changes throughout the season. Early weeks use a blend of the " +
-        "previous season and current results, while later weeks rely increasingly " +
-        "on current-season and recent rolling data.",
-    ],
-  ],
-  [
-    "What does OFF mean in the table?",
-    [
-      "OFF represents the overall fantasy production allowed by each defense across " +
-        "the tracked fantasy positions. It provides a quick way to compare the " +
-        "general strength or weakness of each defensive matchup.",
-    ],
-  ],
-  [
-    "How often are Fantasy Points Allowed rankings updated?",
-    [
-      "The rankings should be updated as new NFL games are completed, so that both " +
-        "raw and adjusted FPA reflect the latest available results and matchup data.",
-    ],
-  ],
-] as const;
 
-function renderFaq(): string {
+export interface FpaFaqItem {
+  q: string;
+  /** One answer, as paragraphs. */
+  a: readonly string[];
+}
+
+/** "0.5" or "1", never "1.0". */
+function points(value: number): string {
+  return String(Math.round(value * 100) / 100);
+}
+
+/** The scoring rules every format shares, as one clause. */
+function sharedScoring(): string {
+  const r = HOUSE_RULES;
+  return (
+    `${points(r.passYd)} points per passing yard, ${points(r.passTd)} per passing touchdown, ` +
+    `${points(r.passInt)} per interception, ${points(r.rushYd)} per rushing or receiving yard, ` +
+    `${points(r.rushTd)} per rushing or receiving touchdown, ${points(r.twoPt)} per two-point ` +
+    `conversion and ${points(r.fumLost)} per fumble lost`
+  );
+}
+
+/** The first week count at which the current season stands alone (the rolling window). */
+function blendDropWeek(): number {
+  for (let week = 1; week <= 18; week++) {
+    if (currentSeasonWeight(week) >= 1) return week;
+  }
+  return 18;
+}
+
+/**
+ * The blend as a schedule: the weight of the current season after each of
+ * the first four weeks, the weight it climbs to, and the week the previous
+ * season drops out. Read off currentSeasonWeight(), not retyped.
+ */
+function blendSchedule(season: number, baseline: number): string {
+  const pct = (week: number) => Math.round(currentSeasonWeight(week) * 100);
+  const dropWeek = blendDropWeek();
+  let cap = 0;
+  for (let week = 1; week < dropWeek; week++) cap = Math.max(cap, pct(week));
+  const step = pct(5) - pct(4);
+  return (
+    `Early in the season a game or two is a small sample, so the ${season} figure is ` +
+    `blended with the ${baseline} full-season figure (Weeks 1-17). ${season} games count for ` +
+    `${pct(1)}% after one week of games, ${pct(2)}% after two, ${pct(3)}% after three and ` +
+    `${pct(4)}% after four, then ${step} percentage points more each week up to ${cap}%. ` +
+    `Once a ${ordinal(dropWeek)} week of games is in, ${baseline} drops out and the table reads ` +
+    `only the most recent ${ROLLING_WINDOW_WEEKS} weeks of ${season} games.`
+  );
+}
+
+/** The current page's questions. */
+function liveFaq(data: FpaTableData): FpaFaqItem[] {
+  const season = data.season;
+  const baseline = data.baselineSeason;
+  return [
+    {
+      q: "What does Fantasy Points Allowed (FPA) measure?",
+      a: [
+        "Fantasy Points Allowed is the fantasy production an NFL defense has given up to one " +
+          "position, per game it has played: the points scored against it by opposing " +
+          "quarterbacks, running backs, wide receivers or tight ends, added up for each position " +
+          "and divided by that defense's games. OFF is the four positions added together.",
+        "Every column is ranked across all 32 defenses. Rank 1 has allowed the most points, the " +
+          "softest matchup, and rank 32 the fewest, the toughest. Two defenses on the same figure " +
+          "are ordered alphabetically by team abbreviation.",
+      ],
+    },
+    {
+      q: "How does the scoring format change FPA?",
+      a: [
+        `Only receptions are scored differently. All three formats count ${sharedScoring()}. ` +
+          `Half-PPR adds ${points(RECEPTION_POINTS.half)} points per reception and PPR adds ` +
+          `${points(RECEPTION_POINTS.ppr)}.`,
+        "So the formats differ most at the positions that catch the most passes, and a defense " +
+          "that gives up a lot of catches can rank softer in PPR than in Standard. The table " +
+          `opens in ${FORMAT_LABELS[DEFAULT_FPA_FORMAT]}; the scoring control above it switches format.`,
+      ],
+    },
+    {
+      q: `What is the difference between raw FPA and adjusted FPA (${VIEW_LABELS.adjusted})?`,
+      a: [
+        "Raw FPA is what a defense has actually allowed per game. Adjusted FPA corrects that " +
+          "figure for the offenses it faced: for each position, every opponent's own fantasy " +
+          "points per game at that position are averaged over the games the defense played (a " +
+          "team faced twice counts twice), and the gap between that average and the league " +
+          "average for the position is subtracted from the raw figure.",
+        "A defense whose opponents averaged 2 points a game above the league average at wide " +
+          "receiver has 2 points taken off its raw WR figure; one that faced below-average " +
+          "offenses has the difference added. The View switch above the table shows either, " +
+          `labeled ${VIEW_LABELS.raw} and ${VIEW_LABELS.adjusted}.`,
+      ],
+    },
+    {
+      q: "How do games played, byes and last season affect the figure?",
+      a: [
+        "Every figure is per game the defense played, so a bye is not a game and costs nothing: " +
+          "a defense that has had its bye is compared on the same terms as one that has not. The " +
+          "Games column shows how many games the current figure covers.",
+        blendSchedule(season, baseline),
+        `The current table: ${data.methodology}`,
+      ],
+    },
+    {
+      q: "When is the FPA table updated?",
+      a: [
+        "The table is recalculated after NFL games are played, from each game's published player " +
+          "stats. The line under the page heading gives the date of the last update and the last " +
+          "week the figures hold in full, and names any games already counted from a week still " +
+          "being played.",
+      ],
+    },
+  ];
+}
+
+/** A finished season's questions: its coverage, its method, its place in the next season's table. */
+function archiveFaq(data: FpaTableData): FpaFaqItem[] {
+  const season = data.season;
+  const through = data.weekNumber ?? 17;
+  const items: FpaFaqItem[] = [
+    {
+      q: `What does the ${season} Fantasy Points Allowed table cover?`,
+      a: [
+        `The complete ${season} NFL regular season, Weeks 1-${through}, for all 32 defenses: ` +
+          "fantasy points allowed per game to quarterbacks, running backs, wide receivers and " +
+          "tight ends, with OFF as the four added together. Week 18 is left out, as it is from " +
+          "the current table, because so many starters rest in the final week.",
+        `Every figure is ${season} data only, with nothing blended in from another season, and ` +
+          "the season is over, so these are its final figures rather than a running total.",
+      ],
+    },
+    {
+      q: `How are the ${season} figures and ranks calculated?`,
+      a: [
+        "The same way as the current table, without the blend. Each figure is the points a " +
+          "position scored against the defense, divided by the games that defense played in " +
+          `Weeks 1-${through}, so a bye does not count as a game. Adjusted FPA ` +
+          `(${VIEW_LABELS.adjusted}) then takes out the strength of the offenses faced: the gap ` +
+          "between those opponents' average production at the position and the league average " +
+          "is subtracted.",
+        "Rank 1 allowed the most points and rank 32 the fewest, with ties ordered by team " +
+          "abbreviation.",
+      ],
+    },
+  ];
+  // Only the season straight before the current one is its baseline
+  // (FPA_BASELINE_SEASON, 2025 by default); an older archive says nothing
+  // about a table it never fed.
+  if (season === data.currentSeason - 1) {
+    const next = data.currentSeason;
+    items.push({
+      q: `How is the ${season} season used in the ${next} table?`,
+      a: [
+        `It is the ${next} table's baseline. Before any ${next} games are played, the current ` +
+          `table is these ${season} figures in full; as ${next} weeks are played, ${next} games ` +
+          `count for more each week, and once a ${ordinal(blendDropWeek())} week of ${next} games ` +
+          `is in, ${season} drops out and the current table reads ${next} games only.`,
+      ],
+    });
+  }
+  return items;
+}
+
+/** The questions this table's page carries: the one list the markup and the schema read. */
+export function fpaFaq(data: FpaTableData): FpaFaqItem[] {
+  return data.kind === "live" ? liveFaq(data) : archiveFaq(data);
+}
+
+function renderFaq(data: FpaTableData, items: readonly FpaFaqItem[]): string {
+  if (items.length === 0) return "";
   // One fold per question, not one around the lot. The questions are the index
   // - somebody scanning for the one they arrived with has to see them without
-  // opening anything - while nineteen ANSWERS below the table is the wall this
-  // fold exists to prevent. So the questions show and the answers are shut.
-  // Indexed either way: a crawler reads the DOM, not the open state.
-  const items = FAQ.map(
-    ([question, paragraphs]) =>
-      `<details class="scf-faq-item">` +
-      `<summary class="scf-faq-q-row">` +
-      `<h3 class="scf-faq-q">${escapeHtml(question)}</h3>` +
-      `</summary>` +
-      // One .scf-faq-a per question even when the answer runs to two
-      // paragraphs: the block is the answer, and the <p>s inside it are its
-      // shape. A second sibling .scf-faq-a would be a second answer.
-      `<div class="scf-faq-a">` +
-      paragraphs.map((text) => `<p>${escapeHtml(text)}</p>`).join("") +
-      `</div>` +
-      `</details>`,
-  ).join("");
+  // opening anything - while a run of open answers below the table is the wall
+  // this fold exists to prevent. So the questions show and the answers are
+  // shut. Indexed either way: a crawler reads the DOM, not the open state.
+  const body = items
+    .map(
+      (item) =>
+        `<details class="scf-faq-item">` +
+        `<summary class="scf-faq-q-row">` +
+        `<h3 class="scf-faq-q">${escapeHtml(item.q)}</h3>` +
+        `</summary>` +
+        // One .scf-faq-a per question even when the answer runs to two
+        // paragraphs: the block is the answer, and the <p>s inside it are its
+        // shape. A second sibling .scf-faq-a would be a second answer.
+        `<div class="scf-faq-a">` +
+        item.a.map((text) => `<p>${escapeHtml(text)}</p>`).join("") +
+        `</div>` +
+        `</details>`,
+    )
+    .join("");
 
+  const title =
+    data.kind === "archive" ? `${data.season} Fantasy Points Allowed FAQ` : "Fantasy Points Allowed FAQ";
   return (
     `<section class="scf-faq">` +
-    `<h2 class="scf-faq-title">Fantasy Points Allowed FAQ</h2>` +
-    `<div class="scf-faq-body">${items}</div>` +
+    `<h2 class="scf-faq-title">${escapeHtml(title)}</h2>` +
+    `<div class="scf-faq-body">${body}</div>` +
     `</section>`
   );
 }
@@ -723,16 +735,17 @@ function renderFaq(): string {
  * describes itself only when embedded is a page whose structured data nobody
  * can check without WordPress in front of it.
  */
-function renderFaqSchema(options: FpaRenderOptions): string {
-  const items = FAQ.map(([question, paragraphs]) => ({
-    q: question,
-    a: paragraphs.join(" "),
+function renderFaqSchema(items: readonly FpaFaqItem[], options: FpaRenderOptions): string {
+  if (items.length === 0) return "";
+  const entries = items.map((item) => ({
+    q: item.q,
+    a: item.a.join(" "),
   }));
 
   if (options.embed) {
     return (
       `<script type="application/json" class="scf-faq-data">` +
-      escapeJsonLd(JSON.stringify(items)) +
+      escapeJsonLd(JSON.stringify(entries)) +
       `</script>`
     );
   }
@@ -743,7 +756,7 @@ function renderFaqSchema(options: FpaRenderOptions): string {
       JSON.stringify({
         "@context": "https://schema.org",
         "@type": "FAQPage",
-        mainEntity: items.map((entry) => ({
+        mainEntity: entries.map((entry) => ({
           "@type": "Question",
           name: entry.q,
           acceptedAnswer: { "@type": "Answer", text: entry.a },
@@ -1016,10 +1029,11 @@ export function renderFpaPage(
   rail: FpaRail = { teaser: null },
 ): string {
   const copy = fpaPageCopy(data);
-  // The FAQ describes fantasy points allowed in general, and the current page
-  // carries it. An archive page repeating the nineteen answers would be the
-  // same copy at a second address, so it links to Related and stops there.
-  const live = data.kind === "live";
+  // One list for the visible FAQ and its schema. The current page's questions
+  // describe the live table; an archive's describe its own season (coverage,
+  // method, its place in the next table) rather than repeating the current
+  // page's answers at a second address (WEB-030, 2026-11-27).
+  const faq = fpaFaq(data);
   return (
     `<div class="scf${options.embed ? " is-embed" : ""}" data-scf-root="1"` +
     ` data-season="${escapeHtml(String(data.season))}"` +
@@ -1048,11 +1062,11 @@ export function renderFpaPage(
     `</div>` +
     // The Related links block (mak, 2026-10-10) was removed 2026-11-04: the
     // rail's cards are the links now.
-    (live ? renderFaq() : "") +
+    renderFaq(data, faq) +
     `</div>` +
     // Outside the root div, like the other tools put it: the node describes the
     // page, and the plugin strips the embedded form before printing anyway.
-    (live ? renderFaqSchema(options) : "") +
+    renderFaqSchema(faq, options) +
     renderMetaIsland(copy, options)
   );
 }

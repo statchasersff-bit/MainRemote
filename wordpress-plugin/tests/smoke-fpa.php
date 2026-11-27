@@ -96,6 +96,7 @@ if ( 'fpaarchive' === $group ) {
 	$GLOBALS['query'][ STATCHASERS_FPA_SEASON_VAR ] = '2025';
 	$GLOBALS['http_body'] =
 		'<div class="scf is-embed" data-scf-root="1" data-season="2025" data-kind="archive"><p class="scf-answer">Softest.</p></div>' .
+		'<script type="application/json" class="scf-faq-data">[{"q":"What does the 2025 Fantasy Points Allowed table cover?","a":"The complete 2025 NFL regular season, Weeks 1-17."}]</script>' .
 		'<script type="application/json" class="scf-page-data">{"title":"Fantasy Points Allowed by Position 2025 (Full Season)","h1":"2025 Fantasy Points Allowed by Position","description":"Fantasy points allowed to QB, RB, WR and TE by all 32 NFL defenses over the full 2025 season (Weeks 1–17), raw and schedule-adjusted.","answer":"Softest.","updatedLine":"Full 2025 season, Weeks 1–17","updatedIso":"","updatedAt":"","season":2025,"kind":"archive","weekNumber":17,"archiveSeasons":[]}</script>';
 
 	is( statchasers_fpa_request_season(), 2025, 'the season comes off the address' );
@@ -116,8 +117,13 @@ if ( 'fpaarchive' === $group ) {
 	is( str_contains( $content, '<h1 id="sc-lo-hero-title" class="sc-lo-hero__h1">2025 Fantasy Points Allowed by Position</h1>' ), true, 'the hand-written hero names the season' );
 	is( str_contains( $content, '<p class="sc-lo-hero__updated scf-updated">Full 2025 season, Weeks 1–17</p>' ), true, 'and says it is the full season' );
 	is( apply_filters( 'rank_math/opengraph/facebook/og_updated_time', '2026-09-21T22:31:09+00:00' ), '2026-09-21T22:31:09+00:00', 'a finished season leaves the modified time alone' );
-	is( apply_filters( 'rank_math/json_ld', array( 'b' => array( '@type' => 'BreadcrumbList' ) ) ), array( 'b' => array( '@type' => 'BreadcrumbList' ) ), 'and adds no dateModified' );
-	is( statchasers_fpa_faq_items(), array(), 'no FAQ on an archive: the fragment carries none' );
+	$archive_graph = apply_filters( 'rank_math/json_ld', array( 'b' => array( '@type' => 'BreadcrumbList' ) ) );
+	is( str_contains( (string) wp_json_encode( $archive_graph ), 'dateModified' ), false, 'and adds no dateModified' );
+	is( isset( $archive_graph['statchasersFpaPage'] ), false, 'nor a page node of its own' );
+	is( $archive_graph['statchasersFpaFaq']['@type'] ?? '', 'FAQPage', 'only its FAQ, for Rank Math to fold into its WebPage' );
+	// WEB-030 (2026-11-27): an archive carries its own season's FAQ.
+	is( statchasers_fpa_faq_items(), array( array( 'q' => 'What does the 2025 Fantasy Points Allowed table cover?', 'a' => 'The complete 2025 NFL regular season, Weeks 1-17.' ) ), 'the archive\'s FAQ is its own season\'s, read off its own fetch' );
+	is( str_contains( $html, 'scf-faq-data' ), false, 'and its island is stripped from the printed table' );
 	$fetched = count( $GLOBALS['remote_urls'] );
 	statchasers_fpa_season_redirect();
 	is( count( $GLOBALS['remote_urls'] ), $fetched, 'the redirect check reads the memoized fetch, and does not redirect an archive' );

@@ -512,7 +512,17 @@ add_shortcode( STATCHASERS_FPA_SHORTCODE, 'statchasers_fpa_shortcode' );
  * writes no attributes of its own is the same combination the shortcode is
  * about to ask for, query string included, and therefore the same cached fetch.
  * A page that hard-codes format="ppr" costs one extra fetch against a
- * fifteen-minute TTL, and asks the same nineteen questions either way.
+ * fifteen-minute TTL, and asks the same questions either way: the FAQ
+ * depends on the season, not the format or view (fpa-render.ts fpaFaq(),
+ * the one list the visible FAQ and this island are both built from). Five
+ * on the current page, and since WEB-030 (2026-11-27) an archive address
+ * carries its own season's questions (three for the season before the
+ * current one), read from the archive's fetch the same way.
+ *
+ * With Rank Math's global entities on for this page
+ * (statchasers-page-identity.php, family 'fpa'), Rank Math folds this node
+ * into its WebPage at priority 99: one page entity, typed FAQPage, at the
+ * season's own canonical.
  *
  * Memoized because the Rank Math filter and the fallback printer both ask.
  *
@@ -1343,8 +1353,10 @@ add_filter( 'statchasers_fpa_fragment_html', 'statchasers_fpa_strip_copy_island'
  * The date the figures were written, as the page's modified time: Rank Math's
  * og:updated_time and article:modified_time (both spellings of the hook, as
  * the matchup file registers its og tags), and dateModified on the graph's
- * WebPage node - added when the graph has none, as on these pages, with the
- * FAQ made part of it. The post's own modified time is the day the page was
+ * WebPage node - added when the graph has none, with the FAQ made part of
+ * it. Since WEB-021 (2026-11-27) Rank Math builds that WebPage itself on both
+ * seasons (statchasers-page-identity.php), so the node below is a fallback
+ * only and the date goes onto Rank Math's node. The post's own modified time is the day the page was
  * last edited, which said September while the table ran through Week 5.
  */
 function statchasers_fpa_modified_iso(): string {
