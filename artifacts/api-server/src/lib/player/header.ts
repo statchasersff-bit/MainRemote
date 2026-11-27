@@ -81,7 +81,7 @@ export const STARTSIT_BASE =
  */
 // One methodology for the site: the FPA page's bands (fpa/matchup-bands.ts).
 export { matchupBand, type MatchupBand } from "../fpa/matchup-bands";
-import { matchupBand, type MatchupBand } from "../fpa/matchup-bands";
+import { BAND_WORDS, matchupBand, type MatchupBand } from "../fpa/matchup-bands";
 
 /**
  * How severe a designation is, for the pill's accent.
@@ -346,9 +346,9 @@ export function headerKickoff(game: UpcomingGame): string {
 
 /** The strip's chip: the same three bands the Upcoming Matchups cards use. */
 export const CHIP_WORD: Record<MatchupBand, { cls: string; word: string }> = {
-  soft: { cls: "is-good", word: "favorable" },
-  mid: { cls: "is-mid", word: "neutral" },
-  tough: { cls: "is-bad", word: "tough" },
+  soft: { cls: "is-good", word: BAND_WORDS.soft.toLowerCase() },
+  mid: { cls: "is-mid", word: BAND_WORDS.mid.toLowerCase() },
+  tough: { cls: "is-bad", word: BAND_WORDS.tough.toLowerCase() },
 };
 
 /* ----------------------------------------------------------- scoreboard */

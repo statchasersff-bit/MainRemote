@@ -64,9 +64,9 @@ export async function importModule(relative) {
  * what a running server has.
  *
  * `source` is TypeScript, and is written beside the bundle - so it refers to
- * the app's own modules as "../src/lib/...".
+ * the app's own modules as "../src/lib/...". `plugins` are esbuild plugins.
  */
-export async function importSource(source) {
+export async function importSource(source, { plugins = [] } = {}) {
   const dir = await mkdtemp(path.join(APP_DIR, ".test-bundle-"));
   dirs.push(dir);
   const entry = path.join(dir, "entry.ts");
@@ -83,6 +83,9 @@ export async function importSource(source) {
     target: "node20",
     packages: "external",
     logLevel: "silent",
+    // esbuild plugins, for a test that stands a stub in for a module with I/O
+    // (tests/web-033-opp-ranks.test.mjs replaces the database module).
+    plugins,
   });
 
   return import(pathToFileURL(outfile).href);

@@ -82,7 +82,7 @@ import type {
   GameLogEntry,
 } from "./player/types";
 import { passerRating, type CareerStatRow } from "./player/stats-profile";
-import { fpaFormatHref, oppRankScope } from "./fpa/matchup-bands";
+import { BAND_WORDS, fpaFormatHref, oppRankScope } from "./fpa/matchup-bands";
 import { canonicalizeMatchupPair } from "./matchup/pair";
 import { gameLink, meetingForWeek, teamMeetings } from "./matchup/game-link";
 import {
@@ -1317,12 +1317,15 @@ function breakdownPremiumDeps(data: PlayerPageData, options: PlayerRenderOptions
  * is why 30th reads "Tough" here rather than favorable.
  */
 /** The band in one word, for the game log's Difficulty column. */
-const DIFFICULTY_WORD: Record<MatchupBand, string> = { soft: "Favorable", mid: "Neutral", tough: "Tough" };
+// One vocabulary for the three bands (BAND_WORDS, fpa/matchup-bands.ts): the
+// Difficulty column, the Upcoming Matchups pill and the header chip print the
+// same word for the same rank (WEB-033 follow-up, 2026-11-27).
+const DIFFICULTY_WORD: Record<MatchupBand, string> = BAND_WORDS;
 
 const BAND_READ: Record<MatchupBand, string> = {
-  soft: "Favorable matchup",
-  mid: "Neutral matchup",
-  tough: "Tough matchup",
+  soft: `${BAND_WORDS.soft} matchup`,
+  mid: `${BAND_WORDS.mid} matchup`,
+  tough: `${BAND_WORDS.tough} matchup`,
 };
 
 /** "Sun · Sep 20 · 4:25 PM ET", degrading as ESPN's certainty does. */

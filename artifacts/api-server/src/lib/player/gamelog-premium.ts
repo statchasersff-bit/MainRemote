@@ -19,7 +19,7 @@
 import { escapeHtml } from "../render";
 import { getTeamByAbbreviation } from "../team/teams";
 import { matchupBand, type MatchupBand } from "./header";
-import { oppRankScope } from "../fpa/matchup-bands";
+import { BAND_WORDS, oppRankScope, SOFT_MAX_RANK, TOUGH_MIN_RANK } from "../fpa/matchup-bands";
 import { weeklyTier, type LogColumn, type WeeklyTier } from "./metrics";
 import { SCORING_LABELS } from "./scoring";
 import {
@@ -363,7 +363,10 @@ function renderTable(data: PlayerPageData, deps: PremiumLogDeps): string {
     season: data.logSeason,
     through: data.logOppRankThrough,
   });
-  const bands = "Favorable 1-12, Neutral 13-20, Tough 21-32.";
+  // The cuts and words from fpa/matchup-bands.ts, so the note cannot drift from the cells.
+  const bands =
+    `${BAND_WORDS.soft} 1-${SOFT_MAX_RANK}, ${BAND_WORDS.mid} ${SOFT_MAX_RANK + 1}-${TOUGH_MIN_RANK - 1}, ` +
+    `${BAND_WORDS.tough} ${TOUGH_MIN_RANK}-32.`;
   const fpaLink = deps.fpaLink || "Fantasy Points Allowed page";
   const noteHtml =
     source === "fpa-current"
