@@ -386,26 +386,16 @@ export function headerBoard(data: PlayerPageData): BoardCell[] {
   const played = Boolean(stats && stats.gamesPlayed > 0);
 
   const season = data.production.find((row) => row.season === data.season);
-  // By points per game where that rank exists, by points scored until it does.
-  const ppgRank = season?.posFinishPpg ?? data.seasonRank;
-  const rank = ppgRank ?? season?.posFinishTotal ?? data.seasonRankTotal;
+  // By total points scored, always (mak, 2026-11-27): the same basis as the
+  // Stats tab's rank and career chart, so the header never shows a per-game
+  // rank beside a total-points rank elsewhere on the page.
+  const rank = season?.posFinishTotal ?? data.seasonRankTotal;
   const fmtWord = player.position === "K" ? "" : `${SCORING_SHORT[format]} `;
-  // The rank's own basis, in its tooltip: until he has played four games
-  // there is no per-game rank and the figure is his rank by points scored
-  // (UI brief, 2026-11-18: the tooltip said "per game" either way).
-  const rankTitle =
-    ppgRank != null
-      ? `${data.season} position rank by ${fmtWord}fantasy points per game`
-      : `${data.season} position rank by total ${fmtWord}fantasy points (per-game rank from four games played)`;
+  const rankTitle = `${data.season} position rank by total ${fmtWord}fantasy points`;
   const pos = player.position ?? "";
   const ranked = played && pos && rank != null;
-  // Beside the shared PPG rank, the rate that rank was measured on
-  // (2026-11-24): a game he was active for without a snap or touch is not a
-  // game in the rank, so the game log's average over active games could sit
-  // under a rank it did not earn. Below the minimum, and beside a snapshot's
-  // rank, the game log's figure as before.
-  const sharedRank = season?.posFinishPpg == null && data.seasonRank != null;
-  const ppg = sharedRank && data.seasonRankPpg != null ? data.seasonRankPpg : (stats?.ppg ?? 0);
+  // The game log's own average over the games he played (the Stats rule).
+  const ppg = stats?.ppg ?? 0;
 
   return [
     {
@@ -918,13 +908,25 @@ export function renderHero(
 }
 
 /**
+ * His Redraft Command start/sit page, or "" when Redraft Command has no
+ * populated one for him this week (data.startSitPage false: a 404 for a
+ * player Sleeper does not roster, a noindex "updating" page for a deep
+ * reserve; 2026-11-27 audit, item 5). Every start/sit link on the player
+ * page, FAQ answers included, goes through here.
+ */
+export function startSitPageUrl(data: PlayerPageData, options: PlayerRenderOptions): string {
+  if (data.startSitPage === false) return "";
+  return `${options.startSitBase ?? STARTSIT_BASE}${encodeURIComponent(data.player.slug)}`;
+}
+
+/**
  * The "Should I start {Last}?" link while there is a week to start him in,
  * or "" before Week 1 and once the schedule has run out. The header's white
  * button and the Overview's phone link (mak, 2026-11-05) share it.
  */
 export function startSitHref(data: PlayerPageData, options: PlayerRenderOptions): string {
   if (!data.team || !headerFixture(data) || seasonNotStarted(data) || rosterDesignation(data)) return "";
-  return `${options.startSitBase ?? STARTSIT_BASE}${encodeURIComponent(data.player.slug)}`;
+  return startSitPageUrl(data, options);
 }
 
 /**

@@ -75,8 +75,11 @@ export interface AdvCard {
   /**
    * The share rows ranked in the usage field instead of this card's pool
    * (WEB-035), and that field in words, for the footnote. Absent when none is.
+   * `ofs[i]` is the count `labels[i]` is ranked among: a field member with no
+   * figure for one metric (no snap count) is not ranked on it, so the counts
+   * can differ by metric and the footnote must say each (2026-11-27).
    */
-  shareField?: { labels: string[]; of: number; note: string };
+  shareField?: { labels: string[]; of: number; ofs: number[]; note: string };
   metrics: AdvMetric[];
   /**
    * Every metric either season's card carries, in one order, so the advanced
@@ -499,6 +502,7 @@ function withUsageField(card: AdvCard | null, usage: PlayerUsage | null | undefi
   // An unranked card stays unranked: its notice says why, for every row.
   if (!card || !card.qualified || !usage || usage.season !== card.season) return card;
   const labels: string[] = [];
+  const ofs: number[] = [];
   let of = 0;
   const swap = (m: AdvMetric): AdvMetric => {
     const metric = m.key ? SHARE_ROWS[m.key] : undefined;
@@ -506,7 +510,10 @@ function withUsageField(card: AdvCard | null, usage: PlayerUsage | null | undefi
     const v = usage.row[metric];
     const value = typeof v === "number" && Number.isFinite(v) ? `${v.toFixed(1)}%` : m.value;
     const r = usage.ranks[metric];
-    if (!labels.includes(m.label)) labels.push(m.label);
+    if (!labels.includes(m.label)) {
+      labels.push(m.label);
+      ofs.push(r?.of ?? 0);
+    }
     if (!r) return { ...m, value, read: "Not ranked", standing: "muted", pct: null, pctl: null, rank: null, of: null };
     of = Math.max(of, r.of);
     return { ...m, value, read: `${ordinal(r.rank)} of ${r.of} ${pos}s (${usage.fieldNote})`, standing: standingOf(r.pct), pct: r.pct, pctl: r.pct, rank: r.rank, of: r.of };
@@ -516,7 +523,7 @@ function withUsageField(card: AdvCard | null, usage: PlayerUsage | null | undefi
   if (!labels.length) return card;
   const pct = { ...card.pct };
   for (const m of metrics) if (m.key && SHARE_ROWS[m.key]) pct[m.key] = m.pct;
-  return { ...card, metrics, all, pct, shareField: { labels, of, note: usage.fieldNote } };
+  return { ...card, metrics, all, pct, shareField: { labels, of, ofs, note: usage.fieldNote } };
 }
 
 export interface StatsTabAdvanced {

@@ -38,6 +38,7 @@
  * palest step never has to carry meaning alone.
  */
 
+import { playerCriticalStyle } from "./player/critical-css";
 import { logger } from "./logger";
 import { scoringTotalsSource } from "./scoring/house-rules";
 import { escapeHtml, escapeJsonLd } from "./render";
@@ -1865,11 +1866,31 @@ function heroExtras(data: PlayerPageData, options: PlayerRenderOptions): { match
  * it, which pushed the whole player header down 46px when the page had
  * already painted (CLS 0.22 on Game Log at 1280). Its place is now kept from
  * the start, invisible until the script shows it; once shown, nothing differs.
+ *
+ * Third rule (phones, 2026-11-27): WP Rocket's inline critical CSS for the
+ * player pages was generated before 2026-11-20 and still carries the old
+ * `.scp.scp.is-embed>.scp-search[hidden]+.scp-phead{margin-top:0!important}`
+ * that player.css dropped that day. Inline in <head> it outlives player.css,
+ * so the header sat 8px high until the script revealed the box and then the
+ * whole page dropped 8px (0.008 CLS on every phone load). Same selector, later
+ * in the document, restating the header's phone margin from player.css
+ * (`.scp .scp-phead { margin: 8px -8px 0 }` at max-width 560px). Harmless once
+ * Rocket's critical CSS is regenerated; keep the 8px in step with player.css.
  */
 const HOST_HEADER_STYLE =
   `<style id="scp-host-header">@media (min-width:981px){` +
   `.et_pb_section:has(>.et_pb_row.sc-mobile-header-row-single),.et_pb_section:has(#sc-mobile-overlay){display:none!important}` +
-  `}.scp .scp-search[hidden]{display:block!important;visibility:hidden}</style>`;
+  `}.scp .scp-search[hidden]{display:block!important;visibility:hidden}` +
+  `@media (max-width:560px){.scp.scp.is-embed>.scp-search[hidden]+.scp-phead{margin-top:8px!important}}</style>`;
+
+/**
+ * What prints ahead of the player root: on a WordPress page (embed) the
+ * header's critical CSS (player/critical-css.ts) and the host fixes above. The
+ * app's own pages load player.css render-blocking and need only the latter.
+ */
+function hostStyles(options: PlayerRenderOptions): string {
+  return (options.embed ? playerCriticalStyle() : "") + HOST_HEADER_STYLE;
+}
 
 export function renderPlayerPage(
   data: PlayerPageData,
@@ -1897,7 +1918,7 @@ export function renderPlayerPage(
    */
   function renderScoped(sections: Section[], id: string, parts: TabParts | undefined | null, panelHtml: string): string {
     return (
-      HOST_HEADER_STYLE +
+      hostStyles(options) +
           `<div class="scp${options.embed ? " is-embed" : ""}" data-scp-root="1"` +
       ` data-player="${escapeHtml(data.player.slug)}"` +
       ` data-position="${escapeHtml(data.player.position ?? "")}"` +
@@ -2110,7 +2131,7 @@ export function renderPlayerPage(
     // exists in the dictionary and has no recorded football. The hero alone is
     // the honest page: who they are, and nothing claimed beyond it.
     return (
-      HOST_HEADER_STYLE +
+      hostStyles(options) +
           `<div class="scp${options.embed ? " is-embed" : ""}" data-scp-root="1"${paletteAttrs(data.team)}>` +
       renderPlayerSearch(options) +
       renderHero(data, options) +
@@ -2168,7 +2189,7 @@ export function renderPlayerPage(
     .join("");
 
   return (
-    HOST_HEADER_STYLE +
+    hostStyles(options) +
       `<div class="scp${options.embed ? " is-embed" : ""}" data-scp-root="1"` +
     ` data-player="${escapeHtml(data.player.slug)}"` +
     ` data-position="${escapeHtml(data.player.position ?? "")}"` +

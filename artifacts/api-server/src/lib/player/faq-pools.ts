@@ -17,7 +17,7 @@ import type { PlayerPageData } from "./player-data";
 import type { GameLogEntry } from "./types";
 import type { ScheduleGame } from "../team/schedule";
 import { getEntryPoints, SCORING_SHORT } from "./scoring";
-import { designationSeverity, lastName, matchupBand, STARTSIT_BASE } from "./header";
+import { designationSeverity, lastName, matchupBand, startSitPageUrl } from "./header";
 import { leagueFit } from "./outlook-tab";
 import { aPos, count, listWords, one, ordinal, tabHref, whole, word, type FaqCandidate } from "./faq-engine";
 import { rosteredPct } from "./rounding";
@@ -140,7 +140,7 @@ export function overviewPool(data: PlayerPageData, options: PlayerRenderOptions)
   const rankBy = rankPpg ? "points per game" : "total points";
   const total = c.played.reduce((t, e) => t + c.pts(e), 0);
   const ppg = c.played.length ? total / c.played.length : 0;
-  const startSit = `${options.startSitBase ?? STARTSIT_BASE}${encodeURIComponent(data.player.slug)}`;
+  const startSit = startSitPageUrl(data, options);
 
   // 1. Start/sit this week (dynamic week, never hard-coded).
   const next = (data.upcomingStrip ?? data.upcoming ?? [])[0];
@@ -156,11 +156,20 @@ export function overviewPool(data: PlayerPageData, options: PlayerRenderOptions)
       const band = matchupBand(next.matchup.rank);
       a += ` The ${opp} rank ${ordinal(next.matchup.rank)} in ${c.fmt} points allowed to ${c.pos}s, ${band === "soft" ? "a favorable matchup" : band === "mid" ? "a neutral matchup" : "a tough matchup"}.`;
     }
+    // The start call stands on his availability (2026-11-27): a player who
+    // missed his last game with no game status yet, or one listed
+    // questionable or doubtful, is not a plain weekly starter.
+    const cs = data.currentStatus;
+    if (!c.out && cs?.kind === "pending" && cs.week === next.week) {
+      a += ` He did not play${cs.missedWeek ? ` in Week ${cs.missedWeek}` : " in his last game"} and has no Week ${next.week} game designation yet, so check the final injury report before lineups lock.`;
+    } else if (!c.out && cs?.designated && cs.week === next.week && /^(questionable|doubtful)$/i.test(cs.designation ?? "")) {
+      a += ` He is listed ${cs.designation!.toLowerCase()} for Week ${next.week}, so check his status before kickoff.`;
+    }
     out.push({
       key: "start",
       q: `Should I start ${c.name} in Week ${next.week}?`,
       a,
-      link: { href: startSit, text: `Get the start/sit call for ${c.last}.`, cta: "startsit-overview-faq" },
+      link: startSit ? { href: startSit, text: `Get the start/sit call for ${c.last}.`, cta: "startsit-overview-faq" } : null,
     });
   }
 

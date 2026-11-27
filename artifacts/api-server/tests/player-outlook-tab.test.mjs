@@ -670,6 +670,8 @@ describe("rank basis, ROS freshness and an unavailable player (audit 2026-11-26)
     const doc = render(wr({ rosRank: { rank: 23, position: "WR", updatedAt: "November 24, 2026", updatedAtIso: "2026-11-24", stale: false } }));
     assert.match(doc.querySelector(".scp-olr-fit-note").textContent, /^Based on his StatChasers rest-of-season rank, WR23 \(updated November 24\)/);
     assert.match(all(doc), /WR23 on the StatChasers rest-of-season board/);
+    // The FAQ dates the board's rank too, from the same meta (2026-11-27).
+    assert.match(faqAnswer(doc, "rest-of-season fantasy ranking"), /WR23 on the StatChasers rest-of-season board \(updated November 24\)/);
   });
 
   test("a stale ROS board is dated, excluded from advice, and nowhere else on the tab", () => {

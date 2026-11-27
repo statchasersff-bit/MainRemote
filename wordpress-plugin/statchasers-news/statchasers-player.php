@@ -448,6 +448,13 @@ function statchasers_player_enqueue_assets(): void {
 
 	$version = statchasers_news_asset_version();
 
+	// The stylesheet and bundle bundled with this plugin when they are the
+	// API's current build, else the asset host as before (WEB-023,
+	// statchasers-local-assets.php): no second connection for the stylesheet
+	// WP Rocket loads asynchronously here. The header does not wait for it -
+	// the fragment carries the header's critical CSS inline (2026-11-27).
+	$urls = statchasers_player_asset_urls( $version );
+
 	if ( ! wp_style_is( STATCHASERS_PLAYER_HANDLE, 'registered' ) ) {
 		$deps        = statchasers_font_dependency();
 		$header_font = statchasers_player_header_font_url();
@@ -458,7 +465,7 @@ function statchasers_player_enqueue_assets(): void {
 		}
 		wp_register_style(
 			STATCHASERS_PLAYER_HANDLE,
-			statchasers_public_origin() . '/player.css',
+			$urls['css'],
 			$deps,
 			$version
 		);
@@ -467,7 +474,7 @@ function statchasers_player_enqueue_assets(): void {
 	if ( ! wp_script_is( STATCHASERS_PLAYER_HANDLE, 'registered' ) ) {
 		wp_register_script(
 			STATCHASERS_PLAYER_HANDLE,
-			statchasers_public_origin() . '/dist/statchasers-player.js',
+			$urls['js'],
 			array(),
 			$version,
 			array(
@@ -542,6 +549,7 @@ function statchasers_player_lazyload_exclusions( $attributes ): array {
 	return $attributes;
 }
 add_filter( 'rocket_lazyload_excluded_attributes', 'statchasers_player_lazyload_exclusions' );
+
 
 /**
  * Does the request being rendered mount a player page?

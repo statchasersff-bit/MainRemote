@@ -170,9 +170,9 @@ export function tableCols(position: string | null, scoring: string): TableCol[] 
         games,
         { label: "TGT", title: "Targets", of: (t) => whole(t.tgt) },
         { label: "REC", title: "Receptions", of: (t) => whole(t.rec) },
-        { label: "YDS", title: "Receiving yards", of: (t) => whole(t.recYd) },
+        { label: "REC YDS", title: "Receiving yards", of: (t) => whole(t.recYd) },
         { label: "Y/R", title: "Yards per reception", of: (t) => per(t.recYd, t.rec) },
-        { label: "TD", title: "Receiving touchdowns", of: (t) => whole(t.recTd) },
+        { label: "REC TD", title: "Receiving touchdowns", of: (t) => whole(t.recTd) },
         { label: "RUSH YDS", title: "Rushing yards", of: (t) => whole(t.rushYd) },
         ...fantasy,
       ];

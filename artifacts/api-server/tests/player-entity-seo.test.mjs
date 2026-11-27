@@ -284,8 +284,8 @@ describe("data sanity", () => {
       const cell = (label) => row[cols.indexOf(label)];
       if (position === "WR") {
         assert.equal(hero["REC"], cell("REC"));
-        assert.equal(hero["REC YDS"], cell("YDS"));
-        assert.equal(hero["REC TD"], cell("TD"));
+        assert.equal(hero["REC YDS"], cell("REC YDS"));
+        assert.equal(hero["REC TD"], cell("REC TD"));
         hero.yds = hero["REC YDS"];
       } else if (position === "RB") {
         assert.equal(hero["CARRIES"], cell("CAR"));

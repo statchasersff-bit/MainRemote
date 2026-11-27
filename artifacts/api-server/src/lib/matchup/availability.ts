@@ -321,7 +321,12 @@ export function gameAvailability(
       if (row?.gameStatus && GAME.has(row.gameStatus.toLowerCase())) {
         const status = row.gameStatus.charAt(0).toUpperCase() + row.gameStatus.slice(1).toLowerCase();
         set(r.id, { ...base, practice, kind: kindOf(status), status, source: "nfl-report", note: null, injury: row.injury ?? null });
-      } else if (row && lastGame && !lastGame.played && (raw || prior)) {
+      } else if (row && lastGame && !lastGame.played && (raw || prior) && wr.state !== "final") {
+        // Missed his last game, and this week's statuses are not out yet.
+        // Once the report is final with no status for him, he is cleared:
+        // "No designation", not pending (2026-11-27: Michael Pittman Jr., Q
+        // in Week 11, no status on the final Week 12 report, read "Game
+        // designation pending" on game day).
         set(r.id, {
           ...base,
           practice,

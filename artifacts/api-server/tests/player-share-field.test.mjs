@@ -82,3 +82,42 @@ describe("Overview meters keep the metrics readers saw before (mak, 2026-11-26)"
     assert.deepEqual(l, ["Target share", "Yards per target", "Catch rate", "PPR points per target"]);
   });
 });
+
+// Re-check of WEB-035 (2026-11-27): every share row's count is its own. One WR
+// in the usage field (Cody White, LV) has no snap count, so snap share ranks
+// among one fewer than target share; the notes said 114 for all three. A
+// player below the field's line read "among the 0 WRs".
+describe("share rows: each count stated, and outside the field said so (2026-11-27)", () => {
+  const page = async (slug) => {
+    const res = await fetch(`${server.origin}/embed/player/${slug}`);
+    assert.equal(res.status, 200);
+    return new JSDOM(await res.text()).window.document;
+  };
+  const rowRank = (doc, label) => {
+    const r = [...doc.querySelectorAll(".scp-stp-row")].find((x) => x.querySelector(".scp-stp-row-label")?.textContent === label);
+    return r ? squash(r.querySelector(".scp-stp-rank")?.textContent ?? "") : null;
+  };
+
+  test("St. Brown: every 'of N' printed for a share row appears in the note beside it", async () => {
+    const doc = await page("amon-ra-st-brown");
+    const note = squash(doc.querySelector(".scp-stp-note")?.textContent ?? "");
+    for (const label of ["Target share", "Snap share", "Air-yards share"]) {
+      const rank = rowRank(doc, label);
+      const of = /of (\d+)$/.exec(rank ?? "")?.[1];
+      if (!of) continue;
+      assert.match(note, new RegExp(`\\b${of} (WRs|of them)\\b`), `${label} ${rank} vs note: ${note}`);
+    }
+    const lede = squash(doc.querySelector(".scp-olp-opp, .scp-olr-opp")?.textContent ?? doc.body.textContent);
+    assert.doesNotMatch(lede, /Ranks are among qualifying WRs league-wide/);
+  });
+
+  test("a receiver outside the usage field: rows Not ranked, note says why, never 'the 0'", async () => {
+    const doc = await page("aj-brown");
+    const text = squash(doc.body.textContent);
+    assert.doesNotMatch(text, /among the 0 /);
+    const ts = rowRank(doc, "Target share");
+    if (ts === "Not ranked") {
+      assert.match(squash(doc.querySelector(".scp-stp-note").textContent), /rank only WRs with \d+\+ games[^;]*which he has not reached yet/);
+    }
+  });
+});

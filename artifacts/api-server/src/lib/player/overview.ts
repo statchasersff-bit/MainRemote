@@ -335,7 +335,8 @@ function renderSeasonStats(data: PlayerPageData, s: Season, options: PlayerRende
   const cols = tableCols(s.pos, SCORING_SHORT[data.format]).filter((c) => c.label !== "PPG");
   if (cols.length === 0) return "";
   const totals = seasonTotals(s.played, s.pts);
-  const label = (c: { label: string }): string => (/ PTS$/.test(c.label) ? "FPTS" : c.label);
+  // The format beside the total ("PPR FPTS"), not only in the header (2026-11-27).
+  const label = (c: { label: string }): string => (/ PTS$/.test(c.label) ? c.label.replace(/ PTS$/, " FPTS") : c.label);
   const href = `${options.playerPathPrefix ?? "/player/"}${data.player.slug}/stats/${options.linkQuery ?? ""}`;
   return (
     sectionOpen("scp-ox-season-h", `${data.player.name} ${s.leagueSeason} season stats`, "", "stats", data.player.name) +

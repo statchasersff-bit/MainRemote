@@ -529,9 +529,13 @@ async function swapSeason(root: HTMLElement, season: string, button: HTMLElement
   swapController = controller;
   root.setAttribute("aria-busy", "true");
 
+  // The phone's season menu closes on a pick, so the control the reader is
+  // on is its summary, not the (now hidden) option (2026-11-27 audit, item
+  // 5: focus fell to <body> after a keyboard pick at 390px).
+  const menuSummary = button?.closest<HTMLDetailsElement>("details[data-scp-yr]")?.querySelector<HTMLElement>("summary") ?? null;
   // Measured before the fetch: a render that is taller or shorter above
   // the control must not slide it out from under the pointer.
-  const anchorTop = button ? button.getBoundingClientRect().top : null;
+  const anchorTop = button ? (menuSummary ?? button).getBoundingClientRect().top : null;
   const openTab =
     root.querySelector<HTMLElement>(".scp-nav-link.is-active")?.dataset["scpPanelId"] ?? "";
 
@@ -573,7 +577,9 @@ async function swapSeason(root: HTMLElement, season: string, button: HTMLElement
   restoreTab(fresh, openTab);
 
   const group = fresh.querySelector<HTMLElement>(SWAP_GROUP_SELECTOR);
-  const moved = group?.querySelector<HTMLElement>(`${SWAP_BUTTON_SELECTOR}[data-season="${season}"]`) ?? null;
+  const moved = menuSummary
+    ? fresh.querySelector<HTMLElement>("details[data-scp-yr] > summary")
+    : group?.querySelector<HTMLElement>(`${SWAP_BUTTON_SELECTOR}[data-season="${season}"]`) ?? null;
   if (moved && anchorTop !== null) {
     const drift = moved.getBoundingClientRect().top - anchorTop;
     if (drift) window.scrollBy(0, drift);

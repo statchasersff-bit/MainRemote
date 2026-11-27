@@ -151,7 +151,7 @@ describe("player header", () => {
     // The phone's meta lines sit between the two (hidden above 480px).
     assert.ok(h.querySelector(".scp-pid + .scp-pm-meta + .scp-pboard-wrap"), "the board follows the identity column and its phone meta");
     const fan = [...h.querySelectorAll(".scp-pboard .scp-pstat")];
-    assert.deepEqual(fan.map((c) => text(c.querySelector("b"))), ["16.5", "QB17", "13%"]);
+    assert.deepEqual(fan.map((c) => text(c.querySelector("b"))), ["16.5", "QB16", "13%"]);
     assert.deepEqual(fan.map((c) => text(c.querySelector("abbr"))), ["FPPG · PPR", "POS RANK", "ROSTERED"]);
     assert.ok(fan[0].classList.contains("is-lead"));
     assert.equal(fan[0].querySelector("abbr").getAttribute("title"), "PPR fantasy points per game");
@@ -294,7 +294,7 @@ describe("player header", () => {
       }),
     );
     assert.equal(text(h.querySelector(".scp-pboard-cap")), "2025 Fantasy Season");
-    assert.deepEqual([...h.querySelectorAll(".scp-pboard .scp-pstat b")].map(text), ["14.2", "QB22", "13%"]);
+    assert.deepEqual([...h.querySelectorAll(".scp-pboard .scp-pstat b")].map(text), ["14.2", "QB20", "13%"], "the total-points finish (20), not the per-game one (22)");
     assert.equal(text(h.querySelector(".scp-pbtn--white")), "Brissett's 2026 outlook");
     assert.match(h.querySelector(".scp-pbtn--white").getAttribute("href"), /\/jacoby-brissett\/outlook\/$/);
     assert.equal(h.querySelector(".scp-pbtn--white").getAttribute("data-cta"), "outlook-header-overview");
@@ -395,12 +395,33 @@ describe("player header", () => {
     assert.notEqual(render.startSitHref(state({ designation: { injuryStatus: "Out" } }), {}), "");
   });
 
-  test("the rank's tooltip names its basis: per game, or total points before four games", () => {
+  test("no populated Redraft start/sit page for him: no start/sit link at all (2026-11-27 audit, item 5)", () => {
+    // Aaron Rodgers, 2026-11-27: Sleeper listed him as a free agent, so his
+    // start/sit address was a 404 while his hub printed six links to it.
+    const none = state({ startSitPage: false });
+    assert.equal(render.startSitHref(none, {}), "");
+    assert.equal(render.startSitPageUrl(none, {}), "");
+    const h = header(none);
+    assert.equal(h.querySelector(".scp-pbtn--gold"), null, "no start/sit button");
+    assert.equal(h.querySelectorAll('a[href*="who-should-i-start"]').length, 0);
+    assert.ok(h.querySelector(".scp-pstrip"), "the next game still shows");
+    // Listed (true) and hand-built states (absent) keep the link.
+    assert.match(render.startSitHref(state({ startSitPage: true }), {}), /who-should-i-start\/jacoby-brissett$/);
+    assert.match(render.startSitPageUrl(state(), {}), /who-should-i-start\/jacoby-brissett$/);
+  });
+
+  test("the rank is by total points at every sample size (mak, 2026-11-27), and its tooltip says so", () => {
     const title = (d) => header(d).querySelector(".scp-pboard .scp-pstat:nth-child(2) abbr").getAttribute("title");
-    assert.equal(title(state()), "2026 position rank by PPR fantasy points per game");
+    const rank = (d) => text(header(d).querySelector(".scp-pboard .scp-pstat:nth-child(2) b"));
+    assert.equal(title(state()), "2026 position rank by total PPR fantasy points");
+    // A per-game rank existing does not change the figure: the total-points finish prints.
+    const both = state({ production: [{ season: 2026, posFinishPpg: 5, posFinishTotal: 12 }], seasonRank: 5, seasonRankTotal: 12 });
+    assert.equal(rank(both), "QB12");
     const early = state({ production: [{ season: 2026, posFinishPpg: null, posFinishTotal: 40 }], seasonRank: null, seasonRankTotal: 40 });
-    assert.equal(text(header(early).querySelector(".scp-pboard .scp-pstat:nth-child(2) b")), "QB40");
-    assert.match(title(early), /^2026 position rank by total PPR fantasy points/);
+    assert.equal(rank(early), "QB40");
+    assert.equal(title(early), "2026 position rank by total PPR fantasy points");
+    // Without a season row, the shared total rank.
+    assert.equal(rank(state({ production: [], seasonRank: 3, seasonRankTotal: 7 })), "QB7");
   });
 
   test("a designation with no injury record is a pill, not a link", () => {
@@ -457,7 +478,7 @@ describe("player header", () => {
   });
 });
 
-describe("the header's PPG is the rate its rank was measured on (2026-11-24)", async () => {
+describe("the header's PPG is the game log's average; its rank is by total points (2026-11-27)", async () => {
   const ranks = await importModule("lib/player/ranks");
   const metrics = await importModule("lib/player/metrics");
 
@@ -502,21 +523,21 @@ describe("the header's PPG is the rate its rank was measured on (2026-11-24)", a
     assert.equal(table.byId.get("w1").rank, 1);
   });
 
-  test("beside the shared rank the header prints the shared rate", () => {
-    assert.deepEqual(board(wr("w1")).slice(0, 2), ["15.0", "WR1"]);
+  test("the PPG is the game log's average over every active game (the Stats rule)", () => {
+    // w1: four touch games of 15 and one active week with no snap = 60 / 5.
+    assert.deepEqual(board(wr("w1")).slice(0, 2), ["12.0", "WR2"]);
     assert.deepEqual(board(wr("w2")).slice(0, 2), ["13.0", "WR2"]);
   });
 
-  test("below the minimum: the game log's rate, the total-points rank and its tooltip", () => {
+  test("a short sample: same rate, same total-points rank, one tooltip", () => {
     const d = wr("w3");
-    assert.equal(d.seasonRank, null);
     assert.deepEqual(board(d).slice(0, 2), ["30.0", "WR2"]);
     const title = header(d).querySelector(".scp-pboard .scp-pstat:nth-child(2) abbr").getAttribute("title");
-    assert.match(title, /^2026 position rank by total PPR fantasy points \(per-game rank from four games played\)$/);
+    assert.equal(title, "2026 position rank by total PPR fantasy points");
   });
 
-  test("beside a snapshot's rank, the game log's rate as before", () => {
-    const d = wr("w1", { production: [{ season: 2026, posFinishPpg: 9, posFinishTotal: 9 }] });
-    assert.deepEqual(board(d).slice(0, 2), ["12.0", "WR9"]);
+  test("beside a season row, its total-points finish", () => {
+    const d = wr("w1", { production: [{ season: 2026, posFinishPpg: 9, posFinishTotal: 11 }] });
+    assert.deepEqual(board(d).slice(0, 2), ["12.0", "WR11"]);
   });
 });
