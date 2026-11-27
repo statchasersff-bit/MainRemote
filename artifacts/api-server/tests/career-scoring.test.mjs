@@ -198,3 +198,30 @@ describe("WEB-036 re-check (2026-11-27)", () => {
     assert.equal(r1(r.points - r.totals.passInt), 324.5, "what -2 per interception would print");
   });
 });
+
+// mak, 2026-11-27: games played = the Stats tab's rule everywhere. A game he
+// was active for with no offensive snap or touch (special teams only) is a
+// game in the header, hub, Game Log and PPG ranks too. Live case: Nate Carter
+// read "0.4 FPPG ... 2 games" over the Stats tab's "3 GP, 0.3 PPG".
+describe("one games-played rule (mak, 2026-11-27)", () => {
+  let ranks;
+  before(async () => {
+    ranks = await importModule("lib/player/ranks");
+  });
+  const logs = [
+    { week: 1, opp: "LAC", stats: { gp: 1, off_snp: 6, rush_att: 2, rush_yd: 4, rec_tgt: 1, rec: 1, rec_yd: 5, pts_ppr: 1.9 } },
+    { week: 2, opp: "BUF", stats: { gp: 1, off_snp: 0, st_snp: 14, pts_ppr: 0 } },
+    { week: 3, opp: "NYJ", stats: { gp: 1, off_snp: 3, rush_att: 1, rush_yd: 3, pts_ppr: 0.3 } },
+  ];
+
+  test("a special-teams-only game is played, and the header's games and PPG equal the career row's", () => {
+    assert.equal(ranks.hasParticipation(logs[1].stats, "RB"), true);
+    assert.equal(ranks.hasParticipation({ gp: 0, pts_ppr: 0 }, "RB"), false, "not active: not a game");
+    const header = metrics.computeGameLogStats(logs.map((e) => ({ ...e, game_status: undefined })), "RB", "ppr");
+    const career = metrics.careerSeasonTotals(2026, active(logs), "RB", "ppr", null);
+    assert.equal(header.gamesPlayed, 3);
+    assert.equal(career.gp, 3);
+    assert.equal(r1(header.ppg), r1(career.ppg));
+    assert.equal(r1(header.ppg), 0.7);
+  });
+});
