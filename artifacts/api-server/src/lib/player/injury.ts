@@ -37,6 +37,13 @@ export interface NflInjuryEntry {
    * has not been played through either (WEB-039, 2026-11-26).
    */
   gameToCome?: boolean;
+  /**
+   * Set at render time (player-data.ts), never stored: he did not play while
+   * this entry was listed, and those games are counted under the entry of
+   * this week (an earlier injury), so this one is not "played through"
+   * either (2026-11-27).
+   */
+  countedUnder?: { week: number; type: string };
   week?: number;
   type: string;
   bodyPart?: string;

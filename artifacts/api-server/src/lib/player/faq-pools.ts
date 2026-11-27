@@ -156,6 +156,15 @@ export function overviewPool(data: PlayerPageData, options: PlayerRenderOptions)
       const band = matchupBand(next.matchup.rank);
       a += ` The ${opp} rank ${ordinal(next.matchup.rank)} in ${c.fmt} points allowed to ${c.pos}s, ${band === "soft" ? "a favorable matchup" : band === "mid" ? "a neutral matchup" : "a tough matchup"}.`;
     }
+    // The start call stands on his availability (2026-11-27): a player who
+    // missed his last game with no game status yet, or one listed
+    // questionable or doubtful, is not a plain weekly starter.
+    const cs = data.currentStatus;
+    if (!c.out && cs?.kind === "pending" && cs.week === next.week) {
+      a += ` He did not play${cs.missedWeek ? ` in Week ${cs.missedWeek}` : " in his last game"} and has no Week ${next.week} game designation yet, so check the final injury report before lineups lock.`;
+    } else if (!c.out && cs?.designated && cs.week === next.week && /^(questionable|doubtful)$/i.test(cs.designation ?? "")) {
+      a += ` He is listed ${cs.designation!.toLowerCase()} for Week ${next.week}, so check his status before kickoff.`;
+    }
     out.push({
       key: "start",
       q: `Should I start ${c.name} in Week ${next.week}?`,

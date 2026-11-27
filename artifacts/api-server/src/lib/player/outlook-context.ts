@@ -282,7 +282,9 @@ export function rosRank(
   const pos = player.position;
   if (!pos) return null;
   const board = getRankings(season, "ros");
-  if (!board) return null;
+  // Missing, or a board for another season (a meta saying 2025 in the 2026
+  // file): no rank at all, current or historical.
+  if (!board || board.season !== season) return null;
   const rows = board.byPosition[pos as keyof typeof board.byPosition]?.flatMap((g) => g.players) ?? [];
   const key = normalizeName(player.name);
   const hit = rows.find((r) => r.slug === player.slug) ?? rows.find((r) => normalizeName(r.name) === key);

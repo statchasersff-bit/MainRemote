@@ -1609,7 +1609,9 @@ function outlookPool(m: Model, data: PlayerPageData, options: PlayerRenderOption
       q: `What is ${possessive(m.name)} rest-of-season fantasy ranking?`,
       a:
         `${m.name} is the ${m.pos}${m.rank} ${rankBasisWords(m.rankBasis ?? "ppg", m.scoring)}${through}` +
-        (m.ros ? `, and ${m.pos}${m.ros.rank} on the StatChasers rest-of-season board` : m.projected ? `, against a preseason projection of about ${m.pos}${m.projected}` : "") +
+        (m.ros
+          ? `, and ${m.pos}${m.ros.rank} on the StatChasers rest-of-season board${m.ros.updatedAt ? ` (updated ${m.ros.updatedAt.replace(/, \d{4}$/, "")})` : ""}`
+          : m.projected ? `, against a preseason projection of about ${m.pos}${m.projected}` : "") +
         `. That puts him in ${bucket(m.pos, m.fit?.rank ?? m.rank)} territory, ${chipPhrase(m.chips![1])} in ${PROSE_LEAGUES[m.pos]![1]} leagues.`,
     });
   }

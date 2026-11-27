@@ -49,6 +49,12 @@ export interface RegionEpisode {
    * Questionable but didn't miss a game" before the game).
    */
   pending?: boolean;
+  /**
+   * The season on the page only: no games of its own, but he sat games
+   * while listed that an earlier injury's window counts (games-missed.ts
+   * `sharedWith`), so not "didn't miss a game" (2026-11-27, Pittman).
+   */
+  countedUnder?: { week: number; type: string } | null;
   /** Worst game designation (Out > Doubtful > Questionable), when any. */
   worstStatus: string | null;
   /** Worst practice participation, short form ("Did Not Participate"), when any. */
@@ -195,6 +201,8 @@ export function tellEpisode(ep: RegionEpisode, prev: RegionEpisode | null, index
   } else if (ep.pending) {
     const on = ep.worstStatus ? `Listed ${ep.worstStatus}` : "On the injury report";
     parts.push(`${on} for Week ${ep.week}; that game has not been played yet.`);
+  } else if (ep.gamesMissed === 0 && ep.countedUnder) {
+    parts.push(`Did not play while listed; those games are counted under the Week ${ep.countedUnder.week} ${ep.countedUnder.type.toLowerCase()}.`);
   } else if (ep.gamesMissed > 0) {
     const back = ep.returnWeek != null ? ` and returned in Week ${ep.returnWeek}` : ep.returnedInPlayoffs ? " and returned for the playoffs" : "";
     parts.push(`Missed ${games(ep.gamesMissed)}${back}.`);
@@ -329,6 +337,7 @@ export function currentSeasonCounts(
       returnWeek: ongoing ? null : back,
       returnedInPlayoffs: false,
       pending: missed.length === 0 && gameToCome(avail, start),
+      countedUnder: missed.length === 0 ? wins.find((w) => w.sharedWith)?.sharedWith ?? null : null,
     };
   });
 }

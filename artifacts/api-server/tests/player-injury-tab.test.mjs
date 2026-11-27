@@ -591,6 +591,25 @@ describe("durability profile (Redraft Command's injury card, mak 2026-10-30)", (
     assert.equal(tab.eventWords(played).chip.text, "Played through");
   });
 
+  test("a re-listing whose missed games an earlier stint counts is not 'played through' (Pittman, 2026-11-27)", () => {
+    const under = { week: 2, type: "Foot" };
+    const [ev] = d.buildEvents([{ season: 2026, week: 11, type: "Foot", bodyPart: "foot", gamesMissed: 0, report: true, countedUnder: under }]);
+    assert.deepEqual(ev.countedUnder, under);
+    assert.deepEqual(tab.eventWords(ev).chip, { kind: "mid", text: "Counted under Week 2 foot" });
+    // The durability record: same rule, from the window's sharedWith.
+    const a = avail({
+      played: 3, missedInjury: 7, notPlayed: 7, weeksMissedInjury: [2, 5, 6, 7, 8, 10, 11], weekCodes: "PXPPXXXXBXX",
+      windows: [
+        { week: 11, recorded: 0, missedWeeks: [], open: false, sharedWith: under, type: "Foot", bodyPart: "foot" },
+        { week: 2, recorded: 7, missedWeeks: [2, 5, 6, 7, 8, 10, 11], open: true, sharedWith: null, type: "Foot", bodyPart: "foot" },
+      ],
+    });
+    const [relist] = dur.currentSeasonCounts([ep({ season: 2026, week: 11, lastReportWeek: 12, worstStatus: "Questionable", reportWeeks: 2 })], "foot", a);
+    assert.equal(relist.gamesMissed, 0);
+    assert.match(dur.tellEpisode(relist, null, 0, "foot / toe").text, /^Did not play while listed; those games are counted under the Week 2 foot\./);
+    assert.doesNotMatch(dur.tellEpisode(relist, null, 0, "foot / toe").text, /didn't miss a game/);
+  });
+
   test("a player outside the durability set gets no card", () => {
     const { doc } = render({ player: { id: "999999999", slug: "nobody", name: "No Body", position: "QB", years_exp: 1 } });
     assert.equal(doc.querySelector("[data-scp-durability]"), null);

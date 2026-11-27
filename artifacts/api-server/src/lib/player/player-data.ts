@@ -1131,25 +1131,90 @@ function buildCareerProfile(
   };
 }
 
-/** The stored history with each OPEN current-season entry's count taken from its window. */
+/** "foot injury", "injured reserve stint": an entry's type as a noun phrase. */
+function injuryWord(type: string): string {
+  const t = type.trim().toLowerCase() || "injury";
+  return /reserve/.test(t) ? `${t} stint` : /injur/.test(t) ? t : `${t} injury`;
+}
+
+/**
+ * "Week 4", "Weeks 6 and 8", "Weeks 2, 5 and 7", "Weeks 4 through 7 (4
+ * games)": the history builder's listWeeks(), with "through" only when no
+ * club game in the span is left out.
+ */
+function listWeeks(weeks: number[], weekCodes: string): string {
+  if (weeks.length === 1) return `Week ${weeks[0]}`;
+  if (weeks.length === 2) return `Weeks ${weeks[0]} and ${weeks[1]}`;
+  const set = new Set(weeks);
+  let unbroken = weeks.length >= 4;
+  for (let w = weeks[0]!; unbroken && w <= weeks[weeks.length - 1]!; w += 1) {
+    if (!set.has(w) && weekCodes[w - 1] !== "B") unbroken = false;
+  }
+  return unbroken
+    ? `Weeks ${weeks[0]} through ${weeks[weeks.length - 1]} (${weeks.length} games)`
+    : `Weeks ${weeks.slice(0, -1).join(", ")} and ${weeks[weeks.length - 1]}`;
+}
+
+/** The builder's description tail: what follows the lead clause and the optional reserve list. */
+const TAIL =
+  /(, then placed on [^;.]+?)?( and played through it without missing time\.|; out since Week \d+(?: \(\d+ games missed so far\))?\.|; missed Weeks? [^;]*?\.|\.)$/;
+
+/**
+ * The stored history with each current-season entry's count and outcome
+ * taken from its window (games-missed.ts), so the history rows, the latest
+ * injury card, the FAQ and the season total are one calculation (WEB-039,
+ * 2026-11-27). The builder attributes a week to two entries when a stint
+ * and a listing overlap (Malik Willis: "out since Week 10 (2 games missed
+ * so far)" on both his groin and his IR stint, beside "2026 games missed 2"),
+ * and its "out since Week 4 (5 games)" outlived a return (Terry McLaurin
+ * played Weeks 5 and 6). Only the outcome tail of the description is
+ * rewritten, in the builder's own words.
+ *
+ * An entry whose only missed games another entry already counts is marked
+ * `countedUnder` instead of "played through" (Pittman's Week 11 foot listing
+ * while on IR since Week 2).
+ *
+ * Windows are matched to entries by position (seasonAvailability keeps the
+ * season entries' order), not by week: two entries can share a week (Brock
+ * Bowers' Week 10 ankle and quad), and a week key gave both the open one's
+ * count.
+ */
 function withOpenWindows(
   history: PlayerInjuryHistory,
   season: number,
   availability: SeasonAvailability,
 ): PlayerInjuryHistory {
-  const open = new Map(availability.windows.filter((w) => w.open).map((w) => [w.week, w.missedWeeks.length]));
-  if (!open.size) return history;
   let changed = false;
+  let k = 0;
   const nfl = history.nfl.map((e) => {
-    if (e.season !== season || typeof e.week !== "number" || !open.has(e.week)) return e;
-    const n = open.get(e.week)!;
-    if (n === (e.gamesMissed ?? 0)) return e;
+    if (e.season !== season || typeof e.week !== "number") return e;
+    const win = availability.windows[k++];
+    if (!win || e.source === "play-by-play") return e;
+    const m = win.missedWeeks;
+    const stored = e.gamesMissed ?? 0;
+    const shared = m.length === 0 && win.sharedWith !== null ? win.sharedWith : null;
+    const storedOpen = /; out since Week \d+/.test(e.description ?? "");
+    // Nothing to correct: same count, same open/closed outcome, nothing shared.
+    if (!shared && m.length === stored && (m.length === 0 || win.open === storedOpen)) return e;
+    // The builder's own reading of a game still to come is withGamesToCome's.
+    if (!shared && m.length === 0 && stored === 0) return e;
+    const tail = (listed: string): string =>
+      shared
+        ? `${listed}; the games he missed then are counted under his Week ${shared.week} ${injuryWord(shared.type)}.`
+        : m.length === 0
+          ? `${listed} and played through it without missing time.`
+          : win.open
+            ? `${listed}; out since Week ${m[0]}${m.length > 1 ? ` (${m.length} games missed so far)` : ""}.`
+            : `${listed}; missed ${listWeeks(m, availability.weekCodes)}.`;
+    const description = e.description && TAIL.test(e.description)
+      ? e.description.replace(TAIL, (_all, listed: string | undefined) => tail(listed ?? ""))
+      : e.description;
     changed = true;
-    const games = `${n} ${n === 1 ? "game" : "games"}`;
     return {
       ...e,
-      gamesMissed: n,
-      description: e.description?.replace(/\(\d+ games? missed so far\)/, `(${games} missed so far)`),
+      gamesMissed: m.length,
+      ...(shared ? { countedUnder: shared } : {}),
+      description,
     };
   });
   return changed ? { ...history, nfl } : history;
@@ -1756,6 +1821,11 @@ export function playerDataVersion(
     // The Injury tab's practice grid, which a report read in the evening
     // changes without touching any other file.
     practiceStamp(data.leagueSeason),
+    // The rest-of-season rank, its date and whether it is current. A board
+    // goes stale with the clock, not with a file (ROS_STALE_DAYS), so a
+    // fragment rendered while it was fresh must not outlive the cutoff, and
+    // a newer board must replace the rank and date it printed (2026-11-27).
+    data.rosRank ? `${data.rosRank.rank}.${data.rosRank.updatedAtIso ?? ""}.${data.rosRank.stale ? "s" : "f"}` : "",
   ].join("-");
 }
 
