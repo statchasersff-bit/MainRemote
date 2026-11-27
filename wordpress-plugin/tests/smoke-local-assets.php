@@ -1,8 +1,9 @@
 <?php
 /**
- * WEB-023: the team depth-chart route loads team.css and the team bundle from
- * the WordPress origin when the plugin carries the API's current build, and
- * from the asset host otherwise.
+ * WEB-023: the team depth-chart route loads team.css and the team bundle, and
+ * every FPA page loads fpa.css and the FPA bundle, from the WordPress origin
+ * when the plugin carries the API's current build, and from the asset host
+ * otherwise.
  *
  *     php wordpress-plugin/tests/smoke-local-assets.php
  *
@@ -182,6 +183,99 @@ is( 1 === preg_match( "/wp_register_script\\(\\s*STATCHASERS_TEAM_HANDLE,\\s*\\\
 is( false !== strpos( $team, "statchasers_team_asset_urls(" ), true, 'urls come from statchasers_team_asset_urls()' );
 is( false !== strpos( $team, "'/dist/statchasers-team.js'" ), true, 'delay-JS exclusion pattern unchanged' );
 
+echo "\nFPA table: fpa.css and the FPA bundle (WEB-023, 2026-11-27)\n";
+$fpa_css = '.scf-scroll{overflow-x:auto;max-width:100%}';
+$fpa_js  = '(()=>{document.documentElement.dataset.f="1"})();';
+file_put_contents( "$dir/fpa.css", $fpa_css );
+file_put_contents( "$dir/dist/statchasers-fpa.js", $fpa_js );
+
+/** A manifest naming all four bundled files, as build-zip.sh writes it. */
+function fixture_manifest_all( string $dir, string $version ): void {
+	$files = array();
+	foreach ( array( '/team.css', '/dist/statchasers-team.js', '/fpa.css', '/dist/statchasers-fpa.js' ) as $path ) {
+		$body           = (string) file_get_contents( $dir . $path );
+		$files[ $path ] = array( 'sha256' => hash( 'sha256', $body ), 'bytes' => strlen( $body ) );
+	}
+	file_put_contents( "$dir/manifest.json", json_encode( array( 'version' => $version, 'files' => $files ) ) );
+	statchasers_local_asset_manifest( true );
+	$GLOBALS['transients'] = array();
+	$GLOBALS['fetched']    = array();
+}
+
+$local_fpa_css  = 'https://statchasers.com/wp-content/plugins/statchasers-news/assets/api/fpa.css';
+$local_fpa_js   = 'https://statchasers.com/wp-content/plugins/statchasers-news/assets/api/dist/statchasers-fpa.js';
+$remote_fpa_css = 'https://news.statchasers.com/fpa.css';
+$remote_fpa_js  = 'https://news.statchasers.com/dist/statchasers-fpa.js';
+
+// A team-only manifest (a zip built before this change): FPA stays remote.
+fixture_manifest( $dir, 'abc123' );
+statchasers_local_asset_manifest( true );
+$GLOBALS['transients'] = array();
+$GLOBALS['fetched']    = array();
+$u = statchasers_fpa_asset_urls( 'abc123' );
+is( array( $u['css'], $u['js'] ), array( $remote_fpa_css, $remote_fpa_js ), 'manifest without the FPA files: asset host' );
+is( $GLOBALS['fetched'], array(), 'and nothing is fetched to compare' );
+
+fixture_manifest_all( $dir, 'abc123' );
+$u = statchasers_fpa_asset_urls( 'abc123' );
+is( array( $u['css'], $u['js'] ), array( $local_fpa_css, $local_fpa_js ), 'manifest version matches: both from the WordPress origin' );
+is( array( $u['css_local'], $u['js_local'] ), array( true, true ), 'and says so' );
+is( $GLOBALS['fetched'], array(), 'same version: no comparison fetch' );
+$t = statchasers_team_asset_urls( 'depth-chart', 'abc123' );
+is( array( $t['css'], $t['js'] ), array( $local_css, $local_js ), 'the team depth chart still local from the same manifest' );
+$t = statchasers_team_asset_urls( 'outlook', 'abc123' );
+is( array( $t['css'], $t['js'] ), array( $remote_css, $remote_js ), 'and the team tabs out of scope still remote (FPA scope does not leak)' );
+
+$GLOBALS['hooks']['statchasers_fpa_local_assets'][] = static function () { return false; };
+$u = statchasers_fpa_asset_urls( 'abc123' );
+is( array( $u['css'], $u['js'] ), array( $remote_fpa_css, $remote_fpa_js ), 'statchasers_fpa_local_assets=false: asset host' );
+unset( $GLOBALS['hooks']['statchasers_fpa_local_assets'] );
+
+fixture_manifest_all( $dir, 'abc123' );
+$GLOBALS['http'] = array(
+	'https://api.example.com/fpa.css'                 => array( 200, $fpa_css ),
+	'https://api.example.com/dist/statchasers-fpa.js' => array( 200, $fpa_js . '/*changed*/' ),
+);
+$u = statchasers_fpa_asset_urls( 'zzz999' );
+is( $u['css'], $local_fpa_css, 'API redeployed, fpa.css byte-identical: stays local' );
+is( $u['js'], $remote_fpa_js, 'API redeployed, FPA bundle changed: asset host' );
+is( $GLOBALS['fetched'], array( 'https://api.example.com/fpa.css?ver=zzz999', 'https://api.example.com/dist/statchasers-fpa.js?ver=zzz999' ), 'compared against the fetch origin' );
+
+fixture_manifest_all( $dir, 'abc123' );
+$GLOBALS['http'] = array();
+$u = statchasers_fpa_asset_urls( 'zzz999' );
+is( array( $u['css'], $u['js'] ), array( $remote_fpa_css, $remote_fpa_js ), 'versions differ and the API cannot be compared: asset host' );
+
+fixture_manifest_all( $dir, 'abc123' );
+file_put_contents( "$dir/fpa.css", $fpa_css . '/*x*/' );
+$u = statchasers_fpa_asset_urls( 'abc123' );
+is( $u['css'], $remote_fpa_css, 'an fpa.css whose size disagrees with the manifest is never served' );
+file_put_contents( "$dir/fpa.css", $fpa_css );
+
+echo "\nWP Rocket and the tag attributes cover the local FPA URLs\n";
+foreach ( array( 'rocket_exclude_css', 'rocket_exclude_async_css', 'rocket_rucss_excluded_stylesheets' ) as $hook ) {
+	$ex = apply_filters( $hook, array() );
+	is( in_array( '/assets/api/fpa.css', $ex, true ) && in_array( '/assets/api/team.css', $ex, true ), true, "$hook names fpa.css and team.css" );
+}
+is( false !== strpos( $local_fpa_css, '/assets/api/fpa.css' ), true, 'the exclusion matches the local stylesheet URL' );
+if ( ! function_exists( 'wp_parse_url' ) ) {
+	function wp_parse_url( $url, $component = -1 ) { return parse_url( $url, $component ); }
+}
+if ( ! function_exists( 'statchasers_perf_script_tag' ) ) {
+	require_once "$plugin/statchasers-perf.php";
+}
+$tag = statchasers_perf_script_tag( "<script id=\"statchasers-fpa-js\" defer src=\"$local_fpa_js?ver=abc123\"></script>", 'statchasers-fpa', "$local_fpa_js?ver=abc123" );
+is( false !== strpos( $tag, ' nowprocket ' ) && false !== strpos( $tag, 'data-no-optimize="1"' ) && false !== strpos( $tag, ' defer ' ), true, 'local FPA bundle tag keeps defer + nowprocket/no-optimize' );
+is( in_array( '/dist/statchasers-', apply_filters( 'rocket_delay_js_exclusions', array() ), true ) && false !== strpos( $local_fpa_js, '/dist/statchasers-' ), true, 'Delay JS exclusion matches the local bundle URL' );
+
+echo "\nstatchasers-fpa.php registers what this file decides\n";
+$fpa = (string) file_get_contents( "$plugin/statchasers-fpa.php" );
+is( false !== strpos( $fpa, '$urls = statchasers_fpa_asset_urls( $version );' ), true, 'urls come from statchasers_fpa_asset_urls()' );
+is( 1 === preg_match( "/wp_register_style\\(\\s*STATCHASERS_FPA_HANDLE,\\s*\\\$urls\\['css'\\],\\s*statchasers_font_dependency\\(\\)/", $fpa ), true, 'style registered with $urls[css], font dependency kept' );
+is( 1 === preg_match( "/wp_register_script\\(\\s*STATCHASERS_FPA_HANDLE,\\s*\\\$urls\\['js'\\],.*?'strategy'\\s*=>\\s*'defer'/s", $fpa ), true, 'script registered with $urls[js], still deferred' );
+is( false === strpos( $fpa, "statchasers_public_origin() . '/fpa.css'" ) && false === strpos( $fpa, "statchasers_public_origin() . '/dist/statchasers-fpa.js'" ), true, 'no hard-coded asset-host URL left (no duplicate external load)' );
+is( false !== strpos( $fpa, 'wp_add_inline_style( STATCHASERS_FPA_HANDLE' ), true, 'inline styles still ride on the handle' );
+
 echo "\nthe bundled copy in this tree, if build-zip.sh has staged one\n";
 $real = "$plugin/assets/api";
 if ( is_file( "$real/manifest.json" ) ) {
@@ -195,6 +289,8 @@ if ( is_file( "$real/manifest.json" ) ) {
 }
 
 // ---------------------------------------------------------------- cleanup
+@unlink( "$dir/fpa.css" );
+@unlink( "$dir/dist/statchasers-fpa.js" );
 @unlink( "$dir/team.css" );
 @unlink( "$dir/dist/statchasers-team.js" );
 @unlink( "$dir/manifest.json" );

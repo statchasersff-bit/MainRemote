@@ -1,19 +1,27 @@
 <?php
 /**
- * The API's built team assets, served from WordPress (WEB-023).
+ * The API's built tool assets, served from WordPress (WEB-023).
  *
- * The team hub's stylesheet and bundle (team.css, dist/statchasers-team.js)
- * are built by the API and normally load from the public asset host
- * (statchasers_public_origin(), news.statchasers.com). When that host is
- * unreachable for a reader the server-rendered fragment still arrives - it is
- * fetched server-side and cached - but it arrives without its layout and its
- * controls: the depth chart's view pills, the search box and the tab strip.
+ * The tools' stylesheets and bundles are built by the API and normally load
+ * from the public asset host (statchasers_public_origin(),
+ * news.statchasers.com). When that host is unreachable for a reader the
+ * server-rendered fragment still arrives - it is fetched server-side and
+ * cached - but it arrives without its layout and its controls: the depth
+ * chart's view pills, the search box and the tab strip; on the Fantasy Points
+ * Allowed table, the sort headers, the scoring and view buttons and the
+ * scroll wrapper that keeps the table inside a phone's width.
  *
  * So build-zip.sh copies the API's build output into this plugin at
  * assets/api/ (same relative paths as on the API: /team.css,
- * /dist/statchasers-team.js) with a manifest.json naming the API build they
- * came from, and the routes listed in statchasers_local_asset_sections() load
- * those copies from the WordPress origin instead.
+ * /dist/statchasers-team.js, /fpa.css, /dist/statchasers-fpa.js) with a
+ * manifest.json naming the API build they came from, and these routes load
+ * those copies from the WordPress origin instead:
+ *
+ *   - the team sections listed in statchasers_local_asset_sections()
+ *     (statchasers_team_asset_urls());
+ *   - every page that mounts the FPA shortcode (statchasers_fpa_asset_urls(),
+ *     called only from statchasers_fpa_enqueue_assets(), which runs only on
+ *     those pages; filter statchasers_fpa_local_assets to switch it off).
  *
  * THE LOCKSTEP RULE. The fragment's markup and the stylesheet must come from
  * the same API build; a copy from another build styles markup it was not
@@ -241,10 +249,44 @@ function statchasers_team_asset_urls( string $section, string $version ): array 
 }
 
 /**
- * Keep the local stylesheet as it is served from the API: no minify (it is
+ * The FPA handle's two URLs. The caller (statchasers_fpa_enqueue_assets())
+ * runs only on pages that mount the table, so that is the scope; the filter
+ * puts every FPA page back on the asset host at once.
+ *
+ * @param string $version The API's current asset version.
+ * @return array{css:string,js:string,css_local:bool,js_local:bool}
+ */
+function statchasers_fpa_asset_urls( string $version ): array {
+	$local = (bool) apply_filters( 'statchasers_fpa_local_assets', true );
+	$css   = statchasers_local_asset_url( '/fpa.css', $version, $local );
+	$js    = statchasers_local_asset_url( '/dist/statchasers-fpa.js', $version, $local );
+
+	return array(
+		'css'       => $css['url'],
+		'js'        => $js['url'],
+		'css_local' => $css['local'],
+		'js_local'  => $js['local'],
+	);
+}
+
+/**
+ * The bundled stylesheets, as API-relative paths. Each is excluded from WP
+ * Rocket's CSS handling below.
+ *
+ * @return array<int,string>
+ */
+function statchasers_local_asset_stylesheets(): array {
+	return array( '/team.css', '/fpa.css' );
+}
+
+/**
+ * Keep the local stylesheets as they are served from the API: no minify (it is
  * already minified, and WP Rocket's copy would be a second URL to go stale)
  * and no async "load CSS asynchronously" rewrite (the external copy never got
- * one, and the chart would flash unstyled). Matched against the URL.
+ * one, and the chart would flash unstyled). Matched against the URL. The
+ * bundles need nothing here: statchasers-perf.php's '/dist/statchasers-'
+ * Delay JS / minify exclusion and its nowprocket tag attributes match the
+ * local URLs (assets/api/dist/statchasers-*.js) too.
  *
  * @param mixed $exclusions Existing patterns.
  * @return array
@@ -253,7 +295,9 @@ function statchasers_local_asset_css_exclusion( $exclusions ): array {
 	if ( ! is_array( $exclusions ) ) {
 		$exclusions = array();
 	}
-	$exclusions[] = '/' . STATCHASERS_LOCAL_ASSET_DIR . '/team.css';
+	foreach ( statchasers_local_asset_stylesheets() as $path ) {
+		$exclusions[] = '/' . STATCHASERS_LOCAL_ASSET_DIR . $path;
+	}
 	return $exclusions;
 }
 add_filter( 'rocket_exclude_css', 'statchasers_local_asset_css_exclusion' );

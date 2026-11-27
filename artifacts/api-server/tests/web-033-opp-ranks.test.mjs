@@ -129,7 +129,7 @@ describe("the FPA page opens in PPR (mak, 2026-11-26)", () => {
     assert.equal(blend.DEFAULT_FPA_FORMAT, "ppr");
   });
 
-  test("bare /fpa is PPR, ?format=half and standard still work, PPR links are bare", async () => {
+  test("bare /fpa is PPR, ?format=half and standard still work, PPR is the pressed default", async () => {
     const { startServer } = await import("./helpers/server.mjs");
     const srv = await startServer({ SC_LIVE_WARM: "0", SC_EDGE_PREFETCH: "0", SC_WATCHDOG: "0" });
     try {
@@ -137,8 +137,10 @@ describe("the FPA page opens in PPR (mak, 2026-11-26)", () => {
       if (!/data-scf-root/.test(bare)) return; // nothing ingested in this database
       assert.match(bare, /data-format="ppr"/);
       assert.match(bare, /PPR scoring, raw view/);
-      assert.match(bare, /<a class="scf-opt is-active" href="\/fpa"[^>]*data-scf-format="ppr"/);
-      assert.match(bare, /href="\/fpa\?format=half"[^>]*data-scf-format="half"[^>]*rel="nofollow"/);
+      // The controls are buttons since WEB-020 (2026-11-27): no ?format= href.
+      assert.match(bare, /<button type="button" class="scf-opt is-active" data-scf-format="ppr"[^>]*aria-pressed="true"/);
+      assert.match(bare, /data-default-format="ppr"/);
+      assert.doesNotMatch(bare, /href="[^"]*\?format=/);
       const ppr = await (await fetch(`${srv.origin}/embed/fpa?format=ppr`)).text();
       assert.equal(ppr.replace(/\s+/g, " "), bare.replace(/\s+/g, " "), "?format=ppr is the bare page");
       for (const f of ["half", "standard"]) {
