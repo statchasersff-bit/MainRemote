@@ -13,7 +13,8 @@
  *
  * So build-zip.sh copies the API's build output into this plugin at
  * assets/api/ (same relative paths as on the API: /team.css,
- * /dist/statchasers-team.js, /fpa.css, /dist/statchasers-fpa.js) with a
+ * /dist/statchasers-team.js, /fpa.css, /dist/statchasers-fpa.js, /player.css,
+ * /dist/statchasers-player.js) with a
  * manifest.json naming the API build they came from, and these routes load
  * those copies from the WordPress origin instead:
  *
@@ -22,6 +23,16 @@
  *   - every page that mounts the FPA shortcode (statchasers_fpa_asset_urls(),
  *     called only from statchasers_fpa_enqueue_assets(), which runs only on
  *     those pages; filter statchasers_fpa_local_assets to switch it off).
+ *   - every player page (statchasers_player_asset_urls(), called only from
+ *     statchasers_player_enqueue_assets(); filter
+ *     statchasers_player_local_assets to switch it off). Here the reason is
+ *     layout shift, not reachability: from the asset host, WP Rocket rewrote
+ *     player.css to load asynchronously, the header first painted with
+ *     Rocket's stale critical CSS (a desktop three-column grid squeezing the
+ *     name column to 0px on a phone) and collapsed ~750px when player.css
+ *     landed - 0.18 to 0.78 CLS on phones (docs/MOBILE-PERF-PLAYER-2026-11-27.md).
+ *     The local copy is excluded from the async rewrite below, so it is a
+ *     plain render-blocking stylesheet on the page's own origin.
  *
  * THE LOCKSTEP RULE. The fragment's markup and the stylesheet must come from
  * the same API build; a copy from another build styles markup it was not
@@ -270,20 +281,42 @@ function statchasers_fpa_asset_urls( string $version ): array {
 }
 
 /**
+ * The player handle's two URLs. The caller (statchasers_player_enqueue_assets())
+ * runs only on pages that mount a player profile or tab; the filter puts every
+ * player page back on the asset host at once.
+ *
+ * @param string $version The API's current asset version.
+ * @return array{css:string,js:string,css_local:bool,js_local:bool}
+ */
+function statchasers_player_asset_urls( string $version ): array {
+	$local = (bool) apply_filters( 'statchasers_player_local_assets', true );
+	$css   = statchasers_local_asset_url( '/player.css', $version, $local );
+	$js    = statchasers_local_asset_url( '/dist/statchasers-player.js', $version, $local );
+
+	return array(
+		'css'       => $css['url'],
+		'js'        => $js['url'],
+		'css_local' => $css['local'],
+		'js_local'  => $js['local'],
+	);
+}
+
+/**
  * The bundled stylesheets, as API-relative paths. Each is excluded from WP
  * Rocket's CSS handling below.
  *
  * @return array<int,string>
  */
 function statchasers_local_asset_stylesheets(): array {
-	return array( '/team.css', '/fpa.css' );
+	return array( '/team.css', '/fpa.css', '/player.css' );
 }
 
 /**
  * Keep the local stylesheets as they are served from the API: no minify (it is
  * already minified, and WP Rocket's copy would be a second URL to go stale)
- * and no async "load CSS asynchronously" rewrite (the external copy never got
- * one, and the chart would flash unstyled). Matched against the URL. The
+ * and no async "load CSS asynchronously" rewrite (the chart would flash
+ * unstyled; on the player pages the rewrite IS what made the header jump, see
+ * the file header). Matched against the URL. The
  * bundles need nothing here: statchasers-perf.php's '/dist/statchasers-'
  * Delay JS / minify exclusion and its nowprocket tag attributes match the
  * local URLs (assets/api/dist/statchasers-*.js) too.
