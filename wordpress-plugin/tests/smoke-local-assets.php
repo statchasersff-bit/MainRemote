@@ -276,6 +276,73 @@ is( 1 === preg_match( "/wp_register_script\\(\\s*STATCHASERS_FPA_HANDLE,\\s*\\\$
 is( false === strpos( $fpa, "statchasers_public_origin() . '/fpa.css'" ) && false === strpos( $fpa, "statchasers_public_origin() . '/dist/statchasers-fpa.js'" ), true, 'no hard-coded asset-host URL left (no duplicate external load)' );
 is( false !== strpos( $fpa, 'wp_add_inline_style( STATCHASERS_FPA_HANDLE' ), true, 'inline styles still ride on the handle' );
 
+echo "\nPlayer pages: player.css and the player bundle (layout shift, 2026-11-27)\n";
+$pl_css = '.scp .scp-phead-hero{display:grid}';
+$pl_js  = '(()=>{document.documentElement.dataset.p="1"})();';
+file_put_contents( "$dir/player.css", $pl_css );
+file_put_contents( "$dir/dist/statchasers-player.js", $pl_js );
+$local_pl_css  = 'https://statchasers.com/wp-content/plugins/statchasers-news/assets/api/player.css';
+$local_pl_js   = 'https://statchasers.com/wp-content/plugins/statchasers-news/assets/api/dist/statchasers-player.js';
+$remote_pl_css = 'https://news.statchasers.com/player.css';
+$remote_pl_js  = 'https://news.statchasers.com/dist/statchasers-player.js';
+
+// The four-file manifest (a zip built before this change): players stay remote.
+fixture_manifest_all( $dir, 'abc123' );
+$u = statchasers_player_asset_urls( 'abc123' );
+is( array( $u['css'], $u['js'] ), array( $remote_pl_css, $remote_pl_js ), 'manifest without the player files: asset host' );
+
+/** A manifest naming all six bundled files. */
+function fixture_manifest_six( string $dir, string $version ): void {
+	$files = array();
+	foreach ( array( '/team.css', '/dist/statchasers-team.js', '/fpa.css', '/dist/statchasers-fpa.js', '/player.css', '/dist/statchasers-player.js' ) as $path ) {
+		$body           = (string) file_get_contents( $dir . $path );
+		$files[ $path ] = array( 'sha256' => hash( 'sha256', $body ), 'bytes' => strlen( $body ) );
+	}
+	file_put_contents( "$dir/manifest.json", json_encode( array( 'version' => $version, 'files' => $files ) ) );
+	statchasers_local_asset_manifest( true );
+	$GLOBALS['transients'] = array();
+	$GLOBALS['fetched']    = array();
+}
+
+fixture_manifest_six( $dir, 'abc123' );
+$u = statchasers_player_asset_urls( 'abc123' );
+is( array( $u['css'], $u['js'] ), array( $local_pl_css, $local_pl_js ), 'manifest version matches: both from the WordPress origin' );
+is( array( $u['css_local'], $u['js_local'] ), array( true, true ), 'and flagged local' );
+$f = statchasers_fpa_asset_urls( 'abc123' );
+is( array( $f['css'], $f['js'] ), array( $local_fpa_css, $local_fpa_js ), 'FPA unaffected by the player entries' );
+
+$GLOBALS['hooks']['statchasers_player_local_assets'][] = static function () { return false; };
+$u = statchasers_player_asset_urls( 'abc123' );
+is( array( $u['css'], $u['js'] ), array( $remote_pl_css, $remote_pl_js ), 'statchasers_player_local_assets=false: asset host' );
+unset( $GLOBALS['hooks']['statchasers_player_local_assets'] );
+
+fixture_manifest_six( $dir, 'abc123' );
+$GLOBALS['http'] = array(
+	'https://api.example.com/player.css'                 => array( 200, $pl_css . '/*changed*/' ),
+	'https://api.example.com/dist/statchasers-player.js' => array( 200, $pl_js ),
+);
+$u = statchasers_player_asset_urls( 'zzz999' );
+is( $u['css'], $remote_pl_css, 'API redeployed, player.css changed: asset host (never another build\'s stylesheet)' );
+is( $u['js'], $local_pl_js, 'API redeployed, player bundle byte-identical: stays local' );
+
+echo "\nWP Rocket leaves the player stylesheet render-blocking\n";
+foreach ( array( 'rocket_exclude_css', 'rocket_exclude_async_css', 'rocket_rucss_excluded_stylesheets' ) as $hook ) {
+	$ex = apply_filters( $hook, array() );
+	is( in_array( '/assets/api/player.css', $ex, true ), true, "$hook names /assets/api/player.css" );
+}
+is( false !== strpos( $local_pl_css, '/assets/api/player.css' ), true, 'the exclusion matches the local stylesheet URL' );
+$tag = statchasers_perf_script_tag( "<script id=\"statchasers-player-js\" defer src=\"$local_pl_js?ver=abc123\"></script>", 'statchasers-player', "$local_pl_js?ver=abc123" );
+is( false !== strpos( $tag, ' nowprocket ' ) && false !== strpos( $tag, ' defer ' ), true, 'local player bundle tag keeps defer + nowprocket' );
+
+echo "\nstatchasers-player.php registers what this file decides\n";
+$pl = (string) file_get_contents( "$plugin/statchasers-player.php" );
+is( false !== strpos( $pl, '$urls = statchasers_player_asset_urls( $version );' ), true, 'urls come from statchasers_player_asset_urls()' );
+is( 1 === preg_match( "/wp_register_style\\(\\s*STATCHASERS_PLAYER_HANDLE,\\s*\\\$urls\\['css'\\],\\s*\\\$deps/", $pl ), true, 'style registered with $urls[css], font deps kept' );
+is( 1 === preg_match( "/wp_register_script\\(\\s*STATCHASERS_PLAYER_HANDLE,\\s*\\\$urls\\['js'\\],.*?'strategy'\\s*=>\\s*'defer'/s", $pl ), true, 'script registered with $urls[js], still deferred' );
+is( false === strpos( $pl, "statchasers_public_origin() . '/player.css'" ) && false === strpos( $pl, "statchasers_public_origin() . '/dist/statchasers-player.js'" ), true, 'no hard-coded asset-host URL left (no duplicate external load)' );
+is( false !== strpos( $pl, "add_filter( 'rocket_exclude_async_css', 'statchasers_player_async_css_exclusion' );" ) && false !== strpos( $pl, "\$host . '/player.css'" ), true, 'the asset-host fallback is kept out of the async rewrite too' );
+is( false !== strpos( $pl, 'wp_add_inline_style( STATCHASERS_PLAYER_HANDLE' ), true, 'inline styles still ride on the handle' );
+
 echo "\nthe bundled copy in this tree, if build-zip.sh has staged one\n";
 $real = "$plugin/assets/api";
 if ( is_file( "$real/manifest.json" ) ) {
@@ -289,6 +356,8 @@ if ( is_file( "$real/manifest.json" ) ) {
 }
 
 // ---------------------------------------------------------------- cleanup
+@unlink( "$dir/player.css" );
+@unlink( "$dir/dist/statchasers-player.js" );
 @unlink( "$dir/fpa.css" );
 @unlink( "$dir/dist/statchasers-fpa.js" );
 @unlink( "$dir/team.css" );

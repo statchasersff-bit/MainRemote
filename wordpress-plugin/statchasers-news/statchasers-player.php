@@ -448,6 +448,13 @@ function statchasers_player_enqueue_assets(): void {
 
 	$version = statchasers_news_asset_version();
 
+	// The stylesheet and bundle bundled with this plugin when they are the
+	// API's current build, else the asset host as before (WEB-023,
+	// statchasers-local-assets.php). The local stylesheet is kept out of WP
+	// Rocket's async CSS rewrite, so the header paints once, in its final
+	// layout (phone CLS 0.18-0.78 -> 0, 2026-11-27).
+	$urls = statchasers_player_asset_urls( $version );
+
 	if ( ! wp_style_is( STATCHASERS_PLAYER_HANDLE, 'registered' ) ) {
 		$deps        = statchasers_font_dependency();
 		$header_font = statchasers_player_header_font_url();
@@ -458,7 +465,7 @@ function statchasers_player_enqueue_assets(): void {
 		}
 		wp_register_style(
 			STATCHASERS_PLAYER_HANDLE,
-			statchasers_public_origin() . '/player.css',
+			$urls['css'],
 			$deps,
 			$version
 		);
@@ -467,7 +474,7 @@ function statchasers_player_enqueue_assets(): void {
 	if ( ! wp_script_is( STATCHASERS_PLAYER_HANDLE, 'registered' ) ) {
 		wp_register_script(
 			STATCHASERS_PLAYER_HANDLE,
-			statchasers_public_origin() . '/dist/statchasers-player.js',
+			$urls['js'],
 			array(),
 			$version,
 			array(
@@ -542,6 +549,35 @@ function statchasers_player_lazyload_exclusions( $attributes ): array {
 	return $attributes;
 }
 add_filter( 'rocket_lazyload_excluded_attributes', 'statchasers_player_lazyload_exclusions' );
+
+/**
+ * player.css from the asset host is not loaded asynchronously either.
+ *
+ * The bundled copy (statchasers-local-assets.php) is the normal case and is
+ * excluded there. This covers the fallback - an API deploy that changed
+ * player.css since the zip was built - which loads the stylesheet from
+ * statchasers_public_origin(). Loaded asynchronously, the header first paints
+ * with WP Rocket's critical CSS for the template, which does not lay it out on
+ * a phone (and goes stale with every player.css change), and then collapses
+ * when player.css lands: 0.18 CLS on the Gibbs hub, up to 0.78 on a thin
+ * profile (docs/MOBILE-PERF-PLAYER-2026-11-27.md). A render-blocking
+ * stylesheet costs a later first paint instead; the local copy keeps that to
+ * the page's own connection.
+ *
+ * @param mixed $exclusions Existing patterns.
+ * @return array
+ */
+function statchasers_player_async_css_exclusion( $exclusions ): array {
+	if ( ! is_array( $exclusions ) ) {
+		$exclusions = array();
+	}
+	$host = (string) wp_parse_url( statchasers_public_origin(), PHP_URL_HOST );
+	if ( '' !== $host ) {
+		$exclusions[] = $host . '/player.css';
+	}
+	return $exclusions;
+}
+add_filter( 'rocket_exclude_async_css', 'statchasers_player_async_css_exclusion' );
 
 /**
  * Does the request being rendered mount a player page?

@@ -138,10 +138,11 @@ say "loader   ok"
 
 # WEB-023: the team depth-chart route loads team.css and the team bundle from
 # WordPress (statchasers-local-assets.php), and so does every page mounting the
-# FPA table (fpa.css, the FPA bundle), so the zip carries a copy of the API's
-# BUILD OUTPUT - the exact bytes the API serves at /team.css,
-# /dist/statchasers-team.js, /fpa.css and /dist/statchasers-fpa.js - with a
-# manifest naming the build. Build the API
+# FPA table (fpa.css, the FPA bundle) and every player page (player.css, the
+# player bundle), so the zip carries a copy of the API's BUILD OUTPUT - the
+# exact bytes the API serves at /team.css, /dist/statchasers-team.js,
+# /fpa.css, /dist/statchasers-fpa.js, /player.css and
+# /dist/statchasers-player.js - with a manifest naming the build. Build the API
 # (artifacts/api-server: node build.mjs) from the commit that is deployed, then
 # run this. The plugin only uses the copy while it is that build (or
 # byte-identical to it), so a stale copy costs nothing but the fallback to the
@@ -154,9 +155,9 @@ api_out="$plugin/assets/api"
 rm -rf "$api_out"
 
 if [ "${SC_NO_API_ASSETS:-}" = "1" ]; then
-	say "api      SKIPPED (SC_NO_API_ASSETS=1) - the depth-chart route and the FPA page will load from the asset host"
+	say "api      SKIPPED (SC_NO_API_ASSETS=1) - the depth-chart route, the FPA page and the player pages will load from the asset host"
 else
-	for need in version.json css/team.css statchasers-team.js css/fpa.css statchasers-fpa.js; do
+	for need in version.json css/team.css statchasers-team.js css/fpa.css statchasers-fpa.js css/player.css statchasers-player.js; do
 		[ -s "$api_dist/$need" ] || die "no $need under $api_dist - build the API first (cd artifacts/api-server && node build.mjs), or set SC_API_DIST."
 	done
 	api_version="$(grep -oE '"version": *"[^"]+"' "$api_dist/version.json" | sed -E 's/.*"([^"]+)"$/\1/')"
@@ -167,15 +168,18 @@ else
 	cp "$api_dist/statchasers-team.js" "$api_out/dist/statchasers-team.js"
 	cp "$api_dist/css/fpa.css" "$api_out/fpa.css"
 	cp "$api_dist/statchasers-fpa.js" "$api_out/dist/statchasers-fpa.js"
+	cp "$api_dist/css/player.css" "$api_out/player.css"
+	cp "$api_dist/statchasers-player.js" "$api_out/dist/statchasers-player.js"
 
 	entry() { printf '"%s":{"sha256":"%s","bytes":%s}' "$1" "$(sha256sum "$api_out$1" | cut -d' ' -f1)" "$(wc -c < "$api_out$1" | tr -d ' ')"; }
-	printf '{"version":"%s","files":{%s,%s,%s,%s}}\n' "$api_version" \
+	printf '{"version":"%s","files":{%s,%s,%s,%s,%s,%s}}\n' "$api_version" \
 		"$(entry /team.css)" "$(entry /dist/statchasers-team.js)" \
-		"$(entry /fpa.css)" "$(entry /dist/statchasers-fpa.js)" > "$api_out/manifest.json"
+		"$(entry /fpa.css)" "$(entry /dist/statchasers-fpa.js)" \
+		"$(entry /player.css)" "$(entry /dist/statchasers-player.js)" > "$api_out/manifest.json"
 
 	# Staleness is a warning, not an error: the runtime check decides.
 	src="$(cd "$api_dist/../.." 2>/dev/null && pwd || true)"
-	for sheet in team.css fpa.css; do
+	for sheet in team.css fpa.css player.css; do
 		if [ -n "$src" ] && [ -f "$src/public/$sheet" ] && [ "$src/public/$sheet" -nt "$api_dist/version.json" ]; then
 			say "WARNING  $src/public/$sheet is newer than the build; rebuild the API if it changed."
 		fi
@@ -184,7 +188,7 @@ else
 	if [ -n "$PHP" ] && [ -f "$here/tests/smoke-local-assets.php" ]; then
 		"$PHP" "$here/tests/smoke-local-assets.php" >/dev/null || die "tests/smoke-local-assets.php failed. Run it to see why."
 	fi
-	say "api      $api_version (team.css, dist/statchasers-team.js, fpa.css, dist/statchasers-fpa.js) from ${api_dist}"
+	say "api      $api_version (team.css, dist/statchasers-team.js, fpa.css, dist/statchasers-fpa.js, player.css, dist/statchasers-player.js) from ${api_dist}"
 fi
 
 # -------------------------------------------------------------------- 4. zip
@@ -202,16 +206,16 @@ say "wrote    ${out#"$here"/} ($(du -h "$out" | cut -f1 | tr -d ' '))"
 # Every file the plugin can print a URL for has to be in the archive.
 if [ -f "$api_out/manifest.json" ]; then
 	listing="$(unzip -Z1 "$out")"
-	for f in manifest.json team.css dist/statchasers-team.js fpa.css dist/statchasers-fpa.js; do
+	for f in manifest.json team.css dist/statchasers-team.js fpa.css dist/statchasers-fpa.js player.css dist/statchasers-player.js; do
 		grep -qx "statchasers-news/assets/api/$f" <<<"$listing" || die "the zip is missing statchasers-news/assets/api/$f"
 	done
 	# And the bytes in the archive are the ones the manifest names: a copy that
 	# changed after the manifest was written would be served as the wrong build.
-	for f in team.css dist/statchasers-team.js fpa.css dist/statchasers-fpa.js; do
+	for f in team.css dist/statchasers-team.js fpa.css dist/statchasers-fpa.js player.css dist/statchasers-player.js; do
 		want="$(grep -oE "\"/$f\":\{\"sha256\":\"[0-9a-f]{64}\"" "$api_out/manifest.json" | grep -oE '[0-9a-f]{64}')"
 		got="$(unzip -p "$out" "statchasers-news/assets/api/$f" | sha256sum | cut -d' ' -f1)"
 		[ -n "$want" ] && [ "$want" = "$got" ] || die "statchasers-news/assets/api/$f in the zip does not match its manifest sha256."
 	done
-	say "api      in zip: assets/api/{manifest.json,team.css,dist/statchasers-team.js,fpa.css,dist/statchasers-fpa.js} (sha256 = manifest)"
+	say "api      in zip: assets/api/{manifest.json,team.css,dist/statchasers-team.js,fpa.css,dist/statchasers-fpa.js,player.css,dist/statchasers-player.js} (sha256 = manifest)"
 fi
 unzip -l "$out" | tail -n +4 | head -n -2 | awk '{ printf "         %s\n", $4 }'
