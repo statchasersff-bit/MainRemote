@@ -97,3 +97,9 @@ Trade-off: first paint about 1 s later (render-blocking CSS). Lab only; re-run .
 Main merged (b71a7b71, main 1d67b832: workspace-8f's matchup release). Final checks on b71a7b71: suite 2,081 / 2,077 / 3 / 1 (same three); tsc clean; smoke.php, smoke-local-assets, smoke-rhr-embed 36/36 pass; build-zip.sh all checks ok. Rendered (:8095): scp-critical first in the Gibbs fragment (47,276 bytes), 6 start/sit links, PPR FPTS; Abdullah "RB95 by points per game, 10 games"; Rodgers 0 start/sit; Pierce games missed 9; Pacheco 0 "Tough matchups".
 
 Decisions 2 and 4-7 above are still open.
+
+## Round 3: mak's approvals of 2026-11-27 (afternoon)
+
+- **FAQ wording approved**: the seven status/freshness-driven answers listed in docs/INJURY-ROS-PLAYER-2026-11-27.md ("SEO surfaces") ship as built.
+- **Header POS RANK = total points** at every sample size (header.ts `headerBoard`): `posFinishTotal ?? seasonRankTotal`, tooltip "2026 position rank by total PPR fantasy points"; the header FPPG is the game log's average (Stats rule) instead of the per-game rank's rate. Rendered (:8095): Lamar 16.0 / QB30 (was QB18 per game; Stats chart QB30), Gibbs 28.1 / RB1, Abdullah 1.1 / RB98, Carter 0.4 / RB133, St. Brown 19.8 / WR4, each equal to its Stats chart. Tests: player-header 24/24 (rank/tooltip/board tests rewritten to the total rule, incl. a case where a per-game rank exists and the total prints), player-overview 29, stats-tab 29, entity-seo 9, outlook-tab 42, ppg-rank-consistency 11, career-scoring 12, faq-schema 4, player 154. The Overview and FAQ keep their labeled "RBn by points per game" sentences (a different, stated basis). No player.css/bundle change, so the 1.10.77 zip (632d53c0) is unchanged.
+- Still open: start/sit link removals on ~51 hubs (built, awaiting a word), robots `?log=`, Redraft profile, FPA edge cases.
