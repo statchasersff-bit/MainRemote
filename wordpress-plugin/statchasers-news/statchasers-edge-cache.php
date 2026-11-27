@@ -183,6 +183,7 @@ function statchasers_edge_retry_options(): array {
 		'statchasers_depth_charts_hub_published',
 		'statchasers_depth_charts_team_published',
 		'statchasers_depth_consumers_published',
+		'statchasers_fpa_published',
 	);
 }
 
