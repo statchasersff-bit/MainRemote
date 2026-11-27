@@ -119,7 +119,9 @@ function chart(m: ReturnType<typeof careerPremiumModel> & object): string {
   const rankNote = `${m.pos} rank = season finish by total ${m.scoring} points`;
 
   const aria =
-    `${m.pos} fantasy points per game by season: ` +
+    // The rank beside each figure is by total points, not per game: said
+    // here too, so a screen reader does not pair a PPG with a total rank.
+    `${m.pos} fantasy points per game by season, with the season finish by total ${m.scoring} points: ` +
     seasons.map((s) => `${s.season} ${one(s.ppg)}${s.finish ? ` (${m.pos}${s.finish})` : ""}${s.inProgress ? ", in progress" : ""}`).join(", ") +
     (showAvg ? `. Career average ${one(m.careerPpg)}.` : ".");
 

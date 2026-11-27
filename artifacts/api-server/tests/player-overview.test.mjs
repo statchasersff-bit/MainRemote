@@ -162,7 +162,7 @@ describe("overview sections (mak's Overview redesign, 2026-11-05)", () => {
     const doc = render(withCareer(), { playerPathPrefix: "/nfl/players/" });
     const sec = doc.querySelector("#scp-ox-season-h").closest("section");
     const labels = [...sec.querySelectorAll(".scp-ox-stat dt")].map(text);
-    assert.deepEqual(labels, ["GP", "CMP", "ATT", "PASS YDS", "PASS TD", "INT", "RUSH YDS", "RUSH TD", "FPTS"]);
+    assert.deepEqual(labels, ["GP", "CMP", "ATT", "PASS YDS", "PASS TD", "INT", "RUSH YDS", "RUSH TD", "PPR FPTS"], "the format beside the total (2026-11-27)");
     const values = [...sec.querySelectorAll(".scp-ox-stat dd")].map(text);
     assert.equal(values[0], "3");
     assert.equal(values[8], "49.6", "the three weeks' fantasy total");
