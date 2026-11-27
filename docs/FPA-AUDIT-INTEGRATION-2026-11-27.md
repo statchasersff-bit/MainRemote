@@ -38,3 +38,27 @@ Merges: no conflicts. Version bump a9fafde5.
 - Restored crawlable `/2025/` link under the current table (partly reverses 11-04).
 - Difficulty is color-only on screen (rank visually hidden per 10-08); a visible cue needs a decision.
 - Team logos still load from news.statchasers.com (decorative). SOS rail card keeps a `?tab=player` link (SOS session).
+
+## mak's decisions (2026-11-27) and release
+
+Decisions: (1) only complete weeks count; (2) no link from the current table to /2025/; (3) a visible difficulty cue: yes; (4) change the matchup "not soft" wording; (5) release after these. Built in ebb0c4d6 (see its message); main fast-forwarded, published (build ebb0c4d6), plugin 1.10.76 (zip sha256 82c6e81c223b9aec9a333cedeca44593b5890299b754adb93b787a4293f5635d) installed 05:35Z.
+
+### After release (production, 2026-11-27 05:45-05:55 UTC)
+
+| Check | Result |
+|---|---|
+| /api/status build | ebb0c4d6; fpa week_11 (re-ingest 05:33Z replaced the partial week_12 table) |
+| Forced publish check | changed [2025, 2026], WP Rocket cleaned both URLs, edge_state ok, 0 pending; cron every 5 min; one more 2026 publish at 05:38 (version settling after the API start), unchanged at 05:43 |
+| `/`, desktop + iPhone, fetched twice | MISS then HIT; title "2026 (Weeks 1-11)"; X-SC-FPA-Cache edge-ttl=21600; 32 rows identical to origin (WP proxy) incl. games played |
+| `?format=half&view=adjusted` bookmark | renders Half-PPR adjusted, identical to origin; canonical = base page |
+| `/2025/`, desktop + iPhone | "2025 (Full Season)", 2025 rows identical to origin, edge-ttl=2592000, link back to current |
+| Raw HTML | 0 `format=`/`view=` hrefs on all routes; 0 news.statchasers.com css/js; no current->2025 link |
+| FAQ/schema (scripts/fpa-faq-schema-check.mjs) | current 5 Q, /2025/ 3 Q, every Q/A identical to visible text, in the route's own #webpage |
+| Graph | Organization, WebSite, BreadcrumbList, page entity (FAQPage) at the route's #webpage, ImageObject; one og:image |
+| og:image | https://statchasers.com/wp-content/uploads/2026/11/statchasers-og-default-1200x630-1.png: 200 image/png 1200x630 |
+| Gibbs game log | 11/11 opponents' RB ranks = live FPA PPR table (ARI 13, BUF 12, CAR 1, CHI 23, GB 7, MIA 6, MIN 29, NE 15, NO 3, NYJ 8, TB 32), "through Week 11" |
+| Code Snippets #28 | FPA tap-target rules removed; its 12px label rule kept (fpa.css still sets those labels at 11px; fold it into fpa.css later, and it covers only the base route, not /2025/) |
+| Purge | purge-and-warm 05:42Z, MISS desktop + phone; warm crawl running |
+
+Not rechecked live: Lighthouse score and CLS (local lab: CLS 0, sort 96-224 ms). SOS candidate 1.10.75 must now be rebased on 1.10.76.
+
