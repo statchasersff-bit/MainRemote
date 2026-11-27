@@ -17,7 +17,7 @@ import type { PlayerPageData } from "./player-data";
 import type { GameLogEntry } from "./types";
 import type { ScheduleGame } from "../team/schedule";
 import { getEntryPoints, SCORING_SHORT } from "./scoring";
-import { designationSeverity, lastName, matchupBand, STARTSIT_BASE } from "./header";
+import { designationSeverity, lastName, matchupBand, startSitPageUrl } from "./header";
 import { leagueFit } from "./outlook-tab";
 import { aPos, count, listWords, one, ordinal, tabHref, whole, word, type FaqCandidate } from "./faq-engine";
 import { rosteredPct } from "./rounding";
@@ -140,7 +140,7 @@ export function overviewPool(data: PlayerPageData, options: PlayerRenderOptions)
   const rankBy = rankPpg ? "points per game" : "total points";
   const total = c.played.reduce((t, e) => t + c.pts(e), 0);
   const ppg = c.played.length ? total / c.played.length : 0;
-  const startSit = `${options.startSitBase ?? STARTSIT_BASE}${encodeURIComponent(data.player.slug)}`;
+  const startSit = startSitPageUrl(data, options);
 
   // 1. Start/sit this week (dynamic week, never hard-coded).
   const next = (data.upcomingStrip ?? data.upcoming ?? [])[0];
@@ -160,7 +160,7 @@ export function overviewPool(data: PlayerPageData, options: PlayerRenderOptions)
       key: "start",
       q: `Should I start ${c.name} in Week ${next.week}?`,
       a,
-      link: { href: startSit, text: `Get the start/sit call for ${c.last}.`, cta: "startsit-overview-faq" },
+      link: startSit ? { href: startSit, text: `Get the start/sit call for ${c.last}.`, cta: "startsit-overview-faq" } : null,
     });
   }
 

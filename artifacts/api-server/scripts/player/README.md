@@ -35,6 +35,7 @@ this order:
 | 11 | `buildFantasyOutlook2026.js` | `fantasy_outlook_2026.json` | see below |
 | 12 | `buildRosterPct.mjs` | `roster_pct.json` | Sleeper league research (ownership) |
 | 13 | `buildCollegeStats.mjs` | `college_stats.json` | CollegeFootballData.com (needs `CFBD_API_KEY`, free) |
+| 14 | `buildStartSitPages.mjs` | `startsit_pages.json` | Redraft Command's start/sit sitemap (`statchasers.com/sitemaps/start-sit.xml`, one request) |
 
 `buildCollegeStats.mjs` covers this season's rookies at QB/RB/WR/TE with a
 page, matched by name to the college in `bio_facts.json` / `draft.json`. Run it
@@ -61,6 +62,14 @@ every other file is a record of seasons that have already happened, and this one
 is how many leagues rostered a player in a given week. It carries the season and
 week it read inside it, so a stale file is stale visibly rather than quietly -
 rerun it whenever the number should have moved, which in season is weekly.
+
+`buildStartSitPages.mjs` goes stale weekly too. It lists the players whose
+Redraft Command start/sit page has something to say this week (projected, on a
+bye, ruled out, or searched for); every "Should I start {Last}?" link on a
+player page is printed only for them (2026-11-27 audit, item 5). Off the list,
+the address is a 404 (a player Sleeper does not roster) or a noindex
+"updating" page. Rerun it with the weekly refresh, after the Redraft Command
+snapshot has published; `--file <sitemap.xml>` reads a saved copy instead.
 
 ## Slugs, and why step 1a is not optional
 

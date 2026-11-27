@@ -78,6 +78,7 @@ import {
   loadBioSources,
   loadBios,
   loadDraft,
+  hasStartSitPage,
   loadDynastyRankings,
   loadRosterPct,
   loadFantasyOutlook2026,
@@ -472,6 +473,12 @@ export interface PlayerPageData {
    */
   rates: EfficiencyRates | null;
   dynasty: DynastyData | null;
+  /**
+   * Whether his Redraft Command start/sit page has something to say this
+   * week (data.ts hasStartSitPage, 2026-11-27 audit). False = no start/sit
+   * link anywhere on his page; absent (hand-built test states) = not gated.
+   */
+  startSitPage?: boolean;
   bio: PlayerBio | null;
 
   /**
@@ -1591,6 +1598,7 @@ export async function getPlayerPageData(
     benchmarks,
     rates: efficiency?.rates ?? null,
     dynasty: loadDynastyRankings()[player.slug] ?? null,
+    startSitPage: hasStartSitPage(player.slug),
     bio: loadBios()[player.slug] ?? null,
     bioProfile: buildBioProfile({
       player,

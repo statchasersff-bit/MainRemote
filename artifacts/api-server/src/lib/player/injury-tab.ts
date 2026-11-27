@@ -29,7 +29,7 @@ import { renderFaqSection, selectFaq, type FaqCandidate, type FaqItem } from "./
 import { etDay } from "./news-tab-data";
 import type { PlayerRenderOptions } from "../player-render";
 import type { PlayerPageData } from "./player-data";
-import { lastName, STARTSIT_BASE, teamInk } from "./header";
+import { lastName, startSitPageUrl, teamInk } from "./header";
 import { NO_DESIGNATION, NO_DESIGNATION_YET } from "../matchup/availability";
 import { getTeamByAbbreviation } from "../team/teams";
 import {
@@ -964,7 +964,7 @@ function injuryPool(m: Model, data: PlayerPageData, options: PlayerRenderOptions
       key: "playing",
       q: `Is ${m.name} playing this week?`,
       a: s,
-      link: { href: `${options.startSitBase ?? STARTSIT_BASE}${encodeURIComponent(m.slug)}`, text: `Should you start him?`, cta: "startsit-injury-faq" },
+      link: startSitPageUrl(data, options) ? { href: startSitPageUrl(data, options), text: `Should you start him?`, cta: "startsit-injury-faq" } : null,
     });
 
     // 3. Today, on a game day only.

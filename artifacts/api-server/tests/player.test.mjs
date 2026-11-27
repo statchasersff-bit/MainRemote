@@ -3680,6 +3680,24 @@ describe("a state swap", () => {
     );
   });
 
+  test("a pick from the phone's season menu leaves focus on the menu, not <body> (2026-11-27 audit)", async () => {
+    const { window, doc } = await hydrated(`/player/${veteran.slug}/game-log/`);
+    const menu = doc.querySelector("#game-log details[data-scp-yr]");
+    assert.ok(menu, "the phone menu is in the page");
+    assert.equal(doc.querySelector("#game-log .scp-seasonnav").getAttribute("aria-label"), "Game log seasons");
+    menu.open = true;
+    const option = [...menu.querySelectorAll(".scp-season-opt")].find((o) => o.getAttribute("aria-pressed") === "false");
+    const want = option.getAttribute("data-season");
+    option.focus();
+    option.dispatchEvent(new window.MouseEvent("click", { bubbles: true, cancelable: true }));
+    assert.ok(await settled(() => shownSeason(doc), want), `${want} on screen`);
+    const fresh = doc.querySelector("#game-log details[data-scp-yr]");
+    assert.equal(fresh.open, false, "the menu closed");
+    assert.equal(doc.activeElement, fresh.querySelector("summary"), "focus is on the menu's button");
+    assert.equal(fresh.querySelector(`.scp-season-opt[data-season="${want}"]`).getAttribute("aria-pressed"), "true");
+    assert.equal(window.location.hash, `#log=${want}`);
+  });
+
   test("two quick picks: the later one wins", async () => {
     const { window, doc } = await hydrated(`/player/${veteran.slug}/game-log/`);
     const years = chips(doc).map((c) => c.getAttribute("data-season"));
