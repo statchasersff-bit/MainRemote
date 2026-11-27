@@ -3,7 +3,7 @@
 Branch `integ/player-audit-2026-11-27` (worktree .local/pa1127/integ), base main 401e3618.
 Production at the start: API build ebb0c4d6 + plugin 1.10.76 (the 11-26 audit shipped as 1.10.74 on 11-26; the 11-26 scan's 1.10.72 is history).
 Candidate: plugin **1.10.77** (1.10.75 = unreleased SOS candidate; whichever ships second carries the other).
-Zip: .local/pa1127/statchasers-news-1.10.77.zip, sha256 456235fb18836d7fab7ceeded5c029e456ced9fc8868439e52d761a47cf3a712.
+Zip: .local/pa1127/statchasers-news-1.10.77.zip, sha256 632d53c07ea86ada963f0725ea95ea0d69da02d2ead87800887ee4a647c3d783 (round 2, API assets 069462be6fe4; supersedes 456235fb...).
 Nothing pushed, published, purged or written to WordPress.
 
 Item docs: docs/SCORING-LABELS-PLAYER-2026-11-27.md (1, 6), docs/INJURY-ROS-PLAYER-2026-11-27.md (2, 3),
@@ -77,3 +77,23 @@ Trade-off: first paint about 1 s later (render-blocking CSS). Lab only; re-run .
 2. Upload 1.10.77 (carry 1.10.75 first if SOS ships before), `wp eval 'statchasers_news_run_upgrade_now();'`.
 3. Clear WP Rocket (mobile too), then Rocket.net edge purge; iPhone UA check: player.css `rel='stylesheet'` from `assets/api/`, no `data-rocket-async`.
 4. Re-run the lab script and the live checks in the item docs.
+
+## Round 2: mak's decisions of 2026-11-27
+
+1. **First paint: build the inline alternative** (e6198e80, merge 16348bf5). Every embedded fragment starts with `<style id="scp-critical">` (47 KB, 9.4 KB gzipped), generated from player.css by `scripts/player/critical-css.mjs` into `public/player-critical.css` (header, search, tab strip; `:where()` scoping keeps order) plus a 305-byte panel gate that holds the panels unpainted until player.css sets `--scp-sheet-*`. player.css is async again (Rocket async exclusion removed; still out of minify/RUCSS); the same-origin `assets/api/` move stays. Drift test tests/player-critical-css.test.mjs fails if player.css changes without regenerating (`node scripts/player/critical-css.mjs`, ~40 s).
+
+   | Page (390, slow 4G + 4x CPU, cold, median / worst) | CLS | FCP ms | LCP ms | TBT ms | DOM |
+   |---|---|---|---|---|---|
+   | Gibbs live | 0.18 / 0.18 | 644 / 648 | 2,512 / 3,216 | 867 / 1,446 | 5,066 |
+   | Gibbs round 1 (render-blocking) | 0 / 0 | 1,668 / 1,728 | 2,060 / 2,176 | 327 / 344 | 4,746 |
+   | Gibbs round 2 (inline + async) | 0 / 0 | 648 / 684 | 2,844 / 2,896 | 906 / 1,116 | 4,747 |
+   | Large live | 0.70 / 0.70 | 740 / 820 | 1,276 / 1,292 | 244 / 260 | 870 |
+   | Large round 2 | 0 / 0 | 752 / 860 | 2,132 / 2,412 | 345 / 397 | 866 |
+
+   Desktop 1366: Gibbs CLS 0.016, Large 0.010 (Divi's own deferred CSS). TBT is level with live, higher than round 1 (second style pass). Release: the API deploy must include public/player-critical.css; check the iPhone page has `<style id="scp-critical">` first in `.entry-content` and player.css from `assets/api/` with `data-rocket-async`. WP Rocket critical CSS regeneration is now optional.
+
+3. **Games played = the Stats rule** (a7f3f972, merge 94653334). `ranks.ts hasParticipation()` = `gp > 0 || hasTouch()` (same as `isGamePlayed()`), so header FPPG/POS RANK, hub GP, Overview, Outlook, FAQ + schema, Game Log summary, weekly rates, peers rail and the team overview contributor G/PPR-G count every active game. Points unchanged. Abdullah 7 games / 1.6 / RB90 -> 10 / 1.1 / RB95 (= his Stats row); Gibbs unchanged; Carter's live 2-vs-3 case needs Week 12 data (unit test covers it). 136 players' 2026 GP/PPG change, 294 ranks move (30 switch total -> PPG basis), 3,923 historical Game Log summaries. PPG rank 4-game gate counts the new games; Stats card (4+) and usage (6+) pools stay on offensive-snap games (they rank shares over those games; criteria printed). FAQ templates unchanged, figures inside them change.
+
+Main merged (b71a7b71, main 1d67b832: workspace-8f's matchup release). Final checks on b71a7b71: suite 2,081 / 2,077 / 3 / 1 (same three); tsc clean; smoke.php, smoke-local-assets, smoke-rhr-embed 36/36 pass; build-zip.sh all checks ok. Rendered (:8095): scp-critical first in the Gibbs fragment (47,276 bytes), 6 start/sit links, PPR FPTS; Abdullah "RB95 by points per game, 10 games"; Rodgers 0 start/sit; Pierce games missed 9; Pacheco 0 "Tough matchups".
+
+Decisions 2 and 4-7 above are still open.
