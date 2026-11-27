@@ -53,6 +53,7 @@
   --sc-pos-rb: #0f6b4f;
   --sc-pos-wr: #1d4e8c;
   --sc-pos-te: #a87905;
+  --sc-pos-te-ink: #80600f;
   --sc-shell: 1180px;
   --sc-font: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
   --scf-gutter: 24px;
@@ -253,13 +254,53 @@ body.scf-page {
   background: var(--sc-surface-sink);
 }
 
+/*
+ * The options are buttons since WEB-020 (2026-11-27): they switch the table in
+ * place and are not links, so no `?format=`/`?view=` address is crawlable.
+ * This takes away what a button brings of its own (UA border, background,
+ * system font, centered line-height) at the weight of `.scf-opt`, placed
+ * before it, so the pill rule below dresses them exactly as it dressed the
+ * links. The theme's `button:hover` is (0,1,1) and outranks both; that one is
+ * answered in the host-override block at the foot of this file.
+ */
+.scf :where(button.scf-opt) {
+  -webkit-appearance: none;
+  appearance: none;
+  margin: 0;
+  border: 0;
+  background: none;
+  font-family: inherit;
+  line-height: inherit;
+  text-transform: none;
+  letter-spacing: normal;
+  box-shadow: none;
+  cursor: pointer;
+}
+
+/* The side padding is a token so the narrow tiers retune it without
+   competing with the host-override block that restates it. */
 .scf-opt {
-  padding: 6px 13px;
+  --scf-opt-pad-x: 13px;
+  padding: 6px var(--scf-opt-pad-x);
   border-radius: 999px;
   font-size: 12px;
   font-weight: 700;
   color: var(--sc-muted-strong);
   text-decoration: none;
+}
+
+/* One focus ring for every control the table owns: the pills, the sort
+   headers, the cells, the team names and the season link. Keyboard only. */
+.scf-opt:focus-visible,
+.scf-season-link:focus-visible,
+.scf-team-link:focus-visible {
+  outline: 2px solid var(--sc-gold-deep);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.scf-opt:focus-visible {
+  border-radius: 999px;
 }
 
 .scf-opt.is-active {
@@ -297,7 +338,13 @@ body.scf-page {
   font-weight: 700;
 }
 
+/* Inline-flex at 24px tall: the gold rule stays under the words, and the
+   target is the WCAG 2.5.8 minimum without moving the line. */
 .scf-season-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  box-sizing: border-box;
   color: var(--sc-navy);
   font-weight: 700;
   text-decoration: none;
@@ -376,10 +423,14 @@ body.scf-page {
   border-bottom: 1px solid var(--sc-hairline);
 }
 
+/* The question's line is ~21px; the row's own 14px padding lends 5px each
+   way to the summary, so the target is 24px+ and nothing moves. */
 .scf-faq-q-row {
   display: flex;
   align-items: flex-start;
   gap: 12px;
+  margin: -5px 0;
+  padding: 5px 0;
   cursor: pointer;
   list-style: none;
 }
@@ -525,6 +576,12 @@ body.scf-page {
  */
 .scf-cell-link {
   display: block;
+  /* WCAG 2.5.8 (WEB-049): the figure's line plus the 2px pads is ~23.5px,
+     a hair under the 24px minimum. Border-box, so this is the whole link and
+     not 24px plus its padding: the row it sits in is already taller (the
+     team crest sets it), so the table does not grow. */
+  box-sizing: border-box;
+  min-height: 24px;
   margin: calc(-1 * var(--scf-cell-pad-y)) calc(-1 * var(--scf-cell-pad-x));
   padding: var(--scf-cell-pad-y) var(--scf-cell-pad-x);
   color: inherit;
@@ -610,6 +667,8 @@ body.scf-page {
   vertical-align: middle;
   align-items: center;
   gap: 8px;
+  /* The crest is 22px; the target is 24 (WCAG 2.5.8, WEB-049). */
+  min-height: 24px;
   color: var(--sc-navy);
   text-decoration: none;
 }
@@ -759,14 +818,28 @@ body.scf-page {
   background: var(--sc-surface);
 }
 
+/*
+ * The sort control fills its header cell (WEB-049): the label alone was
+ * ~17 x 12px, the smallest target on the page. Negative margins take back the
+ * cell's padding and put it on the button, as the data cells' links do, so the
+ * whole navy band over a column is the target and the band does not move. It
+ * is at least 24px tall, which is a pixel more than the band was.
+ */
 .scf-sort {
-  padding: 0;
+  display: block;
+  box-sizing: border-box;
+  width: calc(100% + 2 * var(--scf-cell-pad-x));
+  min-height: 24px;
+  margin: -5px calc(-1 * var(--scf-cell-pad-x));
+  padding: 5px var(--scf-cell-pad-x);
   border: 0;
   background: none;
   font: inherit;
   color: inherit;
   letter-spacing: inherit;
   text-transform: inherit;
+  text-align: inherit;
+  white-space: nowrap;
   cursor: pointer;
 }
 
@@ -774,8 +847,19 @@ body.scf-page {
   color: var(--sc-gold-soft);
 }
 
-.scf-table th[aria-sort="descending"] .scf-sort::after { content: " \2193"; }
-.scf-table th[aria-sort="ascending"] .scf-sort::after { content: " \2191"; }
+/* On the navy band: the soft gold, inset so the sticky header's edge does not
+   clip it. */
+.scf-sort:focus-visible {
+  outline: 2px solid var(--sc-gold-soft);
+  outline-offset: -3px;
+  border-radius: 4px;
+}
+
+/* The direction, on screen. `aria-sort` on the <th> already says it to a
+   screen reader, so the arrow is given empty alt text where the browser
+   understands it, rather than being read as part of the column's name. */
+.scf-table th[aria-sort="descending"] .scf-sort::after { content: " \2193"; content: " \2193" / ""; }
+.scf-table th[aria-sort="ascending"] .scf-sort::after { content: " \2191"; content: " \2191" / ""; }
 
 /* ----------------------------------------------------------------- legend */
 
@@ -975,7 +1059,10 @@ body.scf-page {
 .scf a.scf-card[data-pos="QB"] .scf-card-title { color: var(--sc-pos-qb); }
 .scf a.scf-card[data-pos="RB"] .scf-card-title { color: var(--sc-pos-rb); }
 .scf a.scf-card[data-pos="WR"] .scf-card-title { color: var(--sc-pos-wr); }
-.scf a.scf-card[data-pos="TE"] .scf-card-title { color: var(--sc-pos-te); }
+/* TE's brand gold is 3.9:1 on the white card, under AA for 11-12px type
+   (WEB-050). The edge keeps the brand gold; the words take the deeper gold
+   the site already prints its tag links in (5.8:1). */
+.scf a.scf-card[data-pos="TE"] .scf-card-title { color: var(--sc-pos-te-ink, #80600f); }
 
 .scf a.scf-card:hover .scf-card-title {
   color: var(--sc-gold-deep);
@@ -1436,8 +1523,7 @@ body.scf-page {
   }
 
   .scf-opt {
-    padding-left: 10px;
-    padding-right: 10px;
+    --scf-opt-pad-x: 10px;
   }
 
 }
@@ -1533,8 +1619,7 @@ body.scf-page {
   }
 
   .scf-opt {
-    padding-left: 10px;
-    padding-right: 10px;
+    --scf-opt-pad-x: 10px;
   }
 }
 
@@ -1547,6 +1632,13 @@ body.scf-page {
   .scf-cell,
   .scf-legend-swatch {
     border: 1px solid CanvasText;
+  }
+
+  /* The navy fill is gone too, and with it the only mark of the pressed
+     pill: a system-colored ring says which one is on. */
+  .scf-opt[aria-pressed="true"] {
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
   }
 }
 
@@ -1684,8 +1776,9 @@ body.scf-page {
   color: var(--sc-ink) !important;
 }
 
-.scf .scf-table thead th .scf-sort {
-  padding: 0;
+.scf .scf-table thead th .scf-sort,
+.scf .scf-table thead th .scf-sort:hover {
+  padding: 5px var(--scf-cell-pad-x);
   border: 0;
   background: none;
   font: inherit;
@@ -1716,6 +1809,25 @@ body.scf-page {
 
 .scf .scf-opt.is-active {
   color: #fff;
+}
+
+/* The pills are buttons (WEB-020), and Divi's `button:hover { padding: .3em
+   1em; background: rgba(0,0,0,.05) }` is (0,1,1): it outranks `.scf-opt`, so
+   a hovered pill jumped in size and the pressed one lost its navy. The padding
+   reads the same token the narrow tiers retune. */
+.scf .scf-opt,
+.scf .scf-opt:hover {
+  padding: 6px var(--scf-opt-pad-x, 13px);
+  background: none;
+}
+
+.scf .scf-opt.is-active,
+.scf .scf-opt.is-active:hover {
+  background: var(--sc-navy);
+}
+
+.scf .scf-opt:not(.is-active):hover {
+  color: var(--sc-navy);
 }
 
 .scf .scf-team-link {

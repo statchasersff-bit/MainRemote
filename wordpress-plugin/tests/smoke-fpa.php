@@ -128,6 +128,11 @@ if ( 'fpaarchive' === $group ) {
 	statchasers_fpa_season_redirect();
 	is( count( $GLOBALS['remote_urls'] ), $fetched, 'the redirect check reads the memoized fetch, and does not redirect an archive' );
 	foreach ( $GLOBALS['remote_urls'] as $url ) {
+		// Only the fragment: with a staged assets/api/ (build-zip.sh) the
+		// enqueue may also compare fpa.css with the API's live copy (WEB-023).
+		if ( ! str_contains( $url, '/embed/fpa' ) ) {
+			continue;
+		}
 		is( str_contains( $url, 'season=2025' ), true, 'every fetch on the archive address names its season' );
 	}
 	unset( $GLOBALS['query'][ STATCHASERS_FPA_SEASON_VAR ] );

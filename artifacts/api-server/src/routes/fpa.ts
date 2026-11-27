@@ -11,8 +11,9 @@
  *
  * `/embed/fpa` is also what the bundle re-fetches when a reader changes scoring
  * format or view, which is why both page routes hand the markup an address for
- * it: the controls are links, but following one would change the address of the
- * page the reader is on, and six renderings of one table are one page.
+ * it: the controls are buttons (WEB-020), six renderings of one table are one
+ * page, and the bundle keeps the reader's choice in the fragment. The
+ * `?format=&view=` query is still honored, for bookmarks made before that.
  *
  * Mirrors routes/team.ts and routes/player.ts, including the posture that
  * matters: every route ships `noindex, indexifembedded`, so this origin does

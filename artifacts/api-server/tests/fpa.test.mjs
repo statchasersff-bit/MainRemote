@@ -217,7 +217,10 @@ describe("fpa routes", () => {
       assert.ok(at(needle) > 0, needle);
     }
     assert.equal(at("scf-mode"), -1, "the blend note is no longer printed (mak, 2026-11-04)");
-    assert.equal(at("scf-seasons"), -1, "the archive list is no longer printed on the live page (mak, 2026-11-04)");
+    // The archive list left the top of the live page (mak, 2026-11-04); its
+    // one link is back under the table (WEB-025, 2026-11-27), so the archive
+    // is reachable from the page and not only from the sitemap.
+    assert.ok(at("scf-seasons") > at("scf-table"), "the archive link sits under the table");
     assert.ok(at("scf-updated") < at("scf-controls"), "the Updated line opens the page");
     assert.equal(at("scf-answer"), -1, "the answer sentence is no longer printed (mak, 2026-11-04)");
     assert.ok(at("scf-controls") < at("scf-legend-wrap") && at("scf-legend-wrap") < at("scf-table"), "the legend is on the controls row (mak, 2026-11-04)");
@@ -242,9 +245,11 @@ describe("fpa routes", () => {
     requireData();
     const live = await get("/fpa");
     const liveDoc = new JSDOM(live.body).window.document;
-    // The live page no longer lists its archives (mak, 2026-11-04); the
-    // finished season is the one before the table's own.
+    // The finished season is the one before the table's own, and the live
+    // page links it with an ordinary crawlable <a href> (WEB-025).
     const season = Number(liveDoc.querySelector("[data-scf-root]").getAttribute("data-season")) - 1;
+    const archiveLinks = [...liveDoc.querySelectorAll(".scf-season-link")].map((a) => a.getAttribute("href"));
+    assert.ok(archiveLinks.includes(`/fpa?season=${season}`), `the live page links its archive: ${archiveLinks}`);
 
     const res = await get(`/fpa?season=${season}`);
     assert.equal(res.status, 200);
@@ -369,25 +374,42 @@ describe("fpa routes", () => {
     assert.ok(!/\bN\/A\b/.test(text));
   });
 
-  test("the controls stay links, and say what they select", async () => {
+  test("the controls are buttons, print no query addresses, and say what they select", async () => {
     requireData();
     const res = await get("/fpa");
     const doc = new JSDOM(res.body).window.document;
 
-    // Real links to real URLs, still. The bundle swaps the table in place so
-    // the address does not move, but a reader with scripting off - and a
-    // crawler - has to be able to reach every combination, and a middle-click
-    // has to open the one that was asked for.
+    // WEB-020 (2026-11-27): buttons, not links. As links they printed
+    // ?format=half, ?format=standard and ?view=adjusted into every page, and
+    // a crawler queued them as addresses of a page whose canonical says the
+    // six combinations are one. The bundle swaps the table in place and keeps
+    // the choice in the fragment; an old bookmark still renders server-side.
     const opts = [...doc.querySelectorAll(".scf-opt")];
     assert.equal(opts.length, 5, "three formats and two views");
     for (const opt of opts) {
-      assert.equal(opt.tagName, "A", "each control is a link");
-      assert.ok(opt.getAttribute("href"), "with a URL behind it");
+      assert.equal(opt.tagName, "BUTTON", "each control is a button");
+      assert.equal(opt.getAttribute("type"), "button");
+      assert.equal(opt.hasAttribute("href"), false);
+      assert.match(opt.getAttribute("aria-pressed"), /^(true|false)$/);
     }
+    assert.deepEqual(
+      opts.filter((o) => o.getAttribute("aria-pressed") === "true").map((o) => o.getAttribute("data-scf-format") ?? o.getAttribute("data-scf-view")),
+      ["ppr", "raw"],
+      "the default combination is the pressed one",
+    );
+    for (const group of doc.querySelectorAll(".scf-opts")) {
+      assert.equal(group.getAttribute("role"), "group");
+      assert.match(group.getAttribute("aria-label"), /^(Scoring|View)$/);
+    }
+    for (const sel of ['a[href*="format="]', 'a[href*="view="]']) {
+      assert.equal(doc.querySelectorAll(sel).length, 0, `no ${sel} anywhere on the page`);
+    }
+    assert.equal(doc.querySelector("[data-scf-root]").getAttribute("data-default-format"), "ppr");
+    // The rows arrive in OFF order, and the header says so before any script.
+    const sorted = [...doc.querySelectorAll("thead th[aria-sort]")];
+    assert.deepEqual(sorted.map((th) => [th.textContent, th.getAttribute("aria-sort")]), [["OFF", "descending"]]);
 
-    // What each one selects is stated, not parsed back out of the href: once
-    // SC_FPA_PATH is set that href points at WordPress, and reading state out
-    // of somebody else's URL is guessing.
+    // What each one selects is stated on the control.
     assert.deepEqual(
       opts
         .map((o) => o.getAttribute("data-scf-format"))
@@ -403,6 +425,53 @@ describe("fpa routes", () => {
     // the fragment are the same origin.
     const root = doc.querySelector("[data-scf-root]");
     assert.equal(root.getAttribute("data-scf-endpoint"), "/embed/fpa");
+  });
+
+  test("an old ?format=&view= bookmark still opens that table, on either season", async () => {
+    requireData();
+    const live = new JSDOM((await get("/embed/fpa")).body).window.document;
+    const season = Number(live.querySelector("[data-scf-root]").getAttribute("data-season")) - 1;
+    const order = (doc) => [...doc.querySelectorAll(".scf-row")].map((r) => r.getAttribute("data-team"));
+    const first = (doc) => doc.querySelector(".scf-row .scf-cell .scf-fpa").textContent;
+
+    const ppr = live;
+    const std = new JSDOM((await get("/embed/fpa?format=standard")).body).window.document;
+    // The fixture the switch is tested on: PPR and Standard must disagree in
+    // a figure and in the order, or a swap that did nothing would pass.
+    assert.notEqual(first(ppr), first(std));
+    assert.notDeepEqual(order(ppr), order(std));
+
+    for (const [q, format, view] of [
+      ["format=standard", "standard", "raw"],
+      ["format=half&view=adjusted", "half", "adjusted"],
+      ["view=adjusted", "ppr", "adjusted"],
+    ]) {
+      for (const s of [null, season]) {
+        const path = `/embed/fpa?${q}${s ? `&season=${s}` : ""}`;
+        const doc = new JSDOM((await get(path)).body).window.document;
+        const root = doc.querySelector("[data-scf-root]");
+        assert.equal(root.getAttribute("data-format"), format, path);
+        assert.equal(root.getAttribute("data-view"), view, path);
+        assert.equal(root.getAttribute("data-kind"), s ? "archive" : "live", path);
+        const pressed = [...doc.querySelectorAll('.scf-opt[aria-pressed="true"]')].map((o) => o.getAttribute("data-scf-format") ?? o.getAttribute("data-scf-view"));
+        assert.deepEqual(pressed, [format, view], path);
+      }
+    }
+    // The archive's controls no longer point at the current season's page
+    // (they were `/fpa?format=half` links on /2025/), and the archive links
+    // back to the current table.
+    const arc = new JSDOM((await get(`/embed/fpa?season=${season}`)).body).window.document;
+    assert.equal(arc.querySelectorAll('a[href*="format="], a[href*="view="]').length, 0);
+    assert.equal(arc.querySelectorAll(".scf-season-link").length, 1);
+  });
+
+  test("the bundle sends the season on an archive swap and writes the fragment", async () => {
+    const js = await (await fetch(`${server.origin}/dist/statchasers-fpa.js`)).text();
+    assert.match(js, /"season"/, "the archive's season goes along on a swap");
+    assert.match(js, /pushState/);
+    assert.match(js, /hashchange/);
+    assert.match(js, /popstate/);
+    assert.doesNotMatch(js, /preventDefault\(\)/, "nothing left to intercept: the controls are buttons");
   });
 
   test("one FAQPage, describing the questions actually rendered", async () => {

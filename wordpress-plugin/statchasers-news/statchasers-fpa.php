@@ -75,11 +75,12 @@ const STATCHASERS_FPA_VIEWS = array( 'raw', 'adjusted' );
 /**
  * One of a fixed set, read off the query string.
  *
- * The table's scoring and view controls are ordinary links, and the bundle
- * intercepts them so that changing format does not change the address of the
- * page. This is what happens when it cannot: scripting off, or a click that
- * landed before the bundle did. Without it the link goes somewhere that renders
- * the DEFAULT table, which is a control that appears to work and does not.
+ * The table's scoring and view controls are buttons since WEB-020
+ * (2026-11-27): the bundle keeps the choice in the fragment
+ * (`#format=half&view=adjusted`), and no `?format=` address is printed for a
+ * crawler. The query is still read here, for bookmarks and shared links made
+ * when the controls were links, and for the bundle's own fallback when its
+ * fetch fails: both must open the table they name, not the default one.
  *
  * Display state only - which of six renderings of one table to draw. It reads
  * nothing about the reader, writes nothing, and anything not in $allowed is
@@ -294,10 +295,17 @@ function statchasers_fpa_enqueue_assets(): void {
 
 	$version = statchasers_news_asset_version();
 
+	// The stylesheet and bundle bundled with this plugin when they are the
+	// API's current build, else the asset host as before (WEB-023,
+	// statchasers-local-assets.php). Without them a reader who cannot reach
+	// the asset host gets the table with no scroll wrapper, no sort and no
+	// scoring buttons.
+	$urls = statchasers_fpa_asset_urls( $version );
+
 	if ( ! wp_style_is( STATCHASERS_FPA_HANDLE, 'registered' ) ) {
 		wp_register_style(
 			STATCHASERS_FPA_HANDLE,
-			statchasers_public_origin() . '/fpa.css',
+			$urls['css'],
 			statchasers_font_dependency(),
 			$version
 		);
@@ -306,7 +314,7 @@ function statchasers_fpa_enqueue_assets(): void {
 	if ( ! wp_script_is( STATCHASERS_FPA_HANDLE, 'registered' ) ) {
 		wp_register_script(
 			STATCHASERS_FPA_HANDLE,
-			statchasers_public_origin() . '/dist/statchasers-fpa.js',
+			$urls['js'],
 			array(),
 			$version,
 			array(
@@ -449,8 +457,8 @@ add_filter( 'body_class', 'statchasers_fpa_full_width_body_class', PHP_INT_MAX )
  *
  * Same deliberate omissions as the other three - no canonical, no <h1>, no
  * title or meta description, nothing written to the URL. The page owns all of
- * it, and the table's own format/view controls are ordinary links back to this
- * app's own /fpa, which is why SC_FPA_PATH exists on the API side.
+ * it. The table's season links are built on SC_FPA_PATH on the API side, so
+ * they point at this page (and /2025/) rather than at the app's own /fpa.
  *
  * @param array<string,mixed>|string $atts Shortcode attributes.
  * @return string HTML.

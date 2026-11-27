@@ -55,7 +55,10 @@ export interface FpaRenderOptions {
    * demotes the title to an <h2>, because the host page supplies the H1.
    */
   embed?: boolean;
-  /** Where the control links point. Defaults to this app's own /fpa. */
+  /**
+   * The page's own path, which the season links are built on (`<base>/2025/`
+   * and back). Defaults to this app's own /fpa.
+   */
   basePath?: string;
   /**
    * Where the CSV lives. Defaults to this app's own /fpa.
@@ -215,21 +218,20 @@ const TIER_LABEL: Record<MatchupTier, string> = {
 /**
  * The scoring-format and view controls.
  *
- * Real links to real URLs, because both genuinely change every number in the
- * table. `rel="nofollow"` on the non-default combinations, and the canonical
- * stays on the bare path, so six views of one table stay one page.
+ * Buttons, not links (WEB-020, 2026-11-27). Both genuinely change every
+ * number in the table, but the six combinations are one page - the canonical
+ * has always said so - and as links they printed `?format=half`,
+ * `?format=standard` and `?view=adjusted` into the HTML of the current page
+ * AND the archive, where a crawler queued them as addresses (and the
+ * archive's three pointed at the CURRENT season's page). As buttons there is
+ * nothing to queue. The bundle (client/fpa.ts) fetches the combination and
+ * writes it to the address as a fragment, `#format=half&view=adjusted`, which
+ * is what makes it shareable; an old `?format=&view=` bookmark is still
+ * rendered by the server. `aria-pressed` says which one is on, and the group
+ * is named for a screen reader by the same word printed above it. With
+ * scripting off the page's own table is already on screen.
  */
-function renderControls(data: FpaTableData, options: FpaRenderOptions): string {
-  const base = options.basePath ?? "/fpa";
-
-  const url = (format: ScoringFormat, view: FpaView): string => {
-    const params = new URLSearchParams();
-    if (format !== DEFAULT_FPA_FORMAT) params.set("format", format);
-    if (view !== "raw") params.set("view", view);
-    const query = params.toString();
-    return query ? `${base}?${query}` : base;
-  };
-
+function renderControls(data: FpaTableData): string {
   /*
    * An option's text, with its narrow-screen stand-in beside it when it has
    * one. Both are in the markup and CSS shows one - but with display:none, not
@@ -245,30 +247,25 @@ function renderControls(data: FpaTableData, options: FpaRenderOptions): string {
   const group = (
     label: string,
     items: {
-      href: string;
       text: string;
       abbr?: string;
       title: string;
       active: boolean;
-      /* What this option selects, for the bundle. Stated rather than parsed
-         back out of the href: that href points at the WordPress page once
-         SC_FPA_PATH is set, and reading state out of somebody else's URL is
-         guessing. */
+      /* What this option selects, for the bundle. */
       data: string;
     }[],
   ): string =>
     `<div class="scf-control">` +
-    `<span class="scf-control-label">${escapeHtml(label)}</span>` +
-    `<div class="scf-opts">` +
+    `<span class="scf-control-label" aria-hidden="true">${escapeHtml(label)}</span>` +
+    `<div class="scf-opts" role="group" aria-label="${escapeHtml(label)}">` +
     items
       .map(
         (item) =>
-          `<a class="scf-opt${item.active ? " is-active" : ""}"` +
-          ` href="${escapeHtml(item.href)}"` +
+          `<button type="button" class="scf-opt${item.active ? " is-active" : ""}"` +
           item.data +
           ` title="${escapeHtml(item.title)}"` +
-          (item.active ? ` aria-current="true"` : ` rel="nofollow"`) +
-          `>${optionText(item.text, item.abbr)}</a>`,
+          ` aria-pressed="${item.active ? "true" : "false"}"` +
+          `>${optionText(item.text, item.abbr)}</button>`,
       )
       .join("") +
     `</div>` +
@@ -276,7 +273,6 @@ function renderControls(data: FpaTableData, options: FpaRenderOptions): string {
 
   const formats = (["standard", "half", "ppr"] as ScoringFormat[]).map(
     (format) => ({
-      href: url(format, data.view),
       text: FORMAT_LABELS[format],
       abbr: FORMAT_ABBR[format],
       title: `Recompute every figure in ${FORMAT_LABELS[format]} scoring`,
@@ -286,7 +282,6 @@ function renderControls(data: FpaTableData, options: FpaRenderOptions): string {
   );
 
   const views = (["raw", "adjusted"] as FpaView[]).map((view) => ({
-    href: url(data.format, view),
     text: VIEW_LABELS[view],
     title:
       view === "raw"
@@ -427,7 +422,10 @@ function renderTable(data: FpaTableData, options: FpaRenderOptions): string {
           `Fantasy points allowed to ${p}s per game, and where that ranks`,
         )}">${p}</th>`,
     ).join("") +
-    `<th scope="col" data-sort-type="number" title="${escapeHtml(
+    // The rows arrive in OFF rank order (fpa-data.ts), so that column says
+    // so before the bundle runs: a screen reader hears which way the table
+    // is sorted, and the arrow is on screen from the first paint.
+    `<th scope="col" data-sort-type="number" aria-sort="descending" title="${escapeHtml(
       "The four positions summed - the whole fantasy offense",
     )}">OFF</th>` +
     // Named for the season rather than "Games Played". Early in a season the
@@ -1040,13 +1038,19 @@ export function renderFpaPage(
     ` data-kind="${escapeHtml(data.kind)}"` +
     ` data-format="${escapeHtml(data.format)}"` +
     ` data-view="${escapeHtml(data.view)}"` +
+    // The combination the page prints with no fragment and no query: what the
+    // bundle leaves out of the address (`#format=half` but never `#format=ppr`).
+    ` data-default-format="${escapeHtml(DEFAULT_FPA_FORMAT)}"` +
     (options.endpoint
       ? ` data-scf-endpoint="${escapeHtml(options.endpoint)}"`
       : "") +
     `>` +
     (options.embed ? "" : renderUpdated(copy)) +
-    // The archive list ("Archive: 2025 full season") is gone from the live
-    // page (mak, 2026-11-04); an archive page keeps its way back.
+    // An archive page's way back, above its table. The live page's link to
+    // the archive went with the list above the table (mak, 2026-11-04) and
+    // is back under the table (WEB-025, 2026-11-27): without it nothing on
+    // the current page linked /2025/, so the archive was reachable only
+    // through the sitemap.
     (data.kind === "archive" ? renderSeasons(data, options) : "") +
     // The body: the rail and the sheet. Rail first in the markup, so that
     // collapsed (under 1240px) it is the row above the table, and in a tab
@@ -1054,8 +1058,9 @@ export function renderFpaPage(
     `<div class="scf-body">` +
     renderRail(data, options, rail) +
     `<div class="scf-main">` +
-    renderControls(data, options) +
+    renderControls(data) +
     renderTable(data, options) +
+    (data.kind === "archive" ? "" : renderSeasons(data, options)) +
     // The blend note ("12% 2025 baseline and 88% 2026 data") is no longer
     // printed under the table (mak, 2026-11-04).
     `</div>` +
