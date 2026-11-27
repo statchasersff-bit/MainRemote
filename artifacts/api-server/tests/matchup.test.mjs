@@ -2686,8 +2686,8 @@ describe("recap Fantasy tab (fantasy-tab.ts)", () => {
     assert.deepEqual(tagged.map((t) => t.textContent).sort(), ["Overperformer", "Top scorer", "Underperformer"]);
     assert.deepEqual(tagged.map((t) => t.dataset.tier).sort(), ["over", "top", "under"]);
     assert.equal(tagged[0].closest("tr"), tab.querySelector(".is-box tbody tr"), "the top scorer is the first row");
-    // Beside the name, not a line of its own (mak, 2026-11-27).
-    for (const t of tagged) assert.ok(t.parentElement.matches(".sct-mu-ps-who > .sct-fz-nameline") && t.previousElementSibling.matches(".sct-mu-ps-link"), "tag on the name's line");
+    // One line since 2026-11-27: face, name, position/team, then the tag.
+    for (const t of tagged) assert.ok(t.parentElement.matches(".sct-fz-who1-text") && t.previousElementSibling.matches(".sct-mu-ps-meta") && t.previousElementSibling.previousElementSibling.matches(".sct-mu-ps-link"), "name, position/team, tag");
     for (const t of tab.querySelectorAll(".sct-fz-tag")) {
       assert.ok(t.hasAttribute("data-ppr") && t.hasAttribute("data-half") && t.hasAttribute("data-std"), "tag text per scoring");
       assert.ok(t.hasAttribute("data-tier-ppr") && t.hasAttribute("data-tier-std"), "tag kind per scoring");

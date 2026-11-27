@@ -46,11 +46,11 @@ export interface FantasyTabInput {
 const FORMATS: Format[] = ["ppr", "half", "std"];
 const MINUS = "−";
 /** Box score rows shown before "Show all players". */
-const BOX_SHOWN = 12;
+const BOX_SHOWN = 8; // 12 until 2026-11-27 (mak: "show top 8 by default")
 /** Usage rows per team before "View full usage". */
 const USAGE_SHOWN = 6;
 /** Actual vs Expected rows shown before "Show all players". */
-const XFP_SHOWN = 10;
+const XFP_SHOWN = 8; // 10 until 2026-11-27 (mak: as the box score, top 8)
 
 const e = escapeHtml;
 
@@ -156,15 +156,27 @@ function face(line: FantasyLine, className: string, size: number): string {
 }
 
 /** The Player Stats tables' name cell: face, name, "SEA · WR". */
-function who(ctx: Ctx, line: FantasyLine, badge = ""): string {
-  const name = nameLink(ctx, line, "sct-player-link sct-mu-ps-link");
+function who(ctx: Ctx, line: FantasyLine): string {
   return (
     `<span class="sct-mu-ps-cell">${face(line, "sct-mu-ps-photo", 32)}<span class="sct-mu-ps-who">` +
-    // A box-score badge rides the name's line, wrapping under it only when
-    // the column is too narrow (mak, 2026-11-27); position and team stay second.
-    (badge ? `<span class="sct-fz-nameline">${name}${badge}</span>` : name) +
+    nameLink(ctx, line, "sct-player-link sct-mu-ps-link") +
     // Position first, "RB · NE" (mak, 2026-11-11), across the Fantasy tab.
     teamPosition(line.team, line.pos, "sct-mu-ps-meta", "position-first") +
+    `</span></span>`
+  );
+}
+
+/**
+ * The Fantasy Box Score's and the xFP board's name cell, one line (mak, 2026-11-27): a 20px
+ * face, the name, "QB · NE", then the row's badge. Position and team wrap
+ * under the name only when the column is too narrow.
+ */
+function whoInline(ctx: Ctx, line: FantasyLine, badge: string): string {
+  return (
+    `<span class="sct-mu-ps-cell sct-fz-who1">${face(line, "sct-mu-ps-photo", 20)}<span class="sct-fz-who1-text">` +
+    nameLink(ctx, line, "sct-player-link sct-mu-ps-link") +
+    teamPosition(line.team, line.pos, "sct-mu-ps-meta", "position-first") +
+    badge +
     `</span></span>`
   );
 }
@@ -260,7 +272,7 @@ function renderBoxScore(ctx: Ctx, lines: FantasyLine[]): string {
       const finish = per((f) => ctx.finish(line, f) ?? "-");
       return (
         `<tr${at >= BOX_SHOWN ? ` class="is-extra"` : ""}>` +
-        `<th scope="row" class="sct-fz-player">${who(ctx, line, tag(line))}</th>` +
+        `<th scope="row" class="sct-fz-player">${whoInline(ctx, line, tag(line))}</th>` +
         `<td class="sct-fz-pts"${fmtAttrs(per((f) => line.pts[f].toFixed(1)))}>${line.pts.ppr.toFixed(1)}</td>` +
         `<td class="sct-fz-fin"${fmtAttrs(finish)}>${e(finish.ppr)}</td>` +
         `<td class="sct-fz-prod">${e(production(line))}</td>` +
@@ -393,7 +405,8 @@ function renderExpected(ctx: Ctx, lines: FantasyLine[]): string {
       return (
         `<li class="sct-fz-x${at >= XFP_SHOWN ? " is-extra" : ""}" data-fz-row>` +
         `<details class="sct-fz-x-row"><summary class="sct-fz-x-sum">` +
-        `<span class="sct-fz-x-who">${who(ctx, l)}</span>` +
+        // One line per player, as the box score (mak, 2026-11-27).
+        `<span class="sct-fz-x-who">${whoInline(ctx, l, "")}</span>` +
         `<span class="sct-fz-x-track" aria-hidden="true">` +
         `<span class="sct-fz-x-fill"${widths(l.pts)}></span>` +
         `<span class="sct-fz-x-mark"${widths(l.x!)}></span>` +

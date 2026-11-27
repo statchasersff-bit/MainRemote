@@ -20,6 +20,12 @@ import { cleanupBundles, importModule } from "./helpers/bundle.mjs";
 
 const facts = await importModule("lib/matchup/play-facts");
 const overview = await importModule("lib/matchup/recap-overview");
+// Game Recap prints full width in `lead` since 2026-11-27 (mak), the other
+// Overview cards in `main`: read both, in page order.
+const renderOverview = (input) => {
+  const p = overview.renderRecapOverviewParts(input);
+  return { ...p, main: p.lead + p.main };
+};
 const body = await importModule("lib/matchup/recap-body");
 const boxscore = await importModule("lib/matchup/boxscore");
 const gamePlayers = await importModule("lib/matchup/game-players");
@@ -228,7 +234,7 @@ describe("Packers at Lions, 2026 Week 7 (stored data)", () => {
       away: { abbr: "GB", name: "Green Bay Packers", short: "Packers", quarters: [7, 0, 7, 3], ot: null, score: 17 },
       home: { abbr: "DET", name: "Detroit Lions", short: "Lions", quarters: [7, 3, 7, 3], ot: null, score: 20 },
     };
-    const { main } = overview.renderRecapOverviewParts({
+    const { main } = renderOverview({
       game, story, stats: { away: null, home: null }, players, leaders: [],
       city: { away: "Green Bay", home: "Detroit" }, playerUrl: () => null, photo: () => "", highlights: "",
       inks: { away: "#203731", home: "#0076b6" }, drives: pbp.drives, pbp,
@@ -360,7 +366,7 @@ describe("a play-by-play that ends at the go-ahead score while the box score has
       away: { abbr: "GB", name: "Green Bay Packers", short: "Packers", quarters: [7, 0, 7, 5], ot: null, score: 19 },
       home: { abbr: "DET", name: "Detroit Lions", short: "Lions", quarters: [7, 3, 7, 3], ot: null, score: 20 },
     };
-    const { main } = overview.renderRecapOverviewParts({
+    const { main } = renderOverview({
       game, story, stats: { away: null, home: null }, players, leaders: [],
       city: { away: "Green Bay", home: "Detroit" }, playerUrl: () => null, photo: () => "", highlights: "",
       inks: { away: "#203731", home: "#0076b6" }, drives: pbp.drives, pbp,
@@ -407,7 +413,7 @@ test("a play-by-play and story cut after Detroit's Q3 go-ahead touchdown never r
 
   // Overview and recap engine: the story's last score is the go-ahead touchdown, the final is 17-20.
   const players = gamePlayers.buildGamePlayers(box.players, null, box.scoringPlays);
-  const { main } = overview.renderRecapOverviewParts({
+  const { main } = renderOverview({
     game, story, stats: { away: null, home: null }, players, leaders: [],
     city: { away: "Green Bay", home: "Detroit" }, playerUrl: () => null, photo: () => "", highlights: "",
     inks: { away: "#203731", home: "#0076b6" }, drives: pbp.drives, pbp, gameId: ID,
@@ -474,7 +480,7 @@ describe("'led the rest of the way' only when the box score's scoring sequence c
     };
     const players = gamePlayers.buildGamePlayers(box.players, null, box.scoringPlays);
     const render = (seq) =>
-      overview.renderRecapOverviewParts({
+      renderOverview({
         game, story, stats: { away: null, home: null }, players, leaders: [],
         city: { away: "Denver", home: "San Francisco" }, playerUrl: () => null, photo: () => "", highlights: "",
         inks: { away: "#fb4f14", home: "#aa0000" }, drives: pbp.drives, pbp, scoring: seq,
@@ -531,7 +537,7 @@ describe("a score is called the final play only when ESPN's drive chart shows th
       faqFacts: { winningPlay: { text: "Ryan Fitzgerald's 37-yard field goal", team: "CAR", quarter: winner.play.quarter, clock: winner.play.clock, away: winner.away, home: winner.home, ...(winner.play.endsGame ? { endsGame: true } : {}) } },
     }).map((q) => q.answer).join(" ");
     const players = gamePlayers.buildGamePlayers(box.players, null, box.scoringPlays);
-    const { main } = overview.renderRecapOverviewParts({
+    const { main } = renderOverview({
       game, story, stats: { away: null, home: null }, players, leaders: [],
       city: { away: "Baltimore", home: "Carolina" }, playerUrl: () => null, photo: () => "", highlights: "",
       inks: { away: "#241773", home: "#0085ca" }, drives: pbp.drives, pbp, gameId: ID, scoring: plays,
@@ -566,7 +572,7 @@ describe("a score is called the final play only when ESPN's drive chart shows th
       const plays = facts.pbpScoringPlays(list, pbp, "BAL", "CAR");
       if (plays.length) assert.ok(scoring.validateScoringPlays(game, plays).length > 0, "a short list does not add up, so the FAQ gets no winning play");
       const players = gamePlayers.buildGamePlayers(box.players, null, box.scoringPlays);
-      const { main } = overview.renderRecapOverviewParts({
+      const { main } = renderOverview({
         game, story, stats: { away: null, home: null }, players, leaders: [],
         city: { away: "Baltimore", home: "Carolina" }, playerUrl: () => null, photo: () => "", highlights: "",
         inks: { away: "#241773", home: "#0085ca" }, drives: pbp.drives, pbp, gameId: ID, scoring: plays,
@@ -594,7 +600,7 @@ describe("a score is called the final play only when ESPN's drive chart shows th
         game: g, teams: {}, stats: { away: null, home: null }, series: { sinceSeason: 2021, games: [], upcoming: [] }, links: {},
         faqFacts: { winningPlay: { text: "Jake Bates' 22-yard field goal", team: "DET", quarter: w.play.quarter, clock: w.play.clock, away: w.away, home: w.home, ...(w.play.endsGame ? { endsGame: true } : {}) } },
       }).map((q) => q.answer).join(" ");
-      const { main } = overview.renderRecapOverviewParts({
+      const { main } = renderOverview({
         game: g, story: read("game_story_2026.json").games["2026_07_GB_DET"], stats: { away: null, home: null },
         players: gamePlayers.buildGamePlayers(gbBox.players, null, gbBox.scoringPlays), leaders: [],
         city: { away: "Green Bay", home: "Detroit" }, playerUrl: () => null, photo: () => "", highlights: "",

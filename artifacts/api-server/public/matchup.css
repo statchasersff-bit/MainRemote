@@ -11326,17 +11326,9 @@ a.sct-ex-game:hover .sct-ex-line {
 
 /* Highlights as row tags in the Fantasy Box Score (WEB-041, 2026-11-24):
  * the top scorer and the biggest over- and underperformer were three cards
- * above the table; now a tag and a tinted row. 2026-11-27 (mak): the tag
- * sits beside the name, position and team stay the second line. Tag
+ * above the table; now a tag and a tinted row. 2026-11-27 (mak): one line
+ * per player, face, name, position and team, then the tag. Tag
  * text and kind (data-tier) follow the scoring switch; an empty tag hides. */
-
-.sct .sct-fz-nameline {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 2px 7px;
-  min-width: 0;
-}
 
 .sct .sct-fz-tag {
   display: inline-block;
@@ -11523,7 +11515,7 @@ a.sct-ex-game:hover .sct-ex-line {
 .sct .sct-fz-x-heads,
 .sct summary.sct-fz-x-sum {
   display: grid;
-  grid-template-columns: minmax(150px, 210px) minmax(0, 1fr) 48px 48px 58px 14px;
+  grid-template-columns: minmax(150px, 250px) minmax(0, 1fr) 48px 48px 58px 14px;
   align-items: center;
   column-gap: 14px;
 }
@@ -11580,9 +11572,10 @@ a.sct-ex-game:hover .sct-ex-line {
   display: none;
 }
 
+/* One line a row, about 25px, as the box score (mak, 2026-11-27). */
 .sct summary.sct-fz-x-sum {
-  min-height: 52px;
-  padding: 7px 8px;
+  min-height: 0;
+  padding: 2px 8px;
   cursor: pointer;
   list-style: none;
 }
@@ -11634,6 +11627,7 @@ a.sct-ex-game:hover .sct-ex-line {
 
 .sct .sct-fz-x-num {
   font-size: 14px;
+  line-height: 1.3;
   font-weight: 700;
   text-align: right;
   font-variant-numeric: tabular-nums;
@@ -11660,7 +11654,7 @@ a.sct-ex-game:hover .sct-ex-line {
 .sct details[open] > summary .sct-fz-x-chev { transform: rotate(-135deg) translate(-2px, -2px); }
 
 .sct .sct-fz-x-detail {
-  padding: 0 8px 10px 52px;
+  padding: 2px 8px 10px 35px;
 }
 
 .sct p.sct-fz-x-why,
@@ -11684,14 +11678,14 @@ a.sct-ex-game:hover .sct-ex-line {
 
   .sct .sct-fz-x-h.is-bar { display: none; }
 
-  .sct summary.sct-fz-x-sum { grid-template-areas: "who pts xfp diff chev" "bar bar bar bar bar"; row-gap: 6px; }
+  .sct summary.sct-fz-x-sum { grid-template-areas: "who pts xfp diff chev" "bar bar bar bar bar"; row-gap: 3px; padding-bottom: 6px; }
   .sct .sct-fz-x-who { grid-area: who; }
-  .sct .sct-fz-x-track { grid-area: bar; margin-left: 42px; }
+  .sct .sct-fz-x-track { grid-area: bar; margin-left: 27px; }
   .sct .sct-fz-x-num.is-pts { grid-area: pts; }
   .sct .sct-fz-x-num.is-xfp { grid-area: xfp; }
   .sct .sct-fz-x-num.is-diff { grid-area: diff; }
   .sct .sct-fz-x-chev { grid-area: chev; }
-  .sct .sct-fz-x-detail { padding-left: 50px; }
+  .sct .sct-fz-x-detail { padding-left: 35px; }
 }
 
 /* 05 the one CTA */
@@ -11703,6 +11697,47 @@ a.sct-ex-game:hover .sct-ex-line {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--rb-gold, #ffa300);
+}
+
+/* Fantasy Box Score, one line per player (mak, 2026-11-27): a 20px face,
+   name, "QB · NE", then the tag; 2px cell padding, the 1px divider, about
+   24px a row on desktop. Font sizes unchanged. Long names and stat lines
+   may wrap and grow their own row. */
+
+:is(.sct, #sct-table-armour) table.sct-fz-table.is-box tbody :is(th, td) {
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+
+:is(.sct, #sct-table-armour) :is(.sct-fz-table, .sct-fz-xboard) .sct-fz-who1 {
+  gap: 7px;
+}
+
+:is(.sct, #sct-table-armour) :is(.sct-fz-table, .sct-fz-xboard) .sct-fz-who1 .sct-mu-ps-photo {
+  flex: none;
+  width: 20px;
+  height: 20px;
+}
+
+.sct .sct-fz-who1-text {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 8px;
+  min-width: 0;
+}
+
+:is(.sct, #sct-table-armour) .sct-fz-who1-text > .sct-mu-ps-link {
+  line-height: 1.3;
+}
+
+:is(.sct, #sct-table-armour) .sct-fz-who1-text > .sct-mu-ps-meta {
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.sct .sct-fz-who1-text > .sct-fz-tag {
+  line-height: 1.35;
 }
 
 @media (max-width: 560px) {
@@ -11733,7 +11768,7 @@ a.sct-ex-game:hover .sct-ex-line {
   :is(.sct, #sct-table-armour) table.sct-fz-table.is-box tbody td.sct-fz-prod {
     grid-area: prod;
     padding-top: 0;
-    padding-left: 52px;
+    padding-left: 37px;
   }
 
   :is(.sct, #sct-table-armour) .sct-fz-list[data-fz="js"]:not(.is-open) table.sct-fz-table.is-box tbody tr.is-extra {
