@@ -3952,7 +3952,9 @@ function recapTabs(
   // The rebuilt Game Flow (mak, 2026-11-10; live 2026-11-11). Where it
   // prints, the old play calling + possessions block goes.
   const gameFlowNew = renderGameFlowComparison(data);
-  const possessionsOld = gameFlowNew ? "" : added.possessions;
+  // Until then the old parts wear its cards, in its grid (mak, 2026-11-27).
+  const flowOld = (lead: string): string =>
+    gameFlowNew || !(lead + added.possessions) ? lead : `<div class="sct-gfp is-fallback">${lead}${added.possessions}</div>`;
   const playByPlay = pbpParts ? pbpParts.lead + pbpParts.rest : "";
   const fantasyRecap = renderGameFantasyTab(data);
   // The Scoring Summary prints on Play-by-Play when there is one, not twice.
@@ -3974,7 +3976,7 @@ function recapTabs(
           panel("fantasy-recap", fantasyTab) +
           // Team Stats moved into the Box Score tab (2026-11-08); without one
           // it opens Game flow.
-          panel("game-flow", (boxScore ? "" : own.why) + scoring + possessionsOld, gameFlowNew) +
+          panel("game-flow", flowOld((boxScore ? "" : own.why) + scoring), gameFlowNew) +
           panel("head-to-head", own.headToHead, renderSeasonToDate(data, game)) +
           panel("betting", added.bettingLead, added.betting)
         );
@@ -3990,7 +3992,7 @@ function recapTabs(
         panel("box-score", boxScore) +
         panel("play-by-play", pbpParts?.lead ?? "", pbpParts?.rest ?? "") +
         panel("fantasy-recap", fantasyTab) +
-        panel("game-flow", added.winProbability + possessionsOld, gameFlowNew) +
+        panel("game-flow", flowOld(added.winProbability), gameFlowNew) +
         panel("head-to-head", own.headToHead, renderSeasonToDate(data, game)) +
         panel("betting", added.bettingLead, added.betting)
       );

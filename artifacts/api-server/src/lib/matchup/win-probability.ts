@@ -469,8 +469,10 @@ export function renderWinProbability(input: WinProbabilityInput): string {
 
   return (
     `<section class="sct-rb-section sct-wp" aria-labelledby="wp">` +
-    `<h2 class="sct-rb-h2" id="wp">How the game swung</h2>` +
-    `<p class="sct-wp-story">${escapeHtml(wpSubtitle(game, model))}</p>` +
+    // The rebuilt Game Flow's head (mak, 2026-11-27): title and the read on
+    // one row over the rule.
+    `<div class="sct-fp-head sct-gfp-head"><h2 class="sct-rb-h2" id="wp">How the Game Swung</h2>` +
+    `<p class="sct-gfp-read sct-wp-story">${escapeHtml(wpSubtitle(game, model))}</p></div>` +
     // Chart and key swings side by side, about 65/35 (mak, 2026-09-30).
     `<div class="sct-wp-row">` +
     `<div class="sct-wp-main">` +
