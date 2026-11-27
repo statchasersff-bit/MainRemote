@@ -25,14 +25,13 @@
  *     those pages; filter statchasers_fpa_local_assets to switch it off).
  *   - every player page (statchasers_player_asset_urls(), called only from
  *     statchasers_player_enqueue_assets(); filter
- *     statchasers_player_local_assets to switch it off). Here the reason is
- *     layout shift, not reachability: from the asset host, WP Rocket rewrote
- *     player.css to load asynchronously, the header first painted with
- *     Rocket's stale critical CSS (a desktop three-column grid squeezing the
- *     name column to 0px on a phone) and collapsed ~750px when player.css
- *     landed - 0.18 to 0.78 CLS on phones (docs/MOBILE-PERF-PLAYER-2026-11-27.md).
- *     The local copy is excluded from the async rewrite below, so it is a
- *     plain render-blocking stylesheet on the page's own origin.
+ *     statchasers_player_local_assets to switch it off). Same origin, so the
+ *     stylesheet WP Rocket loads asynchronously on these pages no longer
+ *     waits for a second connection. It stays asynchronous ON PURPOSE: the
+ *     fragment prints the header's critical CSS inline (API
+ *     src/lib/player/critical-css.ts), so the header paints at its final size
+ *     first and player.css only has to arrive for the body below it
+ *     (docs/MOBILE-PERF-PLAYER-2026-11-27.md).
  *
  * THE LOCKSTEP RULE. The fragment's markup and the stylesheet must come from
  * the same API build; a copy from another build styles markup it was not
@@ -303,7 +302,7 @@ function statchasers_player_asset_urls( string $version ): array {
 
 /**
  * The bundled stylesheets, as API-relative paths. Each is excluded from WP
- * Rocket's CSS handling below.
+ * Rocket's minify and Remove Unused CSS below.
  *
  * @return array<int,string>
  */
@@ -312,11 +311,24 @@ function statchasers_local_asset_stylesheets(): array {
 }
 
 /**
+ * The bundled stylesheets that must also stay render-blocking: every one
+ * except player.css, whose header is covered by the inline critical CSS the
+ * API prints in the fragment, so Rocket's asynchronous load is what lets the
+ * player pages paint before the 380 KB stylesheet has arrived.
+ *
+ * @return array<int,string>
+ */
+function statchasers_local_asset_blocking_stylesheets(): array {
+	return array_values( array_diff( statchasers_local_asset_stylesheets(), array( '/player.css' ) ) );
+}
+
+/**
  * Keep the local stylesheets as they are served from the API: no minify (it is
  * already minified, and WP Rocket's copy would be a second URL to go stale)
- * and no async "load CSS asynchronously" rewrite (the chart would flash
- * unstyled; on the player pages the rewrite IS what made the header jump, see
- * the file header). Matched against the URL. The
+ * and Remove Unused CSS leaves them alone (their rules style markup the client
+ * builds after load). The async "load CSS asynchronously" rewrite is refused
+ * for the blocking list only (statchasers_local_asset_async_exclusion()): the
+ * depth chart and the FPA table would flash unstyled. Matched against the URL. The
  * bundles need nothing here: statchasers-perf.php's '/dist/statchasers-'
  * Delay JS / minify exclusion and its nowprocket tag attributes match the
  * local URLs (assets/api/dist/statchasers-*.js) too.
@@ -334,5 +346,21 @@ function statchasers_local_asset_css_exclusion( $exclusions ): array {
 	return $exclusions;
 }
 add_filter( 'rocket_exclude_css', 'statchasers_local_asset_css_exclusion' );
-add_filter( 'rocket_exclude_async_css', 'statchasers_local_asset_css_exclusion' );
 add_filter( 'rocket_rucss_excluded_stylesheets', 'statchasers_local_asset_css_exclusion' );
+
+/**
+ * The blocking list, out of WP Rocket's async CSS rewrite.
+ *
+ * @param mixed $exclusions Existing patterns.
+ * @return array
+ */
+function statchasers_local_asset_async_exclusion( $exclusions ): array {
+	if ( ! is_array( $exclusions ) ) {
+		$exclusions = array();
+	}
+	foreach ( statchasers_local_asset_blocking_stylesheets() as $path ) {
+		$exclusions[] = '/' . STATCHASERS_LOCAL_ASSET_DIR . $path;
+	}
+	return $exclusions;
+}
+add_filter( 'rocket_exclude_async_css', 'statchasers_local_asset_async_exclusion' );

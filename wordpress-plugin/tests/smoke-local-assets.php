@@ -325,11 +325,14 @@ $u = statchasers_player_asset_urls( 'zzz999' );
 is( $u['css'], $remote_pl_css, 'API redeployed, player.css changed: asset host (never another build\'s stylesheet)' );
 is( $u['js'], $local_pl_js, 'API redeployed, player bundle byte-identical: stays local' );
 
-echo "\nWP Rocket leaves the player stylesheet render-blocking\n";
-foreach ( array( 'rocket_exclude_css', 'rocket_exclude_async_css', 'rocket_rucss_excluded_stylesheets' ) as $hook ) {
+echo "\nWP Rocket: player.css unminified and RUCSS-free, but loaded asynchronously (inline critical CSS covers the header)\n";
+foreach ( array( 'rocket_exclude_css', 'rocket_rucss_excluded_stylesheets' ) as $hook ) {
 	$ex = apply_filters( $hook, array() );
 	is( in_array( '/assets/api/player.css', $ex, true ), true, "$hook names /assets/api/player.css" );
 }
+$ex = apply_filters( 'rocket_exclude_async_css', array() );
+is( in_array( '/assets/api/player.css', $ex, true ), false, 'rocket_exclude_async_css does NOT name player.css (async on purpose)' );
+is( in_array( '/assets/api/team.css', $ex, true ) && in_array( '/assets/api/fpa.css', $ex, true ), true, 'rocket_exclude_async_css still names team.css and fpa.css' );
 is( false !== strpos( $local_pl_css, '/assets/api/player.css' ), true, 'the exclusion matches the local stylesheet URL' );
 $tag = statchasers_perf_script_tag( "<script id=\"statchasers-player-js\" defer src=\"$local_pl_js?ver=abc123\"></script>", 'statchasers-player', "$local_pl_js?ver=abc123" );
 is( false !== strpos( $tag, ' nowprocket ' ) && false !== strpos( $tag, ' defer ' ), true, 'local player bundle tag keeps defer + nowprocket' );
@@ -340,7 +343,7 @@ is( false !== strpos( $pl, '$urls = statchasers_player_asset_urls( $version );' 
 is( 1 === preg_match( "/wp_register_style\\(\\s*STATCHASERS_PLAYER_HANDLE,\\s*\\\$urls\\['css'\\],\\s*\\\$deps/", $pl ), true, 'style registered with $urls[css], font deps kept' );
 is( 1 === preg_match( "/wp_register_script\\(\\s*STATCHASERS_PLAYER_HANDLE,\\s*\\\$urls\\['js'\\],.*?'strategy'\\s*=>\\s*'defer'/s", $pl ), true, 'script registered with $urls[js], still deferred' );
 is( false === strpos( $pl, "statchasers_public_origin() . '/player.css'" ) && false === strpos( $pl, "statchasers_public_origin() . '/dist/statchasers-player.js'" ), true, 'no hard-coded asset-host URL left (no duplicate external load)' );
-is( false !== strpos( $pl, "add_filter( 'rocket_exclude_async_css', 'statchasers_player_async_css_exclusion' );" ) && false !== strpos( $pl, "\$host . '/player.css'" ), true, 'the asset-host fallback is kept out of the async rewrite too' );
+is( false === strpos( $pl, 'rocket_exclude_async_css' ), true, 'no async exclusion for the asset-host fallback either' );
 is( false !== strpos( $pl, 'wp_add_inline_style( STATCHASERS_PLAYER_HANDLE' ), true, 'inline styles still ride on the handle' );
 
 echo "\nthe bundled copy in this tree, if build-zip.sh has staged one\n";

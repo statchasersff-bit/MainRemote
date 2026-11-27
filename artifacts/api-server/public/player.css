@@ -150,6 +150,18 @@ body.scp-page {
   line-height: 1.5;
 }
 
+/* This stylesheet has arrived. On WordPress the fragment opens with the
+   header's critical CSS (src/lib/player/critical-css.ts) and keeps the panels
+   under the tab strip unpainted and unable to widen the page, and the root a
+   screen tall, until these are set: player.css loads asynchronously there,
+   and panels painted without it reflowed under the reader when it landed
+   (2026-11-27). */
+.scp[data-scp-root] {
+  --scp-sheet-vis: visible;
+  --scp-sheet-ovx: visible;
+  --scp-sheet-min: 0px;
+}
+
 /* Embedded: WordPress supplies the page's own padding and background. */
 .scp.is-embed {
   max-width: none;

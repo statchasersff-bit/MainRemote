@@ -450,9 +450,9 @@ function statchasers_player_enqueue_assets(): void {
 
 	// The stylesheet and bundle bundled with this plugin when they are the
 	// API's current build, else the asset host as before (WEB-023,
-	// statchasers-local-assets.php). The local stylesheet is kept out of WP
-	// Rocket's async CSS rewrite, so the header paints once, in its final
-	// layout (phone CLS 0.18-0.78 -> 0, 2026-11-27).
+	// statchasers-local-assets.php): no second connection for the stylesheet
+	// WP Rocket loads asynchronously here. The header does not wait for it -
+	// the fragment carries the header's critical CSS inline (2026-11-27).
 	$urls = statchasers_player_asset_urls( $version );
 
 	if ( ! wp_style_is( STATCHASERS_PLAYER_HANDLE, 'registered' ) ) {
@@ -550,34 +550,6 @@ function statchasers_player_lazyload_exclusions( $attributes ): array {
 }
 add_filter( 'rocket_lazyload_excluded_attributes', 'statchasers_player_lazyload_exclusions' );
 
-/**
- * player.css from the asset host is not loaded asynchronously either.
- *
- * The bundled copy (statchasers-local-assets.php) is the normal case and is
- * excluded there. This covers the fallback - an API deploy that changed
- * player.css since the zip was built - which loads the stylesheet from
- * statchasers_public_origin(). Loaded asynchronously, the header first paints
- * with WP Rocket's critical CSS for the template, which does not lay it out on
- * a phone (and goes stale with every player.css change), and then collapses
- * when player.css lands: 0.18 CLS on the Gibbs hub, up to 0.78 on a thin
- * profile (docs/MOBILE-PERF-PLAYER-2026-11-27.md). A render-blocking
- * stylesheet costs a later first paint instead; the local copy keeps that to
- * the page's own connection.
- *
- * @param mixed $exclusions Existing patterns.
- * @return array
- */
-function statchasers_player_async_css_exclusion( $exclusions ): array {
-	if ( ! is_array( $exclusions ) ) {
-		$exclusions = array();
-	}
-	$host = (string) wp_parse_url( statchasers_public_origin(), PHP_URL_HOST );
-	if ( '' !== $host ) {
-		$exclusions[] = $host . '/player.css';
-	}
-	return $exclusions;
-}
-add_filter( 'rocket_exclude_async_css', 'statchasers_player_async_css_exclusion' );
 
 /**
  * Does the request being rendered mount a player page?
