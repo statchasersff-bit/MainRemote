@@ -757,6 +757,45 @@ body.scf-page {
 .scf-cell[data-tier="tough-2"] { background: var(--scf-tough-2-wash); }
 
 /*
+ * Difficulty without color (mak, 2026-11-27). The tint alone said soft or
+ * tough, and the rank that backed it up is out of sight (2026-10-08). Each
+ * tinted cell, and its legend swatch, also carries a corner mark in ink:
+ * soft = top-left, tough = bottom-right, the stronger tier the larger mark.
+ * Shape and position, not hue, so it reads in grayscale and under every form
+ * of color blindness. Absolutely placed in the cell (which is already the
+ * positioned box, above), so it takes no width and the phone table still fits.
+ */
+.scf-cell[data-tier]::before,
+.scf-legend-swatch[data-tier]::before {
+  content: none;
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  pointer-events: none;
+}
+.scf-cell[data-tier^="soft"]::before,
+.scf-legend-swatch[data-tier^="soft"]::before {
+  content: "";
+  top: 0;
+  left: 0;
+  border-color: var(--sc-ink) transparent transparent transparent;
+  border-width: 6px 6px 0 0;
+}
+.scf-cell[data-tier^="tough"]::before,
+.scf-legend-swatch[data-tier^="tough"]::before {
+  content: "";
+  right: 0;
+  bottom: 0;
+  border-color: transparent transparent var(--sc-ink) transparent;
+  border-width: 0 0 6px 6px;
+}
+.scf-cell[data-tier="soft-2"]::before,
+.scf-legend-swatch[data-tier="soft-2"]::before { border-width: 10px 10px 0 0; }
+.scf-cell[data-tier="tough-2"]::before,
+.scf-legend-swatch[data-tier="tough-2"]::before { border-width: 0 0 10px 10px; }
+
+/*
  * The inner grid.
  *
  * Every cell draws its own right and bottom line, and the last of each is
@@ -887,6 +926,8 @@ body.scf-page {
 }
 
 .scf-legend-swatch {
+  position: relative;
+  overflow: hidden;
   width: 22px;
   height: 12px;
   border-radius: 3px;

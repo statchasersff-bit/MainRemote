@@ -217,10 +217,9 @@ describe("fpa routes", () => {
       assert.ok(at(needle) > 0, needle);
     }
     assert.equal(at("scf-mode"), -1, "the blend note is no longer printed (mak, 2026-11-04)");
-    // The archive list left the top of the live page (mak, 2026-11-04); its
-    // one link is back under the table (WEB-025, 2026-11-27), so the archive
-    // is reachable from the page and not only from the sitemap.
-    assert.ok(at("scf-seasons") > at("scf-table"), "the archive link sits under the table");
+    // The archive list left the live page (mak, 2026-11-04) and stays off it
+    // (mak, 2026-11-27 declined a link under the table).
+    assert.equal(at("scf-seasons"), -1, "no archive link on the current page");
     assert.ok(at("scf-updated") < at("scf-controls"), "the Updated line opens the page");
     assert.equal(at("scf-answer"), -1, "the answer sentence is no longer printed (mak, 2026-11-04)");
     assert.ok(at("scf-controls") < at("scf-legend-wrap") && at("scf-legend-wrap") < at("scf-table"), "the legend is on the controls row (mak, 2026-11-04)");
@@ -245,11 +244,10 @@ describe("fpa routes", () => {
     requireData();
     const live = await get("/fpa");
     const liveDoc = new JSDOM(live.body).window.document;
-    // The finished season is the one before the table's own, and the live
-    // page links it with an ordinary crawlable <a href> (WEB-025).
+    // The finished season is the one before the table's own. The live page
+    // does not link it (mak, 2026-11-27); the sitemap does.
     const season = Number(liveDoc.querySelector("[data-scf-root]").getAttribute("data-season")) - 1;
-    const archiveLinks = [...liveDoc.querySelectorAll(".scf-season-link")].map((a) => a.getAttribute("href"));
-    assert.ok(archiveLinks.includes(`/fpa?season=${season}`), `the live page links its archive: ${archiveLinks}`);
+    assert.equal(liveDoc.querySelectorAll(".scf-season-link").length, 0, "no archive link on the current page");
 
     const res = await get(`/fpa?season=${season}`);
     assert.equal(res.status, 200);
@@ -525,7 +523,7 @@ describe("fpa routes", () => {
     assert.match(answers[1], /opens in PPR/);
     // The blend schedule as blend.ts applies it, and the table's own mix.
     assert.match(answers[3], /25% after one week of games, 40% after two, 60% after three and 80% after four, then 2 percentage points more each week up to 90%/);
-    assert.match(answers[3], /Once a 12th week of games is in, \d{4} drops out and the table reads only the most recent 10 weeks/);
+    assert.match(answers[3], /Only complete weeks count: a week joins the table once all of its games are in.*Once a 12th complete week is in, \d{4} drops out and the table reads only the most recent 10 weeks/);
     assert.match(answers[3], /The current table: (\d+% \d{4} baseline and \d+% \d{4} data|A rolling ten-week window|No \d{4} regular-season games)/);
     // Not the table's values: no team named anywhere in the FAQ.
     const faqText = doc.querySelector(".scf-faq").textContent;

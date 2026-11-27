@@ -28,6 +28,7 @@ import assert from "node:assert/strict";
 import http from "node:http";
 import pg from "pg";
 import { startServer } from "./helpers/server.mjs";
+import { importModule, cleanupBundles } from "./helpers/bundle.mjs";
 
 const SECRET = "test-fpa-ingest-secret";
 
@@ -79,9 +80,25 @@ function row(season, week, team, opponent, position, stats = {}) {
  * Both sides of every game, because FPA is "points this defense allowed" and a
  * defense with no opponent rows is a defense the ingest never sees.
  */
+/*
+ * The table counts complete weeks only (mak, 2026-11-27), judged against the
+ * stored schedule, which has the real 1999 and 2000 slates. So every other
+ * game scheduled that week gets one quiet QB line a side, or the stubbed
+ * weeks would be partial and the "current" season would read as preseason.
+ */
+let slate = [];
 function csv(season, weeks) {
   const rows = [COLUMNS.join(",")];
   for (const week of weeks) {
+    for (const g of slate) {
+      if (g.season !== season || g.week !== week) continue;
+      // Keyed by the defense: KC and DET already have theirs, below, and their
+      // figures stay exactly the two-team ones the assertions read.
+      for (const [offense, defense] of [[g.away, g.home], [g.home, g.away]]) {
+        if (defense === "KC" || defense === "DET") continue;
+        rows.push(row(season, week, offense, defense, "QB", { passing_yards: 150 }));
+      }
+    }
     rows.push(
       row(season, week, "KC", "DET", "QB", { passing_yards: 300, passing_tds: 3 }),
       row(season, week, "KC", "DET", "RB", { rushing_yards: 100, rushing_tds: 1 }),
@@ -174,6 +191,8 @@ async function cleanup() {
 }
 
 before(async () => {
+  const coverage = await importModule("lib/data-coverage");
+  slate = [TEST_BASELINE, TEST_CURRENT].flatMap((season) => coverage.slateGames(season).map((g) => ({ ...g, season })));
   stub = stubReleases();
   const origin = await stub.listen();
   server = await startServer({
@@ -183,6 +202,7 @@ before(async () => {
 });
 
 after(async () => {
+  await cleanupBundles();
   await server?.stop();
   await stub?.close();
   await cleanup();
@@ -243,8 +263,10 @@ describe("POST /api/fpa/ingest - the refresh", () => {
     // One week of the stubbed "current" season.
     assert.equal(body.weekNumber, 1);
     assert.equal(body.dataMode, "week_1");
-    // Two defenses, three scoring formats.
-    assert.equal(body.snapshotRows, 6);
+    // Every defense of the stubbed seasons' slates, three scoring formats
+    // (two defenses before the complete-weeks rule filled in the slate).
+    const defenses = new Set(slate.flatMap((g) => [g.away, g.home]));
+    assert.equal(body.snapshotRows, defenses.size * 3);
     assert.ok(body.gameRows > 0);
     assert.ok(
       Date.now() - Date.parse(body.snapshotWrittenAt) < 60_000,

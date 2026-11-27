@@ -550,7 +550,9 @@ function blendSchedule(season: number, baseline: number): string {
     `blended with the ${baseline} full-season figure (Weeks 1-17). ${season} games count for ` +
     `${pct(1)}% after one week of games, ${pct(2)}% after two, ${pct(3)}% after three and ` +
     `${pct(4)}% after four, then ${step} percentage points more each week up to ${cap}%. ` +
-    `Once a ${ordinal(dropWeek)} week of games is in, ${baseline} drops out and the table reads ` +
+    `Only complete weeks count: a week joins the table once all of its games are in, so a ` +
+    `Thursday game waits for the rest of its week. ` +
+    `Once a ${ordinal(dropWeek)} complete week is in, ${baseline} drops out and the table reads ` +
     `only the most recent ${ROLLING_WINDOW_WEEKS} weeks of ${season} games.`
   );
 }
@@ -1048,9 +1050,8 @@ export function renderFpaPage(
     (options.embed ? "" : renderUpdated(copy)) +
     // An archive page's way back, above its table. The live page's link to
     // the archive went with the list above the table (mak, 2026-11-04) and
-    // is back under the table (WEB-025, 2026-11-27): without it nothing on
-    // the current page linked /2025/, so the archive was reachable only
-    // through the sitemap.
+    // stays off it (mak, 2026-11-27: a restored link under the table was
+    // declined); the archive is reached through the sitemap.
     (data.kind === "archive" ? renderSeasons(data, options) : "") +
     // The body: the rail and the sheet. Rail first in the markup, so that
     // collapsed (under 1240px) it is the row above the table, and in a tab
@@ -1060,7 +1061,6 @@ export function renderFpaPage(
     `<div class="scf-main">` +
     renderControls(data) +
     renderTable(data, options) +
-    (data.kind === "archive" ? "" : renderSeasons(data, options)) +
     // The blend note ("12% 2025 baseline and 88% 2026 data") is no longer
     // printed under the table (mak, 2026-11-04).
     `</div>` +

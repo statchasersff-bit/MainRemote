@@ -24,6 +24,7 @@ import type { NflTeam } from "../team/teams";
 import type { TeamStats, StatRow } from "../team/stats";
 import type { RosterPlayer } from "../team/roster";
 import type { FpaRow } from "../fpa/fpa-data";
+import { SOFT_MAX_RANK } from "../fpa/matchup-bands";
 import { getUsageDoc, type UsagePlayer, type UsageTeam } from "../team/usage";
 import { getTeamCoaching, type TeamCoaching } from "../team/coaching";
 import { loadGameLogs, loadPlayers, loadRosterPct } from "../player/data";
@@ -1130,7 +1131,10 @@ function snapshotNote(away: PreviewSide, home: PreviewSide): string | null {
     );
     const soft = spots.sort((x, y) => x.rank - y.rank)[0]!;
     const other = (soft.def === away ? home : away).fpa!.byPos[soft.pos];
-    if (soft.rank <= 10) {
+    // "Soft" is the FPA page's own band, ranks 1-12 (mak, 2026-11-27): this
+    // used to stop at 10, so a defense the FPA page tinted Soft at 11th or
+    // 12th was called "not soft at any position" here.
+    if (soft.rank <= SOFT_MAX_RANK) {
       parts.push(
         `The ${soft.def.team.nickname}' defense gives up the ${allowPhrase(soft.rank)} ${soft.pos} points` +
           (other.rank > soft.rank ? `, against the ${(soft.def === away ? home : away).team.nickname}' ${allowPhrase(other.rank)}` : "") +

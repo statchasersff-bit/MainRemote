@@ -82,3 +82,24 @@ export function fpaWeekCoverage(
 export function partialGameWords(week: number, games: string[]): string {
   return `${games.length} Week ${week} game${games.length === 1 ? "" : "s"}`;
 }
+
+/**
+ * The rows of the weeks every scheduled game of which is held. Weeks after
+ * the first incomplete one are left out too, so a late-week game never
+ * stands in for a whole week. With no schedule to tell by, every row counts
+ * (the old behavior), so a missing games.csv cannot empty the table.
+ */
+export function completeWeekRows<T extends { week: number; defenseTeam: string }>(
+  rows: T[],
+  games: FpaScheduleGame[],
+  maxWeek = 17,
+): T[] {
+  if (rows.length === 0) return rows;
+  const cover = fpaWeekCoverage(
+    heldClubWeeks(rows.map((r) => ({ week: r.week, defense: r.defenseTeam }))),
+    games,
+    maxWeek,
+  );
+  if (!cover) return rows;
+  return rows.filter((r) => r.week <= cover.completeThroughWeek);
+}

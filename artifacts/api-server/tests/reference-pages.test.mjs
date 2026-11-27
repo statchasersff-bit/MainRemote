@@ -275,3 +275,42 @@ describe("NFL Player Stats: Eastern date around midnight and the clock change", 
     assert.equal(dateFor("2026-11-19"), "November 19, 2026");
   });
 });
+
+describe("FPA table counts complete weeks only (mak, 2026-11-27)", () => {
+  /** One stored row per defense per scheduled game through `week`, plus extras. */
+  function rowsThrough(week, extra = []) {
+    const out = [];
+    for (const g of games()) {
+      if (g.week > week) continue;
+      out.push({ week: g.week, defenseTeam: g.away }, { week: g.week, defenseTeam: g.home });
+    }
+    return out.concat(extra);
+  }
+
+  test("a Thursday game of the next week is left out of the table", () => {
+    const thu = games().find((g) => g.week === 11);
+    const rows = rowsThrough(10, [{ week: 11, defenseTeam: thu.away }, { week: 11, defenseTeam: thu.home }]);
+    const kept = wc.completeWeekRows(rows, games());
+    assert.equal(Math.max(...kept.map((r) => r.week)), 10);
+    assert.equal(kept.length, rows.length - 2);
+    // Ten distinct weeks, so the blend stays on its 90% schedule rather than
+    // flipping to the rolling window at "12 weeks played".
+    assert.equal(new Set(kept.map((r) => r.week)).size, 10);
+  });
+
+  test("a complete week counts in full", () => {
+    const rows = rowsThrough(11);
+    assert.equal(wc.completeWeekRows(rows, games()).length, rows.length);
+  });
+
+  test("a missing Monday game holds back that whole week and anything after it", () => {
+    const rows = rowsThrough(11).filter((r) => !(r.week === 10 && (r.defenseTeam === "LAC" || r.defenseTeam === "BAL")));
+    const kept = wc.completeWeekRows(rows, games());
+    assert.equal(Math.max(...kept.map((r) => r.week)), 9);
+  });
+
+  test("no schedule to tell by: every row counts, so the table cannot empty", () => {
+    const rows = rowsThrough(10, [{ week: 11, defenseTeam: "IND" }]);
+    assert.equal(wc.completeWeekRows(rows, []).length, rows.length);
+  });
+});

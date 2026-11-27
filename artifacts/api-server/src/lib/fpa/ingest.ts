@@ -12,7 +12,8 @@
  * **The blend.** Before the season starts there is no current-season data, so
  * the figure is last season's. Once games exist the two are mixed, with the
  * weight on live data rising by week (wk1 .25 → wk4 .80) until week 12, past
- * which a rolling ten-week window of the current season is used alone. This is
+ * which a rolling ten-week window of the current season is used alone. Weeks
+ * count only once every scheduled game of the week is in (complete weeks). This is
  * the whole reason the number is precomputed rather than queried: it is a
  * weighted mix over two seasons, and recomputing it per request would put a
  * 7MB CSV parse in front of TTFB.
@@ -55,6 +56,8 @@ import {
   type ScoringFormat,
   type ScoredPlayerWeek,
 } from "./nflverse";
+import { completeWeekRows } from "./week-coverage";
+import { slateGames } from "../data-coverage";
 
 export const DEFAULT_BASELINE_SEASON = Number(
   process.env["FPA_BASELINE_SEASON"] ?? 2025,
@@ -201,13 +204,20 @@ export async function ingestFpa(
     }
   }
 
-  const weeksPlayed = currentRows.length
-    ? new Set(currentRows.map((r) => r.week)).size
+  // Only complete weeks feed the table (mak, 2026-11-27). A Thursday game
+  // used to count as a whole week: on 11-26 one Week 12 game moved the
+  // weight to 100% 2026 and the window to weeks 3-12 while the label still
+  // said "through Week 11". Every row is still stored as a game row, so the
+  // page can tell a partial week is held; the table waits for the week.
+  const tableRows = completeWeekRows(currentRows, slateGames(currentSeason), MAX_WEEK);
+
+  const weeksPlayed = tableRows.length
+    ? new Set(tableRows.map((r) => r.week)).size
     : 0;
   const isPreseason = weeksPlayed === 0;
   const weekNumber = isPreseason
     ? null
-    : Math.max(...currentRows.map((r) => r.week));
+    : Math.max(...tableRows.map((r) => r.week));
   const dataMode = isPreseason ? "preseason_baseline" : `week_${weekNumber}`;
 
   // Weeks only move forward. A run that would serve fewer weeks than the table
@@ -220,10 +230,14 @@ export async function ingestFpa(
     .from(fpaSnapshots)
     .where(eq(fpaSnapshots.season, currentSeason));
   const storedWeek = stored?.week ?? null;
-  if (storedWeek !== null && (weekNumber ?? 0) < storedWeek) {
+  // Judged on what upstream published, not on the complete weeks the table
+  // uses: a table that drops a partial week (or a stored table from before
+  // that rule, which counted one) is not upstream going backwards.
+  const upstreamWeek = currentRows.length ? Math.max(...currentRows.map((r) => r.week)) : 0;
+  if (storedWeek !== null && upstreamWeek < storedWeek) {
     throw new Error(
       `FPA ingest refused: ${currentSeason} would go back from week ${storedWeek} ` +
-        `to ${weekNumber === null ? "preseason" : `week ${weekNumber}`}`,
+        `to ${upstreamWeek === 0 ? "preseason" : `week ${upstreamWeek}`}`,
     );
   }
 
@@ -234,10 +248,10 @@ export async function ingestFpa(
     );
 
     if (!isPreseason) {
-      const curWeeks = currentWindowWeeks(currentRows, weeksPlayed);
+      const curWeeks = currentWindowWeeks(tableRows, weeksPlayed);
       blended = blendWithCurrent(
         blended,
-        computeFpaTable(rowsForWeeks(currentRows, curWeeks), format),
+        computeFpaTable(rowsForWeeks(tableRows, curWeeks), format),
         weeksPlayed,
       );
     }

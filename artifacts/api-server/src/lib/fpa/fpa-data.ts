@@ -250,7 +250,14 @@ async function readFpaTable(
     ingestedWeek !== null && cover && cover.completeThroughWeek >= 1
       ? Math.min(ingestedWeek, cover.completeThroughWeek)
       : ingestedWeek;
-  const partialWeek = cover && weekNumber !== null && cover.partialWeek !== null && cover.partialWeek > weekNumber ? cover.partialWeek : null;
+  // A partial week is named only when the snapshot actually counted it (a
+  // table ingested before the complete-weeks rule of 2026-11-27). Since then
+  // the ingest leaves a partial week out, so the label is the complete weeks.
+  const partialWeek =
+    cover && weekNumber !== null && ingestedWeek !== null && cover.partialWeek !== null &&
+    cover.partialWeek > weekNumber && ingestedWeek >= cover.partialWeek
+      ? cover.partialWeek
+      : null;
   const partialGames = partialWeek !== null ? cover!.partialGames : [];
   const dataMode =
     weekNumber !== ingestedWeek || partialWeek !== null
