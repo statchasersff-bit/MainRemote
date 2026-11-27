@@ -2357,29 +2357,38 @@ describe("recap Overview tab (new design)", () => {
 
   test("five cards in mak's order, the story told from the play-by-play", async () => {
     const { doc } = await dom(PAGE);
-    const ov = doc.querySelector("[data-mu-tab='recap'] .sct-ov");
+    const ov = doc.querySelector("[data-mu-tab='recap'] .sct-ov:not(.sct-ov-lead)");
     if (!ov) return; // no stored story for the game
     assert.equal(doc.querySelectorAll("h1").length, 1, "still one H1");
     assert.equal(doc.querySelector("#tab-recap").textContent, "Overview");
     const steps = [...ov.querySelectorAll(".sct-ov-step")].map((p) => p.textContent.replace(/\s+/g, " ").trim());
     assert.deepEqual(steps, [], "no step labels");
-    assert.equal(ov.querySelector("#sct-ov-recap").textContent, "Game Recap");
+    // Game Recap spans both columns, in the tab's lead (2026-11-27).
+    const lead = doc.querySelector(".sct-mu-lead .sct-ov-lead");
+    assert.equal(ov.querySelector(".is-recap"), null, "no recap in the main column");
+    assert.equal(lead.querySelector("#sct-ov-recap").textContent, "Game Recap");
     // The written recap (scripts/matchup/writeRecaps.mjs, 2026-11-17) when one
     // is stored for the game's current evidence; the engine's text otherwise.
-    const copy = ov.querySelector(".is-recap").textContent;
+    const copy = lead.querySelector(".is-recap").textContent;
     const stored = writtenRecap("2026_01_NE_SEA");
     if (stored) {
-      assert.equal(ov.querySelector(".is-recap .sct-ov-headline strong").textContent, stored.headline);
+      assert.equal(lead.querySelector(".is-recap .sct-ov-headline strong").textContent, stored.headline);
     } else {
       assert.match(copy, /Seattle lost Sam Darnold to an injury on the opening drive/);
     }
     assert.match(copy, /Darnold/);
     assert.match(copy, /Smith-Njigba/);
     assert.doesNotMatch(copy, /\u2014/, "no em dashes");
-    const tiles = [...ov.querySelectorAll(".sct-ov-tiles li")].map((li) => li.textContent);
-    // The why card argues from evidence the recap does not tell (2026-11-11).
-    assert.deepEqual(tiles, ["+3Turnover margin", "7.2SEA yards/dropback", "5/16NE third downs"]);
-    assert.match(ov.querySelector(".is-why .sct-ov-copy").textContent, /overcame poor third-down efficiency \(2-for-11\), 19 fewer offensive plays/);
+    // The why card argues from evidence the recap does not tell (2026-11-11);
+    // since 2026-11-27 it is a rail card between Game Leaders and Before and After.
+    assert.equal(ov.querySelector(".is-why"), null, "no why card in the Overview column");
+    const won = doc.querySelector(".sct-rb-aside .sct-rb-won");
+    assert.ok(won.previousElementSibling.classList.contains("sct-rb-leaders"), "under Game Leaders");
+    assert.ok(won.nextElementSibling.classList.contains("sct-ba"), "above Before and After");
+    assert.equal(won.querySelector("#sct-rb-won").textContent, "Why the Seahawks Won");
+    const tiles = [...won.querySelectorAll("dt")].map((dt) => dt.textContent + dt.nextElementSibling.textContent);
+    assert.deepEqual(tiles, ["Turnover margin+3", "SEA yards/dropback7.2", "NE third downs5/16"]);
+    assert.match(won.querySelector(".sct-rb-won-copy").textContent, /overcame poor third-down efficiency \(2-for-11\), 19 fewer offensive plays/);
     assert.ok(ov.querySelector(".is-swing svg.sct-ov-wp path.sct-ov-wp-line"), "the play-by-play chart");
     const moments = [...ov.querySelectorAll(".sct-ov-moments b")].map((b) => b.textContent);
     assert.deepEqual(moments, [
@@ -2391,7 +2400,7 @@ describe("recap Overview tab (new design)", () => {
     // Redraft Command card since the Game info card went (WEB-041, 2026-11-24:
     // every row of it repeated the score header).
     assert.equal(ov.querySelector(".sct-ov-leader"), null, "no leaders card in the Overview column");
-    assert.equal(doc.querySelector(".sct-rb-aside .sct-rb-info:not(.sct-rb-leaders):not(.sct-ba)"), null, "no Game info card");
+    assert.equal(doc.querySelector(".sct-rb-aside .sct-rb-info:not(.sct-rb-leaders):not(.sct-ba):not(.sct-rb-won)"), null, "no Game info card");
     const side = doc.querySelector(".sct-rb-aside .sct-rb-redraft").nextElementSibling;
     assert.ok(side.classList.contains("sct-rb-leaders"), "leaders follow Redraft Command");
     assert.deepEqual([...side.querySelectorAll("dt")].map((n) => n.textContent), ["Passing", "Rushing", "Receiving", "Defense"]);
@@ -2529,6 +2538,9 @@ describe("recap Overview tab (new design)", () => {
     // no "Score shown" key on the scoring summary.
     assert.ok(tab.querySelector(".sct-pbp-head > h2#pbp-full + [data-pbp-controls]"));
     assert.ok(tab.querySelector("[data-pbp-list] + [data-pbp-more][hidden] > [data-pbp-expand]"));
+    // 11-27: printed open, with a Hide button the client turns into Show.
+    assert.equal(tab.querySelector(".sct-pbp-full.is-folded"), null, "open without the script");
+    assert.ok(tab.querySelector("[data-pbp-more] > [data-pbp-show][aria-controls='pbp-full-list']"));
     assert.doesNotMatch(tab.textContent, /Score shown/);
   });
 
@@ -2545,6 +2557,18 @@ describe("recap Overview tab (new design)", () => {
     assert.equal(box.querySelector("[data-pbp-controls]").hidden, false, "the script shows the controls");
     assert.equal(box.querySelector("[data-pbp-more]").hidden, false, "the script shows the Expand all row");
     const drives = [...box.querySelectorAll("details.sct-pbp-drive")];
+    // Folded on load (mak, 2026-11-27); Show opens it, Hide folds it again.
+    const full = box.querySelector(".sct-pbp-full");
+    const show = box.querySelector("[data-pbp-show]");
+    assert.ok(full.classList.contains("is-folded"), "folded on load");
+    assert.equal(show.textContent, "Show full play-by-play");
+    assert.equal(show.getAttribute("aria-expanded"), "false");
+    show.click();
+    assert.ok(!full.classList.contains("is-folded"), "Show opens it");
+    assert.equal(show.textContent, "Hide full play-by-play");
+    show.click();
+    assert.ok(full.classList.contains("is-folded"), "Hide folds it");
+    show.click();
     // One toggle (mak, 2026-11-09): Expand all, then Collapse all.
     const expand = box.querySelector("[data-pbp-expand]");
     assert.equal(expand.textContent, "Expand all");
@@ -2662,6 +2686,8 @@ describe("recap Fantasy tab (fantasy-tab.ts)", () => {
     assert.deepEqual(tagged.map((t) => t.textContent).sort(), ["Overperformer", "Top scorer", "Underperformer"]);
     assert.deepEqual(tagged.map((t) => t.dataset.tier).sort(), ["over", "top", "under"]);
     assert.equal(tagged[0].closest("tr"), tab.querySelector(".is-box tbody tr"), "the top scorer is the first row");
+    // Beside the name, not a line of its own (mak, 2026-11-27).
+    for (const t of tagged) assert.ok(t.parentElement.matches(".sct-mu-ps-who > .sct-fz-nameline") && t.previousElementSibling.matches(".sct-mu-ps-link"), "tag on the name's line");
     for (const t of tab.querySelectorAll(".sct-fz-tag")) {
       assert.ok(t.hasAttribute("data-ppr") && t.hasAttribute("data-half") && t.hasAttribute("data-std"), "tag text per scoring");
       assert.ok(t.hasAttribute("data-tier-ppr") && t.hasAttribute("data-tier-std"), "tag kind per scoring");
@@ -2683,7 +2709,34 @@ describe("recap Fantasy tab (fantasy-tab.ts)", () => {
 });
 
 describe("recap Betting tab, frozen market (betting-market.ts)", () => {
-  test("three sections: results vs closing odds, open vs close, one trends table", async () => {
+  test("Betting switches, through the real client bundle (2026-11-27)", async () => {
+    const PAGE = "/nfl/miami-dolphins-vs-new-england-patriots/2026-week-8/";
+    const html = await (await fetch(`${server.origin}${PAGE}`)).text();
+    if (!/data-bm-last/.test(html)) return;
+    const bundle = path.join(APP_DIR, "public", "dist", "statchasers-team.js");
+    const win = new JSDOM(html, { runScripts: "outside-only", pretendToBeVisual: true, url: `${server.origin}${PAGE}` });
+    win.window.eval(fs.readFileSync(bundle, "utf8"));
+    await new Promise((resolve) => setTimeout(resolve, 30));
+    const doc = win.window.document;
+    const last = doc.querySelector("[data-bm-last]");
+    assert.equal(last.querySelector("[data-bm-switch]").hidden, false, "the script shows the switch");
+    const shown = () => [...last.querySelectorAll("[data-bm-team]")].filter((t) => !t.hidden).map((t) => t.dataset.bmTeam);
+    assert.deepEqual(shown(), ["away"], "away team first");
+    last.querySelector('[data-bm-pick="home"]').click();
+    assert.deepEqual(shown(), ["home"]);
+    assert.equal(last.querySelector('[data-bm-pick="home"]').getAttribute("aria-pressed"), "true");
+    const results = doc.querySelector("[data-bm-results]");
+    const hist = results.querySelector("[data-bm-hist]");
+    if (hist) {
+      assert.ok(results.classList.contains("is-js") && !hist.hidden);
+      hist.click();
+      assert.ok(results.classList.contains("is-hist-open"));
+      assert.equal(hist.textContent, "Hide line history");
+    }
+    win.window.close();
+  });
+
+  test("two sections: results with the line history, trends beside the last games", async () => {
     const { doc } = await dom("/nfl/new-england-patriots-vs-seattle-seahawks/2026-week-1/");
     // Odds and Results sits in the tab header's container (2026-11-10), the
     // rest in [data-bm-root] after it: read the whole panel.
@@ -2691,18 +2744,32 @@ describe("recap Betting tab, frozen market (betting-market.ts)", () => {
     const block = doc.querySelector("#betting-tab");
     assert.ok(block.querySelector(".sct-mu-bet-frame > .sct-tab-frame-body > .sct-rb-section > #bm-results"), "Odds and Results is inside the header's container");
     const ids = [...block.querySelectorAll(".sct-rb-section > h2, .sct-rb-section > .sct-gfp-head > h2")].map((h) => h.id);
-    assert.deepEqual(ids.filter((id) => id !== "bm-movement"), ["bm-results", "bm-trends"]);
-    const results = block.querySelector("#bm-results").parentElement.textContent;
-    assert.match(results, /Push/);
-    assert.match(results, /Under 44\.5 by 21\.5|Under [\d.]+ by 21\.5/);
-    assert.match(results, /20\.75/, "market-implied points sit in the results section");
-    // Week 1: one game in the sample, nothing from later weeks.
-    // One open recent-results table for both teams (2026-11-11): no chips,
-    // no collapsed per-team tables, no meetings sentence.
-    const recent = block.querySelectorAll("table.is-recent");
-    assert.equal(recent.length, 1);
-    assert.equal(recent[0].querySelectorAll("tbody tr").length, 2, "one game per team");
-    assert.equal(block.querySelector(".sct-bm-streak, details.sct-bm-games, .sct-bm-series"), null);
+    // 2026-11-27 (mak): the Opening vs Closing card merged into the results table.
+    assert.deepEqual(ids, ["bm-results", "bm-trends"]);
+    const results = block.querySelector("#bm-results").parentElement;
+    const table = results.querySelector("table.is-results");
+    const head = [...table.querySelectorAll("thead th")].map((th) => th.textContent);
+    assert.ok(["Market,Result,Close", "Market,Result,Open,Close,Movement"].includes(head.join()), head.join());
+    assert.equal(table.querySelector("tbody th").textContent, "Spread");
+    assert.match(results.textContent, /Push/);
+    assert.match(results.textContent, /Under by\s21\.5/);
+    assert.match(results.textContent, /20\.75/, "market-implied points sit in the results section");
+    assert.equal(results.querySelector(".sct-bm-summary, .sct-bm-card"), null, "no cards, no repeating sentence");
+    assert.equal(results.querySelector("[data-bm-hist]")?.hidden ?? true, true, "line-history button printed hidden");
+    // Week 1: one game in the sample, nothing from later weeks. The last
+    // games sit beside the trends, one table per team behind a switch.
+    const split = block.querySelector(".sct-bm-split");
+    assert.ok(split.querySelector(".sct-bm-trendcol table.is-trends"), "trends on the left");
+    const last = split.querySelector("[data-bm-last]");
+    assert.equal(last.querySelector("h3").textContent, "Last Game");
+    assert.deepEqual([...last.querySelectorAll("[data-bm-pick]")].map((b) => b.textContent), ["NE", "SEA"], "away first");
+    assert.ok(last.querySelector("[data-bm-switch][hidden]"), "switch printed hidden");
+    const teams = last.querySelectorAll("[data-bm-team]");
+    assert.equal(teams.length, 2);
+    for (const t of teams) assert.equal(t.querySelectorAll("tbody tr").length, 1, "one game per team");
+    assert.deepEqual([...teams[0].querySelectorAll("thead th")].map((th) => th.textContent), ["Wk / Opp", "Final", "ATS", "O/U"]);
+    assert.match(teams[0].querySelector("tbody td").textContent, /^Wk 1 @ SEA$/);
+    assert.equal(block.querySelector("table.is-recent, .sct-bm-streak, details.sct-bm-games, .sct-bm-series"), null);
     assert.equal(block.querySelectorAll("table.is-trends").length, 1, "one two-team trends table");
     assert.doesNotMatch(block.innerHTML, /DraftKings/, "no sportsbook name");
     // The old result panel and season-trends table are gone (2026-11-09).

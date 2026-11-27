@@ -353,14 +353,17 @@ function fullSection(game: ScoreboardGame, pbp: GamePbp): string {
     filter("turnover", "Turnovers") +
     filter("major", "Major plays") +
     `</div>`;
+  // The whole log starts folded to its title bar and a Show button (mak,
+  // 2026-11-27); the client folds it, so without the script it reads open.
   const more =
     `<div class="sct-pbp-more" data-pbp-more hidden>` +
+    `<button type="button" class="sct-pbp-btn sct-pbp-show" data-pbp-show aria-expanded="true" aria-controls="pbp-full-list">Hide full play-by-play</button>` +
     `<button type="button" class="sct-pbp-btn" data-pbp-expand aria-expanded="false">Expand all</button>` +
     `</div>`;
   return (
     `<section class="sct-rb-section sct-pbp-sec sct-pbp-full" aria-labelledby="pbp-full">` +
     `<div class="sct-fp-head sct-pbp-head"><h2 class="sct-rb-h2" id="pbp-full">${e("Full play-by-play")}</h2>${controls}</div>` +
-    `<div class="sct-pbp-list" data-pbp-list><div class="sct-pbp-qgrid">${groups}</div></div>` +
+    `<div class="sct-pbp-list" id="pbp-full-list" data-pbp-list><div class="sct-pbp-qgrid">${groups}</div></div>` +
     more +
     `<p class="sct-rb-note">Major plays are scores, turnovers, sacks and gains of 20+ yards. A drive is listed under the quarter it started in.</p>` +
     `</section>`

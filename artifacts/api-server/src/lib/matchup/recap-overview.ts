@@ -810,9 +810,9 @@ function card(label: string, id: string, title: string, body: string, extra = ""
  * info's own markup (sct-rb-card, h3, label/value list), for the page to print
  * directly under Game info. Both "" when the game has no story.
  */
-export function renderRecapOverviewParts(input: OverviewInput): { main: string; leaders: string } {
+export function renderRecapOverviewParts(input: OverviewInput): { lead: string; main: string; leaders: string; why: string } {
   const f = facts(input);
-  if (!f) return { main: "", leaders: "" };
+  if (!f) return { lead: "", main: "", leaders: "", why: "" };
   const name = nameResolver(input.players, input.story.ids);
   const link = (full: string, gameKey?: string) => {
     const url = input.playerUrl(full, gameKey ? { gameKey } : undefined);
@@ -852,18 +852,17 @@ export function renderRecapOverviewParts(input: OverviewInput): { main: string; 
     "is-recap", BAR_ICON["recap"],
   );
 
-  // 02
+  // 02: a rail card under Game Leaders, above Before and After (mak, 2026-11-27), in the rail's
+  // own markup: the three figures as label/value rows, then the sentence.
   const why = whyWon(f, input, name);
-  const whyCard = why.tiles.length
-    ? card(
-        "",
-        "sct-ov-why",
-        `Why the ${f.W.nick} Won`,
-        `<ul class="sct-ov-tiles">${why.tiles
-          .map(([v, l]) => `<li><b class="sct-ov-num">${e(v)}</b><span>${e(l)}</span></li>`)
-          .join("")}</ul>` + (why.text ? `<p class="sct-ov-copy">${e(why.text)}</p>` : ""),
-        "is-why", BAR_ICON["why"],
-      )
+  const whyAside = why.tiles.length
+    ? `<section class="sct-rb-card sct-rb-info sct-rb-won" aria-labelledby="sct-rb-won">` +
+      railHead("won", "sct-rb-won", `Why the ${f.W.nick} Won`, true) +
+      `<dl class="sct-rb-dl">${why.tiles
+        .map(([v, l]) => `<dt>${e(l)}</dt><dd><b class="sct-rb-won-num">${e(v)}</b></dd>`)
+        .join("")}</dl>` +
+      (why.text ? `<p class="sct-rb-won-copy">${e(why.text)}</p>` : "") +
+      `</section>`
     : "";
 
   // 03
@@ -926,15 +925,18 @@ export function renderRecapOverviewParts(input: OverviewInput): { main: string; 
     ? card("", "sct-ov-highlights", "Game Highlights", input.highlights, "is-highlights", BAR_ICON["video"])
     : "";
 
+  const inks = `--ov-away:${input.inks.away};--ov-home:${input.inks.home}`;
   return {
+    // Game Recap spans the full width, over the main column and the rail
+    // (mak, 2026-11-27); the page prints it in the tab's lead.
+    lead: `<div class="sct-ov sct-ov-lead" style="${e(inks)}">${recap}</div>`,
     main:
-      `<div class="sct-ov" style="${e(`--ov-away:${input.inks.away};--ov-home:${input.inks.home}`)}">` +
-      recap +
-      whyCard +
+      `<div class="sct-ov" style="${e(inks)}">` +
       swingCard +
       highlightsCard +
       `</div>`,
     leaders: leadersAside,
+    why: whyAside,
   };
 }
 

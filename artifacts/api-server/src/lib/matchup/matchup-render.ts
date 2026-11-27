@@ -789,8 +789,8 @@ function renderGameLeadersStrip(data: MatchupData): string {
  * The new design's Overview tab (recap-overview.ts), or "" when the game has
  * no stored play-by-play story - the page then keeps the previous Recap tab.
  */
-function renderOverview(data: MatchupData, input: RecapBodyInput, added: AddedSections): { main: string; leaders: string } {
-  const none = { main: "", leaders: "" };
+function renderOverview(data: MatchupData, input: RecapBodyInput, added: AddedSections): { lead: string; main: string; leaders: string; why: string } {
+  const none = { lead: "", main: "", leaders: "", why: "" };
   const game = matchupScoreboardGame(data);
   const meeting = data.featured;
   if (!game || !meeting || game.status !== "final") return none;
@@ -3999,8 +3999,9 @@ function recapTabs(
       // Below the panels, on every tab, but under both columns at the full
       // width rather than beside the sidebar (mak, 2026-09-30): see `foot`.
     },
-    // Game leaders sit directly under Game info in the new design (mak, 2026-11-08).
-    asideAfter: overviewParts.leaders + renderGameBeforeAfter(data, options),
+    // Game leaders sit directly under Game info in the new design (mak, 2026-11-08);
+    // Why the X Won between them and Before and After (mak, 2026-11-27).
+    asideAfter: overviewParts.leaders + overviewParts.why + renderGameBeforeAfter(data, options),
   });
 
   const top = renderTabBar(
@@ -4016,8 +4017,9 @@ function recapTabs(
   // with that panel, and without the script it reads first, above the rest.
   // The winner's three edges sit under the story's text, beside the video
   // (mak, 2026-09-30); they stay under "Why won" as well.
+  // Game Recap at the full width under the header (mak, 2026-11-27).
   const leadHtml = overview
-    ? ""
+    ? overviewParts.lead
     : renderGameLeadersStrip(data) +
     (renderGameRecap(data, options, renderTakeaways(input, "sct-mu-keys") + added.highlights) || added.highlights) +
     // Redraft Command as a strip under the story (mak, 2026-09-30).
@@ -4027,7 +4029,7 @@ function recapTabs(
   // width"); shown and hidden with the tab like the rest of the lead.
   const recapHead = present.has("recap") ? recapTabHead("recap", game, Boolean(overview)) : "";
   const lead = leadHtml || recapHead
-    ? `<div class="sct-rb sct-mu-lead is-active${leadHtml ? "" : " is-head"}" data-mu-tab="recap">` +
+    ? `<div class="sct-rb sct-mu-lead is-active${leadHtml && !overview ? "" : " is-head"}" data-mu-tab="recap">` +
       `<div class="sct-mu-tabpanel">${recapHead}${leadHtml}</div></div>`
     : "";
   // The scoreboard sits above the tab bar and both columns, on every tab, as

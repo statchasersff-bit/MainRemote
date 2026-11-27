@@ -5326,6 +5326,13 @@ a.sct-ex-game:hover .sct-ex-line {
   margin-bottom: 0;
 }
 
+/* The Overview's Game Recap in the lead, full width over both columns (mak,
+   2026-11-27): the columns' own 16px card gap below it. */
+
+.sct-mu-lead > .sct-mu-tabpanel > .sct-ov-lead {
+  margin-bottom: 16px;
+}
+
 /* In the lead: the headline about 15% smaller, so the page is less
    top-heavy, and the text set a little tighter (mak, 2026-09-30). */
 
@@ -9625,6 +9632,27 @@ a.sct-ex-game:hover .sct-ex-line {
   content: none !important;
 }
 
+/* ---- Why the X Won in the rail, under Game Leaders and above Before and
+   After (mak, 2026-11-27): the figures as the rail's label/value rows, the value in
+   Barlow, then the sentence. */
+
+.sct-mu.is-pm .sct-rb .sct-rb-won .sct-rb-won-num {
+  font-family: "Barlow", "Inter", sans-serif;
+  font-size: 1.35rem;
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.sct-mu .sct-rb-won .sct-rb-won-copy {
+  margin: 4px 0 0 !important;
+  padding: 10px 0 0 !important;
+  border-top: 1px solid var(--rb-line);
+  color: var(--rb-ink);
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
 /* ---- rail cards in the team News rail's design (mak, 2026-11-08: Game
    Info, Game Leaders, Before and After and the next games "like" Injury
    Watch, Today's Game and Quick Links). Heads from rail-head.ts: gold icon,
@@ -10881,7 +10909,19 @@ a.sct-ex-game:hover .sct-ex-line {
 .sct .sct-pbp-more {
   display: flex;
   justify-content: center;
+  gap: 8px;
   margin: 12px 0 4px;
+}
+
+/* Folded by default (mak, 2026-11-27): the title bar and the Show button
+ * only; the client adds .is-folded, so without it the log reads open. */
+
+.sct .sct-pbp-full.is-folded :is([data-pbp-controls], [data-pbp-list], [data-pbp-expand], .sct-rb-note) {
+  display: none !important;
+}
+
+.sct .sct-pbp-full.is-folded .sct-pbp-more {
+  margin-bottom: 0;
 }
 
 .sct .sct-pbp-filters {
@@ -11286,12 +11326,21 @@ a.sct-ex-game:hover .sct-ex-line {
 
 /* Highlights as row tags in the Fantasy Box Score (WEB-041, 2026-11-24):
  * the top scorer and the biggest over- and underperformer were three cards
- * above the table; now a tag under the player's name and a tinted row. Tag
+ * above the table; now a tag and a tinted row. 2026-11-27 (mak): the tag
+ * sits beside the name, position and team stay the second line. Tag
  * text and kind (data-tier) follow the scoring switch; an empty tag hides. */
+
+.sct .sct-fz-nameline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 7px;
+  min-width: 0;
+}
 
 .sct .sct-fz-tag {
   display: inline-block;
-  margin: 3px 0 0 40px;
+  margin: 0;
   padding: 1px 7px;
   border-radius: 999px;
   font-size: 10.5px;
@@ -11712,73 +11761,6 @@ a.sct-ex-game:hover .sct-ex-line {
   color: var(--rb-slate);
 }
 
-/* 01 cards: one row from tablet up */
-
-.sct .sct-bm-cards {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 10px;
-}
-
-@media (min-width: 640px) {
-  .sct .sct-bm-cards {
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  }
-}
-
-.sct .sct-bm-card {
-  min-width: 0;
-  padding: 10px 14px;
-  border: 1px solid var(--rb-line);
-  border-left: 4px solid var(--rb-slate);
-  border-radius: 10px;
-  background: var(--rb-card, #fff);
-}
-
-.sct .sct-bm-card.is-cover,
-.sct .sct-bm-card.is-ml { border-left-color: #13804b; }
-
-.sct .sct-bm-card.is-over { border-left-color: #c46a00; }
-
-.sct .sct-bm-card.is-under { border-left-color: #1d5fa8; }
-
-.sct .sct-bm-card.is-push { border-left-color: #8a94a3; }
-
-.sct .sct-bm-card > p {
-  margin: 0 !important;
-}
-
-.sct p.sct-bm-eyebrow {
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  color: var(--rb-slate);
-}
-
-.sct p.sct-bm-big {
-  margin-top: 2px !important;
-  font-family: "Barlow Condensed", "Archivo", system-ui, sans-serif;
-  font-size: 26px;
-  font-weight: 700;
-  line-height: 1.05;
-  font-variant-numeric: tabular-nums;
-  color: var(--tp-ink, var(--rb-ink));
-}
-
-.sct p.sct-bm-line {
-  margin-top: 2px !important;
-  font-size: 13.5px;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  color: var(--tp-ink, var(--rb-ink));
-}
-
-.sct p.sct-bm-line span {
-  font-weight: 500;
-  color: var(--rb-slate);
-}
-
 /* 01 actual vs implied: one row per team, implied a marker on the bar */
 
 .sct .sct-bm-impbox {
@@ -11912,13 +11894,6 @@ a.sct-ex-game:hover .sct-ex-line {
 
 .sct .sct-bm-imp-num.is-diff.is-neg { color: #c0392b; }
 
-.sct p.sct-bm-summary {
-  margin: 10px 0 0 !important;
-  font-size: 14px;
-  line-height: 1.5;
-  color: var(--tp-ink, var(--rb-ink));
-}
-
 /* tables */
 
 .sct .sct-bm-wrap {
@@ -11979,6 +11954,168 @@ a.sct-ex-game:hover .sct-ex-line {
 :is(.sct, #sct-table-armour) table.sct-bm-table.is-trends small {
   font-size: 12px;
   font-weight: 500;
+  color: var(--rb-slate);
+}
+
+/* 01 results, one row per market (mak, 2026-11-27): Market, Result, then
+   the line history (Open, Close, Movement). Under 560px the script folds
+   Open and Movement behind "Show line history"; without it they scroll. */
+
+.sct .sct-bm-results {
+  container-type: inline-size;
+}
+
+:is(.sct, #sct-table-armour) .sct-bm-table.is-results td.sct-bm-res {
+  white-space: normal;
+  min-width: 150px;
+}
+
+:is(.sct, #sct-table-armour) .sct-bm-table.is-results td.sct-bm-res b {
+  font-weight: 800;
+}
+
+:is(.sct, #sct-table-armour) .sct-bm-table.is-results tr > th:first-child {
+  border-left: 3px solid #8a94a3;
+}
+
+:is(.sct, #sct-table-armour) .sct-bm-table.is-results thead tr > th:first-child {
+  border-left-color: transparent;
+}
+
+:is(.sct, #sct-table-armour) .sct-bm-table.is-results tr.is-cover > th:first-child,
+:is(.sct, #sct-table-armour) .sct-bm-table.is-results tr.is-ml > th:first-child { border-left-color: #13804b; }
+
+:is(.sct, #sct-table-armour) .sct-bm-table.is-results tr.is-over > th:first-child { border-left-color: #c46a00; }
+
+:is(.sct, #sct-table-armour) .sct-bm-table.is-results tr.is-under > th:first-child { border-left-color: #1d5fa8; }
+
+:is(.sct, #sct-table-armour) .sct-bm-table.is-results td.sct-bm-close {
+  font-weight: 700;
+}
+
+.sct button.sct-bm-histbtn {
+  display: block;
+  margin: 10px auto 0;
+}
+
+.sct button.sct-bm-histbtn[hidden] {
+  display: none;
+}
+
+@container (min-width: 561px) {
+  .sct button.sct-bm-histbtn {
+    display: none;
+  }
+}
+
+@container (max-width: 560px) {
+  .sct .sct-bm-results.is-js:not(.is-hist-open) .sct-bm-hist {
+    display: none;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-bm-table.is-results :is(td, th) {
+    white-space: normal;
+  }
+
+  :is(.sct, #sct-table-armour) .sct-bm-table.is-results td.sct-bm-res {
+    min-width: 0;
+  }
+}
+
+/* 02 trends beside the last games, one card (mak, 2026-11-27): ~45 / 55
+   from 760px, stacked under it; each table ends where it ends. */
+
+.sct .sct-bm-cq {
+  container-type: inline-size;
+}
+
+.sct .sct-bm-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 22px 28px;
+  align-items: start;
+}
+
+@container (min-width: 760px) {
+  .sct .sct-bm-split {
+    grid-template-columns: minmax(0, 45fr) minmax(0, 55fr);
+  }
+}
+
+.sct .sct-bm-trendcol,
+.sct .sct-bm-last {
+  min-width: 0;
+}
+
+:is(.sct, #sct-table-armour) table.sct-bm-table.is-trends :is(td, thead th:not(:first-child)) {
+  width: 64px;
+}
+
+:is(.sct, #sct-table-armour) table.sct-bm-table.is-trends thead th i {
+  display: inline-block;
+  width: 3px;
+  height: 12px;
+  margin-right: 5px;
+  vertical-align: -1px;
+  border-radius: 2px;
+}
+
+:is(.sct, #sct-table-armour) table.sct-bm-table.is-trends abbr {
+  text-decoration: none;
+  border: 0;
+}
+
+.sct .sct-bm-last-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+  margin: 0 0 6px;
+}
+
+.sct h3.sct-bm-h3 {
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: none !important;
+  font-size: 15px !important;
+  font-weight: 800 !important;
+  line-height: 1.3 !important;
+  color: var(--tp-ink, var(--rb-ink)) !important;
+}
+
+.sct h3.sct-bm-h3::before,
+.sct h3.sct-bm-h3::after {
+  content: none !important;
+}
+
+:is(.sct, #sct-table-armour) .sct-bm-table.is-last :is(th, td) {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+:is(.sct, #sct-table-armour) .sct-bm-table.is-last td {
+  font-weight: 700;
+}
+
+.sct .sct-bm-opp,
+.sct .sct-bm-num {
+  font-weight: 500;
+  color: var(--rb-slate);
+}
+
+.sct .sct-bm-last-team[hidden] {
+  display: none;
+}
+
+.sct .sct-bm-last-team + .sct-bm-last-team {
+  margin-top: 12px;
+}
+
+.sct p.sct-bm-order {
+  margin: 6px 0 0 !important;
+  font-size: 12px;
   color: var(--rb-slate);
 }
 

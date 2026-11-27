@@ -460,6 +460,21 @@ function wirePlayByPlay(root: HTMLElement): void {
   });
   for (const d of drives) d.addEventListener("toggle", syncExpand);
 
+  // The whole log folds to its title bar and the Show button (mak,
+  // 2026-11-27): closed on load, opened by the button, a drive link or the
+  // Game Flow timeline (the sct:pbp-open event).
+  const full = box.querySelector<HTMLElement>(".sct-pbp-full");
+  const show = box.querySelector<HTMLButtonElement>("[data-pbp-show]");
+  function setOpen(open: boolean): void {
+    if (!full || !show) return;
+    full.classList.toggle("is-folded", !open);
+    show.textContent = open ? "Hide full play-by-play" : "Show full play-by-play";
+    show.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+  setOpen(false);
+  show?.addEventListener("click", () => setOpen(show.getAttribute("aria-expanded") !== "true"));
+  box.addEventListener("sct:pbp-open", () => setOpen(true));
+
   const filters = Array.from(controls.querySelectorAll<HTMLButtonElement>("[data-pbp-filter]"));
   const MAJOR = ["score", "turnover", "sack", "big"];
   function apply(value: string): void {
@@ -490,11 +505,50 @@ function wirePlayByPlay(root: HTMLElement): void {
     if (!/^pbp-drive-\d+$/.test(id)) return;
     const d = box!.querySelector<HTMLDetailsElement>(`#${id}`);
     if (!d) return;
+    setOpen(true);
     if (d.hidden) apply("all");
     d.open = true;
   }
   window.addEventListener("hashchange", openFromHash);
   openFromHash();
+}
+
+/**
+ * The matchup Betting tab (betting-market.ts, mak 2026-11-27): the results
+ * table's "Show line history" button (phones fold Open and Movement), and the
+ * away / home switch over the last games beside the trends (away first).
+ * Both are printed hidden; without this every column and both teams show.
+ */
+function wireBetting(root: HTMLElement): void {
+  for (const box of Array.from(root.querySelectorAll<HTMLElement>("[data-bm-results]"))) {
+    const button = box.querySelector<HTMLButtonElement>("[data-bm-hist]");
+    if (!button) continue;
+    box.classList.add("is-js");
+    button.hidden = false;
+    button.addEventListener("click", () => {
+      const open = !box.classList.contains("is-hist-open");
+      box.classList.toggle("is-hist-open", open);
+      button.textContent = open ? "Hide line history" : "Show line history";
+      button.setAttribute("aria-expanded", open ? "true" : "false");
+    });
+  }
+  for (const box of Array.from(root.querySelectorAll<HTMLElement>("[data-bm-last]"))) {
+    const sw = box.querySelector<HTMLElement>("[data-bm-switch]");
+    const picks = Array.from(box.querySelectorAll<HTMLButtonElement>("[data-bm-pick]"));
+    const teams = Array.from(box.querySelectorAll<HTMLElement>("[data-bm-team]"));
+    if (!sw || picks.length < 2 || teams.length < 2) continue;
+    const show = (side: string): void => {
+      for (const b of picks) {
+        const on = b.dataset["bmPick"] === side;
+        b.classList.toggle("is-on", on);
+        b.setAttribute("aria-pressed", on ? "true" : "false");
+      }
+      for (const t of teams) t.hidden = t.dataset["bmTeam"] !== side;
+    };
+    sw.hidden = false;
+    show("away");
+    for (const b of picks) b.addEventListener("click", () => show(b.dataset["bmPick"] ?? "away"));
+  }
 }
 
 /**
@@ -524,6 +578,7 @@ function wireGameFlowTimeline(root: HTMLElement): void {
     link.addEventListener("click", () => {
       const target = root.querySelector<HTMLDetailsElement>(link.getAttribute("href") ?? "");
       if (!target) return;
+      target.closest("[data-pbp]")?.dispatchEvent(new Event("sct:pbp-open"));
       if (target.hidden) root.querySelector<HTMLButtonElement>('[data-pbp-filter="all"]')?.click();
       target.open = true;
     });
@@ -2075,6 +2130,7 @@ function boot(): void {
     // The live strip under a matchup page's hero follows its game (WEB-040).
     wireGameState(root);
     wirePlayByPlay(root);
+    wireBetting(root);
     wireGameFlowTimeline(root);
     wireSegTabs(root);
     wireRowFilters(root);

@@ -156,10 +156,13 @@ function face(line: FantasyLine, className: string, size: number): string {
 }
 
 /** The Player Stats tables' name cell: face, name, "SEA · WR". */
-function who(ctx: Ctx, line: FantasyLine): string {
+function who(ctx: Ctx, line: FantasyLine, badge = ""): string {
+  const name = nameLink(ctx, line, "sct-player-link sct-mu-ps-link");
   return (
     `<span class="sct-mu-ps-cell">${face(line, "sct-mu-ps-photo", 32)}<span class="sct-mu-ps-who">` +
-    nameLink(ctx, line, "sct-player-link sct-mu-ps-link") +
+    // A box-score badge rides the name's line, wrapping under it only when
+    // the column is too narrow (mak, 2026-11-27); position and team stay second.
+    (badge ? `<span class="sct-fz-nameline">${name}${badge}</span>` : name) +
     // Position first, "RB · NE" (mak, 2026-11-11), across the Fantasy tab.
     teamPosition(line.team, line.pos, "sct-mu-ps-meta", "position-first") +
     `</span></span>`
@@ -257,7 +260,7 @@ function renderBoxScore(ctx: Ctx, lines: FantasyLine[]): string {
       const finish = per((f) => ctx.finish(line, f) ?? "-");
       return (
         `<tr${at >= BOX_SHOWN ? ` class="is-extra"` : ""}>` +
-        `<th scope="row" class="sct-fz-player">${who(ctx, line)}${tag(line)}</th>` +
+        `<th scope="row" class="sct-fz-player">${who(ctx, line, tag(line))}</th>` +
         `<td class="sct-fz-pts"${fmtAttrs(per((f) => line.pts[f].toFixed(1)))}>${line.pts.ppr.toFixed(1)}</td>` +
         `<td class="sct-fz-fin"${fmtAttrs(finish)}>${e(finish.ppr)}</td>` +
         `<td class="sct-fz-prod">${e(production(line))}</td>` +
