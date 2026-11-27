@@ -376,7 +376,6 @@ async function readFpaArchiveTable(
       offense: fpaGames.offenseTeamAbbr,
       position: fpaGames.position,
       points: fpaGames.fantasyPoints,
-      createdAt: fpaGames.createdAt,
     })
     .from(fpaGames)
     .where(
@@ -392,7 +391,6 @@ async function readFpaArchiveTable(
   // computeFpaTable reads `points[format]`; one format's rows are loaded, so
   // the same figure is written under all three names.
   const scored: ScoredPlayerWeek[] = [];
-  let updatedAtMs = 0;
   for (const g of games) {
     if (!(FANTASY_POSITIONS as readonly string[]).includes(g.position)) continue;
     const pts = toNumber(g.points);
@@ -406,7 +404,6 @@ async function readFpaArchiveTable(
       receptions: 0,
       points: { standard: pts, half: pts, ppr: pts },
     });
-    updatedAtMs = Math.max(updatedAtMs, g.createdAt?.getTime() ?? 0);
   }
   if (scored.length === 0) return null;
 
@@ -441,8 +438,7 @@ async function readFpaArchiveTable(
     isPreseason: false,
     // A finished season has no "Updated" date worth printing: the rows' write
     // time is whenever the ingest last re-read the baseline, not news about
-    // the figures. The version below still carries it, so a re-ingest that
-    // changed a row still invalidates the render.
+    // the figures.
     updatedAtMs: null,
     archiveSeasons: await listFpaArchiveSeasons(season),
     dataMode: "Full season",
@@ -450,8 +446,23 @@ async function readFpaArchiveTable(
       `The complete ${season} regular season, weeks 1-${throughWeek}: every figure ` +
       `is ${season} data, with nothing blended in from another season. Week 18 ` +
       `is left out, as it is from the current table.`,
-    version: [season, format, view, "archive", rows.length, updatedAtMs].join("-"),
+    // The figures themselves, not the rows' write time: every weekly ingest
+    // deletes and rewrites the baseline season's game rows, so a write-time
+    // version moved the archive's ETag each week with nothing changed, and
+    // the WordPress publication check (WEB-003) would have purged /2025/
+    // weekly. A historical correction changes a figure, and so the version.
+    version: [season, format, view, "archive", rows.length, throughWeek, archiveContentHash(rows)].join("-"),
   };
+}
+
+/** A short hash of what an archive table prints, figure by figure. */
+function archiveContentHash(rows: FpaRow[]): string {
+  const text = rows
+    .map((r) => [r.abbr, r.gamesPlayed, ...FANTASY_POSITIONS.map((p) => `${r.byPos[p].fpa}:${r.byPos[p].rank}`), r.offFpa, r.offRank].join(","))
+    .join("|");
+  let h = 5381;
+  for (let i = 0; i < text.length; i += 1) h = ((h << 5) + h + text.charCodeAt(i)) | 0;
+  return (h >>> 0).toString(36);
 }
 
 /**

@@ -183,15 +183,63 @@ function statchasers_fpa_fetch( array $args ): ?array {
 		return null;
 	}
 
-	$key        = md5( $origin . '|' . wp_json_encode( $args ) );
-	$cache_key  = 'sc_fpa_ssr_' . $key;
-	$backup_key = 'sc_fpa_ssr_bak_' . $key;
+	$keys = statchasers_fpa_cache_keys( $args );
 
-	$cached = statchasers_cache_get( $cache_key );
+	$cached = statchasers_cache_get( $keys['fresh'] );
 	if ( is_array( $cached ) && isset( $cached['html'] ) ) {
 		return $cached;
 	}
 
+	$payload = statchasers_fpa_remote( $args );
+
+	// A 404 here means the API has no ingested data - which is a real state, not
+	// a transient error, and retrying every page view will not fix it. Cached as
+	// a failure so a deployment mid-setup costs one request a minute.
+	if ( null === $payload ) {
+		$backup = statchasers_cache_get( $keys['backup'] );
+		if ( is_array( $backup ) && isset( $backup['html'] ) ) {
+			// Held under the fresh key for a minute too: otherwise every view,
+			// and every caller within a view, retries the origin and waits out
+			// the timeout for as long as it stays down.
+			set_transient( $keys['fresh'], $backup, MINUTE_IN_SECONDS );
+			return $backup;
+		}
+		set_transient( $keys['fresh'], array( 'html' => '', 'version' => '' ), MINUTE_IN_SECONDS );
+		return null;
+	}
+
+	statchasers_fpa_store( $args, $payload );
+
+	return $payload;
+}
+
+/**
+ * The fragment transients of one (format, view, season): the fresh copy and
+ * the outage backup. Keyed on the origin too, as every fragment cache is.
+ *
+ * @param array{format:string,view:string,season:int} $args Render arguments, in statchasers_fpa_args() order.
+ * @return array{fresh:string,backup:string}
+ */
+function statchasers_fpa_cache_keys( array $args ): array {
+	$key = md5( statchasers_news_origin() . '|' . wp_json_encode( $args ) );
+	return array(
+		'fresh'  => 'sc_fpa_ssr_' . $key,
+		'backup' => 'sc_fpa_ssr_bak_' . $key,
+	);
+}
+
+/**
+ * One fragment from the API, uncached: the HTML and its ETag, or null on
+ * anything but a 200 with a body.
+ *
+ * @param array{format:string,view:string,season:int} $args Render arguments.
+ * @return array{html:string,version:string}|null
+ */
+function statchasers_fpa_remote( array $args ): ?array {
+	$origin = statchasers_news_origin();
+	if ( '' === $origin ) {
+		return null;
+	}
 	$query = array(
 		'format' => $args['format'],
 		'view'   => $args['view'],
@@ -210,32 +258,25 @@ function statchasers_fpa_fetch( array $args ): ?array {
 
 	$code = is_wp_error( $response ) ? 0 : (int) wp_remote_retrieve_response_code( $response );
 	$body = is_wp_error( $response ) ? '' : (string) wp_remote_retrieve_body( $response );
-
-	// A 404 here means the API has no ingested data - which is a real state, not
-	// a transient error, and retrying every page view will not fix it. Cached as
-	// a failure so a deployment mid-setup costs one request a minute.
 	if ( 200 !== $code || '' === trim( $body ) ) {
-		$backup = statchasers_cache_get( $backup_key );
-		if ( is_array( $backup ) && isset( $backup['html'] ) ) {
-			// Held under the fresh key for a minute too: otherwise every view,
-			// and every caller within a view, retries the origin and waits out
-			// the timeout for as long as it stays down.
-			set_transient( $cache_key, $backup, MINUTE_IN_SECONDS );
-			return $backup;
-		}
-		set_transient( $cache_key, array( 'html' => '', 'version' => '' ), MINUTE_IN_SECONDS );
 		return null;
 	}
-
-	$payload = array(
+	return array(
 		'html'    => $body,
 		'version' => trim( (string) wp_remote_retrieve_header( $response, 'etag' ) ),
 	);
+}
 
-	set_transient( $cache_key, $payload, STATCHASERS_FPA_CACHE_TTL );
-	set_transient( $backup_key, $payload, STATCHASERS_FPA_BACKUP_TTL );
-
-	return $payload;
+/**
+ * Write one fragment as the fresh copy and the outage backup.
+ *
+ * @param array{format:string,view:string,season:int} $args    Render arguments.
+ * @param array{html:string,version:string}           $payload The fragment.
+ */
+function statchasers_fpa_store( array $args, array $payload ): void {
+	$keys = statchasers_fpa_cache_keys( $args );
+	set_transient( $keys['fresh'], $payload, STATCHASERS_FPA_CACHE_TTL );
+	set_transient( $keys['backup'], $payload, STATCHASERS_FPA_BACKUP_TTL );
 }
 
 /**

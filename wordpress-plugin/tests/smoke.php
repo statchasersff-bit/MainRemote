@@ -80,7 +80,9 @@ function delete_option( $key ) {
 	unset( $GLOBALS['options'][ $key ] );
 }
 function get_transient( $key ) { return false; }
-function set_transient( $key, $value, $ttl ) {}
+// Writes are kept (in $GLOBALS['sc_order'] too, when a test is tracing the
+// order of a publication); reads still miss, as they always have.
+function set_transient( $key, $value, $ttl ) { $GLOBALS['transient_writes'][] = array( $key, $ttl ); if ( isset( $GLOBALS['sc_order'] ) ) { $GLOBALS['sc_order'][] = 'transient ' . $key; } }
 function delete_transient( $key ) {}
 function get_query_var( $key ) { return $GLOBALS['query'][ $key ] ?? ''; }
 function sanitize_title( $s ) { return strtolower( preg_replace( '/[^a-z0-9-]+/i', '-', (string) $s ) ); }
@@ -273,9 +275,24 @@ function wp_schedule_event( $ts, $recurrence, $hook, $args = array() ) { $GLOBAL
 function wp_schedule_single_event( $ts, $hook, $args = array() ) { $GLOBALS['scheduled'][] = array( $hook, (int) $ts, 'single', $args ); return true; }
 function wp_clear_scheduled_hook( $hook, $args = array() ) { return 0; }
 // The URL is kept so a test can see what the plugin asked the API for.
-function wp_remote_get( $u, $a = array() ) { $GLOBALS['remote_urls'][] = $u; $GLOBALS['remote_args'][] = $a; return array(); }
-function wp_remote_retrieve_body( $r ) { return $GLOBALS['http_body'] ?? ''; }
-function wp_remote_retrieve_response_code( $r ) { return $GLOBALS['http_code'] ?? 200; }
+// A test may answer per URL: $GLOBALS['http_route'] is called with the URL and
+// returns array( code, body, headers ) or null for the global answer.
+function wp_remote_get( $u, $a = array() ) {
+	$GLOBALS['remote_urls'][] = $u;
+	$GLOBALS['remote_args'][] = $a;
+	if ( isset( $GLOBALS['sc_order'] ) ) {
+		$GLOBALS['sc_order'][] = 'get ' . $u;
+	}
+	if ( isset( $GLOBALS['http_route'] ) && is_callable( $GLOBALS['http_route'] ) ) {
+		$answer = ( $GLOBALS['http_route'] )( $u );
+		if ( is_array( $answer ) ) {
+			return array( 'sc_answer' => $answer );
+		}
+	}
+	return array();
+}
+function wp_remote_retrieve_body( $r ) { return isset( $r['sc_answer'] ) ? (string) $r['sc_answer'][1] : ( $GLOBALS['http_body'] ?? '' ); }
+function wp_remote_retrieve_response_code( $r ) { return isset( $r['sc_answer'] ) ? (int) $r['sc_answer'][0] : ( $GLOBALS['http_code'] ?? 200 ); }
 // Empty unless a test seeds $GLOBALS['post_meta'][id][key]; writes are kept
 // in order so a test can see exactly which fields a tool touched.
 function get_post_meta( $id, $k, $single = false ) { return $GLOBALS['post_meta'][ (int) $id ][ $k ] ?? ''; }
@@ -387,7 +404,7 @@ function current_filter() { return $GLOBALS['current_filter'] ?? ''; }
 function get_bloginfo( $k ) { return ''; }
 function is_admin() { return (bool) ( $GLOBALS['page']['admin'] ?? false ); }
 function did_action( $h ) { return 1; }
-function do_action( $h ) {}
+function do_action( $h, ...$args ) { $GLOBALS['actions_fired'][] = $h; if ( isset( $GLOBALS['sc_order'] ) ) { $GLOBALS['sc_order'][] = 'action ' . $h; } }
 function wp_cache_get() { return false; }
 function wp_cache_set() {}
 function wp_cache_delete() { return true; }
@@ -404,7 +421,7 @@ function nocache_headers() {}
 function is_page() { return false; }
 function get_children() { return array(); }
 // Headers by lower-case name, for the tests that read what the API sent.
-function wp_remote_retrieve_header( $r = null, $name = '' ) { return $GLOBALS['http_headers'][ $name ] ?? ''; }
+function wp_remote_retrieve_header( $r = null, $name = '' ) { return isset( $r['sc_answer'] ) ? (string) ( $r['sc_answer'][2][ $name ] ?? '' ) : ( $GLOBALS['http_headers'][ $name ] ?? '' ); }
 function wp_remote_post() { return array(); }
 function set_url_scheme( $u ) { return $u; }
 function wp_parse_url( $u, $c = -1 ) { return parse_url( $u, $c ); }
@@ -459,6 +476,7 @@ require_once "$dir/statchasers-edge-cache.php";
 require_once "$dir/statchasers-player-stats-cache.php";
 require_once "$dir/statchasers-depth-charts-cache.php";
 require_once "$dir/statchasers-depth-consumers-cache.php";
+require_once "$dir/statchasers-fpa-cache.php";
 require_once "$dir/statchasers-rb-handcuffs.php";
 require_once "$dir/statchasers-sos.php";
 require_once "$dir/statchasers-page-identity.php";
@@ -755,6 +773,12 @@ if ( 'statscache' === $group ) {
 
 if ( 'dccache' === $group ) {
 	require __DIR__ . '/smoke-depth-charts-cache.php';
+	echo "\n" . ( $fail ? "$fail FAILED\n" : "all passed\n" );
+	exit( $fail ? 1 : 0 );
+}
+
+if ( 'fpacache' === $group ) {
+	require __DIR__ . '/smoke-fpa-cache.php';
 	echo "\n" . ( $fail ? "$fail FAILED\n" : "all passed\n" );
 	exit( $fail ? 1 : 0 );
 }
@@ -2563,7 +2587,7 @@ is( statchasers_player_lazyload_exclusions( null ), array( 'class="scp-pwell-img
  * The other groups. Their failures are this run's failures - a split that only
  * reported the half it felt like running would be worse than not splitting.
  */
-foreach ( array( 'containers', 'week', 'weekstray', 'schedtitles', 'sched404s', 'route404s', 'legacyroutes', 'schedlive', 'schedfinal', 'mucache', 'statscache', 'dccache', 'dcconsumers', 'pageids', 'leak', 'headings', 'playersection', 'rules', 'playerlinks', 'playerbuilder', 'playerrace', 'sos', 'sosleak', 'sospage', 'sosfallback', 'fpa', 'fpaleak', 'fpaarchive', 'rhr', 'rhrleak', 'rds', 'rdsleak', 'scin', 'scindb', 'scinleak', 'bdp', 'hostcss', 'newsrail' ) as $child_group ) {
+foreach ( array( 'containers', 'week', 'weekstray', 'schedtitles', 'sched404s', 'route404s', 'legacyroutes', 'schedlive', 'schedfinal', 'mucache', 'statscache', 'dccache', 'dcconsumers', 'fpacache', 'pageids', 'leak', 'headings', 'playersection', 'rules', 'playerlinks', 'playerbuilder', 'playerrace', 'sos', 'sosleak', 'sospage', 'sosfallback', 'fpa', 'fpaleak', 'fpaarchive', 'rhr', 'rhrleak', 'rds', 'rdsleak', 'scin', 'scindb', 'scinleak', 'bdp', 'hostcss', 'newsrail' ) as $child_group ) {
 	$child = array();
 	$code  = 0;
 	exec(

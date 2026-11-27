@@ -6,6 +6,7 @@
  *   GET /fpa?embed=1              - the same page, stripped for embedding
  *   GET /fpa/download.csv         - the table on screen, as CSV
  *   GET /embed/fpa                - the bare fragment, for the WordPress mount
+ *   GET /embed/fpa/version        - what the WordPress pages would print (WEB-003)
  *   POST /api/fpa/ingest          - refresh the figures now
  *
  * `/embed/fpa` is also what the bundle re-fetches when a reader changes scoring
@@ -29,12 +30,16 @@ import { canonicalUrl, publicOrigin } from "../lib/request";
 import { browserEndpoint } from "../lib/embed-key";
 import { renderFpaAppPage, renderFpaFragment } from "../lib/fpa-ssr";
 import { renderFpaCsv } from "../lib/fpa-render";
+import type { FpaRenderOptions } from "../lib/fpa-render";
 import {
+  currentFpaSeason,
   fpaSnapshotState,
   getFpaTable,
+  listFpaArchiveSeasons,
   parseFpaFormat,
   parseFpaView,
   type FpaQuery,
+  type FpaTableData,
 } from "../lib/fpa/fpa-data";
 import { refreshFpa } from "../lib/fpa/refresh";
 import { requireIngestSecret } from "../lib/ingest-auth";
@@ -214,6 +219,120 @@ router.get("/fpa/download.csv", (req, res) => {
 });
 
 /**
+ * The options the WordPress fragment is rendered with. One place, so the
+ * version document below names exactly the ETags /embed/fpa answers with.
+ */
+function fragmentOptions(req: Request): FpaRenderOptions {
+  const teamPrefix = (
+    process.env["SC_TEAM_PATH_PREFIX"] ?? TEAM_PATH_PREFIX
+  ).trim();
+  const basePath = (process.env["SC_FPA_PATH"] ?? FPA_BASE_PATH).trim();
+  return {
+    embed: true,
+    basePath,
+    teamPathPrefix: teamPrefix,
+    linkQuery: fragmentLinkQuery(teamPrefix),
+    // Absolute, and both have to be: this markup is printed inside a
+    // statchasers.com page, where a relative /embed/fpa resolves against
+    // WordPress. Built from the request rather than configured, so it is
+    // whatever origin the plugin actually reached us on. The CSV is the
+    // same kind of thing - a route on this server, not a page on theirs.
+    endpoint: browserEndpoint(req, FPA_FRAGMENT_PATH),
+    csvBase: `${publicOrigin(req)}${FPA_BASE_PATH}`,
+    // The strength-of-schedule pages on statchasers.com (SC_SOS_URL), the
+    // same base the SOS fragment's own position links use.
+    sosBase: getSOSUrl() ?? SOS_DEFAULT_PAGE_BASE,
+  };
+}
+
+const FPA_FORMATS = ["ppr", "half", "standard"] as const;
+const FPA_VIEW_LIST = ["raw", "adjusted"] as const;
+
+/**
+ * GET /embed/fpa/version - what the WordPress FPA page and its archive
+ * addresses would print right now (audit WEB-003).
+ *
+ * The plugin polls this from WP-cron (statchasers-fpa-cache.php). Per season
+ * it names each format x view fragment's ETag - exactly what /embed/fpa
+ * answers with for the same request origin, because both render through
+ * fragmentOptions() - and one version over the six. When a season's version
+ * moves, the plugin fetches its six fragments, checks each ETag against the
+ * one announced here, replaces its copies, then clears WP Rocket and purges
+ * the edge for that season's addresses only: the current season on every
+ * weekly ingest, an archive season only when its own rows change.
+ *
+ * `seasons.<current>` is the bare address (no ?season=, as the plugin asks
+ * for it); every other key is an archive (/2025/, ?season=2025). Cheap: the
+ * tables are memoized until an ingest drops them and each render is cached
+ * on its version, so a poll is lookups unless the data just changed. Under
+ * /embed/, so the embed key guards it like the fragment.
+ */
+router.get(`${FPA_FRAGMENT_PATH}/version`, (req, res) => {
+  void (async () => {
+    try {
+      const options = fragmentOptions(req);
+      const current = currentFpaSeason();
+      const archives = await listFpaArchiveSeasons();
+      const seasons: Record<string, unknown> = {};
+      const all: string[] = [];
+      for (const year of [current, ...archives]) {
+        const variants: Record<string, { format: string; view: string; etag: string }> = {};
+        const etags: string[] = [];
+        let first: FpaTableData | null = null;
+        for (const format of FPA_FORMATS) {
+          for (const view of FPA_VIEW_LIST) {
+            const q: FpaQuery = year === current ? { format, view } : { format, view, season: year };
+            const result = await renderFpaFragment(q, options);
+            if (!result.data) {
+              // The live table not ingested (or an archive with no rows): no
+              // complete dataset to publish. The plugin keeps what it has.
+              res
+                .status(503)
+                .set("Cache-Control", "no-store")
+                .json({ error: `No FPA table for ${year} ${format}/${view}` });
+              return;
+            }
+            first ??= result.data;
+            const etag = `W/"${result.version}"`;
+            etags.push(etag);
+            variants[`${format}-${view}`] = { format, view, etag };
+          }
+        }
+        const version = hashParts(etags.join("|"));
+        all.push(`${year}:${version}`);
+        seasons[String(year)] = {
+          kind: first!.kind,
+          version,
+          weekNumber: first!.weekNumber,
+          updatedAt: first!.updatedAtMs ? new Date(first!.updatedAtMs).toISOString() : null,
+          teams: first!.rows.length,
+          variants,
+        };
+      }
+      res
+        .set("Cache-Control", "no-store")
+        .set("X-Robots-Tag", "noindex")
+        .json({
+          version: hashParts(all.join("|")),
+          current,
+          archives,
+          seasons,
+        });
+    } catch (err) {
+      logger.error({ err }, "Failed to build the FPA version");
+      res.status(503).set("Cache-Control", "no-store").json({ error: "FPA version unavailable" });
+    }
+  })();
+});
+
+/** Short, stable, non-cryptographic: it only has to differ. */
+function hashParts(value: string): string {
+  let h = 5381;
+  for (let i = 0; i < value.length; i += 1) h = ((h << 5) + h + value.charCodeAt(i)) | 0;
+  return (h >>> 0).toString(36);
+}
+
+/**
  * The bare fragment, for the WordPress plugin to print into a page.
  *
  * Always rendered in embedded mode: the host page supplies the H1 and the page
@@ -222,28 +341,8 @@ router.get("/fpa/download.csv", (req, res) => {
  */
 router.get("/embed/fpa", (req, res) => {
   void (async () => {
-    const teamPrefix = (
-      process.env["SC_TEAM_PATH_PREFIX"] ?? TEAM_PATH_PREFIX
-    ).trim();
-    const basePath = (process.env["SC_FPA_PATH"] ?? FPA_BASE_PATH).trim();
-
     try {
-      const result = await renderFpaFragment(query(req), {
-        embed: true,
-        basePath,
-        teamPathPrefix: teamPrefix,
-        linkQuery: fragmentLinkQuery(teamPrefix),
-        // Absolute, and both have to be: this markup is printed inside a
-        // statchasers.com page, where a relative /embed/fpa resolves against
-        // WordPress. Built from the request rather than configured, so it is
-        // whatever origin the plugin actually reached us on. The CSV is the
-        // same kind of thing - a route on this server, not a page on theirs.
-        endpoint: browserEndpoint(req, FPA_FRAGMENT_PATH),
-        csvBase: `${publicOrigin(req)}${FPA_BASE_PATH}`,
-        // The strength-of-schedule pages on statchasers.com (SC_SOS_URL), the
-        // same base the SOS fragment's own position links use.
-        sosBase: getSOSUrl() ?? SOS_DEFAULT_PAGE_BASE,
-      });
+      const result = await renderFpaFragment(query(req), fragmentOptions(req));
 
       if (!result.data) {
         res

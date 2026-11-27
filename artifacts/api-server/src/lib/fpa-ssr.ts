@@ -63,7 +63,13 @@ export interface FpaSsrResult {
   data: FpaTableData | null;
 }
 
-const FRAGMENT_CACHE_MAX = 24;
+/**
+ * Six combinations per season, per origin and options set: the WordPress
+ * mount, the standalone page, and since WEB-003 the version poll (which
+ * renders exactly what the mount does) across the live season and its
+ * archives. Room for two origins of each; a miss only costs a render.
+ */
+const FRAGMENT_CACHE_MAX = 48;
 const fragmentCache = new LruCache<FpaSsrResult>(FRAGMENT_CACHE_MAX);
 
 export function invalidateFpaRenderCache(): void {
@@ -208,7 +214,10 @@ export async function renderFpaFragment(
     ...teaserRail,
     startSitWeek: data.kind === "live" ? startSitWeek(await nflState()) : null,
   };
-  const version = `${data.version}-${hash(`${key}${railVersion}|ss${rail.startSitWeek ?? "-"}`)}`;
+  // The archive links are printed too (the season switcher), so a season
+  // joining or leaving the archive list is a new fragment (WEB-003: the
+  // WordPress publication check republishes exactly when this moves).
+  const version = `${data.version}-${hash(`${key}${railVersion}|ss${rail.startSitWeek ?? "-"}|as${data.archiveSeasons.join(",")}`)}`;
   const hit = fragmentCache.get(key);
   if (hit && hit.version === version) return hit;
 
