@@ -21,7 +21,10 @@
  *     own report weeks counts too. An OPEN entry (the caller says he is still
  *     out: a reserve list, an Out, or pending) runs to the last completed
  *     game, so a stint the history builder last counted a week ago is not a
- *     week short (Pacheco: "9 games missed so far" beside 10).
+ *     week short (Pacheco: "9 games missed so far" beside 10). A game he
+ *     played does not end a window while the same entry lists him again
+ *     later (Out, a reserve list): it runs to its last report week
+ *     (2026-11-27). Each week counts for one entry only, the earliest.
  *   - NOT PLAYED, REASON UNKNOWN: every other team game not played. Never
  *     called an injury: a healthy scratch, a suspension or a personal matter
  *     looks the same in a box score.
@@ -43,6 +46,13 @@ export interface InjuryWindow {
   missedWeeks: number[];
   /** Still running: the caller said he is out, and he has not played since. */
   open: boolean;
+  /**
+   * The week of an earlier entry that already counts a game this one would
+   * have: he did not play it, but it is that injury's game, not this one's.
+   * Null when no game was shared. A row with no games of its own and this set
+   * was not "played through" (Pittman's Week 11 foot listing while on IR).
+   */
+  sharedWith: { week: number; type: string } | null;
   /** The entry's injury ("Calf", "Injured reserve") and body part, so a reader can tie the window to a body region. */
   type: string;
   bodyPart: string | null;
@@ -148,28 +158,74 @@ export function seasonAvailability(input: {
 
   // Each entry's window, walked in club games (see the header).
   const entries = input.injuries.filter((e) => e.season === season && typeof e.week === "number");
-  const latest = entries.reduce<NflInjuryEntry | null>((m, e) => (!m || e.week! > m.week! ? e : m), null);
-  const windows: InjuryWindow[] = entries.map((e) => {
+  // Entries in week order, so an earlier stint claims a week before a later
+  // listing of the same absence does (the history builder's rule: each missed
+  // week is one injury's). Michael Pittman Jr.'s Week 11 re-listing, while
+  // still on IR from his Week 2 foot, must not count Week 11 a second time.
+  const claimedWeeks = new Map<number, { week: number; type: string }>();
+  const order = entries.map((_, i) => i).sort((a, b) => entries[a]!.week! - entries[b]!.week! || a - b);
+  const windows: InjuryWindow[] = new Array(entries.length);
+  for (const i of order) {
+    const e = entries[i]!;
     const start = e.week!;
     const recorded = Math.max(0, e.gamesMissed ?? 0);
     const reportWeeks = new Set((e.reports ?? []).map((r) => r.week));
-    const returned = (() => {
-      for (let w = start + 1; w <= through; w += 1) if (clubGame(w) && played(w)) return true;
-      return false;
-    })();
-    const open = !!input.stillOut && e === latest && !returned;
+    // The stint runs at least to its own last report week: a game he played
+    // inside it (a Questionable he played through) does not end it when the
+    // same entry has him Out or on a reserve list later (WEB-039, 2026-11-27:
+    // Alec Pierce played Weeks 1-2, was Out in Week 3 and on IR since, and
+    // read "2026 games missed 0"; Pittman read 2 beside "7 games missed").
+    const lastReport = Math.max(start, ...reportWeeks);
     const missedWeeks: number[] = [];
+    let sharedWith: { week: number; type: string } | null = null;
     for (let w = start; w <= through; w += 1) {
       if (!clubGame(w)) continue;
       if (played(w)) {
-        if (w > start) break;
+        if (w > start && w >= lastReport) break;
         continue;
       }
-      if (!open && missedWeeks.length >= recorded && !reportWeeks.has(w)) break;
+      if (claimedWeeks.has(w)) {
+        if (reportWeeks.has(w) || missedWeeks.length < recorded) sharedWith ??= claimedWeeks.get(w)!;
+        continue;
+      }
+      if (missedWeeks.length >= recorded && !reportWeeks.has(w)) {
+        if (w > lastReport) break;
+        continue;
+      }
       missedWeeks.push(w);
     }
-    return { week: start, recorded, missedWeeks, open, type: e.type, bodyPart: e.bodyPart ?? null };
-  });
+    for (const w of missedWeeks) claimedWeeks.set(w, { week: start, type: e.type });
+    windows[i] = { week: start, recorded, missedWeeks, open: false, sharedWith, type: e.type, bodyPart: e.bodyPart ?? null };
+  }
+
+  // Still out: the running stint is OPEN and runs through the last completed
+  // game, so a stint the builder last counted a week ago is not a week short.
+  // The running stint is the window holding his latest injury game (Pittman:
+  // the Week 2 foot, not the Week 11 re-listing whose game it already
+  // counts); with none yet, the latest entry. Never once he has played since.
+  if (input.stillOut && windows.length) {
+    let run: InjuryWindow | null = null;
+    let last = -1;
+    for (const win of windows) {
+      const l = win.missedWeeks[win.missedWeeks.length - 1] ?? -1;
+      if (l > last) [run, last] = [win, l];
+    }
+    if (!run) {
+      const latest = entries.reduce((m, e, i) => (e.week! > entries[m]!.week! ? i : m), 0);
+      run = windows[latest]!;
+    }
+    const from = last >= 0 ? last + 1 : run.week;
+    let returned = false;
+    for (let w = last >= 0 ? last + 1 : run.week + 1; w <= through; w += 1) if (clubGame(w) && played(w)) returned = true;
+    if (!returned) {
+      for (let w = from; w <= through; w += 1) {
+        if (!clubGame(w) || played(w) || claimedWeeks.has(w)) continue;
+        run.missedWeeks.push(w);
+        claimedWeeks.set(w, { week: run.week, type: run.type });
+      }
+      run.open = true;
+    }
+  }
 
   const injuryWeeks = new Set<number>();
   for (const win of windows) for (const w of win.missedWeeks) injuryWeeks.add(w);

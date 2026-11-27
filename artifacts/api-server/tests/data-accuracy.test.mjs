@@ -446,6 +446,33 @@ describe("one status per game week, official designations only (WEB-039 follow-u
     assert.match(s.message, /injury report is not on file/);
   });
 
+  test("missed his last game: pending until the report is final, then cleared - not pending on game day (Pittman, 2026-11-27)", () => {
+    const k = week11[0].kickoffMs;
+    // Burden sat Week 9 (a row with no snaps keeps the Bears' Week 9 game), Sleeper still has his Questionable.
+    const logs = { ...LOGS["2026"], [BURDEN]: (LOGS["2026"][BURDEN] ?? []).map((g) => (g.week === 9 ? { ...g, stats: { pts_ppr: 0, gp: 0, off_snp: 0 } } : g)) };
+    const doc = (hoursBefore) => ({ weeks: { 11: { fetchedAt: new Date(k - hoursBefore * 3600_000).toISOString(), teams: { Bears: burdenRow({}) } } } });
+    const at = (hoursBefore) => {
+      const practice = doc(hoursBefore);
+      const a = availability.gameAvailability(chi(), 2026, 11, [row({ injuryStatus: "Questionable" })], { logs, practice, kickoffMs: k }).get(BURDEN);
+      const s = status.currentStatus({
+        playerId: BURDEN, team: chi(), season: 2026, games: week11, rosterRow: row({ injuryStatus: "Questionable" }),
+        rosterFetchedAt: k - 3600_000, now: k - 3600_000, deps: { logs, practice },
+      });
+      return { a, s };
+    };
+    const early = at(72);
+    assert.equal(early.a.lastGame.played, false);
+    assert.equal(early.a.kind, "pending");
+    assert.equal(early.s.kind, "pending");
+    assert.match(early.s.message, /^No Week 11 game designation reported yet\./);
+    const final = at(20);
+    assert.equal(final.a.report.state, "final");
+    assert.equal(final.a.kind, "active");
+    assert.equal(final.a.label, "No game designation");
+    assert.equal(final.s.designation, null);
+    assert.match(final.s.message, /^No game designation for Week 11\./);
+  });
+
   test("a final report inside the 30 hours before kickoff, with nobody given a status, is final", () => {
     const k = Date.parse("2026-11-22T18:00:00Z");
     const doc = { weeks: { 11: { fetchedAt: new Date(k - 20 * 3600_000).toISOString(), teams: { Bears: burdenRow({}) } } } };
@@ -521,6 +548,60 @@ describe("one games-missed count per window (WEB-039 follow-up)", () => {
     const a = missed.seasonAvailability({ season: 2026, playerId: "late", currentTeam: "ZZZ", logs, injuries: [] });
     assert.equal(a.weekCodes, "NNNPPP");
     assert.equal(a.teamGames, 3);
+  });
+
+  // 2026-11-27 re-check: a game played inside a stint ended its window, so the
+  // entry's later Out and reserve weeks read "not played, reason unknown".
+  const club = (w) => ({ week: w, opp: "X", team: "ZZZ", stats: { pts_ppr: 1, gp: 1, off_snp: 30 } });
+  const res = (weeks) => weeks.map((week) => ({ week, reserve: "injured reserve" }));
+
+  test("Alec Pierce shape: played Weeks 1-2 while listed, Out in Week 3, IR since - the window runs to its own report weeks", () => {
+    const logs = { mate: [1, 2, 3, 4, 5, 6, 8].map(club), hurt: [1, 2].map(club) };
+    const injuries = [
+      { season: 2026, week: 1, type: "Heel", gamesMissed: 5, reports: [{ week: 1, practice: "Limited", status: null }, { week: 2, practice: "Full", status: null }, { week: 3, practice: "DNP", status: "Out" }, ...res([4, 5, 6, 7, 8])] },
+    ];
+    for (const stillOut of [false, true]) {
+      const a = missed.seasonAvailability({ season: 2026, playerId: "hurt", currentTeam: "ZZZ", logs, injuries, stillOut });
+      assert.deepEqual(a.weeksMissedInjury, [3, 4, 5, 6, 8], `stillOut ${stillOut}`);
+      assert.equal(a.notPlayedOther, 0, "no reserve week reads 'reason unknown'");
+      assert.equal(a.weekCodes, "PPXXXXBX");
+      assert.equal(a.windows[0].open, stillOut);
+    }
+  });
+
+  test("Pittman shape: a re-listing while still on IR counts no game twice; it names the stint that counts it", () => {
+    const logs = { mate: [1, 2, 3, 4, 5, 6, 7, 8].map(club), hurt: [1, 3, 4].map(club) };
+    const injuries = [
+      // Most recent first, as stored.
+      { season: 2026, week: 8, type: "Foot", gamesMissed: 0, reports: [{ week: 8, practice: "Full", status: "Questionable" }] },
+      { season: 2026, week: 2, type: "Foot", gamesMissed: 5, reports: [{ week: 2, practice: "DNP", status: "Questionable" }, { week: 3, practice: "Limited", status: "Questionable" }, { week: 5, practice: "DNP", status: "Out" }, ...res([6, 7, 8])] },
+    ];
+    const a = missed.seasonAvailability({ season: 2026, playerId: "hurt", currentTeam: "ZZZ", logs, injuries, stillOut: true });
+    assert.equal(a.missedInjury, 5, "Weeks 2, 5, 6, 7, 8");
+    const [relist, stint] = a.windows;
+    assert.deepEqual(stint.missedWeeks, [2, 5, 6, 7, 8]);
+    assert.equal(stint.open, true, "the running stint is the one holding his latest missed game");
+    assert.deepEqual(relist.missedWeeks, [], "Week 8 is the stint's");
+    assert.deepEqual(relist.sharedWith, { week: 2, type: "Foot" });
+    assert.equal(relist.open, false);
+    assert.equal(
+      a.windows.reduce((n, w) => n + w.missedWeeks.length, 0),
+      a.missedInjury,
+      "the rows' counts add up to the season total",
+    );
+  });
+
+  test("two injuries listed the same week share one missed game, not two", () => {
+    const logs = { mate: [1, 2, 3].map(club), hurt: [1, 2].map(club) };
+    const injuries = [
+      { season: 2026, week: 2, type: "Ankle", gamesMissed: 1, reports: [{ week: 3, practice: "DNP", status: "Out" }] },
+      { season: 2026, week: 2, type: "Quad", gamesMissed: 0, reports: [{ week: 3, practice: "DNP", status: "Out" }] },
+    ];
+    const a = missed.seasonAvailability({ season: 2026, playerId: "hurt", currentTeam: "ZZZ", logs, injuries, stillOut: true });
+    assert.equal(a.missedInjury, 1);
+    assert.deepEqual(a.windows.map((w) => w.missedWeeks.length), [1, 0]);
+    assert.equal(a.windows[0].open, true);
+    assert.deepEqual(a.windows[1].sharedWith, { week: 2, type: "Ankle" });
   });
 });
 

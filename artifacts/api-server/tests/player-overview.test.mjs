@@ -401,6 +401,23 @@ describe("overview sections (mak's Overview redesign, 2026-11-05)", () => {
     assert.equal(sink[0].question, "Should I start Jacoby Brissett in Week 4?");
   });
 
+  test("the start call carries his availability: pending after a missed game, or questionable (2026-11-27)", () => {
+    const answer = (over) => {
+      const sink = [];
+      render(state(over), { faqSink: sink });
+      return sink.find((f) => /^Should I start/.test(f.question))?.answer ?? "";
+    };
+    assert.doesNotMatch(answer({}), /final injury report|listed questionable/);
+    assert.match(
+      answer({ currentStatus: { kind: "pending", week: 4, missedWeek: 3, designated: false, designation: null, message: "" } }),
+      /He did not play in Week 3 and has no Week 4 game designation yet, so check the final injury report before lineups lock\.( |$)/,
+    );
+    assert.match(
+      answer({ currentStatus: { kind: "questionable", week: 4, designated: true, designation: "Questionable", message: "" } }),
+      /He is listed questionable for Week 4, so check his status before kickoff\.( |$)/,
+    );
+  });
+
   test("no byline and no footer; the peers rail stands above the FAQ", () => {
     const doc = render(state(), {}, { peers: '<section class="scp-peers">rail</section>' });
     assert.equal(doc.querySelector("footer"), null);

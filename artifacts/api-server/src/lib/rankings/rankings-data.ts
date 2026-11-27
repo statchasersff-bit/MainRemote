@@ -421,8 +421,17 @@ export function getRankings(
   } catch {
     return null;
   }
+  // The meta file too: it carries the date the page prints and the instant
+  // the player hubs' stale guard reads, and a date correction can touch it
+  // alone (2026-11-27: a CSV-only key kept serving the old date).
+  let metaMtimeMs = 0;
+  try {
+    metaMtimeMs = fs.statSync(path.join(DATA_DIR, `${board}-${resolved}.meta.json`)).mtimeMs;
+  } catch {
+    // No meta: the board renders undated.
+  }
 
-  const version = `${cacheKey}-${Math.round(mtimeMs).toString(36)}`;
+  const version = `${cacheKey}-${Math.round(mtimeMs).toString(36)}${metaMtimeMs ? `.${Math.round(metaMtimeMs).toString(36)}` : ""}`;
   const hit = dataCache.get(cacheKey);
   if (hit && hit.version === version) return hit;
 
