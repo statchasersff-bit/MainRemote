@@ -395,6 +395,21 @@ describe("player header", () => {
     assert.notEqual(render.startSitHref(state({ designation: { injuryStatus: "Out" } }), {}), "");
   });
 
+  test("no populated Redraft start/sit page for him: no start/sit link at all (2026-11-27 audit, item 5)", () => {
+    // Aaron Rodgers, 2026-11-27: Sleeper listed him as a free agent, so his
+    // start/sit address was a 404 while his hub printed six links to it.
+    const none = state({ startSitPage: false });
+    assert.equal(render.startSitHref(none, {}), "");
+    assert.equal(render.startSitPageUrl(none, {}), "");
+    const h = header(none);
+    assert.equal(h.querySelector(".scp-pbtn--gold"), null, "no start/sit button");
+    assert.equal(h.querySelectorAll('a[href*="who-should-i-start"]').length, 0);
+    assert.ok(h.querySelector(".scp-pstrip"), "the next game still shows");
+    // Listed (true) and hand-built states (absent) keep the link.
+    assert.match(render.startSitHref(state({ startSitPage: true }), {}), /who-should-i-start\/jacoby-brissett$/);
+    assert.match(render.startSitPageUrl(state(), {}), /who-should-i-start\/jacoby-brissett$/);
+  });
+
   test("the rank's tooltip names its basis: per game, or total points before four games", () => {
     const title = (d) => header(d).querySelector(".scp-pboard .scp-pstat:nth-child(2) abbr").getAttribute("title");
     assert.equal(title(state()), "2026 position rank by PPR fantasy points per game");

@@ -210,7 +210,7 @@ function renderSeasons(data: PlayerPageData, deps: PremiumLogDeps): string {
     })
     .join("");
   return (
-    `<nav class="scp-seasonnav scp-glp-seasons" aria-label="Game log seasons (new design)"${seasonAttrs(data, deps)}>` +
+    `<nav class="scp-seasonnav scp-glp-seasons" aria-label="Game log seasons"${seasonAttrs(data, deps)}>` +
     `<div class="scp-seasons" role="group" aria-label="Game log season">${chips}</div></nav>`
   );
 }

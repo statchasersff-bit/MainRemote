@@ -918,13 +918,25 @@ export function renderHero(
 }
 
 /**
+ * His Redraft Command start/sit page, or "" when Redraft Command has no
+ * populated one for him this week (data.startSitPage false: a 404 for a
+ * player Sleeper does not roster, a noindex "updating" page for a deep
+ * reserve; 2026-11-27 audit, item 5). Every start/sit link on the player
+ * page, FAQ answers included, goes through here.
+ */
+export function startSitPageUrl(data: PlayerPageData, options: PlayerRenderOptions): string {
+  if (data.startSitPage === false) return "";
+  return `${options.startSitBase ?? STARTSIT_BASE}${encodeURIComponent(data.player.slug)}`;
+}
+
+/**
  * The "Should I start {Last}?" link while there is a week to start him in,
  * or "" before Week 1 and once the schedule has run out. The header's white
  * button and the Overview's phone link (mak, 2026-11-05) share it.
  */
 export function startSitHref(data: PlayerPageData, options: PlayerRenderOptions): string {
   if (!data.team || !headerFixture(data) || seasonNotStarted(data) || rosterDesignation(data)) return "";
-  return `${options.startSitBase ?? STARTSIT_BASE}${encodeURIComponent(data.player.slug)}`;
+  return startSitPageUrl(data, options);
 }
 
 /**

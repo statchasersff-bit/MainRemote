@@ -65,6 +65,7 @@ const STATS_COPY_FILE = path.join(DATA_DIR, "stats_copy.json");
 const COLLEGE_FILE = path.join(DATA_DIR, "college_stats.json");
 const ADVANCED_DIR = path.join(DATA_DIR, "advanced_stats");
 const ID_CROSSWALK_FILE = path.join(DATA_DIR, "id_crosswalk_recovered.json");
+const STARTSIT_PAGES_FILE = path.join(DATA_DIR, "startsit_pages.json");
 const GSIS_SLEEPER_FILE = dataPath("injury-impact", "sleeper-ids.json");
 
 /** How often `players.json` is re-stat'd for an out-of-band rebuild. */
@@ -531,6 +532,25 @@ export const loadRosterPct = lazy<RosterPctDoc>(ROSTER_PCT_FILE, {
 });
 
 /** The indexed (fantasy-relevant) slug list, and the same grouped by team. */
+/**
+ * The players whose Redraft Command start/sit page has something to say this
+ * week (scripts/player/buildStartSitPages.mjs, read off that app's sitemap;
+ * 2026-11-27 audit, item 5). The "Should I start {Last}?" links are printed
+ * only for these: another player's page is a 404 (not on a Sleeper roster) or
+ * a noindex "updating" page. Missing file = no player has one, so no link.
+ */
+const loadStartSitPages = lazy<{ slugs?: string[] }>(STARTSIT_PAGES_FILE, {});
+let startSitSet: Set<string> | null = null;
+lazyResets.push(() => {
+  startSitSet = null;
+});
+
+export function hasStartSitPage(slug: string | null | undefined): boolean {
+  if (!slug) return false;
+  startSitSet ??= new Set(loadStartSitPages().slugs ?? []);
+  return startSitSet.has(slug);
+}
+
 export const loadIndexedSlugs = (): string[] =>
   readIndexed().slugs;
 
@@ -602,6 +622,8 @@ export function dataStamp(): string {
     // The id crosswalk decides which team and matchup rows link to a profile.
     ID_CROSSWALK_FILE,
     GSIS_SLEEPER_FILE,
+    // Which players get a start/sit link (hasStartSitPage).
+    STARTSIT_PAGES_FILE,
     DRAFT_FILE,
     OUTLOOK_FILE,
     PRODUCTION_FILE,
