@@ -4,8 +4,8 @@
  *
  * The Gibbs hub shipped 64 FAQ questions on 2026-11-25: every tab's FAQ sat
  * in the profile's hidden panels and in its FAQPage node. Now the profile
- * prints the Overview's FAQ only and each tab's own address prints its own,
- * at most 10 each. For a sample of players (a high-volume starter, a
+ * prints every tab's FAQ (mak, 2026-11-28) and each tab's own address prints
+ * its own, at most 10 per tab. For a sample of players (a high-volume starter, a
  * limited-stats back, an IR rookie and others) this fetches the hub and every
  * tab WordPress mounts, runs the plugin's OWN code on them in PHP
  * (tests/helpers/player-faq-plugin.php) and checks that the visible questions
@@ -130,14 +130,16 @@ describe("player FAQ vs the FAQPage the plugin builds", () => {
     }
   });
 
-  test("the hub prints the Overview's FAQ only, and every page at most 10", () => {
+  // The hub prints every tab's FAQ again (mak, 2026-11-28); each tab's own
+  // FAQ stays at most 10 (FAQ_MAX).
+  test("the hub prints every tab's FAQ, each tab at most 10", () => {
     for (const [name, html] of Object.entries(pages)) {
       const shown = visibleFaq(html);
-      assert.ok(shown.length <= 10, `${name}: ${shown.length} questions`);
-      if (!name.includes("/")) {
-        assert.ok(shown.every((e) => e.tab === "overview"), `${name}: ${[...new Set(shown.map((e) => e.tab))].join(",")}`);
-        const doc = new JSDOM(html).window.document;
-        assert.ok(doc.querySelectorAll(".scp-peers").length <= 1, `${name}: one peers rail`);
+      const perTab = new Map();
+      for (const e of shown) perTab.set(e.tab, (perTab.get(e.tab) ?? 0) + 1);
+      for (const [tab, n] of perTab) assert.ok(n <= 10, `${name} ${tab}: ${n} questions`);
+      if (!name.includes("/") && shown.length > 10) {
+        assert.ok(perTab.size > 1, `${name}: more than the Overview's FAQ`);
       }
     }
   });

@@ -122,6 +122,11 @@ function spoken(el) {
   return text(copy);
 }
 const cols = (doc) => [...doc.querySelectorAll(".scp-ow-cols > li")];
+/** The short season's five-week strip (mak, 2026-11-27). */
+const ups = (doc) => [...doc.querySelectorAll(".scp-ox-ups > li")];
+/** Played weeks a..b at 10 points, QB20: enough games for the chart (more than GAME_ROWS_MAX). */
+const fill = (a, b) => Array.from({ length: b - a + 1 }, (_, i) => entry(a + i, 10, 20));
+const finals = (a, b) => Array.from({ length: b - a + 1 }, (_, i) => final(a + i));
 const games = (doc) => [...doc.querySelectorAll(".scp-ow-games > li")];
 
 describe("overview sections (mak's Overview redesign, 2026-11-05)", () => {
@@ -136,8 +141,9 @@ describe("overview sections (mak's Overview redesign, 2026-11-05)", () => {
       return text(h2);
     });
     assert.deepEqual(heads, [
-      "Jacoby Brissett 2026 Season Stats",
-      "Jacoby Brissett Weekly Performance & Upcoming Schedule",
+      // Three games: the log and the next five weeks sit in the season card
+      // (mak, 2026-11-27), so no weekly section.
+      "Jacoby Brissett 2026 Season Overview",
       "Jacoby Brissett Fantasy Outlook & Efficiency",
       "Jacoby Brissett Latest News",
       "Jacoby Brissett Career & Background",
@@ -147,7 +153,7 @@ describe("overview sections (mak's Overview redesign, 2026-11-05)", () => {
 
   test("the old duplicate sections do not render", () => {
     const doc = render(state());
-    for (const sel of [".scp-ox-strip", ".scp-ox-log", ".scp-ox-career", ".scp-ox-profile", ".scp-ox-meters", ".scp-ox-inj", ".scp-ox-two", "table"]) {
+    for (const sel of [".scp-ox-strip", ".scp-ox-log", ".scp-ox-career", ".scp-ox-profile", ".scp-ox-meters", ".scp-ox-inj", ".scp-ox-two"]) {
       assert.equal(doc.querySelector(sel), null, `${sel} is gone`);
     }
     assert.doesNotMatch(text(doc.body), /Typical week|Recent Games|Rest-of-Season Outlook and Availability|Active, no designation/);
@@ -162,12 +168,14 @@ describe("overview sections (mak's Overview redesign, 2026-11-05)", () => {
     const doc = render(withCareer(), { playerPathPrefix: "/nfl/players/" });
     const sec = doc.querySelector("#scp-ox-season-h").closest("section");
     const labels = [...sec.querySelectorAll(".scp-ox-stat dt")].map(text);
-    assert.deepEqual(labels, ["GP", "CMP", "ATT", "PASS YDS", "PASS TD", "INT", "RUSH YDS", "RUSH TD", "PPR FPTS"], "the format beside the total (2026-11-27)");
+    // A quarterback's eight in mak's order (2026-11-27), CMP/ATT one cell.
+    assert.deepEqual(labels, ["PPR FPTS", "GP", "CMP/ATT", "PASS YDS", "PASS TD", "INT", "RUSH YDS", "RUSH TD"]);
     const values = [...sec.querySelectorAll(".scp-ox-stat dd")].map(text);
-    assert.equal(values[0], "3");
-    assert.equal(values[8], "49.6", "the three weeks' fantasy total");
+    assert.equal(values[0], "49.6", "the three weeks' fantasy total");
+    assert.equal(values[1], "3");
+    assert.equal(values[2], "60/90");
     for (const v of values) assert.doesNotMatch(v, /NaN|undefined/);
-    assert.ok(sec.querySelector(".scp-ox-season.is-c5"), "nine stats sit five to a row on phones");
+    assert.ok(sec.querySelector(".scp-ox-season.is-qb"), "one row of eight, 4 + 4 on phones");
     assert.equal(sec.querySelector(".scp-ox-more").getAttribute("href"), "/nfl/players/jacoby-brissett/stats/");
     // A receiver gets receiving columns, not a quarterback's.
     const wr = render(state({ player: { ...state().player, position: "WR" } }));
@@ -177,25 +185,25 @@ describe("overview sections (mak's Overview redesign, 2026-11-05)", () => {
   });
 
   test("weekly chart: one bar per played week, the bye a gap not a zero, future weeks never bars", () => {
-    const doc = render(state({ byeWeek: 2, schedule: [final(1), final(3, "L")], gameLog: [entry(1, 16.5, 15), entry(3, 25.6, 4)], leagueWeek: 3 }));
+    const doc = render(state({ byeWeek: 2, schedule: [final(1), final(3, "L"), ...finals(4, 7)], gameLog: [entry(1, 16.5, 15), entry(3, 25.6, 4), ...fill(4, 7)], leagueWeek: 7, upcoming: [] }));
     const c = cols(doc);
-    assert.deepEqual(c.map((li) => text(li.querySelector(".scp-ow-x"))), ["1", "2", "3"]);
+    assert.deepEqual(c.map((li) => text(li.querySelector(".scp-ow-x"))), ["1", "2", "3", "4", "5", "6", "7"]);
     assert.ok(c[1].matches(".is-bye"));
     assert.equal(c[1].querySelector(".scp-ow-bar"), null);
     assert.ok(c[2].matches(".is-hit"), "a QB4 week is a top-12 week");
     assert.ok(!c[0].matches(".is-hit"));
     assert.match(text(c[2].querySelector(".scp-ow-tip")), /Week 3 at 49ers.*25\.6 fantasy points.*QB4 that week.*Lost 24-17/);
-    // The average is over games played: (16.5 + 25.6) / 2.
-    assert.match(text(doc.querySelector(".scp-ow-avg")), /Avg 21\.1/);
+    // The average is over games played: (16.5 + 25.6 + 4 x 10) / 6.
+    assert.match(text(doc.querySelector(".scp-ow-avg")), /Avg 13\.7/);
     // A QB's points are "fantasy", never "PPR".
     assert.doesNotMatch(text(doc.querySelector(".scp-ow-chart")), /PPR/);
   });
 
   test("weekly chart: an injury absence is marked Out, any other absence DNP; a logged game the slate has not finalized is still a bar", () => {
-    const log = [entry(1, 16.5, 15), { ...entry(2, 0, null), game_status: "out", stats: {} }, entry(3, 25.6, 4)];
+    const log = [entry(1, 16.5, 15), { ...entry(2, 0, null), game_status: "out", stats: {} }, entry(3, 25.6, 4), ...fill(4, 8)];
     // No injury on record for week 2: a healthy backup who never got in
     // (Minshew, 2026) reads DNP, in gray, not Out (mak, 2026-11-06).
-    const doc = render(state({ gameLog: log, schedule: [final(1), final(2)] }));
+    const doc = render(state({ gameLog: log, leagueWeek: 8, schedule: [final(1), final(2), ...finals(4, 8)], upcoming: [] }));
     const c = cols(doc);
     assert.ok(c[1].matches(".is-dnp"));
     assert.ok(!c[1].matches(".is-inj"));
@@ -203,7 +211,7 @@ describe("overview sections (mak's Overview redesign, 2026-11-05)", () => {
     assert.ok(c[2].matches(".is-played"), "week 3 comes from the log");
     // An injury logged in week 2: Out, in red.
     const hurt = render(state({
-      gameLog: log, schedule: [final(1), final(2)],
+      gameLog: log, leagueWeek: 8, schedule: [final(1), final(2), ...finals(4, 8)], upcoming: [],
       injury: { seasonMissed: 1, summary: { totalMissed: 1 }, history: { nfl: [{ season: 2026, week: 2, type: "Injury", bodyPart: "Hamstring", gamesMissed: 0 }] } },
     }));
     const h = cols(hurt);
@@ -213,59 +221,98 @@ describe("overview sections (mak's Overview redesign, 2026-11-05)", () => {
   });
 
   test("weekly chart states come from the record (mak's mobile brief, 2026-11-23): zero is a game, dressed is never Out, unlogged finals are no bar", () => {
-    const INJ = { seasonMissed: 1, summary: { totalMissed: 1 }, history: { nfl: [{ season: 2026, week: 2, type: "Injury", bodyPart: "Back", gamesMissed: 1 }] } };
+    const INJ = { seasonMissed: 1, summary: { totalMissed: 1 }, history: { nfl: [{ season: 2026, week: 6, type: "Injury", bodyPart: "Back", gamesMissed: 1 }] } };
     const log = [
-      entry(1, 0, 40),
-      // Week 2: dressed (gp 1), no snap, inside the injury's span - DNP, not Out.
-      { ...entry(2, 0, null), game_status: "out", stats: { gp: 1, off_snp: 0 } },
-      // Week 3: no gp, inside the span - Out.
-      { ...entry(3, 0, null), game_status: "out", stats: {} },
-      entry(4, 12, 20),
+      ...fill(1, 4),
+      entry(5, 0, 40),
+      // Week 6: dressed (gp 1), no snap, inside the injury's span - DNP, not Out.
+      { ...entry(6, 0, null), game_status: "out", stats: { gp: 1, off_snp: 0 } },
+      // Week 7: no gp, inside the span - Out.
+      { ...entry(7, 0, null), game_status: "out", stats: {} },
+      entry(8, 12, 20),
     ];
-    // Week 5 is final on the slate but the logs stop at week 4.
-    const doc = render(state({ leagueWeek: 5, gameLog: log, schedule: [1, 2, 3, 4, 5].map((w) => final(w)), injury: INJ, upcoming: [upcoming(6, 8), upcoming(7, 1)] }));
+    // Week 9 is final on the slate but the logs stop at week 8.
+    const doc = render(state({ leagueWeek: 9, gameLog: log, schedule: finals(1, 9), injury: INJ, upcoming: [upcoming(10, 8), upcoming(11, 1)] }));
     const c = cols(doc);
-    assert.deepEqual(c.map((li) => text(li.querySelector(".scp-ow-x"))), ["1", "2", "3", "4"], "no bar for a week the logs have not reached");
+    assert.deepEqual(c.map((li) => text(li.querySelector(".scp-ow-x"))), ["1", "2", "3", "4", "5", "6", "7", "8"], "no bar for a week the logs have not reached");
     // A zero-point game he played is a bar with its 0.0, never an absence mark.
-    assert.ok(c[0].matches(".is-played.is-zero"));
-    assert.equal(c[0].querySelector(".scp-ow-mark"), null);
-    assert.equal(text(c[0].querySelector(".scp-ow-v")), "0.0");
-    assert.ok(c[1].matches(".is-dnp") && !c[1].matches(".is-inj"));
-    assert.equal(text(c[1].querySelector(".scp-ow-mark")), "DNP");
-    assert.match(text(c[1].querySelector(".scp-ow-tip")), /Active, did not play/);
-    assert.ok(c[2].matches(".is-dnp.is-inj"));
-    assert.equal(text(c[2].querySelector(".scp-ow-mark")), "Out");
+    assert.ok(c[4].matches(".is-played.is-zero"));
+    assert.equal(c[4].querySelector(".scp-ow-mark"), null);
+    assert.equal(text(c[4].querySelector(".scp-ow-v")), "0.0");
+    assert.ok(c[5].matches(".is-dnp") && !c[5].matches(".is-inj"));
+    assert.equal(text(c[5].querySelector(".scp-ow-mark")), "DNP");
+    assert.match(text(c[5].querySelector(".scp-ow-tip")), /Active, did not play/);
+    assert.ok(c[6].matches(".is-dnp.is-inj"));
+    assert.equal(text(c[6].querySelector(".scp-ow-mark")), "Out");
     // The key names only what is drawn, the average with its figure.
-    assert.deepEqual([...doc.querySelectorAll(".scp-ow-key li")].map(text), ["Game", "Average 6.0", "Out (injury)", "DNP"]);
-    // Week 5 is still done: Upcoming starts after it.
-    assert.deepEqual(games(doc).map((g) => text(g.querySelector(".scp-ow-gw"))), ["Week W6", "Week W7"]);
+    assert.deepEqual([...doc.querySelectorAll(".scp-ow-key li")].map(text), ["Game", "Average 8.7", "Out (injury)", "DNP"]);
+    // Week 9 is still done: Upcoming starts after it.
+    assert.deepEqual(games(doc).map((g) => text(g.querySelector(".scp-ow-gw"))), ["Week W10", "Week W11"]);
   });
 
   test("weekly chart key: a bye and a top-N week show; states not drawn do not", () => {
-    const log = [entry(1, 16.5, 15), entry(2, 25.6, 4), entry(4, 10, 20)];
-    const doc = render(state({ leagueWeek: 4, byeWeek: 3, gameLog: log, schedule: [final(1), final(2), final(4)] }));
+    const log = [entry(1, 16.5, 15), entry(2, 25.6, 4), ...fill(4, 7)];
+    const doc = render(state({ leagueWeek: 7, byeWeek: 3, gameLog: log, schedule: [final(1), final(2), ...finals(4, 7)], upcoming: [] }));
     assert.deepEqual([...doc.querySelectorAll(".scp-ow-key li")].map((li) => li.className), ["is-hit", "is-game", "is-avg", "is-bye"]);
   });
 
-  test("upcoming: the next four games with the bye in place, the grade from the shared bands", () => {
-    const doc = render(state({ byeWeek: 6, upcoming: [upcoming(4, 8), upcoming(5, 15), upcoming(7, 25), upcoming(9, 3)] }));
-    const g = games(doc);
-    assert.deepEqual(g.map((li) => spoken(li.querySelector(".scp-ow-gw"))), ["Week 4", "Week 5", "Week 6", "Week 7", "Week 9"]);
-    assert.ok(g[0].matches(".is-next"));
+  test("upcoming, short season: five weeks in one strip inside the season card, the bye in place (mak, 2026-11-27)", () => {
+    const doc = render(state({ byeWeek: 6, upcoming: [upcoming(4, 8), upcoming(5, 15), upcoming(7, 25), upcoming(9, 3), upcoming(10, 3)] }));
+    assert.equal(doc.querySelector("#scp-ox-weekly-h"), null, "one home: no schedule beside the log");
+    const g = ups(doc);
+    assert.ok(g[0].closest("section").querySelector("#scp-ox-season-h"), "inside the season card");
+    assert.deepEqual(g.map((li) => text(li.querySelector(".scp-ox-up-w"))), ["Week 4", "Week 5", "Week 6", "Week 7", "Week 9"]);
     assert.equal(text(g[0].querySelector(".scp-ox-chip")), "Favorable");
     assert.equal(text(g[1].querySelector(".scp-ox-chip")), "Neutral");
     assert.ok(g[2].matches(".is-bye"));
+    assert.equal(text(g[2].querySelector(".scp-ox-up-o")), "Bye");
     assert.equal(text(g[3].querySelector(".scp-ox-chip")), "Tough");
     assert.match(spoken(g[3]), /at SF|at NYG|at /, "away games read as 'at'");
-    assert.match(text(doc.querySelector(".scp-ow-next .scp-ow-note")), /1st allows the most/);
+    assert.match(text(doc.querySelector(".scp-ox-upnext .scp-ow-note")), /1st allows the most/);
+  });
+
+  test("short season: the game log is a labeled table in the season card, Full game log in its head", () => {
+    const doc = render(state(), { playerPathPrefix: "/nfl/players/" });
+    const sec = doc.querySelector("#scp-ox-season-h").closest("section");
+    const t = sec.querySelector("table.scp-ox-gl-t");
+    assert.deepEqual([...t.querySelectorAll("thead th")].map(text), ["Week", "Opponent", "Result", "Passing", "Rushing", "PPR", "Finish"]);
+    const rows = [...t.querySelectorAll("tbody tr")];
+    assert.equal(rows.length, 3);
+    assert.deepEqual([...rows[2].children].map(text), ["3", "@ SF", "L 24–17", "20/30, 220 yds, 2 TD, 1 INT", "3 car, 10 yds", "25.6", "QB4"]);
+    for (const cell of rows[0].children) assert.ok(cell.getAttribute("data-label"), "every value names its column on phones");
+    assert.equal(sec.querySelector(".scp-ox-gl-head a").getAttribute("href"), "/nfl/players/jacoby-brissett/game-log/");
+    assert.equal(doc.querySelector(".scp-ow-chart"), null, "no chart for three games");
+    // Six games: the weekly chart again.
+    const long = render(state({ leagueWeek: 6, gameLog: fill(1, 6), schedule: finals(1, 6), upcoming: [] }));
+    assert.ok(long.querySelector(".scp-ow-chart"));
+    assert.equal(long.querySelector("table.scp-ox-gl-t"), null);
+  });
+
+  test("ruled out this week: the lead says so and names the next man, the call is season-long, the matchup is team context (mak, 2026-11-27)", () => {
+    const doc = render(state({
+      leagueWeek: 3,
+      depth: { position: "QB", order: 1, next: { name: "Josh Johnson", slug: "josh-johnson" } },
+      upcoming: [{ ...upcoming(4, 6), homeAway: "home", opponent: { ...NYG, city: "New York" } }, upcoming(5, 11)],
+      currentStatus: { kind: "out", week: 4, designated: true, designation: "Out", message: "Out.", rosterStatus: null },
+    }));
+    const sec = doc.querySelector("#scp-ox-read-h").closest("section");
+    assert.equal(text(sec.querySelector(".scp-ox-week")), "Week 4: Out vs. Giants. Josh Johnson will start.");
+    assert.match(text(sec.querySelector(".scp-ox-call")), /^Recommendation: Season-long: /);
+    const para = text(sec.querySelector(".scp-ox-prose"));
+    assert.match(para, /Giants allows the 6th-most fantasy points to QBs, a favorable draw for the Cardinals' passing game\./);
+    assert.doesNotMatch(para, /matchups grade favorable/);
+    assert.equal(text(ups(doc)[0].querySelector(".scp-ox-chip")), "Out");
+    // Pending is not out: no week lead.
+    const pending = render(state({ currentStatus: { kind: "pending", week: 4, designated: false, designation: null, message: "" } }));
+    assert.equal(pending.querySelector(".scp-ox-week"), null);
   });
 
   test("upcoming: the note's cut is the chips' cut - 11th favorable, 22nd tough (2026-11-20)", () => {
     const doc = render(state({ byeWeek: 6, upcoming: [upcoming(4, 11), upcoming(5, 22)] }));
-    const g = games(doc);
+    const g = ups(doc);
     assert.equal(text(g[0].querySelector(".scp-ox-chip")), "Favorable");
     assert.equal(text(g[1].querySelector(".scp-ox-chip")), "Tough");
-    const note = text(doc.querySelector(".scp-ow-next .scp-ow-note"));
+    const note = text(doc.querySelector(".scp-ox-upnext .scp-ow-note"));
     assert.match(note, /1st-12th favorable, 21st-32nd tough\.$/);
     assert.doesNotMatch(note, /10th|23rd/);
   });
@@ -313,7 +360,7 @@ describe("overview sections (mak's Overview redesign, 2026-11-05)", () => {
     const ir = render(state({ designation: { injuryStatus: "IR", injuryBodyPart: "Calf", practice: null } }));
     assert.equal(ir.querySelector(".scp-ox-alert"), null);
     assert.match(text(ir.querySelector(".scp-ox-prose")), /on injured reserve/);
-    assert.equal(text(ir.querySelector(".scp-ow-g.is-next .scp-ox-chip")), "Out");
+    assert.equal(text(ups(ir)[0].querySelector(".scp-ox-chip")), "On IR");
   });
 
   test("news: recaps and postgame notes are left out, at most three, hidden when none qualify", () => {
@@ -361,9 +408,10 @@ describe("overview sections (mak's Overview redesign, 2026-11-05)", () => {
     const facts = [...sec.querySelectorAll(".scp-ox-about dt")].map(text);
     assert.deepEqual(facts, ["Born", "Birthplace", "Drafted by"]);
     assert.match(text(sec.querySelector(".scp-ox-career-line")), /25 games, 4,852 passing yards, 31 passing TD \(2024-2026\)/);
-    // Two cards, each under its own navy head (mak, 2026-11-06); the years
-    // sit on their own line under the totals.
-    assert.deepEqual([...sec.querySelectorAll(".scp-ox-bgc-grid > .scp-ox-bgc h3")].map(text), ["Career highlights", "Background"]);
+    // One Player Profile card, one heading (mak, 2026-11-27); the years sit
+    // on their own line under the totals.
+    assert.deepEqual([...sec.querySelectorAll(".scp-ox-bgc h3")].map(text), ["Player Profile"]);
+    assert.equal(sec.querySelectorAll(".scp-ox-bgc").length, 1);
     assert.equal(text(sec.querySelector(".scp-ox-bgc-total")), "25 games, 4,852 passing yards, 31 passing TD");
     assert.equal(text(sec.querySelector(".scp-ox-bgc-span")), "(2024-2026)");
     assert.equal(sec.querySelectorAll(".scp-ox-bgc-fact .scp-ox-bgc-ficon svg").length, 3, "an icon per fact");

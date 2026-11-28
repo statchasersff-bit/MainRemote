@@ -111,8 +111,10 @@ describe("game recaps (spec 4.5, 4.6)", () => {
 
   test("headline templates follow the finish", () => {
     assert.equal(byWeek(3).headline, "Brissett posts season high in loss at San Francisco");
-    assert.equal(byWeek(2).headline, "Brissett struggles vs. Seattle");
-    assert.equal(byWeek(1).headline, "Brissett solid in win at Los Angeles");
+    // Specific headlines (mak, 2026-11-28): the points, or the rank spelled out.
+    assert.equal(byWeek(2).headline, "Brissett held to 7.5 fantasy points vs. Seattle");
+    assert.match(byWeek(1).headline, /^Brissett scores \d+\.\d fantasy points in win at Los Angeles$/);
+    assert.deepEqual(byWeek(3).keyStats, ["280 pass yds", "2 pass TD", "1 rush TD"]);
   });
 
   test("the summary is the stat line, the score and one usage fact", () => {
@@ -175,7 +177,7 @@ describe("wire items and the lead", () => {
   test("a status item in a played week says what happened; an upcoming one reads the designation", () => {
     const hip = news("s3", "2026-09-23T21:00:00Z", "Jacoby Brissett: Practices in full despite hip injury", "injury");
     const item = d.buildFeed(ctx(), [hip]).items.find((i) => i.id === "s3");
-    assert.equal(item.headline, "Practices in full despite hip injury", "the page's own name is dropped");
+    assert.equal(item.headline, "Brissett practices in full despite hip injury", "his surname leads the wire's verb (2026-11-28)");
     assert.equal(item.take, "He played in Week 3: 25.6 PPR points, a QB4 finish.");
     const up = news("s5", "2026-10-08T21:00:00Z", "Limited in practice", "practice");
     const late = d.buildFeed(ctx({ designation: "Questionable" }), [news("s5b", "2026-10-08T21:00:00Z", "Listed on report", "injury"), up]).items;
@@ -240,71 +242,91 @@ describe("rendered", () => {
   }
   const render = (s, o = {}) => new JSDOM(`<body><div data-scp-root>${tab.renderNewsTab(s, { now: ET("2026-09-30T12:00:00Z"), ...o })}</div></body>`, { runScripts: "outside-only", pretendToBeVisual: true });
 
-  // The team pages' News design (mak, 2026-11-06): one featured story, a
-  // grid of story cards, the rail beside them; the week groups are gone.
-  test("the latest story is featured, the rest fill the grid, Moves shows only with moves", () => {
+  // The featured report and the dated list (mak, 2026-11-27).
+  test("the newest report is featured with a headshot, the rest form a dated list", () => {
     const doc = render(state()).window.document;
-    assert.equal(doc.querySelector(".scp-nw-lead"), null, "the old lead card is gone");
-    assert.equal(doc.querySelector(".scp-nw-wk"), null, "no week groups");
-    const lead0 = doc.querySelector(".scp-nwp-card.is-featured");
+    assert.equal(doc.querySelector(".scp-nwp-card"), null, "no story cards");
+    assert.equal(doc.querySelector(".scp-nwp-well"), null, "no image slot anywhere");
+    const lead0 = doc.querySelector(".scp-nwp-lead");
+    assert.ok(lead0.querySelector(".scp-nwp-lead-face"), "a headshot beside the text");
     assert.equal(lead0.querySelector("h3").textContent, "Brissett posts season high in loss at San Francisco");
-    assert.equal(lead0.hasAttribute("data-scp-news-item"), false, "the featured story is not filtered");
-    assert.equal(lead0.querySelector(".scp-nwp-news-kicker").textContent, "Game recap");
-    assert.ok(lead0.querySelector(".scp-nwp-news-meta time").getAttribute("datetime"));
-    assert.equal(lead0.querySelector(".scp-nwp-ribbon").textContent, "L 30–36 @ SF", "a recap's ribbon is the score");
-    assert.equal(lead0.querySelector(".scp-nw-fin").textContent, "Finish: QB4");
-    assert.equal(lead0.querySelector(".scp-nwp-fpts").textContent, "25.6 FPTS");
-    assert.equal(lead0.querySelector(".scp-nw-read").textContent, "Fantasy impact: ↑Ceiling game");
-    assert.equal(lead0.querySelector(".scp-nwp-stats").textContent, "38/52 · 280 YDS · 2 TD · 0 INT · 4 CAR · 4 YDS · 1 TD");
-    assert.match(lead0.querySelector(".scp-nwp-sum").textContent, /^Volume drove the ceiling: /);
-    assert.ok(lead0.querySelector(".scp-nwp-well .scp-nwp-photo, .scp-nwp-well .scp-nwp-photo-empty"), "a photo well");
-    assert.deepEqual([...lead0.querySelectorAll(".scp-nwp-cta a")].map((a) => a.getAttribute("href")), [
-      "/nfl/arizona-cardinals-vs-san-francisco-49ers/2026-week-3/",
-      "/player/jacoby-brissett/game-log/",
-    ]);
-    // The second link repeats the headline's destination, for sighted readers only.
-    assert.equal(lead0.querySelector(".scp-nwp-cta a:not(.is-box)").getAttribute("aria-hidden"), "true");
-    const grid = [...doc.querySelectorAll(".scp-nwp-grid .scp-nwp-card")];
-    assert.deepEqual(grid.map((c) => c.querySelector("h3").textContent), ["Brissett struggles vs. Seattle", "Brissett solid in win at Los Angeles"], "newest first, the featured story left out");
-    const w2 = grid[0];
+    assert.equal(lead0.hasAttribute("data-scp-news-item"), false, "the featured report is not a list row");
+    // One stat line, the headline linked to the box score, no impact badge
+    // and no takeaway sentence (mak, 2026-11-28).
+    assert.equal(lead0.querySelector(".scp-nwp-item-meta.is-stats").textContent.replace(/\s+/g, " "), "25.6 FPTS · Finish: QB4 · 280 pass yds · 2 pass TD · 1 rush TD");
+    assert.equal(lead0.querySelector("h3 a").getAttribute("href"), "/nfl/arizona-cardinals-vs-san-francisco-49ers/2026-week-3/");
+    assert.equal(lead0.querySelector(".scp-nw-read, .scp-nwp-box, .scp-nwp-item-sum"), null);
+    const rows = [...doc.querySelectorAll(".scp-nwp-item")];
+    assert.equal(rows.length, 2, "the featured report left out");
+    assert.equal(rows[0].querySelector("h4").textContent, "Brissett held to 7.5 fantasy points vs. Seattle", "newest first");
+    assert.match(rows[1].querySelector("h4").textContent, /^Brissett scores \d+\.\d fantasy points in win at Los Angeles$/);
+    assert.ok(rows.every((r) => r.querySelector(".scp-nwp-item-date time")), "every row carries its day");
+    assert.ok(rows.every((r) => r.classList.contains("is-first")), "one row a day here: each prints its day");
+    assert.equal(doc.querySelector(".scp-nwp-date, .scp-nwp-day"), null, "no day headings with rules");
+    const w2 = rows[0];
     assert.equal(w2.dataset.type, "game");
     assert.equal(w2.dataset.impact, "down");
-    assert.equal(w2.querySelector(".scp-nw-fin").textContent, "Finish: QB28");
-    assert.equal(w2.querySelector(".scp-nwp-fpts").textContent, "7.5 FPTS");
-    assert.equal(w2.querySelector(".scp-nwp-stats").textContent, "17/28 · 95 YDS · 1 TD · 1 INT");
-    assert.equal(w2.querySelector(".scp-nwp-sum").textContent, "The Seahawks limited Brissett to 3.4 yards per attempt.");
-    assert.equal(w2.querySelector(".scp-nwp-cta a:not(.is-box)").textContent.trim(), "View game recap →");
+    // The headline says the points, so the line leads with the rank.
+    assert.equal(w2.querySelector(".scp-nwp-item-meta.is-stats").textContent.replace(/\s+/g, " "), "Sep 20 · Finish: QB28 · 95 pass yds · 1 pass TD · 1 INT");
+    assert.equal(w2.querySelector(".scp-nwp-item-sum"), null);
     // Three stories: nothing to filter.
     assert.equal(doc.querySelector("[data-scp-news-filter]"), null);
     const signed = news("t", "2026-08-10T21:00:00Z", "Restructures deal", "transaction", { summary: "Brissett reworked his deal. The move clears cap room for the club." });
     const extra = [signed, news("p", "2026-07-08T23:00:00Z", "Expected to start", "status")];
     const moved = render(state({ news: extra })).window.document;
     assert.deepEqual([...moved.querySelectorAll(".scp-nwp-filters button")].map((b) => b.textContent), ["All", "Games", "Status", "Moves"]);
-    const move = moved.querySelector('.scp-nwp-card[data-group="moves"]');
+    // The filters sit in the feed's head row (mak, 2026-11-28).
+    assert.ok(moved.querySelector(".scp-nwp-feed > .scp-nwp-head > .scp-nwp-filters"));
+    const withNews = render(state({ news: [...extra, news("n", "2026-09-01T21:00:00Z", "A feature", "analysis")] })).window.document;
+    assert.deepEqual([...withNews.querySelectorAll(".scp-nwp-filters button")].map((b) => b.textContent), ["All", "Games", "Status", "News", "Moves"]);
+    const move = moved.querySelector('.scp-nwp-item[data-group="moves"]');
     assert.equal(move.dataset.type, "contract", "a restructure is a contract item");
-    assert.equal(move.querySelector(".scp-nwp-news-kicker").textContent, "Contract");
-    assert.equal(move.querySelector(".scp-nwp-sum").textContent, "Brissett reworked his deal.", "one sentence on the card");
-    assert.ok(move.querySelector(".scp-nwp-byline a"), "a report names its source");
+    assert.equal(move.querySelector(".scp-nwp-item-cat").textContent, "Contract");
+    assert.equal(move.querySelector(".scp-nwp-item-sum").textContent, "Brissett reworked his deal. The move clears cap room for the club.", "the first sentence alone adds nothing, two do");
+    // Headline first, then "source · time · type".
+    assert.ok(move.querySelector(".scp-nwp-item-h + .scp-nwp-item-meta"));
+    assert.ok(move.querySelector(".scp-nwp-item-src a"), "a report names its source");
+    assert.ok(move.querySelector(".scp-nwp-item-meta time"), "and its time");
     const noMoves = render(state({ news: [news("p", "2026-07-08T23:00:00Z", "Works with teammates", "status"), news("s", "2026-07-09T23:00:00Z", "Expected to start", "status")] })).window.document;
     assert.equal(noMoves.querySelector('[data-f="moves"]'), null);
-    // A move newer than the latest recap outranks it for the featured spot.
+    // The newest report is featured, whatever its kind.
     const traded = news("t2", "2026-09-29T21:00:00Z", "Traded to the Giants", "transaction");
     const lead = render(state({ news: [traded] })).window.document;
-    assert.equal(lead.querySelector(".scp-nwp-card.is-featured h3").textContent, "Traded to the Giants (opens in new tab)");
+    assert.equal(lead.querySelector(".scp-nwp-lead h3").textContent, "Traded to the Giants (opens in new tab)");
   });
 
-  test("no pending or bye rows: the grid holds stories only", () => {
+  test("same-day updates both stay, under one day heading, told apart by time", () => {
+    const a = news("a", "2026-09-24T16:00:00Z", "Not present Thursday", "status", { summary: "He was not spotted during the open portion of Thursday's practice." });
+    const b = news("b", "2026-09-24T21:30:00Z", "Stays DNP on Thursday", "status", { summary: "He was listed as a non-participant on Thursday's injury report with a hamstring issue." });
+    const late = news("c", "2026-09-29T21:00:00Z", "Newest", "status");
+    const doc = render(state({ news: [a, b, late] })).window.document;
+    const rows = [...doc.querySelectorAll('.scp-nwp-item[data-day="Sep 24"]')];
+    assert.deepEqual(rows.map((r) => r.querySelector("h4").textContent.replace(" (opens in new tab)", "")), ["Stays DNP on Thursday", "Not present Thursday"]);
+    // The day prints beside the first of them only (mak, 2026-11-28).
+    assert.deepEqual(rows.map((r) => r.classList.contains("is-first")), [true, false]);
+    assert.notEqual(rows[0].querySelector(".scp-nwp-item-meta time").textContent, rows[1].querySelector(".scp-nwp-item-meta time").textContent);
+    // A summary only with a material fact: the hamstring, not "not spotted".
+    assert.ok(rows[0].querySelector(".scp-nwp-item-sum"));
+    assert.equal(rows[1].querySelector(".scp-nwp-item-sum"), null);
+  });
+
+  test("a summary that only repeats the headline is dropped", () => {
+    assert.equal(tab.addsDetail("Not present Thursday", "Not present at Thursday's practice."), false);
+    assert.equal(tab.addsDetail("Not present Thursday", "He was not spotted during the open portion of practice."), true);
+  });
+
+  test("no pending or bye rows: the list holds stories only", () => {
     const doc = render(state({ gameLog: LOG.slice(0, 2) })).window.document;
     assert.equal(doc.querySelector(".scp-nw-pending"), null);
-    for (const card of doc.querySelectorAll(".scp-nwp-card")) assert.ok(card.querySelector("h3").textContent.trim());
+    for (const row of doc.querySelectorAll(".scp-nwp-item")) assert.ok(row.querySelector("h4").textContent.trim());
   });
 
   test("no news at all this season: the newest older item is featured, marked with its season", () => {
     const old = news("o", "2025-12-20T21:00:00Z", "Named starter for finale", "depth-chart");
     const doc = render(state({ gameLog: [], schedule: [], news: [old] })).window.document;
-    const card = doc.querySelector(".scp-nwp-card.is-featured.is-old");
-    assert.match(card.querySelector(".scp-nwp-news-kicker").textContent, /^From 2025$/);
-    assert.equal(doc.querySelector(".scp-nwp-feed"), null, "no grid under it");
+    const card = doc.querySelector(".scp-nwp-lead.is-old");
+    assert.match(card.querySelector(".scp-nwp-lead-day").textContent, /^From 2025$/);
+    assert.equal(doc.querySelector(".scp-nwp-list"), null, "no list under it");
   });
 
   test("filters, clicked, through the real client bundle", async () => {
@@ -319,14 +341,20 @@ describe("rendered", () => {
     await new Promise((resolve) => setTimeout(resolve, 20));
     const doc = dom.window.document;
     const shown = () => [...doc.querySelectorAll("[data-scp-news-item]")].filter((i) => !i.hidden).map((i) => i.dataset.type);
+    const featured = () => doc.querySelector(".scp-nwp-lead h3").textContent.replace(" (opens in new tab)", "");
+    assert.equal(featured(), "Brissett posts season high in loss at San Francisco");
     doc.querySelector('[data-f="status"]').click();
-    assert.deepEqual(shown(), ["status"]);
+    // The only status report is promoted to the featured slot and leaves the list.
+    assert.equal(featured(), "Expected to start");
+    assert.deepEqual(shown(), []);
     // No "No updates of this type" note (WEB-044, 2026-11-26): the filters
     // list only kinds the feed has, so it could never show.
     assert.equal(doc.querySelector("#scp-nw-empty"), null);
     doc.querySelector('[data-f="moves"]').click();
-    assert.deepEqual(shown(), ["contract"]);
+    assert.equal(featured(), "Restructures deal");
+    assert.deepEqual(shown(), []);
     doc.querySelector('[data-f="game"]').click();
+    assert.equal(featured(), "Brissett posts season high in loss at San Francisco", "the server's lead comes back");
     assert.deepEqual(shown(), ["game", "game"]);
     doc.querySelector('[data-f="all"]').click();
     assert.equal([...doc.querySelectorAll("[data-scp-news-item]")].filter((i) => i.hidden).length, 0);

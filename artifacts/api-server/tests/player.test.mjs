@@ -1980,22 +1980,24 @@ describe("the news tab", () => {
   test("every story has a headline, a category and an absolute date", async () => {
     const found = await withNews();
     assert.ok(found, "at least one player has a news tab");
-    // The team pages' News design (mak, 2026-11-06).
+    // The featured report and the dated list (mak, 2026-11-27).
     const tab = found.doc.querySelector(".scp-nwp");
-    const items = [...tab.querySelectorAll(".scp-nwp-card")];
+    assert.equal(tab.querySelector(".scp-nwp-well"), null, "no image slot");
+    const items = [...tab.querySelectorAll(".scp-nwp-lead, .scp-nwp-item")];
     assert.ok(items.length > 0);
     for (const item of items) {
-      assert.ok(item.querySelector("h3")?.textContent.trim(), "a headline");
-      assert.ok(item.querySelector(".scp-nwp-news-kicker")?.textContent.trim(), "a category");
-      assert.ok(item.querySelector("time")?.getAttribute("datetime"), "a machine-readable date");
-      assert.ok(item.querySelector(".scp-nwp-well"), "a photo well");
+      assert.ok(item.querySelector(".scp-nwp-item-h")?.textContent.trim(), "a headline");
       if (item.matches(".is-old")) continue;
+      assert.ok(item.querySelector("time")?.getAttribute("datetime") || item.querySelector(".scp-nwp-lead-day")?.textContent.trim(), "a date");
       assert.match(item.dataset.impact, /^(up|flat|down)$/);
       if (item.dataset.type === "game") {
-        assert.match(item.querySelector(".scp-nwp-fpts")?.textContent ?? "", /^\S+ FPTS$/);
-        assert.match(item.querySelector(".scp-nw-read").textContent, /^Fantasy impact: /);
+        // A recap's second line (mak, 2026-11-28): the points (unless the
+        // headline says them), the rank and the stats; no category badge.
+        const line = item.querySelector(".scp-nwp-item-meta.is-stats")?.textContent ?? "";
+        assert.ok(/FPTS/.test(line) || /fantasy points/.test(item.querySelector(".scp-nwp-item-h").textContent), "the points are said");
       } else {
-        assert.ok(item.querySelector(".scp-nwp-byline")?.textContent.trim(), "a source");
+        assert.ok(item.querySelector(".scp-nwp-item-cat")?.textContent.trim(), "a category");
+        assert.ok(item.querySelector(".scp-nwp-item-src")?.textContent.trim(), "a source");
       }
     }
   });
@@ -2010,8 +2012,8 @@ describe("the news tab", () => {
   test("the lead is not repeated in the feed, and outbound links open safely", async () => {
     const found = await withNews();
     const tab = found.doc.querySelector(".scp-nwp");
-    const lead = tab.querySelector(".scp-nwp-card.is-featured h3")?.textContent.trim();
-    const feed = [...tab.querySelectorAll(".scp-nwp-grid .scp-nwp-card h3")].map((h) => h.textContent.trim());
+    const lead = tab.querySelector(".scp-nwp-lead h3")?.textContent.trim();
+    const feed = [...tab.querySelectorAll(".scp-nwp-item h4")].map((h) => h.textContent.trim());
     if (lead) assert.ok(!feed.includes(lead));
     for (const a of tab.querySelectorAll('a[target="_blank"]')) {
       assert.equal(a.getAttribute("rel"), "noopener");
@@ -2086,15 +2088,17 @@ describe("the bio tab", () => {
       // brief of 2026-11-03); the panel no longer repeats it as an H2.
       assert.equal(headings.filter((h) => /\bBio$/.test(h)).length, 0, `${page.player.slug}: no repeated bio heading (${headings.join(" | ")})`);
       assert.equal(page.doc.querySelector("h1")?.textContent.replace(/\s+/g, " ").trim(), `${page.player.name} Bio`);
-      assert.equal(headings.filter((h) => /timeline/i.test(h)).length, 1, `${page.player.slug}: one timeline`);
+      // No timeline since 2026-11-28 (mak): the team history, once, for a multi-stint player only.
+      assert.equal(headings.filter((h) => /timeline/i.test(h)).length, 0, `${page.player.slug}: no timeline`);
+      assert.ok(bio.querySelectorAll(".scp-bop-history:not(.is-milestones)").length <= 1, `${page.player.slug}: one team history at most`);
 
       // The bio text comes first and carries the facts the Quick Facts show.
       const prose = bio.querySelector(".scp-bop-prose");
-      const journey = bio.querySelector(".scp-bop-tl");
+      const journey = bio.querySelector(".scp-bop-history");
       if (prose && journey) assert.ok(prose.compareDocumentPosition(journey) & 4, "the bio text opens the tab");
-      const quick = Object.fromEntries([...bio.querySelectorAll(".scp-bop-card-side.is-facts dt")].map((dt) => [dt.textContent, dt.nextElementSibling.textContent]));
-      if (quick.Born && prose) assert.match(prose.textContent, /Born \w+ \d{1,2}, \d{4}/, `${page.player.slug}: the text gives the birth date`);
-      if ((quick.College || quick.Colleges) && prose) assert.match(prose.textContent, /played college football at /);
+      // Player Details beside the biography (mak, 2026-11-28).
+      const quick = Object.fromEntries([...bio.querySelectorAll(".scp-bop-details dt")].map((dt) => [dt.textContent, dt.nextElementSibling.textContent]));
+      if (prose) assert.ok(quick.Born || quick.Height || quick.Drafted || Object.keys(quick).length === 0, `${page.player.slug}: details sit beside the text`);
     }
   });
 
@@ -2147,13 +2151,13 @@ describe("the bio tab", () => {
     }
   });
 
-  test("the career timeline runs forwards and never predates the draft", async () => {
+  test("the team history runs forwards and never predates the draft", async () => {
     for (const page of await bioPages(6)) {
-      const stops = [...page.doc.querySelectorAll("#bio .scp-bop-seg")];
+      const stops = [...page.doc.querySelectorAll("#bio .scp-bop-history:not(.is-milestones) .scp-bop-hist-row")];
       if (stops.length === 0) continue;
 
       // A traded season is two stops in one year, so the years never go back.
-      const years = stops.map((stop) => Number(stop.querySelector(".scp-bop-seg-years").textContent.trim().slice(0, 4)));
+      const years = stops.map((stop) => Number(stop.querySelector(".scp-bop-hist-years").textContent.trim().slice(0, 4)));
       for (let i = 1; i < years.length; i += 1) {
         assert.ok(years[i] >= years[i - 1], `${page.player.slug}: the timeline runs ${years[i - 1]} then ${years[i]}`);
       }
@@ -2161,7 +2165,7 @@ describe("the bio tab", () => {
       // The bug this is here for: the upstream stats API answers for seasons a
       // player was not in the league by handing back his CURRENT team with an
       // empty stat line, which put a 2016 draftee on a roster in 2005.
-      const drafted = [...page.doc.querySelectorAll("#bio .scp-bop-card-side.is-facts dt")].find((dt) => dt.textContent === "Drafted");
+      const drafted = [...page.doc.querySelectorAll("#bio .scp-bop-details dt")].find((dt) => dt.textContent === "Drafted");
       const draftYear = Number(drafted?.nextElementSibling.textContent.match(/(\d{4})/)?.[1]);
       if (!Number.isFinite(draftYear)) continue;
       assert.ok(years[0] >= draftYear, `${page.player.slug}: the timeline starts in ${years[0]}, before the ${draftYear} draft`);
@@ -2179,16 +2183,17 @@ describe("the bio tab", () => {
     const res = await get("/player/deebo-samuel/bio/");
     if (res.status !== 200) return t.skip("no deebo-samuel profile in this data");
     const doc = new JSDOM(res.body).window.document;
-    // The card head: the club's name, the "Current team" chip and the years with the stint tag.
-    const clubs = [...doc.querySelectorAll("#bio .scp-bop-stops .scp-bop-card-head")].map((n) => n.textContent);
+    // The team history row: the years with the stint tag, then the club (2026-11-28).
+    const clubs = [...doc.querySelectorAll("#bio .scp-bop-history .scp-bop-hist-row")].map((n) => n.textContent);
     const sf = clubs.filter((text) => /49ers/.test(text)).length;
     if (sf < 2 || !clubs.some((text) => /Commanders/.test(text))) {
       return t.skip("the data no longer has him leaving and returning");
     }
-    assert.ok(clubs.some((text) => /49ers.*second stint/.test(text)), "the return is marked as a second stint");
+    assert.ok(clubs.some((text) => /second stint.*49ers/.test(text)), "the return is marked as a second stint");
 
     const prose = doc.querySelector("#bio .scp-bop-prose").textContent;
-    assert.match(prose, /played for the Washington Commanders \(2025\) and returned to the San Francisco 49ers in 2026\./);
+    // The story's wording (bioStory, 2026-11-28).
+    assert.match(prose, /Samuel played for the San Francisco 49ers \(2019 to 2024\), was traded to the Washington Commanders in 2025 and returned to the San Francisco 49ers in 2026\./);
 
     const answer = [...doc.querySelectorAll("script, .scp-tab-faq p, [class*='faq'] p")]
       .map((n) => n.textContent)
@@ -2675,17 +2680,20 @@ describe("the positional peers rail", () => {
       news: '.scp-tab-faq[data-faq-tab="news"]',
       bio: '.scp-tab-faq[data-faq-tab="bio"]',
     };
-    // Since 2026-11-26 (WEB-044) the profile prints the rail and the FAQ
-    // once, in the Overview: its other panels carry neither (each tab's own
-    // address does, checked below).
-    assert.equal(doc.querySelectorAll(".scp-peers").length, 1, "one rail on the profile");
-    assert.equal(doc.querySelectorAll(".scp-tab-faq").length, 1, "one FAQ on the profile");
+    // Every panel on the profile carries its own rail above its FAQ again
+    // (mak, 2026-11-28, undoing the WEB-044 trim of 2026-11-26).
     let tabs = 0;
     for (const [id, faq] of Object.entries(FAQ)) {
-      if (!doc.querySelector(`#${id}`)) continue;
+      const rail = doc.querySelector(`#${id} > .scp-peers`);
+      if (!rail) continue;
       tabs += 1;
-      assert.equal(doc.querySelector(`#${id} > .scp-peers`), null, `${id}: no rail in the profile's panel`);
-      assert.equal(doc.querySelector(`#${id} ${faq}`), null, `${id}: no FAQ in the profile's panel`);
+      const panelFaq = doc.querySelector(`#${id} ${faq}`);
+      if (panelFaq) {
+        assert.ok(
+          rail.compareDocumentPosition(panelFaq) & 4, // DOCUMENT_POSITION_FOLLOWING
+          `${id}: the rail precedes the FAQ`,
+        );
+      }
       if (id === "injury") {
         assert.equal(doc.querySelector("#injury .scp-st-foot"), null, "injury: no footer since 2026-10-22");
       }
@@ -2814,7 +2822,7 @@ describe("the embedded fragment", () => {
     }
   });
 
-  test("one FAQPage for the document, the Overview's questions as printed", async () => {
+  test("one FAQPage for the document, however many tabs carry questions", async () => {
     // The profile mounts every tab at once, and each of four of them carries an
     // FAQ. Emitted per block that was four FAQPage nodes in one document, which
     // is the case a crawler drops outright rather than merging - so the node is
@@ -2851,11 +2859,12 @@ describe("the embedded fragment", () => {
         seen.add(key);
         return true;
       });
-    // Since 2026-11-26 (WEB-044) the profile prints the Overview's FAQ only
-    // (it carried every tab's, 64 questions on the Gibbs hub), at most 10.
+    // Only meaningful while the profile really does carry more than one tab's
+    // worth; a fixture that lost its FAQs would otherwise pass this silently
+    // (every tab's questions are back on the profile, mak 2026-11-28).
     assert.ok(
-      rendered.length >= 3 && rendered.length <= 10,
-      `expected the Overview's questions, got ${rendered.length}`,
+      rendered.length > 8,
+      `expected several tabs of questions, got ${rendered.length}`,
     );
 
     const asked = nodes[0].mainEntity.map((q) => ({

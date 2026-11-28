@@ -1041,6 +1041,11 @@ export interface OpportunityTake {
   kind: "ok" | "up" | "down" | "flat" | "warn";
   claim: string;
   text: string;
+  /**
+   * The production reading only: the one sentence on what the gap means,
+   * without the figures the primary row prints (mak, 2026-11-27).
+   */
+  meaning?: string;
 }
 
 export interface OpportunityModel {
@@ -1083,9 +1088,10 @@ function opportunityModel(m: Model, options: PlayerRenderOptions): OpportunityMo
   // mak's xFP language from the usage report (2026-10-03), the gap never a promise.
   const band = fpoeBand(m);
   const gap = Math.abs(row.fpoePerGame ?? 0);
+  const underMeaning = `His opportunity profile is stronger than his output, running ${one(gap)} points a game below the value of his opportunities: a potential regression signal if the role holds, though the gap does not guarantee improvement.`;
   const read =
     band === "under"
-      ? `${m.last} is averaging ${one(row.xfpPerGame)} expected PPR points a game but producing ${one(row.fpPerGame)}. His opportunity profile is stronger than his output, running ${one(gap)} points a game below the value of his opportunities: a potential regression signal if the role holds, though the gap does not guarantee improvement.`
+      ? `${m.last} is averaging ${one(row.xfpPerGame)} expected PPR points a game but producing ${one(row.fpPerGame)}. ${underMeaning}`
       : band === "over"
         ? `${m.last} is scoring ${signed(row.fpoePerGame!)} points a game over expected, efficiency that may not repeat; his ${one(row.xfpPerGame)} expected points a game is the opportunity underneath it.`
         : `${possessive(m.last)} production is running right at expected (${one(row.fpPerGame)} scored against ${one(row.xfpPerGame)} expected), so this is volume, not a hot streak.`;
@@ -1103,6 +1109,7 @@ function opportunityModel(m: Model, options: PlayerRenderOptions): OpportunityMo
             ? "Production is running above expectation."
             : "Production is running about at expectation.",
       text: read,
+      meaning: band === "under" ? underMeaning : read,
     },
   ];
   // The last three games against the three before (usage.ts trend()).
@@ -1332,6 +1339,8 @@ function driversModel(m: Model): DriversModel | null {
 export interface TriggerItem {
   claim: string;
   evidence: string;
+  /** Read from the next four matchups: the matchup cards already say it. */
+  schedule?: true;
 }
 
 /**
@@ -1369,7 +1378,7 @@ function triggerItems(m: Model, data: PlayerPageData): { up: TriggerItem[]; risk
   // Not for a player who is out or on a reserve list: a soft schedule is no
   // upside to a player not expected to play it (audit WEB-034).
   if (s.soft.length > s.tough.length && !m.injured && !m.reserve) {
-    up.push(b(s.soft.length >= 2 ? "A soft stretch." : "A soft spot.", `${cap(listWords(s.soft.map(withRank)))} ${s.soft.length === 1 ? "is a top-12 matchup" : "are top-12 matchups"} for ${m.pos}s.`));
+    up.push({ ...b(s.soft.length >= 2 ? "A soft stretch." : "A soft spot.", `${cap(listWords(s.soft.map(withRank)))} ${s.soft.length === 1 ? "is a top-12 matchup" : "are top-12 matchups"} for ${m.pos}s.`), schedule: true });
   }
   // The drivers are restated here only when there is no catalyst at all - the
   // card is for changes, not a second copy of the strips above.
@@ -1395,7 +1404,7 @@ function triggerItems(m: Model, data: PlayerPageData): { up: TriggerItem[]; risk
   }
   if (s.tough.length > s.soft.length && !m.reserve) {
     const through = row && n(row.targetShare) && row.targetShare >= 20 ? ` His ${pct(row.targetShare)} target share is the way through them.` : "";
-    risk.push(b(s.tough.length === 1 ? "A tough matchup." : "Tough matchups.", `${cap(listWords(s.tough.map(withRank)))} ${s.tough.length === 1 ? "is" : "are"} among the stingiest defenses against ${m.pos}s.${through}`));
+    risk.push({ ...b(s.tough.length === 1 ? "A tough matchup." : "Tough matchups.", `${cap(listWords(s.tough.map(withRank)))} ${s.tough.length === 1 ? "is" : "are"} among the stingiest defenses against ${m.pos}s.${through}`), schedule: true });
   }
   if (usage?.ts.confirmed && (usage.ts.delta ?? 0) <= -3) {
     risk.push(b("Target share is sliding.", `${pct(mean3(usage.ts)!)} over his last three games, down ${one(Math.abs(usage.ts.delta!))} points on ${baseWords(usage.ts)}.`));
@@ -1452,6 +1461,10 @@ export interface ScheduleCard {
 export interface ScheduleModel {
   cards: ScheduleCard[];
   verdict: string;
+  /** The stretch in a few words, beside the section heading (mak, 2026-11-28). */
+  headline: string;
+  /** The headline's color: the stretch's verdict ("mid" on a reserve list). */
+  headlineKind: "good" | "bad" | "mid";
   playoffs: string;
   title: string;
   lede: string;
@@ -1486,9 +1499,29 @@ function scheduleModel(m: Model): ScheduleModel | null {
         return soft && !tough ? `${word(soft)} favorable, none tough` : tough && !soft ? `${word(tough)} tough, none favorable` : soft || tough ? `${word(soft)} favorable, ${word(tough)} tough` : "none favorable or tough";
       })()}.`
     : "";
+  // The heading's version of the verdict (mak, 2026-11-28): "All four
+  // matchups rank in the top 12 for RBs" beside the title, in place of the
+  // summary line that sat under the cards.
+  const n = s.next.length;
+  const cap = (t: string): string => t.charAt(0).toUpperCase() + t.slice(1);
+  const headline = m.reserve
+    ? verdict
+    : s.verdict === "soft"
+      ? s.soft.length === n
+        ? `${n === 1 ? "The" : n === 2 ? "Both" : "All"} ${n === 1 ? "matchup ranks" : `${word(n)} matchups rank`} in the top 12 for ${m.pos}s`.replace(/^Both two/, "Both")
+        : `${cap(word(s.soft.length))} of the next ${word(n)} rank in the top 12 for ${m.pos}s${s.tough.length ? `, ${word(s.tough.length)} in the bottom 12` : ""}`
+      : s.verdict === "tough"
+        ? s.tough.length === n
+          ? `${n === 1 ? "The" : n === 2 ? "Both" : "All"} ${n === 1 ? "matchup ranks" : `${word(n)} matchups rank`} in the bottom 12 for ${m.pos}s`.replace(/^Both two/, "Both")
+          : `${cap(word(s.tough.length))} of the next ${word(n)} rank in the bottom 12 for ${m.pos}s${s.soft.length ? `, ${word(s.soft.length)} in the top 12` : ""}`
+        : s.soft.length || s.tough.length
+          ? `${cap(word(s.soft.length))} top-12 and ${word(s.tough.length)} bottom-12 ${m.pos} matchup${s.soft.length + s.tough.length === 1 ? "" : "s"} in the next ${word(n)}`
+          : `No top-12 or bottom-12 ${m.pos} matchups in the next ${word(n)}`;
   return {
     cards,
     verdict,
+    headline,
+    headlineKind: m.reserve ? "mid" : s.verdict === "soft" ? "good" : s.verdict === "tough" ? "bad" : "mid",
     playoffs,
     title: `${m.name} upcoming matchups`,
     lede: `His next ${word(s.next.length)} opponents, ranked by ${m.scoring} points allowed to ${m.pos}s this season: 1st allows the most, 32nd the fewest.`,

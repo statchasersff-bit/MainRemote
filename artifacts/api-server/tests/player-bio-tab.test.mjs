@@ -353,26 +353,23 @@ describe("rendered (Brissett)", async () => {
     // "Jacoby Brissett Bio" is the page's H1 now (the hero's heading, the
     // entity brief of 2026-11-03), not a panel H2 repeated under it.
     assert.equal(doc.querySelector("h1")?.textContent.replace(/\s+/g, " ").trim(), "Jacoby Brissett Bio");
-    assert.ok(h2s.includes("Career Timeline") && h2s.includes("Transactions"), h2s.join(" | "));
-    const rail = [...bo.querySelectorAll(".scp-bop-seg-big")].map((b) => b.textContent);
-    // The Arizona stint is the season in progress: its yards grow weekly
-    // (4,018 when this was pinned, 5,085 after Week 8 of 2026), so it is a
-    // floor, not a figure.
-    assert.deepEqual(rail.slice(0, 6), ["400", "6,059", "1,283", "2,608", "224", "826"]);
-    assert.ok(Number(rail[6].replace(/,/g, "")) >= 5085, `the Arizona stint keeps growing: ${rail[6]}`);
-    // Every stop card opens with its crest well; the club's SVG and the
-    // school's crest through the image route (mak, 2026-11-04; the premium
-    // block's cards since 2026-11-05).
-    const wells = [...bo.querySelectorAll(".scp-bop-stops > li .scp-bop-card-head > .scp-bop-card-crest:first-child")];
-    assert.equal(wells.length, bo.querySelectorAll(".scp-bop-stops > li").length, "a crest well on every stop");
-    assert.ok(wells.some((w) => w.querySelector("img[src^='/team-logos/'], img[src*='/team-logos/']")), "a club crest");
-    assert.ok(bo.querySelector(".scp-bop-stops > li.is-college .scp-bop-card-crest img.scp-bop-college"), "the college crest");
+    assert.ok(h2s.includes("Transactions"), h2s.join(" | "));
+    // One card that adapts to the career (mak, 2026-11-28): no Career
+    // Timeline, no stop cards, no sidebar cards; a multi-stint player gets
+    // the NFL Team History rows, oldest first, a return its own row.
+    assert.equal(bo.querySelector(".scp-bop-sec.is-timeline, .scp-bop-tl, .scp-bop-stops, .scp-bop-card-side, .scp-bop-facts"), null);
+    const hist = [...bo.querySelectorAll(".scp-bop-history:not(.is-milestones) .scp-bop-hist-row")];
+    assert.ok(hist.length >= 7, `one row a stint: ${hist.length}`);
+    assert.match(hist[0].textContent, /^2016New England Patriots/);
+    assert.ok(hist.some((r) => /2024, second stint/.test(r.querySelector(".scp-bop-hist-years").textContent)), "the return is its own row");
+    assert.ok(hist.every((r) => r.querySelector(".scp-bop-hist-logo")), "a small logo on every row");
+    assert.equal(hist.filter((r) => /present/.test(r.textContent)).length, 1, "present only on the current stop");
     assert.equal(bo.querySelector(".scp-bo-ev-logo"), null, "the faded watermark is gone");
-    // The lead sentence's career line grows with the season too (15,418 and
-    // 80 when pinned; 16,485 and 86 after Week 8 of 2026): floors, not figures.
-    const career = /In \d+ regular-season games since 2016, he has thrown for ([\d,]+) yards and (\d+) touchdowns/.exec(bo.textContent);
+    // The story's career line (bioStory, 2026-11-28) grows with the season:
+    // 111 games when pinned, a floor, not a figure.
+    const career = /He has appeared in (\d+) regular-season games since 2016\./.exec(bo.textContent);
     assert.ok(career, "the career sentence");
-    assert.ok(Number(career[1].replace(/,/g, "")) >= 16485 && Number(career[2]) >= 86, career[0]);
+    assert.ok(Number(career[1]) >= 111, career[0]);
     // The Redraft Command card opens his weekly start/sit page, and is left
     // out when he has no week ahead (2026-11-26 audit, WEB-017).
     const rcLink = bo.querySelector(".is-rc a");
@@ -384,8 +381,11 @@ describe("rendered (Brissett)", async () => {
     assert.equal(bo.querySelector(".scp-bo-cta"), null, "the inline prompt went with the old sections");
     assert.match(bo.querySelector(".scp-bo-txlog").textContent, /Phillip Dorsett/);
     assert.match(bo.querySelector(".scp-bo-txlog").textContent, /2016 draft/);
-    const quick = Object.fromEntries([...bo.querySelectorAll(".scp-bop-card-side.is-facts dt")].map((dt) => [dt.textContent, dt.nextElementSibling.textContent]));
+    const quick = Object.fromEntries([...bo.querySelectorAll(".scp-bop-details dt")].map((dt) => [dt.textContent, dt.nextElementSibling.textContent]));
     assert.equal(quick["Super Bowl"], "LI (2016 Patriots)");
+    assert.equal(quick.Teams, undefined, "no Teams count");
+    // One row of links across the foot, the start/sit link among them.
+    assert.ok(bo.querySelector(".scp-bop-links a"));
     // No SEO without mak's approval: the Bio spec adds nothing to the JSON-LD.
     assert.doesNotMatch(html, /"@type":\s*"ProfilePage"/);
   });
@@ -393,7 +393,7 @@ describe("rendered (Brissett)", async () => {
   test("undrafted only when the nflverse files agree; a top pick keeps his draft", async () => {
     const quick = async (slug) => {
       const html = await (await fetch(`${server.origin}/player/${slug}/bio/`)).text();
-      const dl = new JSDOM(html).window.document.querySelector(".scp-bop-card-side.is-facts dl");
+      const dl = new JSDOM(html).window.document.querySelector(".scp-bop-details dl");
       return dl ? Object.fromEntries([...dl.querySelectorAll("dt")].map((dt) => [dt.textContent, dt.nextElementSibling.textContent])) : {};
     };
     assert.equal((await quick("austin-ekeler")).Drafted, "Undrafted (2017)");

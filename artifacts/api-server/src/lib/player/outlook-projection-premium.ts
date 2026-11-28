@@ -30,7 +30,7 @@ import { escapeHtml } from "../render";
 import { phoneHeading } from "./phone-heading";
 import type { PlayerRenderOptions } from "../player-render";
 import type { PlayerPageData } from "./player-data";
-import { fitNoteHtml, outlookProjectionModel, type Chip, type OpportunityTake, type OpportunityTile } from "./outlook-tab";
+import { fitNoteHtml, outlookPremiumModel, outlookProjectionModel, type OpportunityTake, type OpportunityTile } from "./outlook-tab";
 import { headArt, headIcon } from "./tab-head";
 
 const e = escapeHtml;
@@ -57,28 +57,6 @@ const ICON = {
   football: svg(`<path d="M5.2 18.8c-2.3-2.3-1.4-8.1 2.6-12.1s9.8-4.9 12.1-2.6 1.4 8.1-2.6 12.1-9.8 4.9-12.1 2.6z"/><path d="M9 15l6-6"/>`),
   goal: svg(`<path d="M4 14l4-4 4 4 4-4 4 4"/><path d="M4 20l4-4 4 4 4-4 4 4"/>`),
 };
-
-/** The glyph a status badge wears: calendar for the schedule, check / alert / warning by color. */
-function badgeIcon(c: Chip): string {
-  if (c.label.toLowerCase().includes("schedule")) return ICON.calendar;
-  if (c.kind === "good") return ICON.checkCircle;
-  if (c.kind === "bad") return ICON.warn;
-  return ICON.alert;
-}
-
-/** The brief's icon per figure: trophy, target, rising columns, target, eye, layers. */
-function tileIcon(label: string): string {
-  const k = label.toLowerCase();
-  if (k.startsWith("ppr")) return ICON.trophy;
-  if (k.startsWith("expected")) return ICON.target;
-  if (k.startsWith("points over")) return ICON.columns;
-  if (k.includes("first-read")) return ICON.eye;
-  if (k.includes("snap")) return ICON.layers;
-  if (k.includes("designed")) return ICON.football;
-  if (k.includes("inside the")) return ICON.goal;
-  if (k.includes("dropbacks") || k.includes("weighted")) return ICON.bars;
-  return ICON.target;
-}
 
 /**
  * The read's sentences with the figures bolded: percentages, decimals,
@@ -116,11 +94,17 @@ function bar(title: string, sub: string, id: string, titleHtml = e(title)): stri
   );
 }
 
+/**
+ * One two-line card (mak, 2026-11-28, the matchup cards' logic): the label
+ * with the figure at the right edge, then the rank or the note. No icon, no
+ * tinted lead card; a signed figure (points over expected) is green when
+ * positive and red when negative.
+ */
 function card(t: OpportunityTile): string {
+  const tone = /^\+/.test(t.value) && !/^\+0(\.0+)?$/.test(t.value) ? " is-up" : /^[-\u2212]/.test(t.value) && !/^[-\u2212]0(\.0+)?$/.test(t.value) ? " is-down" : "";
   return (
     `<div class="scp-olr-kpi${t.lead ? " is-lead" : ""}">` +
-    `<span class="scp-olr-kpi-icon">${tileIcon(t.label)}</span>` +
-    `<dt>${e(t.label)}</dt><dd>${e(t.value)}</dd>` +
+    `<dt>${e(t.label)}</dt><dd class="scp-olr-kpi-v${tone}">${e(t.value)}</dd>` +
     (t.sub ? `<span class="scp-olr-kpi-sub">${e(t.sub)}</span>` : "") +
     `</div>`
   );
@@ -134,12 +118,13 @@ export function renderOutlookProjectionPremium(data: PlayerPageData, options: Pl
   const cap = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
   const list = (items: string[]): string => (items.length <= 1 ? (items[0] ?? "") : `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`);
 
-  /* ---- Section A: the projection */
-  const badges = m.chips.length
-    ? `<div class="scp-olr-tags" role="list" aria-label="Outlook at a glance">` +
-      m.chips.map((c) => `<span class="scp-olr-tag is-${c.kind}" role="listitem"><span class="scp-olr-tag-icon">${badgeIcon(c)}</span>${e(c.label)}</span>`).join("") +
-      `</div>`
-    : "";
+  /* ---- Section A: the projection (mak, 2026-11-27)
+   * One full-width section, no sidebar: the verdict on the left of one row
+   * with his start/sit link on the right (it wraps under the verdict on
+   * phones), the read's observations under it, the supports / threatens
+   * cards when the data has them, then one compact Best fit row. The status
+   * pills (they repeated the verdict) and the Redraft Command promo card
+   * (the link in the verdict row is its one action) are gone. */
   // The injured sentence, when the read carries one, is the last paragraph
   // and wears the alert glyph; every other observation a gold check.
   const obs = m.paragraphs
@@ -148,11 +133,36 @@ export function renderOutlookProjectionPremium(data: PlayerPageData, options: Pl
       return `<li class="scp-olr-ob${injuredRow ? " is-alert" : ""}"><span class="scp-olr-ob-icon">${injuredRow ? ICON.alert : ICON.check}</span><p>${emphasize(p)}</p></li>`;
     })
     .join("");
-  const summary =
-    `<div class="scp-olr-summary">` +
-    (m.headline ? `<p class="scp-olr-thesis"><span class="scp-olr-thesis-rule" aria-hidden="true"></span><span>${e(m.headline)}</span></p>` : "") +
-    `<ul class="scp-olr-obs">${obs}</ul>` +
-    `</div>`;
+  const cta = m.rc
+    ? `<a class="scp-olr-btn is-verdict" href="${e(m.rc.href)}" data-cta="startsit-outlook-projection-premium">${e(m.rc.cta)}<span class="scp-olr-btn-arrow">${ICON.arrow}</span></a>`
+    : "";
+  const verdict =
+    m.headline || cta
+      ? `<div class="scp-olr-verdict">` +
+        (m.headline ? `<p class="scp-olr-thesis"><span class="scp-olr-thesis-rule" aria-hidden="true"></span><span>${e(m.headline)}</span></p>` : "") +
+        cta +
+        `</div>`
+      : "";
+  // What could change his value (More snaps, The red-zone role, an injury
+  // risk) joins the read here when the matchups section prints (mak,
+  // 2026-11-28): it belongs with the outlook, and the matchups section goes
+  // straight from the cards to the playoff schedule. The schedule items stay
+  // out, the cards say them.
+  const pm = outlookPremiumModel(data);
+  const changes = pm?.schedule
+    ? (["up", "risk"] as const)
+        .flatMap((kind) =>
+          pm.triggers[kind]
+            .filter((i) => !i.schedule)
+            .map(
+              (i) =>
+                `<li class="scp-olr-ob is-change is-${kind}${kind === "risk" ? " is-alert" : ""}"><span class="scp-olr-ob-icon">${kind === "up" ? ICON.check : ICON.alert}</span>` +
+                `<p><b>${e(`${i.claim}:`)}</b> ${e(i.evidence)}</p></li>`,
+            ),
+        )
+        .join("")
+    : "";
+  const summary = `<div class="scp-olr-summary">${verdict}<ul class="scp-olr-obs">${obs}${changes}</ul></div>`;
   const factor = (kind: "up" | "risk", title: string, items: string[], empty: string): string =>
     `<div class="scp-olr-factor is-${kind}"><h4 class="scp-olr-factor-h"><span class="scp-olr-factor-icon">${kind === "up" ? ICON.up : ICON.warn}</span>${e(title)}</h4>` +
     `<p>${items.length ? emphasize(`${cap(list(items))}.`) : e(empty)}</p></div>`;
@@ -163,16 +173,8 @@ export function renderOutlookProjectionPremium(data: PlayerPageData, options: Pl
         factor("risk", "What threatens his value", m.threatens, m.threatensEmpty) +
         `</div>`
       : "";
-  const rc = m.rc
-    ? `<div class="scp-olr-rc">` +
-      `<h4 class="scp-olr-rc-h"><span class="scp-olr-rc-icon">${ICON.crosshair}</span>Redraft Command</h4>` +
-      `<span class="scp-olr-rc-rule" aria-hidden="true"></span>` +
-      `<p>${e(m.rc.copy)}</p>` +
-      `<a class="scp-olr-btn" href="${e(m.rc.href)}" data-cta="startsit-outlook-projection-premium">${e(m.rc.cta)}<span class="scp-olr-btn-arrow">${ICON.arrow}</span></a>` +
-      `</div>`
-    : "";
   const fits = m.fits
-    ? `<div class="scp-olr-fit"><h4 class="scp-olr-fit-h"><span class="scp-olr-fit-icon">${ICON.layers}</span>Best fit</h4>` +
+    ? `<div class="scp-olr-fit is-row"><h4 class="scp-olr-fit-h"><span class="scp-olr-fit-icon">${ICON.layers}</span>Best fit</h4>` +
       `<div class="scp-olr-fit-rows" role="list" aria-label="Best fit by league type">` +
       m.fits.chips
         .map((chip, i) => `<div class="scp-olr-fit-row" role="listitem"><span class="scp-olr-fit-league">${e(m.fits!.leagues[i]!)}</span><span class="scp-olr-pill is-${chip.kind}">${e(chip.label)}</span></div>`)
@@ -184,38 +186,56 @@ export function renderOutlookProjectionPremium(data: PlayerPageData, options: Pl
     `<section class="scp-olr-sec is-proj" aria-labelledby="scp-ol-take-h">` +
     // No "Through Week N" line under the heading (mak, 2026-11-06).
     bar(m.heading, "", "scp-ol-take-h", phoneHeading(m.heading, m.name, { word: "Rest-of-Season", short: "ROS" })) +
-    `<div class="scp-olr-body"><div class="scp-olr-layout">` +
-    `<div class="scp-olr-main">${badges}${summary}${factors}</div>` +
-    `<aside class="scp-olr-side" aria-label="${e(`${m.last} in Redraft Command`)}">${rc}${fits}</aside>` +
+    `<div class="scp-olr-body"><div class="scp-olr-layout is-one">` +
+    `<div class="scp-olr-main">${summary}${factors}${fits}</div>` +
     `</div></div></section>`;
 
-  /* ---- Section B: opportunity vs. production */
+  /* ---- Section B: opportunity vs. production (mak, 2026-11-27)
+   * Actual, expected and the difference as the primary row; the volume
+   * figures as one secondary row under it; the production callout is one
+   * sentence on what the gap means. The trend readings, when the data has
+   * them, keep their rows. */
   let opportunity = "";
   const o = m.opportunity;
   if (o) {
     const prod = o.tiles.slice(0, 3);
     const opp = o.tiles.slice(3);
-    const group = (kind: "prod" | "opp", label: string, tiles: OpportunityTile[]): string =>
-      tiles.length
-        ? `<div class="scp-olr-group is-${kind}"><span class="scp-olr-group-label">${e(label)}</span><dl class="scp-olr-kpis" aria-label="${e(label)}">${tiles.map(card).join("")}</dl></div>`
-        : "";
-    const reads =
-      `<div class="scp-olr-reads" role="list">` +
-      o.takes
-        .map(
-          (t) =>
-            `<div class="scp-olr-read is-${t.kind}" role="listitem"><span class="scp-olr-read-icon">${TAKE_ICON[t.kind]}</span>` +
-            `<p><strong class="scp-olr-read-claim">${e(t.claim)}</strong><span class="scp-olr-read-text">${emphasize(t.text)}</span></p></div>`,
-        )
-        .join("") +
-      `</div>`;
+    const primary = prod.length ? `<dl class="scp-olr-kpis is-primary" aria-label="Production Efficiency">${prod.map(card).join("")}</dl>` : "";
+    const secondary = opp.length
+      ? `<dl class="scp-olr-vol" aria-label="${e(m.pos === "QB" ? "Opportunity Volume" : "Opportunity Share")}">` +
+        opp
+          .map(
+            (t) =>
+              `<div class="scp-olr-vol-item"><dd>${e(t.value)}</dd><dt>${e(t.label.charAt(0).toLowerCase() + t.label.slice(1))}</dt>` +
+              (t.sub ? `<span class="scp-olr-vol-sub">${e(t.sub)}</span>` : "") +
+              `</div>`,
+          )
+          .join("") +
+        `</dl>`
+      : "";
+    const [gapTake, ...trend] = o.takes;
+    // The production reading's one sentence on what the gap means; the
+    // sentence before it restated the two figures in the row above.
+    const gap = gapTake ? (gapTake.meaning ?? gapTake.text) : "";
+    const reads = trend.length
+      ? `<div class="scp-olr-reads" role="list">` +
+        trend
+          .map(
+            (t) =>
+              `<div class="scp-olr-read is-${t.kind}" role="listitem"><span class="scp-olr-read-icon">${TAKE_ICON[t.kind]}</span>` +
+              `<p><strong class="scp-olr-read-claim">${e(t.claim)}</strong><span class="scp-olr-read-text">${emphasize(t.text)}</span></p></div>`,
+          )
+          .join("") +
+        `</div>`
+      : "";
     const link = o.link ? `<p class="scp-olr-more"><a href="${e(o.link.href)}">${e(o.link.text)}<span class="scp-olr-more-arrow">${ICON.arrow}</span></a></p>` : "";
     opportunity =
       `<section class="scp-olr-sec is-opp" aria-labelledby="scp-ol-opp-h">` +
       bar("Opportunity vs. Production", "", "scp-ol-opp-h") +
       `<div class="scp-olr-body">` +
       `<p class="scp-olr-lede">${e(o.lede)}</p>` +
-      `<div class="scp-olr-groups">${group("prod", "Production Efficiency", prod)}${group("opp", m.pos === "QB" ? "Opportunity Volume" : "Opportunity Share", opp)}</div>` +
+      `<div class="scp-olr-groups is-stacked">${primary}${secondary}</div>` +
+      (gap ? `<p class="scp-olr-gap is-${gapTake!.kind}">${emphasize(gap)}</p>` : "") +
       reads +
       link +
       `</div></section>`;

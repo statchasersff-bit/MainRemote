@@ -272,6 +272,13 @@ export interface FeedItem {
   takeaway: string | null;
   /** The matchup game page, which carries the box score; recaps only. */
   boxHref: string | null;
+  /**
+   * A recap's most relevant stats, short (mak, 2026-11-28): "57 rush yds",
+   * "1 rush TD", "4 catches for 31 yds". Empty for other items.
+   */
+  keyStats: string[];
+  /** Whether the recap's headline already says the fantasy points. */
+  pointsInHeadline: boolean;
 }
 
 /**
@@ -332,7 +339,7 @@ export function recapImpact(pos: string, finish: number | null | undefined, pts:
 }
 
 /** Compact stat rows: "38/52 · 280 YDS · 2 TD · 0 INT", "4 CAR · 4 YDS · 1 TD". */
-function statLines(pos: string, e: GameLogEntry): string[] {
+export function statLines(pos: string, e: GameLogEntry): string[] {
   const s = e.stats;
   const pass = `${num(s.pass_cmp)}/${num(s.pass_att)} · ${num(s.pass_yd)} YDS · ${num(s.pass_td)} TD · ${num(s.pass_int)} INT`;
   const rush = `${num(s.rush_att)} CAR · ${num(s.rush_yd)} YDS${num(s.rush_td) ? ` · ${num(s.rush_td)} TD` : ""}`;
@@ -343,6 +350,35 @@ function statLines(pos: string, e: GameLogEntry): string[] {
   if (pos === "RB") return num(s.rec_tgt) ? [rush, rec] : [rush];
   return num(s.rush_att) ? [rec, rush] : [rec];
 }
+
+/** The recap's key stats, most relevant first (mak, 2026-11-28). */
+export function keyStats(pos: string, e: GameLogEntry): string[] {
+  const s = e.stats;
+  const out: string[] = [];
+  const catches = (n: number): string => `${n} ${n === 1 ? "catch" : "catches"} for ${num(s.rec_yd)} yds`;
+  if (pos === "K") return [`${num(s.fgm)}/${num(s.fga)} FG`, `${num(s.xpm)}/${num(s.xpa)} XP`];
+  if (pos === "QB") {
+    out.push(`${num(s.pass_yd)} pass yds`, `${num(s.pass_td)} pass TD`);
+    if (num(s.pass_int)) out.push(`${num(s.pass_int)} INT`);
+    if (num(s.rush_td)) out.push(`${num(s.rush_td)} rush TD`);
+    else if (num(s.rush_yd) >= 20) out.push(`${num(s.rush_yd)} rush yds`);
+    return out;
+  }
+  if (pos === "RB") {
+    out.push(`${num(s.rush_yd)} rush yds`);
+    if (num(s.rush_td)) out.push(`${num(s.rush_td)} rush TD`);
+    if (num(s.rec)) out.push(catches(num(s.rec)));
+    if (num(s.rec_td)) out.push(`${num(s.rec_td)} rec TD`);
+    return out;
+  }
+  out.push(catches(num(s.rec)));
+  if (num(s.rec_td)) out.push(`${num(s.rec_td)} TD`);
+  if (num(s.rush_td)) out.push(`${num(s.rush_td)} rush TD`);
+  else if (num(s.rush_yd) >= 15) out.push(`${num(s.rush_yd)} rush yds`);
+  return out;
+}
+
+const ORDINAL_WORD = ["", "first", "second", "third"];
 
 /** The workload a week is measured by: pass attempts, touches, or targets. */
 function volume(pos: string, e: GameLogEntry): { n: number; noun: string } {
@@ -440,11 +476,19 @@ export function gameRecap(ctx: NewsContext, e: GameLogEntry, g: ScheduleGame): F
   const op = g.result?.opponentScore ?? e.score?.opp ?? null;
   const score = tm !== null && op !== null ? `${Math.max(tm, op)}–${Math.min(tm, op)} ` : "";
 
+  // Specific headlines (mak, 2026-11-28): the points, or the exact rank
+  // spelled out, rather than "delivers RB1 week" on every top-12 finish.
   let headline: string;
+  let pointsInHeadline = false;
   if (fin && fin <= 5 && pts >= best) headline = `${ctx.last} posts season high in ${word} ${where(g)}`;
-  else if (fin && fin <= 12) headline = `${ctx.last} delivers ${ctx.pos}1 week ${where(g)}`;
-  else if (fin && fin >= bustLine(ctx.pos)) headline = `${ctx.last} struggles ${where(g)}`;
-  else headline = `${ctx.last} ${avg !== null && pts >= avg - 0.5 ? "solid" : "quiet"} in ${word} ${where(g)}`;
+  else if (fin && fin <= 3) headline = `${ctx.last} finishes ${ORDINAL_WORD[fin]} among ${ctx.pos}s in ${word} ${where(g)}`;
+  else if (fin && fin >= bustLine(ctx.pos)) {
+    headline = `${ctx.last} held to ${one(pts)} fantasy points ${where(g)}`;
+    pointsInHeadline = true;
+  } else {
+    headline = `${ctx.last} scores ${one(pts)} fantasy points in ${word} ${where(g)}`;
+    pointsInHeadline = true;
+  }
 
   let line: string;
   if (ctx.pos === "QB") {
@@ -508,6 +552,8 @@ export function gameRecap(ctx: NewsContext, e: GameLogEntry, g: ScheduleGame): F
     avgDelta: avg !== null && played(ctx).length > 1 ? pts - avg : null,
     takeaway: recapTakeaway(ctx, e, g, outcome, others),
     boxHref: ctx.boxHref?.(g) ?? null,
+    keyStats: keyStats(ctx.pos, e),
+    pointsInHeadline,
     panel: {
       caption: `Week ${e.week} fantasy result`,
       big: one(pts),
@@ -615,8 +661,10 @@ export function buildFeed(ctx: NewsContext, news: NewsItem[]): { items: FeedItem
       ms,
       hasTime: true,
       // The wire prefixes its own player's name ("Jacoby Brissett: Gets in
-      // some work"); on his page that is the page's own subject.
-      headline: stripName(item.title, ctx.name),
+      // some work"); on his page that is the page's own subject, so the
+      // surname leads a verb or status ("Coleman works with starters in
+      // warmups", mak 2026-11-28), and anything else reads as it came.
+      headline: subjectHeadline(item.title, ctx.name, ctx.last),
       summary: (item.summary ?? "").trim(),
       take,
       impact,
@@ -632,6 +680,8 @@ export function buildFeed(ctx: NewsContext, news: NewsItem[]): { items: FeedItem
       avgDelta: null,
       takeaway: take,
       boxHref: null,
+      keyStats: [],
+      pointsInHeadline: false,
     });
   }
 
@@ -750,6 +800,31 @@ export function sentenceCase(title: string, proper: Proper): string {
 export function stripName(title: string, name: string): string {
   const m = /^([^:]{3,40}):\s+(.+)$/.exec(title);
   return m && searchKey(m[1]) === searchKey(name) ? m[2]! : title;
+}
+
+/**
+ * Words a wire headline opens with after "Name:" that read as his action or
+ * status, so "Coleman" can lead them. A word ending in -ed or -ing counts
+ * too; anything else (a club, another player) is left alone.
+ */
+const SUBJECT_WORDS = new Set(
+  (
+    "works logs practices returns remains signs scores leads gets sees handles posts records rushes catches hauls racks totals tallies " +
+    "finds draws takes makes plays starts exits misses sits suffers lands heads moves clears joins earns puts turns steps shines " +
+    "struggles fails limps nabs grabs secures reverts agrees avoids undergoes visits expects continues opens gains loses runs " +
+    "throws tosses passes picks holds keeps stays breaks ties sets hits falls rejoins resumes participates leaves dominates " +
+    "out questionable doubtful probable limited inactive active not set back expected listed absent healthy available unavailable " +
+    "unable able still likely unlikely slated due will won't could may might should can't officially"
+  ).split(" "),
+);
+
+/** The wire's headline with his name stripped, his surname leading a verb or status. */
+export function subjectHeadline(title: string, name: string, last: string): string {
+  const rest = stripName(title, name);
+  if (rest === title) return title;
+  const first = (/^[A-Za-z']+/.exec(rest)?.[0] ?? "").toLowerCase();
+  const verb = SUBJECT_WORDS.has(first) || (first.length > 4 && /(ed|ing)$/.test(first));
+  return verb ? `${last} ${rest.charAt(0).toLowerCase()}${rest.slice(1)}` : rest;
 }
 
 /** Matching the archive's player tag, as the player's own news does. */

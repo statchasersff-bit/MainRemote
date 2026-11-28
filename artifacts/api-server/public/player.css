@@ -16273,51 +16273,74 @@ button.scp-search-opt {
   line-height: 1.55;
 }
 
-.scp .scp-ox .scp-ox-eff-list {
+/* The efficiency table (mak, 2026-11-28): header row, 26-28px metric rows,
+   a short bar right before each rank so the four bars start at one x, the
+   qualification note behind a closed disclosure. About 160px for four rows. */
+.scp .scp-ox .scp-ox-eff-t {
+  --scp-eff-bar: 72px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  column-gap: 16px;
   margin: 0;
   padding: 0;
-  list-style: none;
 }
 
+.scp .scp-ox .scp-ox-eff-hd,
 .scp .scp-ox .scp-ox-eff {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  grid-template-areas:
-    "l v"
-    "bar p";
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
   align-items: center;
-  gap: 3px 12px;
   margin: 0;
-  padding: 8px 0;
+  padding: 0;
+}
+
+.scp .scp-ox .scp-ox-eff-hd > span {
+  padding: 0 0 6px;
+  color: var(--scp-ph-muted);
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+
+.scp .scp-ox .scp-ox-eff-hd > span:nth-child(2) { text-align: right; }
+
+.scp .scp-ox .scp-ox-eff {
+  min-height: 28px;
   border-top: 1px solid #edf0f4;
 }
 
-.scp .scp-ox .scp-ox-eff:first-child {
-  border-top: 0;
-  padding-top: 0;
-}
-
 .scp .scp-ox .scp-ox-eff-l {
-  grid-area: l;
+  min-width: 0;
   color: var(--scp-ph-ink-2);
   font-size: 13.5px;
   font-weight: 600;
+  line-height: 1.25;
 }
 
 .scp .scp-ox .scp-ox-eff-v {
-  grid-area: v;
   color: var(--tp-ink, var(--scp-ph-ink));
   font-family: var(--scp-ph-sans);
   font-size: 16px;
   font-weight: 800;
+  line-height: 1.25;
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
+.scp .scp-ox .scp-ox-eff-pc {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .scp .scp-ox .scp-ox-eff-bar {
-  grid-area: bar;
   position: relative;
   display: block;
+  flex: 0 0 var(--scp-eff-bar);
+  width: var(--scp-eff-bar);
   height: 5px;
   border-radius: 3px;
   background: #edf0f4;
@@ -16346,12 +16369,12 @@ button.scp-search-opt {
 .scp .scp-ox .scp-ox-eff-bar i.is-bad { background: var(--scp-ph-bad); }
 
 .scp .scp-ox .scp-ox-eff-p {
-  grid-area: p;
-  color: var(--scp-ph-muted);
-  font-size: 11.5px;
-  font-weight: 600;
-  text-align: right;
+  min-width: 3.2em;
+  color: var(--scp-ph-ink-2);
+  font-size: 12.5px;
+  font-weight: 700;
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
 .scp .scp-ox .scp-ox-eff-w {
@@ -16360,6 +16383,56 @@ button.scp-search-opt {
   height: 1px;
   overflow: hidden;
   clip: rect(0 0 0 0);
+}
+
+.scp .scp-ox .scp-ox-eff-how {
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid #edf0f4;
+}
+
+.scp .scp-ox .scp-ox-eff-how > summary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 0 0;
+  color: var(--scp-ph-muted);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.3;
+  cursor: pointer;
+  list-style: none;
+}
+
+.scp .scp-ox .scp-ox-eff-how > summary::-webkit-details-marker { display: none; }
+
+.scp .scp-ox .scp-ox-eff-how > summary::before {
+  content: "";
+  width: 0;
+  height: 0;
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  border-left: 5px solid currentColor;
+  transition: transform 0.15s;
+}
+
+.scp .scp-ox .scp-ox-eff-how[open] > summary::before { transform: rotate(90deg); }
+
+.scp .scp-ox .scp-ox-eff-how > summary:hover { color: var(--scp-ph-ink-2); }
+
+.scp .scp-ox .scp-ox-eff-how .scp-ow-note { margin-top: 6px; }
+
+/* Phones: stacked under the outlook (.scp-ox-read goes one column at 820px);
+   the bars shorten so the metric column keeps its room. */
+@media (max-width: 560px) {
+  .scp .scp-ox .scp-ox-eff-t {
+    --scp-eff-bar: 44px;
+    column-gap: 10px;
+  }
+}
+
+@media (max-width: 420px) {
+  .scp .scp-ox .scp-ox-eff-t { --scp-eff-bar: 32px; }
 }
 
 /* ---- 4. news: one compact row each ---- */
@@ -20102,6 +20175,244 @@ button.scp-search-opt {
   }
 }
 
+/* ---- the featured report and the dated list (mak, 2026-11-27): one
+   featured report with a modest headshot beside it at every width, then
+   one chronological list under day headings; rows are a meta line, the
+   linked headline and an optional summary between thin dividers. No card
+   borders, no image slot, no repeated "Read report". */
+.scp .scp-nwp-feed {
+  gap: 12px;
+}
+
+.scp.scp .scp-nwp-lead {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+  margin: 0;
+  padding: 16px 18px;
+  border: 1px solid var(--nwp-border);
+  border-left: 3px solid var(--nwp-team, var(--nwp-gold));
+  border-radius: 12px;
+  background: #fff;
+}
+
+.scp.scp .scp-nwp-lead-face {
+  display: block;
+  width: 88px;
+  height: 88px;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--nwp-surface-blue);
+}
+
+.scp.scp .scp-nwp-lead-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+}
+
+.scp.scp .scp-nwp-lead-main {
+  min-width: 0;
+}
+
+.scp.scp .scp-nwp-lead-day {
+  margin: 0 0 2px !important;
+  padding: 0 !important;
+  color: var(--nwp-muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.scp.scp .scp-nwp-lead .scp-nwp-item-h {
+  font-size: 1.2rem !important;
+  line-height: 1.28 !important;
+}
+
+.scp.scp .scp-nwp-lead .scp-nwp-item-sum {
+  display: block;
+  -webkit-line-clamp: none;
+  color: #2c405a;
+  font-size: 0.92rem;
+}
+
+.scp.scp .scp-nwp-days,
+.scp.scp .scp-nwp-list {
+  margin: 0 !important;
+  padding: 0 !important;
+  list-style: none !important;
+}
+
+.scp.scp .scp-nwp-day {
+  margin: 0 !important;
+  padding: 0 !important;
+  list-style: none !important;
+}
+
+.scp.scp .scp-nwp-day[hidden],
+.scp.scp .scp-nwp-item[hidden] {
+  display: none !important;
+}
+
+.scp.scp .scp-nwp-day + .scp-nwp-day {
+  margin-top: 14px !important;
+}
+
+.scp.scp h3.scp-nwp-date {
+  margin: 0 !important;
+  padding: 0 0 6px !important;
+  border-bottom: 2px solid var(--nwp-gold);
+  color: var(--tp-ink, var(--nwp-text));
+  font-size: 0.82rem !important;
+  font-weight: 800 !important;
+  line-height: 1.2 !important;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.scp.scp .scp-nwp-item {
+  margin: 0 !important;
+  padding: 10px 0 !important;
+  list-style: none !important;
+  border-bottom: 1px solid var(--nwp-border-light);
+}
+
+.scp.scp .scp-nwp-item:last-child {
+  border-bottom: 0;
+}
+
+.scp.scp .scp-nwp-item-body {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.scp.scp .scp-nwp-item-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  margin: 0 !important;
+  padding: 0 !important;
+  color: var(--nwp-muted);
+  font-size: 0.74rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.scp.scp .scp-nwp-item-meta a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.scp.scp .scp-nwp-item-meta a:hover {
+  text-decoration: underline;
+}
+
+.scp.scp .scp-nwp-sep {
+  white-space: pre;
+}
+
+.scp.scp .scp-nwp-item-cat {
+  color: var(--tp-ink, var(--nwp-navy-900));
+  font-weight: 800;
+}
+
+.scp.scp .scp-nwp-item-cat.is-injury {
+  color: var(--nwp-red);
+}
+
+.scp.scp .scp-nwp-item-score {
+  color: var(--tp-ink, var(--nwp-navy-900));
+  font-weight: 700;
+}
+
+.scp.scp :is(h3, h4).scp-nwp-item-h {
+  margin: 0 !important;
+  padding: 0 !important;
+  color: var(--tp-ink, var(--nwp-text));
+  font-family: var(--sc-font);
+  font-size: 0.98rem !important;
+  font-weight: 750 !important;
+  line-height: 1.32 !important;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.scp.scp .scp-nwp-item-h a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.scp.scp .scp-nwp-item-h a:hover,
+.scp.scp .scp-nwp-item-h a:focus-visible {
+  color: var(--nwp-blue);
+  text-decoration: underline;
+}
+
+.scp.scp .scp-nwp-item-sum {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  margin: 0 !important;
+  padding: 0 !important;
+  color: #3e5571;
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+
+.scp.scp .scp-nwp-item-res {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  margin: 1px 0 0 !important;
+  padding: 0 !important;
+  font-size: 0.78rem;
+}
+
+.scp.scp .scp-nwp-item-res .scp-nwp-stats {
+  margin: 0;
+  color: var(--nwp-muted);
+  font-size: 0.78rem;
+}
+
+.scp.scp .scp-nwp-box {
+  color: var(--nwp-blue);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.scp.scp .scp-nwp-box:hover {
+  text-decoration: underline;
+}
+
+.scp.scp .scp-nwp-fold > .scp-nwp-days {
+  margin-top: 14px !important;
+}
+
+/* Phones: the headshot stays beside the text, smaller. */
+@media (max-width: 560px) {
+  .scp.scp .scp-nwp-lead {
+    grid-template-columns: 64px minmax(0, 1fr);
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .scp.scp .scp-nwp-lead-face {
+    width: 64px;
+    height: 64px;
+  }
+
+  .scp.scp .scp-nwp-lead .scp-nwp-item-h {
+    font-size: 1.05rem !important;
+  }
+}
+
 /* Phones (the team tab's phone pass): no frame around the banner and
    stories, the grid's stories as rows with a thumbnail, the rail's navy
    heads as plain headings. */
@@ -20116,65 +20427,6 @@ button.scp-search-opt {
 
   .scp.scp.scp .scp-nwp-frame-body {
     padding: 0 !important;
-  }
-
-  .scp.scp .scp-nwp-grid {
-    grid-template-columns: minmax(0, 1fr) !important;
-    gap: 0 !important;
-  }
-
-  .scp.scp .scp-nwp-card:not(.is-featured) {
-    display: grid !important;
-    grid-template-columns: 104px minmax(0, 1fr) !important;
-    gap: 12px !important;
-    align-items: start;
-    margin: 0 !important;
-    padding: 12px 0 !important;
-    border: 0 !important;
-    border-top: 1px solid #e6e9ee !important;
-    border-radius: 0 !important;
-    background: none !important;
-    box-shadow: none !important;
-  }
-
-  .scp.scp .scp-nwp-card:not(.is-featured)[hidden] {
-    display: none !important;
-  }
-
-  .scp.scp .scp-nwp-card:not(.is-featured) .scp-nwp-well {
-    width: 104px !important;
-    height: 70px !important;
-    aspect-ratio: auto !important;
-    border-radius: 6px !important;
-  }
-
-  .scp.scp .scp-nwp-card:not(.is-featured) :is(.scp-nwp-ribbon, .scp-nwp-corner, .scp-nwp-cta .scp-nwp-more:not(.is-box)) {
-    display: none !important;
-  }
-
-  .scp.scp .scp-nwp-card:not(.is-featured) .scp-nwp-body {
-    padding: 0 !important;
-  }
-
-  .scp.scp .scp-nwp-card:not(.is-featured) .scp-nwp-title {
-    margin: 2px 0 0 !important;
-    font-size: 15px !important;
-    line-height: 1.3 !important;
-  }
-
-  .scp.scp .scp-nwp-card.is-featured {
-    border: 0 !important;
-    border-radius: 0 !important;
-    box-shadow: none !important;
-    background: none !important;
-  }
-
-  .scp.scp .scp-nwp-card.is-featured .scp-nwp-well {
-    border-radius: 8px !important;
-  }
-
-  .scp.scp .scp-nwp-card.is-featured .scp-nwp-body {
-    padding: 12px 0 0 !important;
   }
 
   .scp.scp .scp-nwp-rail-card {
@@ -22787,4 +23039,2320 @@ button.scp-search-opt {
 .scp button.scp-glp-yr-opt {
   width: 100%;
   text-align: left;
+}
+
+/* ======================================================================
+ * Section containers and titles in the team pages' design (mak,
+ * 2026-11-27: "redesign the player pages section containers/titles like
+ * how we did them in the team pages"). The values are team.css's
+ * "Section heads above 560px" and its Stats cards (2026-11-21):
+ *
+ *   - every section below a tab's banner is one card: white, a #d3dce8
+ *     hairline, 16px radius, the soft two-layer shadow (no gradient
+ *     surface, no per-tab 14/18px radii);
+ *   - its head: a bare 24px icon in the team accent, the 1.15rem/800 ink
+ *     title, any dek BESIDE the title in muted 0.74rem text behind a
+ *     hairline divider, controls at the row's right end, a 2px team-gold
+ *     rule under the row, inset 12px 16px 4px;
+ *   - the FAQ is the team's "Common Questions" card: the same light head
+ *     (the "?" icon faq-engine.ts already prints) over the questions.
+ *
+ * Tab banners (.scp-up-head) and the sections they open are page headers
+ * and stay as they are. Phones (560px and under) keep their own blocks.
+ * Last in the file on purpose: .scp x7 settles against the x6 blocks above.
+ * ==================================================================== */
+@media (min-width: 561px) {
+  /* ---- the cards */
+  .scp.scp.scp.scp.scp.scp.scp :is(
+      .scp-ovp-sec:not(:has(.scp-up-head)),
+      .scp-stp-sec:not(:has(.scp-up-head)),
+      .scp-olr-sec:not(:has(.scp-up-head)),
+      .scp-inp-sec:not(:has(.scp-up-head)),
+      .scp-cp,
+      .scp-glp-finishes,
+      .scp-bkp-sec,
+      .scp-olp-sec,
+      .scp-bop-sec,
+      .scp-ox-bgc,
+      .scp-pr,
+      .scp-tab-faq
+    ) {
+    border: 1px solid var(--tp-c-d3dce8, #d3dce8) !important;
+    border-radius: 16px !important;
+    background: #fff !important;
+    box-shadow: 0 2px 4px rgba(13, 35, 67, 0.035), 0 8px 18px rgba(13, 35, 67, 0.06) !important;
+  }
+
+  /* ---- the heads: one row, the rule under it */
+  .scp.scp.scp.scp.scp.scp.scp :is(
+      .scp-ovp-bar:not(.scp-up-head),
+      .scp-stp-bar:not(.scp-up-head),
+      .scp-cp-bar,
+      .scp-glp-finishes > .scp-glp-bar,
+      .scp-bkp-sec > .scp-bkp-hero,
+      .scp-inp-bar,
+      .scp-olr-bar:not(.scp-up-head),
+      .scp-olp-bar,
+      .scp-bop-bar,
+      .scp-pr-hero,
+      .scp-ox-bgc-head
+    ) {
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    gap: 9px !important;
+    margin: 12px 16px 4px !important;
+    padding: 0 0 8px !important;
+    border-bottom: 2px solid var(--tp-c-d4af37, #d4af37) !important;
+  }
+
+  .scp.scp.scp.scp.scp.scp.scp :is(
+      .scp-ovp-bar:not(.scp-up-head),
+      .scp-stp-bar:not(.scp-up-head),
+      .scp-cp-bar,
+      .scp-glp-finishes > .scp-glp-bar,
+      .scp-bkp-sec > .scp-bkp-hero,
+      .scp-inp-bar,
+      .scp-olr-bar:not(.scp-up-head),
+      .scp-olp-bar,
+      .scp-bop-bar,
+      .scp-pr-hero,
+      .scp-ox-bgc-head
+    )::after {
+    content: none !important;
+    display: none !important;
+  }
+
+  /* ---- the icon: bare, 24px */
+  .scp.scp.scp.scp.scp.scp.scp :is(.scp-ovp-bar-icon, .scp-stp-bar-icon, .scp-cp-bar-icon, .scp-glp-ico, .scp-bkp-ico, .scp-inp-bar-icon, .scp-olr-bar-icon, .scp-olp-bar-icon, .scp-bop-bar-icon, .scp-pr-ico, .scp-ox-bgc-icon):not(.scp-up-head *) {
+    width: 24px !important;
+    height: 24px !important;
+  }
+
+  .scp.scp.scp.scp.scp.scp.scp :is(.scp-ovp-bar-icon, .scp-stp-bar-icon, .scp-cp-bar-icon, .scp-glp-ico, .scp-bkp-ico, .scp-inp-bar-icon, .scp-olr-bar-icon, .scp-olp-bar-icon, .scp-bop-bar-icon, .scp-pr-ico, .scp-ox-bgc-icon):not(.scp-up-head *) svg {
+    width: 22px !important;
+    height: 22px !important;
+  }
+
+  /* ---- the title: 1.15rem, it keeps its width and the dek takes the rest */
+  .scp.scp.scp.scp.scp.scp.scp :is(.scp-ovp-bar-title, .scp-stp-bar-title, .scp-cp-bar-title, .scp-glp-bar-t, .scp-bkp-title, .scp-inp-bar-title, .scp-olr-bar-title, .scp-olp-bar-title, .scp-bop-bar-title, .scp-pr-title, .scp-ox-bgc-h):not(.scp-up-head *) {
+    flex: 0 1 auto !important;
+    font-size: 1.15rem !important;
+    line-height: 1.2 !important;
+  }
+
+  /* ---- the dek beside the title, behind a hairline divider */
+  .scp.scp.scp.scp.scp.scp.scp :is(
+      .scp-ovp-bar:not(.scp-up-head),
+      .scp-stp-bar:not(.scp-up-head),
+      .scp-cp-bar,
+      .scp-glp-finishes > .scp-glp-bar,
+      .scp-bkp-sec > .scp-bkp-hero,
+      .scp-inp-bar,
+      .scp-olr-bar:not(.scp-up-head),
+      .scp-olp-bar,
+      .scp-bop-bar,
+      .scp-pr-hero,
+      .scp-ox-bgc-head
+    ) :is(.scp-stp-bar-sub, .scp-cp-bar-sub, .scp-glp-bar-sum, .scp-bkp-sub, .scp-inp-bar-note, .scp-olr-bar-sub, .scp-olp-bar-sub, .scp-pr-sub, .scp-up-dek) {
+    order: 0 !important;
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 0 0 12px !important;
+    border-left: 1px solid var(--tp-c-dfe5ee, #dfe5ee) !important;
+    color: var(--tp-muted, #5b6b80) !important;
+    font-size: 0.74rem !important;
+    line-height: 1.55 !important;
+    text-align: left !important;
+  }
+
+  /* ---- the FAQ: the team's Common Questions card */
+  .scp.scp.scp.scp.scp.scp.scp .scp-tab-faq {
+    padding: 0 18px 8px !important;
+  }
+
+  .scp.scp.scp.scp.scp.scp.scp .scp-tab-faq > .scp-ox-h2 {
+    display: flex !important;
+    align-items: center !important;
+    gap: 9px !important;
+    margin: 16px 0 0 !important;
+    padding: 0 0 8px !important;
+    border-bottom: 2px solid var(--tp-c-d4af37, #d4af37) !important;
+    background: none !important;
+    color: var(--tp-ink, #0b2345) !important;
+    font-size: 1.15rem !important;
+    font-weight: 800 !important;
+    line-height: 1.2 !important;
+    letter-spacing: 0 !important;
+  }
+
+  .scp.scp.scp.scp.scp.scp.scp .scp-tab-faq > .scp-ox-h2::before,
+  .scp.scp.scp.scp.scp.scp.scp .scp-tab-faq > .scp-ox-h2::after {
+    content: none !important;
+    display: none !important;
+  }
+
+  .scp.scp.scp.scp.scp.scp.scp .scp-tab-faq > .scp-ox-h2 > .scp-faq-icon {
+    display: inline-flex !important;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    color: var(--tp-c-f0c13b, #f0c13b);
+  }
+
+  .scp.scp.scp.scp.scp.scp.scp .scp-tab-faq > .scp-ox-h2 > .scp-faq-icon svg {
+    display: block;
+    width: 22px;
+    height: 22px;
+  }
+
+  /* The head's rule stands in for the first question's hairline. */
+  .scp.scp.scp.scp.scp.scp.scp .scp-tab-faq .scp-ox-faq details:first-child {
+    border-top: 0 !important;
+  }
+
+  .scp.scp.scp.scp.scp.scp.scp .scp-tab-faq .scp-ox-faq details:last-child {
+    border-bottom: 0 !important;
+  }
+}
+
+/* ======================================================================
+ * Panel titles inside a section in the team pages' design (mak,
+ * 2026-11-27, after the section cards above: "yes" to the smaller titles).
+ * The values are team.css's Stats groups (.sct-sp-group / -group-title):
+ * the title in ink at 0.92rem/800, sentence or Title Case as written, a
+ * 2px team-gold rule under it; the neutral panels around them are the
+ * flat group panel (white, #e1e9f3 hairline, 10px radius, no shadow).
+ * Item names (game cards, headlines, injury events, Bio stop cards), the
+ * StatChasers Analysis strip and the Redraft Command promo cards keep
+ * their design, as the team standard leaves item names bare.
+ * Tinted panels (What supports / threatens his value, Upside) keep their
+ * tint; only the title changes. Above 560px only.
+ * ==================================================================== */
+@media (min-width: 561px) {
+  /* ---- the panels */
+  .scp.scp.scp.scp.scp.scp.scp :is(
+      .scp-stp-card,
+      .scp-cp-read,
+      .scp-cp-highs,
+      .scp-ow-next,
+      .scp-olr-fit,
+      .scp-inp-plan-card
+    ) {
+    border: 1px solid var(--tp-c-e1e9f3, #e1e9f3) !important;
+    border-radius: 10px !important;
+    background: #fff !important;
+    box-shadow: none !important;
+  }
+
+  /* Bio's Quick Facts and More on cards stand on the page beside the
+     sections, so they wear the section card, not the inner panel. */
+  .scp.scp.scp.scp.scp.scp.scp .scp-bop-card-side:not(.is-rc) {
+    border: 1px solid var(--tp-c-d3dce8, #d3dce8) !important;
+    border-radius: 16px !important;
+    background: #fff !important;
+    box-shadow: 0 2px 4px rgba(13, 35, 67, 0.035), 0 8px 18px rgba(13, 35, 67, 0.06) !important;
+  }
+
+  /* ---- the titles */
+  .scp.scp.scp.scp.scp.scp.scp :is(
+      .scp-stp-card-title,
+      .scp-stp-subhead,
+      .scp-cp-h,
+      .scp-ow-h3,
+      .scp-olr-factor-h,
+      .scp-olr-fit-h,
+      .scp-olp-card-h,
+      .scp-inp-dur-h,
+      .scp-inp-card-h,
+      .scp-bop-side-h
+    ) {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    margin: 0 0 8px !important;
+    padding: 0 0 6px !important;
+    border: 0 !important;
+    border-bottom: 2px solid var(--tp-c-d4af37, #d4af37) !important;
+    background: none !important;
+  }
+
+  .scp.scp.scp.scp.scp.scp.scp :is(
+      .scp-stp-card-title,
+      .scp-stp-subhead,
+      .scp-cp-h,
+      .scp-ow-h3,
+      .scp-olr-factor-h,
+      .scp-olr-fit-h,
+      .scp-olp-card-h,
+      .scp-inp-dur-h,
+      .scp-inp-card-h,
+      .scp-bop-side-h,
+      .scp-inp-ptitle
+    ) {
+    color: var(--tp-c-0b2345, #0b2345) !important;
+    font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif !important;
+    font-size: 0.92rem !important;
+    font-weight: 800 !important;
+    line-height: 1.25 !important;
+    letter-spacing: 0 !important;
+    text-transform: none !important;
+    text-align: left !important;
+  }
+
+  /* The Practice participation title is the side label of a row strip,
+     not a panel head: it takes the title's type and no rule. */
+  .scp.scp.scp.scp.scp.scp.scp .scp-inp-ptitle {
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+  }
+
+  .scp.scp.scp.scp.scp.scp.scp :is(
+      .scp-stp-card-title,
+      .scp-stp-subhead,
+      .scp-cp-h,
+      .scp-ow-h3,
+      .scp-olr-factor-h,
+      .scp-olr-fit-h,
+      .scp-olp-card-h,
+      .scp-inp-dur-h,
+      .scp-inp-card-h,
+      .scp-bop-side-h,
+      .scp-inp-ptitle
+    )::before,
+  .scp.scp.scp.scp.scp.scp.scp :is(
+      .scp-stp-card-title,
+      .scp-stp-subhead,
+      .scp-cp-h,
+      .scp-ow-h3,
+      .scp-olr-factor-h,
+      .scp-olr-fit-h,
+      .scp-olp-card-h,
+      .scp-inp-dur-h,
+      .scp-inp-card-h,
+      .scp-bop-side-h,
+      .scp-inp-ptitle
+    )::after {
+    content: none !important;
+    display: none !important;
+  }
+
+  /* Icons in a title: 18px, no tile, their own accent kept. */
+  .scp.scp.scp.scp.scp.scp.scp :is(.scp-stp-card-icon, .scp-olr-factor-icon, .scp-olr-fit-icon, .scp-olp-card-icon, .scp-inp-card-icon, .scp-bop-side-icon, .scp-inp-picon) {
+    flex: 0 0 auto;
+    width: 18px !important;
+    height: 18px !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: none !important;
+    box-shadow: none !important;
+  }
+
+  .scp.scp.scp.scp.scp.scp.scp :is(.scp-stp-card-icon, .scp-olr-factor-icon, .scp-olr-fit-icon, .scp-olp-card-icon, .scp-inp-card-icon, .scp-bop-side-icon, .scp-inp-picon) svg {
+    width: 18px !important;
+    height: 18px !important;
+  }
+
+  /* Style is a second group inside the Usage panel: room above it. */
+  .scp.scp.scp.scp.scp.scp.scp .scp-stp-subhead {
+    margin-top: 14px !important;
+  }
+
+  /* A count beside a title (Season-by-Season Availability: "6 seasons"). */
+  .scp.scp.scp.scp.scp.scp.scp .scp-inp-dur-h small {
+    margin: 0 0 0 auto !important;
+    color: var(--tp-muted, #5b6b80) !important;
+    font-size: 0.74rem !important;
+    font-weight: 600 !important;
+    letter-spacing: 0 !important;
+    text-transform: none !important;
+  }
+}
+
+/* ======================================================================
+ * Overview + Outlook restructure (mak, 2026-11-27).
+ *
+ * Overview: section links in the title row (.scp-ox-more.is-head), the
+ * season strip's CMP/ATT pair on phones, one row per game for five games
+ * or fewer (.scp-ow-rows), the news brief's earlier updates folded, one
+ * Player Profile card.
+ * Outlook: the projection as one full-width section (verdict row with the
+ * start/sit link, observations, a compact Best fit row), Opportunity vs.
+ * Production as a primary row + one volume row + one sentence, an unranked
+ * drivers grid (.scp-olp-cells), What Could Change folded into the
+ * matchups footer (.scp-olp-changes); phones: the link under the verdict,
+ * supporting metrics in two columns, matchups 2 x 2.
+ * Font sizes as they were.
+ * ==================================================================== */
+
+/* ---- Overview: links in the title row */
+.scp.scp.scp.scp.scp.scp.scp .scp-ox-more.is-head {
+  display: inline-flex !important;
+  flex: 0 0 auto !important;
+  align-items: center;
+  gap: 4px;
+  order: 0 !important;
+  margin: 0 0 0 auto !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: none !important;
+  color: var(--tp-c-10447d, #10447d) !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  line-height: 1.3 !important;
+  letter-spacing: 0 !important;
+  text-decoration: none !important;
+  text-transform: none !important;
+  white-space: nowrap;
+}
+
+.scp.scp.scp.scp.scp.scp.scp .scp-ox-more.is-head::after {
+  content: "\2192";
+  display: inline !important;
+  position: static !important;
+  width: auto !important;
+  height: auto !important;
+  margin: 0 !important;
+  border: 0 !important;
+  background: none !important;
+  transform: none !important;
+}
+
+.scp.scp.scp.scp.scp.scp.scp .scp-ox-more.is-head:hover {
+  text-decoration: underline !important;
+}
+
+/* On a tab banner: white, beside the art. */
+.scp.scp.scp.scp.scp.scp.scp .scp-up-head .scp-ox-more.is-head {
+  position: relative;
+  z-index: 2;
+  color: #fff !important;
+}
+
+/* ---- Overview: one row per game */
+.scp.scp.scp .scp-ow-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.scp.scp.scp .scp-ow-row {
+  display: grid;
+  grid-template-columns: 70px minmax(110px, 0.9fr) minmax(0, 2fr) auto;
+  align-items: center;
+  gap: 4px 14px;
+  margin: 0;
+  padding: 12px 14px;
+  border: 1px solid var(--tp-c-e1e9f3, #e1e9f3);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--tp-ink, #0b2345);
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.scp.scp.scp .scp-ow-row::before {
+  content: none;
+}
+
+.scp.scp.scp .scp-ow-row-wk {
+  font-weight: 800;
+}
+
+.scp.scp.scp .scp-ow-row-opp {
+  font-weight: 700;
+}
+
+.scp.scp.scp .scp-ow-row-opp small {
+  display: block;
+  color: var(--tp-muted, #5b6b80);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.scp.scp.scp .scp-ow-row-line {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  color: var(--tp-c-33435a, #33435a);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.scp.scp.scp .scp-ow-row-pts {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  justify-self: end;
+  white-space: nowrap;
+}
+
+.scp.scp.scp .scp-ow-row-pts b {
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.scp.scp.scp .scp-ow-row-pts small {
+  color: var(--tp-muted, #5b6b80);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.scp.scp.scp .scp-ow-row-pts i {
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--tp-c-eef3f9, #eef3f9);
+  color: var(--tp-ink, #0b2345);
+  font-size: 11.5px;
+  font-style: normal;
+  font-weight: 800;
+}
+
+/* The rows sit at the top of their column beside the Upcoming list. */
+.scp.scp.scp .scp-ow.is-rows {
+  align-items: start;
+}
+
+@media (max-width: 560px) {
+  .scp.scp.scp .scp-ow-row {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    padding: 10px 12px;
+  }
+
+  .scp.scp.scp .scp-ow-row-line {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+}
+
+/* ---- Overview: earlier news updates, folded */
+.scp.scp.scp .scp-nw-dg-more {
+  margin: 8px 0 0;
+}
+
+.scp.scp.scp .scp-nw-dg-more > summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  color: var(--tp-c-10447d, #10447d);
+  font-size: 13px;
+  font-weight: 700;
+  list-style: none;
+}
+
+.scp.scp.scp .scp-nw-dg-more > summary::-webkit-details-marker {
+  display: none;
+}
+
+.scp.scp.scp .scp-nw-dg-more > summary::before {
+  content: "+";
+  font-weight: 800;
+}
+
+.scp.scp.scp .scp-nw-dg-more[open] > summary::before {
+  content: "\2013";
+}
+
+.scp.scp.scp .scp-nw-dg-more > .scp-nw-digest {
+  margin-top: 10px;
+}
+
+/* ---- Overview: one Player Profile card */
+.scp.scp.scp.scp.scp.scp.scp .scp-ox-bgc.is-profile {
+  width: auto;
+}
+
+.scp.scp.scp.scp.scp.scp.scp .scp-ox-bgc.is-profile .scp-ox-profile-hl {
+  margin: 0 0 12px;
+}
+
+.scp.scp.scp.scp.scp.scp.scp .scp-ox-bgc.is-profile .scp-ox-links {
+  margin: 12px 0 0;
+}
+
+
+/* ---- Outlook: the projection, one column */
+.scp.scp.scp.scp .scp-olr-layout.is-one {
+  display: block !important;
+}
+
+.scp.scp.scp.scp .scp-olr-verdict {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 20px;
+  margin: 0 0 10px;
+}
+
+.scp.scp.scp.scp .scp-olr-verdict > .scp-olr-thesis {
+  flex: 1 1 320px;
+  margin: 0 !important;
+}
+
+.scp.scp.scp.scp .scp-olr .scp-olr-btn.is-verdict {
+  flex: 0 0 auto;
+  width: auto;
+  margin: 0;
+  padding-right: 20px;
+  padding-left: 20px;
+}
+
+.scp.scp.scp.scp .scp-olr-layout.is-one .scp-olr-factors {
+  margin-top: 12px;
+}
+
+/* Best fit: one row, the league pills side by side, the note under it. */
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-olr-fit.is-row {
+  display: flex !important;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 18px;
+  margin: 12px 0 0 !important;
+  padding: 12px 14px !important;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-olr-fit.is-row > .scp-olr-fit-h {
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-olr-fit.is-row > .scp-olr-fit-rows {
+  display: flex !important;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  margin: 0 !important;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-olr-fit.is-row .scp-olr-fit-row {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 8px;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: none !important;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-olr-fit.is-row > .scp-olr-fit-note {
+  flex: 1 1 100%;
+  margin: 0 !important;
+}
+
+@media (max-width: 560px) {
+  .scp.scp.scp.scp .scp-olr-verdict {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  /* In a column the row's 320px basis would become a height. */
+  .scp.scp.scp.scp .scp-olr-verdict > .scp-olr-thesis {
+    flex: 0 0 auto;
+  }
+
+  .scp.scp.scp.scp .scp-olr .scp-olr-btn.is-verdict {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .scp.scp.scp.scp.scp.scp.scp.scp .scp-olr-fit.is-row {
+    display: block !important;
+  }
+
+  .scp.scp.scp.scp.scp.scp.scp.scp .scp-olr-fit.is-row > .scp-olr-fit-rows {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px !important;
+    margin: 8px 0 !important;
+  }
+
+  .scp.scp.scp.scp.scp.scp.scp.scp .scp-olr-fit.is-row .scp-olr-fit-row {
+    justify-content: space-between;
+  }
+}
+
+/* ---- Outlook: Opportunity vs. Production */
+.scp.scp.scp.scp .scp-olr-groups.is-stacked {
+  display: block !important;
+}
+
+.scp.scp.scp.scp .scp-olr-kpis.is-primary {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+  margin: 0;
+}
+
+.scp.scp.scp.scp .scp-olr-kpis.is-primary > .scp-olr-kpi {
+  min-height: 0 !important;
+}
+
+.scp.scp.scp.scp .scp-olr-vol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 26px;
+  margin: 10px 0 0;
+  padding: 10px 14px;
+  border: 1px solid var(--tp-c-e1e9f3, #e1e9f3);
+  border-radius: 10px;
+  background: #fff;
+}
+
+.scp.scp.scp.scp .scp-olr-vol-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 6px;
+  margin: 0;
+}
+
+.scp.scp.scp.scp .scp-olr-vol-item dd {
+  margin: 0;
+  color: var(--tp-ink, #0b2345);
+  font-size: 17px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.scp.scp.scp.scp .scp-olr-vol-item dt {
+  margin: 0;
+  color: var(--tp-c-33435a, #33435a);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.scp.scp.scp.scp .scp-olr-vol-sub {
+  color: var(--tp-muted, #5b6b80);
+  font-size: 12px;
+}
+
+.scp.scp.scp.scp .scp-olr-gap {
+  margin: 12px 0 0;
+  color: var(--tp-ink, #0b2345);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+@media (max-width: 560px) {
+  .scp.scp.scp.scp .scp-olr-vol {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .scp.scp.scp.scp .scp-olr-vol-item {
+    flex-direction: column;
+    gap: 0;
+  }
+}
+
+/* ---- Outlook: the unranked drivers grid */
+.scp.scp.scp.scp .scp-olp-cells {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+  margin: 0;
+  border: 1px solid var(--tp-c-e1e9f3, #e1e9f3);
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.scp.scp.scp.scp .scp-olp-cell {
+  margin: 0;
+  padding: 10px 14px;
+  border-right: 1px solid var(--tp-c-e1e9f3, #e1e9f3);
+  border-bottom: 1px solid var(--tp-c-e1e9f3, #e1e9f3);
+}
+
+.scp.scp.scp.scp .scp-olp-cell:nth-child(3n) {
+  border-right: 0;
+}
+
+.scp.scp.scp.scp .scp-olp-cell dt {
+  margin: 0 0 2px;
+  color: var(--tp-muted, #5b6b80);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.scp.scp.scp.scp .scp-olp-cell dd {
+  margin: 0;
+  color: var(--tp-ink, #0b2345);
+  font-size: 17px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.scp.scp.scp.scp .scp-olp-cell dd small {
+  color: var(--tp-muted, #5b6b80);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+@media (max-width: 560px) {
+  .scp.scp.scp.scp .scp-olp-cells {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .scp.scp.scp.scp .scp-olp-cell:nth-child(3n) {
+    border-right: 1px solid var(--tp-c-e1e9f3, #e1e9f3);
+  }
+
+  .scp.scp.scp.scp .scp-olp-cell:nth-child(2n) {
+    border-right: 0;
+  }
+}
+
+/* ---- Outlook: What Could Change, in the matchups footer */
+.scp.scp.scp.scp .scp-olp-changes {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 10px 0 0;
+  padding: 10px 0 0;
+  border-top: 1px solid var(--tp-c-e1e9f3, #e1e9f3);
+  list-style: none;
+}
+
+.scp.scp.scp.scp .scp-olp-change {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+}
+
+.scp.scp.scp.scp .scp-olp-change::before {
+  content: none;
+}
+
+.scp.scp.scp.scp .scp-olp-change > .scp-olp-item-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  margin: 1px 0 0;
+  color: var(--tp-c-087a42, #087a42);
+}
+
+.scp.scp.scp.scp .scp-olp-change.is-risk > .scp-olp-item-icon {
+  color: var(--tp-c-c62828, #c62828);
+}
+
+.scp.scp.scp.scp .scp-olp-change > .scp-olp-item-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.scp.scp.scp.scp .scp-olp-change > p {
+  margin: 0;
+  color: var(--tp-ink, #0b2345);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Phones: the four matchups 2 x 2 (the 420px container rule stacked them). */
+@media (max-width: 560px) {
+  .scp.scp.scp.scp .scp-olp-games {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+/* ======================================================================
+ * Overview, mak's 5-point brief (2026-11-27): the QB season strip as eight
+ * cells (one row on desktop, 4 + 4 on phones); a short season's game log
+ * as a labeled table and its next five weeks as a strip, both inside the
+ * season card; the Out week's line over the season-long call; one flat
+ * Player Profile card.
+ * ==================================================================== */
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-ox-season.is-qb {
+  grid-template-columns: repeat(8, minmax(0, 1fr)) !important;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-ox-season.is-qb > .scp-ox-stat {
+  grid-column: auto !important;
+  border-top: 0 !important;
+  border-left: 1px solid var(--scp-ph-line) !important;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-ox-season.is-qb > .scp-ox-stat:first-child {
+  border-left: 0 !important;
+}
+
+@media (max-width: 600px) {
+  .scp.scp.scp.scp.scp.scp.scp.scp .scp-ox-season.is-qb {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+
+  .scp.scp.scp.scp.scp.scp.scp.scp .scp-ox-season.is-qb > .scp-ox-stat:nth-child(4n + 1) {
+    border-left: 0 !important;
+  }
+
+  .scp.scp.scp.scp.scp.scp.scp.scp .scp-ox-season.is-qb > .scp-ox-stat:nth-child(n + 5) {
+    border-top: 1px solid var(--scp-ph-line) !important;
+  }
+}
+
+/* ---- the short season's game log */
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-ox-gl {
+  margin: 16px 0 0;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-ox-gl-head,
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-ox-upnext > .scp-ow-h3 {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin: 0 0 8px !important;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-ox-gl-head > .scp-ow-h3 {
+  margin: 0 !important;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-ox-gl-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--scp-ph-line);
+  border-radius: 10px;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp table.scp-ox-gl-t {
+  width: 100% !important;
+  margin: 0 !important;
+  border: 0 !important;
+  border-collapse: collapse !important;
+  background: #fff;
+  font-size: 14px;
+  line-height: 1.35;
+  font-variant-numeric: tabular-nums;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp table.scp-ox-gl-t :is(th, td) {
+  padding: 9px 12px !important;
+  border: 0 !important;
+  background: none;
+  color: var(--tp-ink, var(--scp-ph-ink));
+  text-align: left;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp table.scp-ox-gl-t thead th {
+  border-bottom: 1px solid var(--scp-ph-line) !important;
+  background: var(--tp-c-f5f8fc, #f5f8fc) !important;
+  color: var(--scp-ph-muted) !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp table.scp-ox-gl-t tbody tr + tr :is(th, td) {
+  border-top: 1px solid var(--scp-ph-line) !important;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp table.scp-ox-gl-t tbody th {
+  font-weight: 800;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp table.scp-ox-gl-t td.is-line {
+  white-space: normal;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp table.scp-ox-gl-t td.is-pts {
+  font-weight: 800;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp table.scp-ox-gl-t td.is-w { color: var(--scp-ph-good) !important; font-weight: 700; }
+.scp.scp.scp.scp.scp.scp.scp.scp table.scp-ox-gl-t td.is-l { color: var(--scp-ph-bad) !important; font-weight: 700; }
+
+.scp.scp.scp.scp.scp.scp.scp.scp table.scp-ox-gl-t td.is-fin {
+  font-weight: 800;
+}
+
+/* Phones: each game stacks, every value under its column's name. */
+@media (max-width: 560px) {
+  .scp.scp.scp.scp.scp.scp.scp.scp .scp-ox-gl-wrap {
+    overflow: visible;
+  }
+
+  .scp.scp.scp.scp.scp.scp.scp.scp table.scp-ox-gl-t thead {
+    position: absolute !important;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+
+  .scp.scp.scp.scp.scp.scp.scp.scp table.scp-ox-gl-t,
+  .scp.scp.scp.scp.scp.scp.scp.scp table.scp-ox-gl-t tbody {
+    display: block;
+  }
+
+  .scp.scp.scp.scp.scp.scp.scp.scp table.scp-ox-gl-t tr {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px 10px;
+    padding: 10px 12px;
+  }
+
+  .scp.scp.scp.scp.scp.scp.scp.scp table.scp-ox-gl-t tbody tr + tr {
+    border-top: 1px solid var(--scp-ph-line);
+  }
+
+  .scp.scp.scp.scp.scp.scp.scp.scp table.scp-ox-gl-t tbody tr + tr :is(th, td) {
+    border-top: 0 !important;
+  }
+
+  .scp.scp.scp.scp.scp.scp.scp.scp table.scp-ox-gl-t :is(th, td) {
+    display: block;
+    padding: 0 !important;
+    white-space: normal;
+  }
+
+  .scp.scp.scp.scp.scp.scp.scp.scp table.scp-ox-gl-t td.is-line {
+    grid-column: 1 / -1;
+  }
+
+  .scp.scp.scp.scp.scp.scp.scp.scp table.scp-ox-gl-t tbody :is(th, td)::before {
+    content: attr(data-label);
+    display: block;
+    margin: 0 0 1px;
+    color: var(--scp-ph-muted);
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+}
+
+/* ---- the next five weeks */
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-ox-upnext {
+  margin: 16px 0 0;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp ol.scp-ox-ups {
+  display: grid !important;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 1px solid var(--scp-ph-line);
+  border-radius: 10px;
+  background: #fff;
+  list-style: none !important;
+  overflow: hidden;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp li.scp-ox-up {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  margin: 0 !important;
+  padding: 10px 6px !important;
+  border-left: 1px solid var(--scp-ph-line);
+  list-style: none !important;
+  text-align: center;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp li.scp-ox-up:first-child {
+  border-left: 0;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp li.scp-ox-up::before {
+  content: none !important;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-ox-up-w {
+  color: var(--scp-ph-muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-ox-up-o {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--tp-ink, var(--scp-ph-ink));
+  font-size: 14px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp li.scp-ox-up.is-bye .scp-ox-up-o {
+  color: var(--scp-ph-muted);
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-ox-up-r {
+  color: var(--tp-c-33435a, #33435a);
+  font-size: 12px;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-ox-upnext .scp-ow-note {
+  margin: 6px 0 0 !important;
+}
+
+@media (max-width: 560px) {
+  .scp.scp.scp.scp.scp.scp.scp.scp li.scp-ox-up {
+    padding: 8px 2px !important;
+  }
+
+  .scp.scp.scp.scp.scp.scp.scp.scp .scp-ox-up-o {
+    font-size: 12.5px;
+  }
+
+  .scp.scp.scp.scp.scp.scp.scp.scp .scp-ox-up-o .scp-ow-logo {
+    display: none;
+  }
+
+  .scp.scp.scp.scp.scp.scp.scp.scp .scp-ox-up-r {
+    font-size: 10.5px;
+  }
+
+  .scp.scp.scp.scp.scp.scp.scp.scp li.scp-ox-up .scp-ox-chip {
+    padding: 1px 5px;
+    font-size: 10px;
+  }
+}
+
+/* ---- the week he is out, over the season-long call */
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-ox-week {
+  margin: 0 0 8px !important;
+  padding: 8px 12px !important;
+  border-left: 3px solid var(--scp-ph-bad, #b3261e);
+  border-radius: 6px;
+  background: var(--scp-ph-bad-soft, #fdecea);
+  color: var(--tp-ink, var(--scp-ph-ink));
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-ox-call-k {
+  color: var(--scp-ph-muted);
+  font-weight: 700;
+}
+
+/* ---- one Player Profile card: its own border only, two-column facts */
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-ovp-sec.scp-ox-bg {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-ovp-sec.scp-ox-bg > .scp-ovp-body {
+  padding: 0 !important;
+}
+
+
+/* The season banner's "Full stats" link: white over the team color, above
+   the banner art (it read team-red on red). */
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-up-head a.scp-ox-more.is-head {
+  position: relative;
+  z-index: 3;
+  opacity: 1 !important;
+  color: #fff !important;
+  -webkit-text-fill-color: #fff;
+}
+
+/* ---- Career Stats by Season: a neutral table (mak, 2026-11-28) ----
+   Both views of the shared career table (NFL stats and Fantasy) lose the
+   navy headers, the peach current-season row and the orange season cell:
+   white header rows (slate group labels, dark column labels, one thin rule
+   under them), white rows with gray separators and bold season labels, a
+   bold Career total over a slightly stronger rule, a light-gray switch with
+   a white selected tab, and a gray rule under the title. The title icon
+   stays the card's one brand accent. Font sizes and row spacing are
+   untouched: color only. */
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-stp-sec[aria-labelledby="scp-st-career-h"] {
+  --scp-car-line: #e5e9ef;
+  --scp-car-head-line: #d5dbe3;
+  --scp-car-ink: var(--tp-ink, #0f1b2d);
+  --scp-car-slate: #64748b;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-stp-sec[aria-labelledby="scp-st-career-h"] > .scp-stp-bar {
+  border-bottom-color: var(--scp-car-line) !important;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-stp-sec[aria-labelledby="scp-st-career-h"] > .scp-stp-bar :is(h2, h3)::after {
+  display: none !important;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-stp-sec[aria-labelledby="scp-st-career-h"] .scp-stp-body {
+  background: #fff !important;
+}
+
+/* The phone draws the title rule as the head's ::after, not a border. */
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-stp-sec[aria-labelledby="scp-st-career-h"] > .scp-stp-bar::after {
+  background: var(--scp-car-line) !important;
+}
+
+/* No navy edge across the top of the table. */
+.scp .scp-stp-sec.scp-stp-sec.scp-stp-sec.scp-stp-sec.scp-stp-sec.scp-stp-sec.scp-stp-sec.scp-stp-sec[aria-labelledby="scp-st-career-h"] table.scp-table--career {
+  border-top-color: transparent !important;
+}
+
+/* Header rows: white, slate group labels, dark column labels. */
+.scp .scp-stp-sec.scp-stp-sec.scp-stp-sec.scp-stp-sec.scp-stp-sec.scp-stp-sec.scp-stp-sec.scp-stp-sec[aria-labelledby="scp-st-career-h"] .scp-table--career thead :is(th, td) {
+  color: var(--scp-car-ink) !important;
+  background: #fff !important;
+  border-top: 0 !important;
+  border-left: 0 !important;
+  border-right: 0 !important;
+  border-bottom: 0 !important;
+  box-shadow: none !important;
+}
+
+.scp .scp-stp-sec.scp-stp-sec.scp-stp-sec.scp-stp-sec.scp-stp-sec.scp-stp-sec.scp-stp-sec.scp-stp-sec[aria-labelledby="scp-st-career-h"] .scp-table--career thead .scp-group-row td {
+  color: var(--scp-car-slate) !important;
+}
+
+.scp .scp-stp-sec.scp-stp-sec.scp-stp-sec.scp-stp-sec.scp-stp-sec.scp-stp-sec.scp-stp-sec.scp-stp-sec[aria-labelledby="scp-st-career-h"] .scp-table--career thead tr:last-child th {
+  border-bottom: 1px solid var(--scp-car-head-line) !important;
+}
+
+.scp .scp-stp-sec.scp-stp-sec.scp-stp-sec.scp-stp-sec.scp-stp-sec.scp-stp-sec.scp-stp-sec.scp-stp-sec[aria-labelledby="scp-st-career-h"] .scp-table--career thead .scp-sort {
+  color: inherit !important;
+}
+
+/* Season rows: white, gray separators, bold season label. */
+.scp .scp-stp-sec.scp-stp-sec.scp-stp-sec.scp-stp-sec.scp-stp-sec.scp-stp-sec.scp-stp-sec.scp-stp-sec[aria-labelledby="scp-st-career-h"] .scp-table--career tbody :is(th, td),
+.scp .scp-stp-sec.scp-stp-sec.scp-stp-sec.scp-stp-sec.scp-stp-sec.scp-stp-sec.scp-stp-sec.scp-stp-sec[aria-labelledby="scp-st-career-h"] .scp-table--career tbody tr.is-current :is(th, td) {
+  color: var(--scp-car-ink) !important;
+  background: #fff !important;
+  border-top: 0 !important;
+  border-left: 0 !important;
+  border-right: 0 !important;
+  border-bottom: 1px solid var(--scp-car-line) !important;
+  box-shadow: none !important;
+}
+
+.scp .scp-stp-sec.scp-stp-sec.scp-stp-sec.scp-stp-sec.scp-stp-sec.scp-stp-sec.scp-stp-sec.scp-stp-sec[aria-labelledby="scp-st-career-h"] .scp-table--career tbody th[scope="row"] {
+  font-weight: 800 !important;
+}
+
+@media (hover: hover) {
+  .scp .scp-stp-sec.scp-stp-sec.scp-stp-sec.scp-stp-sec.scp-stp-sec.scp-stp-sec.scp-stp-sec.scp-stp-sec[aria-labelledby="scp-st-career-h"] .scp-table--career tbody tr:hover > * {
+    background: #f7f9fb !important;
+  }
+}
+
+/* The career total: bold, over a slightly stronger rule. */
+.scp .scp-stp-sec.scp-stp-sec.scp-stp-sec.scp-stp-sec.scp-stp-sec.scp-stp-sec.scp-stp-sec.scp-stp-sec[aria-labelledby="scp-st-career-h"] .scp-table--career tfoot :is(th, td) {
+  color: var(--scp-car-ink) !important;
+  background: #fff !important;
+  border-top: 1.5px solid #c3cbd6 !important;
+  border-left: 0 !important;
+  border-right: 0 !important;
+  border-bottom: 0 !important;
+  box-shadow: none !important;
+  font-weight: 800 !important;
+}
+
+/* NFL stats / Fantasy: light-gray track, white selected tab, dark words. */
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-stp-sec[aria-labelledby="scp-st-career-h"] .scp-stp-seg {
+  border: 1px solid #dde3ea !important;
+  background: #eef1f5 !important;
+  box-shadow: none !important;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-stp-sec[aria-labelledby="scp-st-career-h"] .scp-stp-seg button {
+  color: #5b6779 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-stp-sec[aria-labelledby="scp-st-career-h"] .scp-stp-seg button::before {
+  display: none !important;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-stp-sec[aria-labelledby="scp-st-career-h"] .scp-stp-seg button[aria-pressed="true"] {
+  color: var(--scp-car-ink) !important;
+  background: #fff !important;
+  box-shadow: 0 0 0 1px #d5dbe3, 0 1px 2px rgba(15, 27, 45, 0.08) !important;
+}
+
+/* ---- Game Log: no outer card (mak, 2026-11-28) ----
+   The gray gradient box around the whole Game Log tab (border, shadow,
+   tinted fill) is gone; the banner, the stat cards, the table and the
+   sections below are unchanged. The banner keeps its rounded top, and the
+   body drops its side inset so the cards line up with the banner's edges. */
+.scp.scp.scp.scp.scp.scp.scp.scp section.scp-glp {
+  border: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp section.scp-glp > .scp-glp-body {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+/* Phones draw that same box as .scp-glp-main around the stat cards and the
+   table: no fill, shadow or inset there either. */
+.scp.scp.scp.scp.scp.scp.scp.scp section.scp-glp .scp-glp-main {
+  border: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+/* ---- Stats tab: the editorial story and the compact season comparison
+   (mak, 2026-11-28). The story (stats-story.ts) sits straight in the
+   section under its heading: no inner panel, left-aligned at natural height,
+   a headline in the house ink, short paragraphs, and the start/sit link as a
+   compact action under the copy. Years 2-3 keep the season chips below it. */
+.scp.scp.scp.scp .scp-cp-story {
+  margin: 0;
+  padding: 2px 0 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  text-align: left;
+}
+
+.scp.scp.scp.scp .scp-cp .scp-cp-story-h {
+  margin: 0 0 10px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  color: var(--tp-ink, var(--cp-text)) !important;
+  font-family: var(--scp-ph-sans);
+  font-size: 21px !important;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  text-align: left;
+  text-transform: none;
+}
+
+.scp.scp.scp.scp .scp-cp .scp-cp-story-h::before,
+.scp.scp.scp.scp .scp-cp .scp-cp-story-h::after {
+  content: none !important;
+  display: none !important;
+}
+
+.scp.scp.scp.scp .scp-cp-story p {
+  max-width: none;
+  margin: 0 0 10px;
+  color: var(--tp-ink, var(--cp-text));
+  font-size: 15.5px;
+  line-height: 1.6;
+}
+
+.scp.scp.scp.scp .scp-cp-story p:last-of-type {
+  margin-bottom: 0;
+}
+
+.scp.scp.scp.scp .scp-cp-story-link {
+  display: inline-flex;
+  min-height: 36px;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 8px 14px;
+  border-radius: 9px;
+  color: #fff !important;
+  background: linear-gradient(180deg, var(--cp-navy-800), var(--cp-navy-950));
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.2;
+  text-decoration: none !important;
+}
+
+.scp.scp.scp.scp .scp-cp-story-link:hover,
+.scp.scp.scp.scp .scp-cp-story-link:focus-visible {
+  background: var(--cp-navy-950);
+}
+
+.scp.scp.scp.scp .scp-cp-story-link svg {
+  width: 15px;
+  height: 15px;
+}
+
+.scp .scp-cp-cmp {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 14px;
+  padding: 0;
+  list-style: none;
+}
+
+.scp .scp-cp-cmp-item {
+  display: grid;
+  min-width: 110px;
+  margin: 0;
+  padding: 8px 14px;
+  border: 1px solid var(--cp-border);
+  border-radius: 10px;
+  background: #fff;
+}
+
+.scp .scp-cp-cmp-item.is-now {
+  border-color: var(--cp-gold);
+  box-shadow: inset 0 0 0 1px var(--cp-gold);
+}
+
+.scp .scp-cp-cmp-season {
+  color: var(--cp-muted);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.scp .scp-cp-cmp-v {
+  color: var(--tp-ink, var(--cp-text));
+  font-family: var(--scp-ph-sans);
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.scp .scp-cp-cmp-v small {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--cp-muted);
+}
+
+.scp .scp-cp-cmp-sub {
+  color: var(--cp-muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+@media (max-width: 560px) {
+  .scp.scp.scp.scp .scp-cp .scp-cp-story-h {
+    font-size: 18.5px !important;
+  }
+
+  .scp.scp.scp.scp .scp-cp-story p {
+    font-size: 15px;
+  }
+}
+
+/* ---- Outlook Upcoming Matchups: two-line cards (mak, 2026-11-28) ----
+   "Wk 13 · vs MIA" with the crest at the right, then "6th vs RBs ·
+   Favorable"; no week pill, no grade badge. 7px padding and a 2px line gap
+   bring a card from ~124px to ~54px. Four across on desktop, 2 x 2 on
+   phones. The stretch's summary sits beside the heading. */
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-olp-games {
+  gap: 10px !important;
+  margin: 0 0 10px !important;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-olp-game {
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  grid-template-rows: auto auto !important;
+  grid-template-areas: "g1 crest" "g2 g2" !important;
+  align-items: center;
+  row-gap: 2px !important;
+  column-gap: 8px;
+  min-height: 0 !important;
+  padding: 7px 12px !important;
+  border: 1px solid var(--olp-border, #dbe3ee) !important;
+  border-radius: 10px !important;
+  background: #fff !important;
+  box-shadow: none !important;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-olp-g1,
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-olp-g2 {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-olp-g1 {
+  grid-area: g1;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-olp-g2 {
+  grid-area: g2;
+  font-size: 12.5px;
+  line-height: 16px;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-olp-game .scp-olp-wk {
+  padding: 0 !important;
+  border-radius: 0 !important;
+  background: none !important;
+  color: var(--tp-c-5b6b82, #5b6b82) !important;
+  font-size: inherit !important;
+  font-weight: 600 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-olp-dot {
+  color: var(--tp-c-8a97a8, #8a97a8);
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-olp-game .scp-olp-opp {
+  color: var(--tp-ink, #0b2345) !important;
+  font-size: inherit !important;
+  font-weight: 800 !important;
+  line-height: inherit !important;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-olp-game .scp-olp-rank {
+  color: #3f556f !important;
+  font-size: inherit !important;
+  font-weight: 600 !important;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-olp-grade {
+  font-weight: 700;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-olp-grade.is-good { color: var(--tp-c-087a42, #087a42); }
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-olp-grade.is-bad { color: var(--tp-c-c62828, #c62828); }
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-olp-grade.is-mid { color: #5b6b82; }
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-olp-game .scp-olp-crest {
+  grid-area: crest;
+  width: 20px !important;
+  height: 20px !important;
+  margin: 0 !important;
+  justify-self: end;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-olp-read.is-playoffs {
+  margin: 0 !important;
+}
+
+/* The summary beside the heading on desktop; under it on phones. */
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-olp-bar-aside.is-good { color: var(--tp-c-087a42, #087a42) !important; }
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-olp-bar-aside.is-bad { color: var(--tp-c-c62828, #c62828) !important; }
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-olp-sec.is-schedule .scp-olp-bar-text {
+  display: flex !important;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 12px;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-olp-sec.is-schedule .scp-olp-bar-text > .scp-olp-bar-sub {
+  flex: 1 1 100%;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-olp-bar-aside {
+  margin: 0;
+  padding: 0;
+  color: #3f556f;
+  font-size: 13.5px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+@media (max-width: 560px) {
+  .scp.scp.scp.scp.scp.scp.scp.scp .scp-olp-games {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  .scp.scp.scp.scp.scp.scp.scp.scp .scp-olp-game {
+    padding: 6px 10px !important;
+  }
+
+  .scp.scp.scp.scp.scp.scp.scp.scp .scp-olp-bar-aside {
+    flex: 1 1 100%;
+    font-size: 13px;
+  }
+}
+
+/* ---- Outlook Opportunity vs. Production: two-line cards (mak, 2026-11-28,
+   the matchup cards' logic) ----
+   The label with the figure at the right edge, then the rank or note; no
+   icon, no tinted lead card, a signed figure in green or red. 6px padding
+   and a 2px line gap: ~109px -> ~54px a card. Three across on desktop; on
+   phones one panel of three rows, and the volume figures one line each. */
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-olr-kpis.is-primary > .scp-olr-kpi {
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  grid-template-rows: auto auto !important;
+  grid-template-areas: "l v" "s s" !important;
+  align-items: baseline;
+  row-gap: 2px !important;
+  column-gap: 10px;
+  min-height: 0 !important;
+  padding: 6px 12px !important;
+  border: 1px solid var(--olr-border, #dbe3ee) !important;
+  border-radius: 10px !important;
+  background: #fff !important;
+  box-shadow: none !important;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-olr-kpis.is-primary > .scp-olr-kpi dt {
+  grid-area: l;
+  min-width: 0;
+  margin: 0 !important;
+  overflow: hidden;
+  color: var(--tp-c-5b6b82, #5b6b82) !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0 !important;
+  line-height: 20px !important;
+  text-overflow: ellipsis;
+  text-transform: none !important;
+  white-space: nowrap;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-olr-kpis.is-primary > .scp-olr-kpi dd {
+  grid-area: v;
+  align-self: baseline;
+  margin: 0 !important;
+  color: var(--tp-ink, #0b2345) !important;
+  font-size: 18px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0 !important;
+  line-height: 20px !important;
+  font-variant-numeric: tabular-nums;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-olr-kpis.is-primary > .scp-olr-kpi dd.is-up { color: var(--tp-c-087a42, #087a42) !important; }
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-olr-kpis.is-primary > .scp-olr-kpi dd.is-down { color: var(--tp-c-c62828, #c62828) !important; }
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-olr-kpis.is-primary > .scp-olr-kpi .scp-olr-kpi-sub {
+  grid-area: s;
+  margin: 0 !important;
+  color: #3f556f !important;
+  font-size: 12.5px !important;
+  font-weight: 600 !important;
+  line-height: 16px !important;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-olr-kpis.is-primary > .scp-olr-kpi .scp-olr-kpi-icon {
+  display: none !important;
+}
+
+@media (max-width: 560px) {
+  /* One panel, three rows with dividers, rather than three separate cards. */
+  .scp.scp.scp.scp.scp.scp.scp.scp .scp-olr-kpis.is-primary {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 0 !important;
+    border: 1px solid var(--olr-border, #dbe3ee);
+    border-radius: 10px;
+    overflow: hidden;
+    background: #fff;
+  }
+
+  .scp.scp.scp.scp.scp.scp.scp.scp .scp-olr-kpis.is-primary > .scp-olr-kpi {
+    padding: 6px 10px !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+  }
+
+  .scp.scp.scp.scp.scp.scp.scp.scp .scp-olr-kpis.is-primary > .scp-olr-kpi + .scp-olr-kpi {
+    border-top: 1px solid var(--tp-c-e1e9f3, #e1e9f3) !important;
+  }
+
+  .scp.scp.scp.scp.scp.scp.scp.scp .scp-olr-vol {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 4px !important;
+    padding: 8px 10px !important;
+  }
+
+  .scp.scp.scp.scp.scp.scp.scp.scp .scp-olr-vol-item {
+    flex-direction: row !important;
+    gap: 2px 6px !important;
+  }
+}
+
+/* ---- Overview: Latest News + Player Profile in one row (mak, 2026-11-28)
+   News left, profile right, 60/40, top-aligned with a 14px gap so unfolding
+   older news grows only the news card. Stacked news-first at 820px and
+   under, where each section keeps its own spacing. */
+@media (min-width: 821px) {
+  .scp.scp.scp.scp.scp.scp.scp.scp .scp-ox-pair {
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    gap: 14px;
+    align-items: start;
+    padding-top: 28px;
+  }
+
+  .scp.scp.scp.scp.scp.scp.scp.scp .scp-ox-pair > .scp-ox-sec {
+    min-width: 0;
+    margin: 0 !important;
+    padding-top: 0 !important;
+  }
+}
+
+/* The profile's links sit right under the facts (the card's 18px grid gap
+   plus 12px margin left a ~40px hole), and the honors pills keep a line of
+   air above the career line. Every width. */
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-ox-bgc.is-profile .scp-ox-links {
+  margin: -10px 0 0;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-ox-bgc.is-profile .scp-ox-honors {
+  margin-bottom: 12px !important;
+}
+
+/* ---- News rail heads ("Around the {Team}", "{Team} Teammates") wear the
+   Stats tab's panel title (mak, 2026-11-28): above 560px the icon at 18px,
+   the title in ink at 0.92rem/800, an 8px gap and a 2px team-gold rule
+   under it; on phones the icon at 25px beside a 19px/800 title, no rule,
+   as .scp-stp-card-title reads there. */
+@media (min-width: 561px) {
+  .scp.scp.scp.scp.scp.scp.scp.scp .scp-nwp-rail-card > .scp-nwp-head {
+    gap: 8px !important;
+    min-height: 0 !important;
+    margin: 0 20px 8px !important;
+    padding: 18px 0 6px !important;
+    border-bottom: 2px solid var(--tp-c-d4af37, #d4af37) !important;
+    background: none !important;
+  }
+
+  .scp.scp.scp.scp.scp.scp.scp.scp .scp-nwp-rail-card > .scp-nwp-head > .scp-nwp-icon {
+    display: block !important;
+    width: 18px !important;
+    height: 18px !important;
+  }
+
+  .scp.scp.scp.scp.scp.scp.scp.scp .scp-nwp-rail-card .scp-nwp-h3 {
+    color: var(--tp-c-0b2345, #0b2345) !important;
+    font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif !important;
+    font-size: 0.92rem !important;
+    font-weight: 800 !important;
+    line-height: 1.25 !important;
+    letter-spacing: 0 !important;
+    text-transform: none !important;
+  }
+}
+
+@media (max-width: 560px) {
+  .scp.scp.scp.scp.scp.scp.scp.scp .scp-nwp-rail-card > .scp-nwp-head {
+    gap: 8px !important;
+  }
+
+  .scp.scp.scp.scp.scp.scp.scp.scp .scp-nwp-rail-card > .scp-nwp-head > .scp-nwp-icon {
+    display: block !important;
+    flex: 0 0 auto;
+    width: 25px !important;
+    height: 25px !important;
+    color: var(--tp-c-d4af37, #d4af37) !important;
+  }
+
+  .scp.scp.scp.scp.scp.scp.scp.scp .scp-nwp-rail-card .scp-nwp-h3 {
+    font-family: var(--scp-ph-sans) !important;
+    font-size: 19px !important;
+    font-weight: 800 !important;
+    line-height: 1.2 !important;
+    letter-spacing: -0.01em !important;
+  }
+}
+
+/* ---- News tab: the main feed in its own card (mak, 2026-11-28) ----
+   "Latest {Last} News" wears the rail cards' head and card (above); the
+   body keeps the feed's own spacing: filters, featured report, days. */
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-nwp-feed.is-feed {
+  display: block !important;
+  gap: 0 !important;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-nwp-feed-body {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+@media (min-width: 561px) {
+  .scp.scp.scp.scp.scp.scp.scp.scp .scp-nwp-feed.is-feed > .scp-nwp-feed-body {
+    padding: 4px 20px 16px !important;
+  }
+}
+
+/* ---- News tab: no outer card (mak, 2026-11-28) ----
+   The box around the whole tab (fill, border, shadow; on phones a white
+   panel with a 12px inset) is gone; the banner, the feed card and the rail
+   are unchanged. As on the Game Log, the banner keeps its rounded top and
+   the body drops its side inset so the cards line up with its edges. */
+.scp.scp.scp.scp.scp.scp.scp.scp section.scp-nwp-frame {
+  border: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp section.scp-nwp-frame > .scp-nwp-frame-body {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+/* ---- Overview: Fantasy Outlook & Efficiency without its inner box
+   (mak, 2026-11-28). The section card already frames the call, the prose
+   and the efficiency meters, so .scp-ox-read loses its border, fill,
+   radius and padding at every width; its layout is unchanged. */
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-ox-outlook .scp-ox-read {
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+}
+
+/* ---- News tab feed, headline-first (mak, 2026-11-28) ----
+   The filters at the right of the "Latest {Last} News" row; the featured
+   report as headshot, day, headline and one line; then rows with the day
+   in a narrow left column beside the first row of each day only, a thin
+   neutral divider between rows (no orange rule under each date), the
+   headline and one quieter line. Five items show, then "Show earlier
+   updates"; on phones the day moves into the second line. */
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-nwp-feed.is-feed > .scp-nwp-head {
+  flex-wrap: wrap;
+  row-gap: 6px;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-nwp-feed.is-feed > .scp-nwp-head > .scp-nwp-filters {
+  margin: -4px 0 -2px auto;
+  padding: 2px;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-nwp-feed.is-feed > .scp-nwp-head .scp-nwp-filters button {
+  padding: 4px 10px;
+  font-size: 0.7rem;
+}
+
+/* The featured report: tighter, no colored edge. */
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-nwp-feed.is-feed .scp-nwp-lead {
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 14px;
+  align-items: center;
+  padding: 12px 14px;
+  border-left-width: 1px;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-nwp-feed.is-feed .scp-nwp-lead-face {
+  width: 72px;
+  height: 72px;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-nwp-feed.is-feed .scp-nwp-lead .scp-nwp-mday {
+  display: none !important;
+}
+
+/* The rows. */
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-nwp-list.is-flat > .scp-nwp-item {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  column-gap: 12px;
+  padding: 9px 0 !important;
+  border-bottom: 0;
+  border-top: 1px solid var(--tp-c-e6ebf2, #e6ebf2);
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-nwp-list.is-flat > .scp-nwp-item:first-child {
+  border-top: 0;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-nwp-feed.is-js .scp-nwp-list.is-flat > .scp-nwp-item.is-later {
+  display: none !important;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-nwp-item-date {
+  padding-top: 2px;
+  color: var(--tp-c-5b6b82, #5b6b82);
+  font-size: 0.74rem;
+  font-weight: 700;
+  line-height: 1.3;
+  white-space: nowrap;
+  visibility: hidden;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-nwp-item.is-first > .scp-nwp-item-date {
+  visibility: visible;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-nwp-item-body {
+  gap: 2px;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-nwp-item-meta.is-stats {
+  color: #3f556f;
+  font-size: 0.78rem;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-nwp-item-meta .scp-nwp-fpts {
+  color: var(--tp-ink, #0b2345);
+  font-weight: 800;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-nwp-item-meta .scp-nwp-rank {
+  color: var(--tp-ink, #0b2345);
+  font-weight: 700;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-nwp-item-meta .scp-nwp-item-cat {
+  color: inherit;
+  font-weight: 600;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-nwp-mday {
+  display: none;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-nwp-more {
+  display: block;
+  margin: 4px 0 0 68px;
+  padding: 6px 0;
+  border: 0;
+  background: none;
+  color: var(--tp-c-1f5fae, #1f5fae);
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-nwp-more[hidden] {
+  display: none !important;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-nwp-more:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 560px) {
+  .scp.scp.scp.scp.scp.scp.scp.scp .scp-nwp-list.is-flat > .scp-nwp-item {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .scp.scp.scp.scp.scp.scp.scp.scp .scp-nwp-item-date {
+    display: none;
+  }
+
+  .scp.scp.scp.scp.scp.scp.scp.scp .scp-nwp-mday {
+    display: inline;
+  }
+
+  .scp.scp.scp.scp.scp.scp.scp.scp .scp-nwp-more {
+    margin-left: 0;
+  }
+
+  .scp.scp.scp.scp.scp.scp.scp.scp .scp-nwp-feed.is-feed > .scp-nwp-head > .scp-nwp-filters {
+    margin: 0;
+  }
+
+  .scp.scp.scp.scp.scp.scp.scp.scp .scp-nwp-feed.is-feed .scp-nwp-lead {
+    grid-template-columns: 56px minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .scp.scp.scp.scp.scp.scp.scp.scp .scp-nwp-feed.is-feed .scp-nwp-lead-face {
+    width: 56px;
+    height: 56px;
+  }
+}
+
+/* ---- Bio: no inner card around the career overview prose (mak,
+   2026-11-28) ----
+   The white bordered box holding "{Name} is a running back for..." is gone
+   inside the Bio intro card; the text keeps its size and lines up with the
+   fact cards above it. Phones already print it flat. */
+.scp.scp.scp.scp.scp.scp.scp.scp section.scp-bop-sec.is-overview {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp section.scp-bop-sec.is-overview > .scp-bop-prose {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+/* ---- Bio tab, one card that adapts to the career (mak, 2026-11-28) ----
+   Under the banner: the biography (about 65%) beside an unboxed Player
+   Details list (about 35%), the team history or milestones under the
+   biography when the career has them, one row of links across the foot.
+   White, thin neutral dividers, one small logo per team row. Phones stack
+   biography, details, links. */
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-bop-intro {
+  background: #fff !important;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-bop-intro > .scp-bop-grid {
+  display: grid !important;
+  grid-template-columns: minmax(0, 65fr) minmax(0, 35fr);
+  column-gap: 28px;
+  row-gap: 14px;
+  align-items: start;
+  padding: 18px 20px 16px !important;
+  background: #fff !important;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-bop-intro > .scp-bop-grid.is-solo {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-bop-main {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-bop-main > .scp-bop-sec.is-overview {
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-bop-story-h {
+  margin: 0 0 8px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  color: var(--tp-c-0b2345, #0b2345) !important;
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif !important;
+  font-size: 1.1rem !important;
+  font-weight: 800 !important;
+  line-height: 1.3 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-bop-story-h::after {
+  content: none !important;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-bop-main .scp-bop-prose {
+  padding: 0 !important;
+}
+
+/* Column titles: Player Details, NFL Team History, Career Milestones. */
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-bop-sub-h {
+  margin: 0 0 6px !important;
+  padding: 0 0 6px !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--tp-c-e1e9f3, #e1e9f3) !important;
+  color: var(--tp-c-0b2345, #0b2345) !important;
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif !important;
+  font-size: 0.92rem !important;
+  font-weight: 800 !important;
+  line-height: 1.25 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-bop-sub-h::after {
+  content: none !important;
+}
+
+/* Player Details: unboxed, a hairline left rule on desktop. */
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-bop-details {
+  min-width: 0;
+  margin: 0;
+  padding: 0 0 0 20px;
+  border: 0;
+  border-left: 1px solid var(--tp-c-e1e9f3, #e1e9f3);
+  background: none;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-bop-details .scp-bop-dl {
+  margin: 0;
+  padding: 0;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-bop-details .scp-bop-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0;
+  padding: 6px 0;
+  border-top: 1px solid var(--tp-c-eef2f7, #eef2f7);
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-bop-details .scp-bop-row:first-child {
+  border-top: 0;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-bop-details dt {
+  flex: 0 0 auto;
+  color: var(--tp-c-5b6b82, #5b6b82);
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-bop-details dd {
+  margin: 0;
+  color: var(--tp-ink, #0b2345);
+  font-size: 0.84rem;
+  font-weight: 700;
+  text-align: right;
+}
+
+/* Team history and milestones: compact rows. */
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-bop-history {
+  min-width: 0;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-bop-hist {
+  margin: 0 !important;
+  padding: 0 !important;
+  list-style: none !important;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-bop-hist-row {
+  display: grid;
+  grid-template-columns: 118px minmax(150px, 200px) minmax(0, 1fr);
+  column-gap: 12px;
+  align-items: start;
+  margin: 0 !important;
+  padding: 7px 0 !important;
+  border-top: 1px solid var(--tp-c-eef2f7, #eef2f7);
+  list-style: none !important;
+  font-size: 0.86rem;
+  line-height: 1.4;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-bop-hist-row:first-child {
+  border-top: 0;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .is-milestones .scp-bop-hist-row {
+  grid-template-columns: 56px minmax(0, 1fr);
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-bop-hist-years {
+  color: var(--tp-c-5b6b82, #5b6b82);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-bop-hist-team {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 0;
+  color: var(--tp-ink, #0b2345);
+  font-weight: 700;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-bop-hist-logo {
+  flex: 0 0 20px;
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  margin-top: 0;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-bop-hist-detail {
+  color: #3f556f;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-bop-hist-detail .scp-bo-best {
+  margin-left: 6px;
+  color: var(--tp-c-5b6b82, #5b6b82);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-bop-hist-note {
+  margin: 6px 0 0 !important;
+  color: var(--tp-c-5b6b82, #5b6b82);
+  font-size: 0.8rem;
+}
+
+/* The links row across the foot of the card. */
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-bop-links {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  margin: 2px 0 0;
+  padding: 12px 0 0;
+  border-top: 1px solid var(--tp-c-e1e9f3, #e1e9f3);
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-bop-links a {
+  color: var(--tp-c-1f5fae, #1f5fae);
+  text-decoration: none;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-bop-links a:hover,
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-bop-links a:focus-visible {
+  text-decoration: underline;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-bop-links .scp-bop-sep {
+  color: var(--tp-c-8a97a8, #8a97a8);
+  font-weight: 400;
+}
+
+@media (max-width: 760px) {
+  .scp.scp.scp.scp.scp.scp.scp.scp .scp-bop-intro > .scp-bop-grid {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 14px 0 12px !important;
+  }
+
+  .scp.scp.scp.scp.scp.scp.scp.scp .scp-bop-details {
+    padding: 0;
+    border-left: 0;
+  }
+
+  .scp.scp.scp.scp.scp.scp.scp.scp .scp-bop-hist-row {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 2px;
+  }
+
+  .scp.scp.scp.scp.scp.scp.scp.scp .is-milestones .scp-bop-hist-row {
+    grid-template-columns: 48px minmax(0, 1fr);
+  }
+}
+
+/* ---- Overview: the Trade Calculator strip (mak, 2026-11-28) ----
+   The matchup pages' Redraft Command strip (matchup.css .sct-rb-redraft
+   .is-strip), carried over: navy, a gold ring in the corner, the question
+   and the tools named in one sentence on the left, one gold button with a
+   note under it on the right; stacked on phones. Its own section, right
+   under the Weekly Performance card (or the season card for a short
+   season), taking the Overview's section gap like any other. */
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-ox-trade {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 32px;
+  row-gap: 14px;
+  margin: 20px 0 0;
+  padding: 18px 96px 18px 24px;
+  overflow: hidden;
+  border-radius: 14px;
+  background: linear-gradient(110deg, #071a35 0%, #10447d 70%, #092448 100%);
+  color: #fff;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-ox-trade-ring {
+  position: absolute;
+  top: -56px;
+  right: -56px;
+  box-sizing: border-box;
+  width: 112px;
+  height: 112px;
+  border: 14px solid #ffa300;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-ox-trade-pitch,
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-ox-trade-act {
+  position: relative;
+  min-width: 0;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-ox-trade-act {
+  text-align: center;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp h3.scp-ox-trade-title {
+  margin: 0 0 4px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  color: #fff !important;
+  font-family: var(--scp-ph-sans) !important;
+  font-size: 22px !important;
+  font-weight: 700 !important;
+  line-height: 1.15 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp h3.scp-ox-trade-title::after {
+  content: none !important;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-ox-trade-text {
+  margin: 0 !important;
+  padding: 0 !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-ox-trade-text a {
+  color: #fff !important;
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: #ffa300;
+  text-underline-offset: 3px;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp a.scp-ox-trade-btn {
+  display: inline-block;
+  padding: 11px 18px;
+  border-radius: 8px;
+  background: #ffa300;
+  color: #0b2345 !important;
+  font-family: var(--scp-ph-sans);
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-decoration: none !important;
+  white-space: nowrap;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp a.scp-ox-trade-btn:hover,
+.scp.scp.scp.scp.scp.scp.scp.scp a.scp-ox-trade-btn:focus-visible {
+  background: #ffb733;
+}
+
+.scp.scp.scp.scp.scp.scp.scp.scp .scp-ox-trade-note {
+  margin: 6px 0 0 !important;
+  padding: 0 !important;
+  color: rgba(255, 255, 255, 0.65) !important;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+@media (max-width: 760px) {
+  .scp.scp.scp.scp.scp.scp.scp.scp .scp-ox-trade {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 20px;
+  }
+}
+
+/* Phones: the sections run 18px apart, the strip with them. */
+@media (max-width: 560px) {
+  .scp.scp.scp.scp.scp.scp.scp.scp .scp-ox-trade {
+    margin: 18px 0;
+  }
+
+  .scp.scp.scp.scp.scp.scp.scp.scp .scp-ox-trade-act {
+    text-align: left;
+  }
+
+  .scp.scp.scp.scp.scp.scp.scp.scp h3.scp-ox-trade-title {
+    max-width: 85%;
+  }
 }

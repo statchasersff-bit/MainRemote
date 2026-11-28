@@ -19,7 +19,8 @@
 import { escapeHtml } from "../render";
 import { titleCase } from "./title-case";
 import type { PlayerPageData } from "./player-data";
-import { outlookPremiumModel, type ScheduleCard, type TriggerItem } from "./outlook-tab";
+import { outlookPremiumModel, outlookProjectionModel, type ScheduleCard, type TriggerItem } from "./outlook-tab";
+import type { PlayerRenderOptions } from "../player-render";
 import type { DriverRow } from "./outlook-tab-data";
 
 const e = escapeHtml;
@@ -56,13 +57,15 @@ export function rankPercent(rank: number, total: number): number {
 }
 
 /** A navy bar: gold rule, gold icon, the title, an optional sub-line, the ball and the gold diagonals. */
-function bar(icon: string, title: string, sub: string, hero = false): string {
+function bar(icon: string, title: string, sub: string, hero = false, aside = "", asideKind = "mid"): string {
   return (
     `<header class="scp-olp-bar${hero ? " is-hero" : ""}">` +
     `<span class="scp-olp-bar-rule" aria-hidden="true"></span>` +
     `<span class="scp-olp-bar-icon">${icon}</span>` +
     `<span class="scp-olp-bar-divider" aria-hidden="true"></span>` +
-    `<div class="scp-olp-bar-text"><h2 class="scp-olp-bar-title">${e(titleCase(title))}</h2>${sub ? `<p class="scp-olp-bar-sub">${e(sub)}</p>` : ""}</div>` +
+    `<div class="scp-olp-bar-text"><h2 class="scp-olp-bar-title">${e(titleCase(title))}</h2>` +
+    (aside ? `<p class="scp-olp-bar-aside is-${asideKind}">${e(aside)}</p>` : "") +
+    `${sub ? `<p class="scp-olp-bar-sub">${e(sub)}</p>` : ""}</div>` +
     ICON.football +
     `<span class="scp-olp-bar-stripes" aria-hidden="true"></span>` +
     `</header>`
@@ -104,13 +107,20 @@ function driverRow(d: DriverRow, posWord: string, name: string, minGames: number
 
 /* ------------------------------------------------------------------ public */
 
-export function renderOutlookPremium(data: PlayerPageData): string {
+/** The two figures Opportunity vs. Production prints just above. */
+const OPPORTUNITY_ROWS = /^(expected points|points over expected)$/i;
+
+export function renderOutlookPremium(data: PlayerPageData, options: PlayerRenderOptions = {}): string {
   const m = outlookPremiumModel(data);
   if (!m) return "";
   const parts: string[] = [];
+  // Expected points and points over expected are Opportunity vs.
+  // Production's primary row when that section prints (mak, 2026-11-27).
+  const oppShown = Boolean(outlookProjectionModel(data, options)?.opportunity);
 
   if (m.drivers) {
-    const dm = m.drivers;
+    const dm = { ...m.drivers, rows: oppShown ? m.drivers.rows.filter((d) => !OPPORTUNITY_ROWS.test(d.label)) : m.drivers.rows };
+    const unranked = dm.rows.length > 0 && dm.rows.every((d) => d.rank === null);
     const strip = dm.advanced.length
       ? `<dl class="scp-olp-adv" aria-label="${e(`${dm.season} advanced profile`)}">` +
         dm.advanced
@@ -121,16 +131,48 @@ export function renderOutlookPremium(data: PlayerPageData): string {
           .join("") +
         `</dl>`
       : "";
-    parts.push(
-      `<section class="scp-olp-sec is-drivers" aria-label="${e(dm.title)}">` +
-        bar(ICON.bars, dm.title, dm.lede, true) +
-        `<div class="scp-olp-body"><div class="scp-olp-matrix">${dm.rows.map((d) => driverRow(d, dm.posWord, m.name, dm.minGames, dm.season)).join("")}</div>${strip}</div>` +
-        `</section>`,
-    );
+    if (unranked) {
+      // Nothing ranked (fewer than minGames games): no rails to draw, so the
+      // "not ranked" line is said once under the heading and every figure is
+      // one cell of a three-column grid, the advanced ones with them (mak,
+      // 2026-11-27).
+      const of = dm.rows.find((d) => d.of > 0)?.of ?? null;
+      const note = `Fewer than ${dm.minGames} games in ${dm.season}, so not ranked${of ? ` against the ${of} ${dm.posWord} who have played that many` : ""}.`;
+      const cell = (label: string, value: string, unit = ""): string =>
+        `<div class="scp-olp-cell"><dt>${e(label)}</dt><dd>${e(value)}${unit ? ` <small>${e(unit)}</small>` : ""}</dd></div>`;
+      parts.push(
+        `<section class="scp-olp-sec is-drivers is-unranked" aria-label="${e(dm.title)}">` +
+          bar(ICON.bars, dm.title, note, true) +
+          `<div class="scp-olp-body"><dl class="scp-olp-cells" aria-label="${e(`${dm.season} profile`)}">` +
+          dm.rows.map((d) => cell(d.label, d.value, d.unit)).join("") +
+          dm.advanced.map((c) => cell(c.label, c.value)).join("") +
+          `</dl></div></section>`,
+      );
+    } else {
+      parts.push(
+        `<section class="scp-olp-sec is-drivers" aria-label="${e(dm.title)}">` +
+          bar(ICON.bars, dm.title, dm.lede, true) +
+          `<div class="scp-olp-body"><div class="scp-olp-matrix">${dm.rows.map((d) => driverRow(d, dm.posWord, m.name, dm.minGames, dm.season)).join("")}</div>${strip}</div>` +
+          `</section>`,
+      );
+    }
   }
 
   const { up, risk } = m.triggers;
-  if (up.length || risk.length) {
+  // What Could Change His Value folds into the matchups section's footer
+  // when that section prints (mak, 2026-11-27): the cards already show the
+  // soft or tough stretch, so the schedule items are dropped and each other
+  // change is one line. With no matchups to show, it keeps its own section.
+  const changeLines = (items: TriggerItem[], kind: "up" | "risk"): string =>
+    items
+      .map(
+        (i) =>
+          `<li class="scp-olp-change is-${kind}"><span class="scp-olp-item-icon">${kind === "up" ? ICON.up : ICON.warn}</span>` +
+          `<p><b>${e(`${i.claim}:`)}</b> ${e(i.evidence)}</p></li>`,
+      )
+      .join("");
+
+  if (!m.schedule && (up.length || risk.length)) {
     const item = (i: TriggerItem, icon: string): string =>
       `<li><span class="scp-olp-item-icon">${icon}</span><div><span class="scp-olp-claim">${e(i.claim)}</span><span class="scp-olp-evid">${e(i.evidence)}</span></div></li>`;
     const card = (kind: "up" | "risk", title: string, items: TriggerItem[]): string =>
@@ -153,25 +195,33 @@ export function renderOutlookPremium(data: PlayerPageData): string {
 
   if (m.schedule) {
     const sm = m.schedule;
+    // Two lines a card (mak, 2026-11-28): "Wk 13 · vs MIA" with the crest at
+    // the right, then "6th vs RBs · Favorable" with the grade in its color.
+    // The week pill and the grade badge are gone.
     const card = (c: ScheduleCard): string => {
       const logo = c.g.opponent?.logo ?? "";
       return (
         `<li class="scp-olp-game is-${c.kind}">` +
-        `<span class="scp-olp-wk">${e(`Wk ${c.g.week}`)}</span>` +
-        `<span class="scp-olp-opp">${e(c.opp)}</span>` +
-        `<span class="scp-olp-rank">${e(c.rankText)}</span>` +
-        `<span class="scp-olp-chip is-${c.kind}">${e(c.word)}</span>` +
-        (logo ? `<img class="scp-olp-crest" src="${e(logo)}" alt="${e(`${c.g.opponentName} logo`)}" width="40" height="40" loading="lazy" decoding="async">` : "") +
+        `<span class="scp-olp-g1"><span class="scp-olp-wk">${e(`Wk ${c.g.week}`)}</span><span class="scp-olp-dot" aria-hidden="true"> · </span><b class="scp-olp-opp">${e(c.opp)}</b></span>` +
+        (logo ? `<img class="scp-olp-crest" src="${e(logo)}" alt="${e(`${c.g.opponentName} logo`)}" width="24" height="24" loading="lazy" decoding="async">` : "") +
+        `<span class="scp-olp-g2"><span class="scp-olp-rank">${e(c.rankText)}</span><span class="scp-olp-dot" aria-hidden="true"> · </span><span class="scp-olp-grade is-${c.kind}">${e(c.word)}</span></span>` +
         `</li>`
       );
     };
+    // What could change his value rides the projection's read above when
+    // that section prints (mak, 2026-11-28: "the More snaps and Red-zone role
+    // notes belong in the player outlook"), so the playoff schedule sits
+    // directly under the cards. Without it they keep their place here.
+    const changes = outlookProjectionModel(data, options)
+      ? ""
+      : changeLines(up.filter((i) => !i.schedule), "up") + changeLines(risk.filter((i) => !i.schedule), "risk");
     parts.push(
       `<section class="scp-olp-sec is-schedule" aria-label="${e(sm.title)}">` +
-        bar(ICON.calendar, sm.title, sm.lede, true) +
+        bar(ICON.calendar, sm.title, sm.lede, true, sm.headline, sm.headlineKind) +
         `<div class="scp-olp-body">` +
         `<ul class="scp-olp-games" aria-label="Next opponents">${sm.cards.map(card).join("")}</ul>` +
-        `<p class="scp-olp-read">${e(sm.verdict)}</p>` +
         (sm.playoffs ? `<p class="scp-olp-read is-playoffs">${e(sm.playoffs)}</p>` : "") +
+        (changes ? `<ul class="scp-olp-changes" aria-label="What could change his value">${changes}</ul>` : "") +
         `</div></section>`,
     );
   }

@@ -24,7 +24,6 @@
 
 import { escapeHtml } from "../render";
 import { headshotImg } from "../headshot-html";
-import { CLUB_BAND_VARIANTS } from "../image-urls";
 import { getTeamByAbbreviation } from "../team/teams";
 import { possessive } from "./title-case";
 import { itemTimestamp, type NewsItem } from "../render";
@@ -280,27 +279,207 @@ function newsPool(data: PlayerPageData, ctx: NewsContext, items: FeedItem[], lea
   return pool;
 }
 
-/* ------------------------------------------- the team pages' News design */
+/* ------------------------------------------- the featured report and list */
 
 /*
- * The tab wears the team pages' News design (mak, 2026-11-06; team/
- * news-premium.ts, .sct-nwp): one wide featured story, a two-column grid of
- * story cards (photo well with a source ribbon and the corner mark, category
- * and date, headline, byline, "Read report"), and a rail of navy-headed
- * cards beside them. The stories are the same feed the timeline printed
- * (buildFeed), newest first; recaps keep their result (finish pill, points,
- * impact read, stat line) and their Box score link. The week groups, the
- * pending and bye rows and the per-row "More" fold are gone with the
- * timeline; the type filter stays above the grid. Around the {Nickname} and
- * the teammates news moved into the rail.
+ * mak, 2026-11-27 (a reviewer's four points, pasted): one featured report,
+ * the newest one matching the active filter, with a modest headshot BESIDE
+ * the headline and summary at every width; under it one chronological list
+ * grouped by day ("Nov 26"), newest first. A row is a linked headline, one
+ * "time · source · category" line and a summary only when it says more than
+ * the headline; thin dividers, no card borders, no image slot, no repeated
+ * "Read report". Same-day updates all stay, told apart by their times.
+ * The rail (Around the {Nickname}, teammates) is unchanged and follows the
+ * feed on narrow screens.
  *
- * Images are the same derivatives the site prints elsewhere: a wire story's
- * own image when it has one, his headshot otherwise (band crops), the club's
- * crest faint in an empty well.
+ * The featured report is left out of the list. A filter it does not match
+ * promotes the newest matching row instead (client/player.ts
+ * wireNewsFilter clones that row into the featured slot).
  */
 
-/** The featured story plus this many cards open; the rest fold. */
-const NWP_VISIBLE = 8;
+/**
+ * Rows shown before "Show earlier updates" (mak, 2026-11-28): five items
+ * with the featured report, so four rows. The client applies the limit after
+ * a filter, so every filter shows its five newest matches; without the
+ * script every row shows.
+ */
+const NWP_VISIBLE = 4;
+
+const words = (s: string): string[] => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").match(/[a-z0-9']+/g) ?? [];
+
+/** Whether a summary says something the headline does not. */
+export function addsDetail(headline: string, summary: string): boolean {
+  const head = new Set(words(headline));
+  const fresh = words(summary).filter((w) => w.length > 3 && !head.has(w));
+  return new Set(fresh).size >= 3;
+}
+
+/**
+ * A fact worth a summary line (mak, 2026-11-28: "only when it adds a
+ * material fact the headline leaves out"): a figure, a designation or
+ * practice status, a timeline, a transaction or contract term the headline
+ * does not already carry. Color ("received the first rep with the starters
+ * during warmups") is left to the article.
+ */
+const MATERIAL = /\b(\d+|out|questionable|doubtful|probable|ir|injured reserve|limited|full|dnp|did not practice|practiced|surgery|sprain|strain|fracture|torn|concussion|week|weeks|month|months|season-ending|return|ruled|inactive|signed|traded|released|waived|claimed|contract|extension|million|guaranteed|cap|deal|suspended|suspension|activated|designated|non-participant|illness|hamstring|ankle|knee|hip|groin|shoulder|foot|calf|quad|wrist|hand|elbow|ribs?|neck|toe|chest|oblique|achilles|acl|mcl|pectoral|thumb|finger)\b/gi;
+
+export function materialFact(headline: string, text: string): boolean {
+  if (!addsDetail(headline, text)) return false;
+  const head = new Set(words(headline));
+  return [...text.matchAll(MATERIAL)].some((m) => !head.has(m[0]!.toLowerCase()));
+}
+
+/** The row's summary: the first sentence, or two, when they add a material fact. */
+function rowSummary(i: FeedItem): string {
+  if (i.type === "game") return "";
+  const { first, rest } = firstSentence(i.summary);
+  if (!first) return "";
+  if (materialFact(i.headline, first)) return first;
+  const two = rest ? `${first} ${firstSentence(rest).first}` : "";
+  return two && materialFact(i.headline, two) ? two : "";
+}
+
+/**
+ * The quiet line under a report's headline (mak, 2026-11-28): "RotoWire ·
+ * 12:52 PM ET · Status". On phones the day leads it (the date column is
+ * desktop only).
+ */
+function rowMeta(i: FeedItem): string {
+  const bits: string[] = [];
+  if (i.source.name && i.source.name !== "Source") bits.push(`<span class="scp-nwp-item-src">${sourceBits(i)}</span>`);
+  if (i.hasTime) bits.push(`<time datetime="${escapeHtml(new Date(i.ms).toISOString())}">${escapeHtml(easternParts(i.ms).time)}</time>`);
+  bits.push(`<span class="scp-nwp-item-cat is-${category(i).key}">${escapeHtml(category(i).label)}</span>`);
+  return `<p class="scp-nwp-item-meta">${phoneDay(i)}${bits.join(SEP)}</p>`;
+}
+
+const SEP = `<span class="scp-nwp-sep" aria-hidden="true"> · </span>`;
+
+/** The day at the head of the second line, phones only. */
+const phoneDay = (i: FeedItem): string =>
+  `<span class="scp-nwp-mday" aria-hidden="true">${escapeHtml(shortDay(etDay(i.ms)))}${SEP}</span>`;
+
+/**
+ * A recap's second line (mak, 2026-11-28): the fantasy points when the
+ * headline does not already say them, the weekly rank, the key stats:
+ * "RB6 · 57 rush yds · 1 rush TD · 4 catches for 31 yds". The featured
+ * report always leads with the points.
+ */
+function rowResult(i: FeedItem, featured: boolean): string {
+  if (i.type !== "game" || !i.pointsLine) return "";
+  const { fpts, fin } = pointsParts(i);
+  const bits: string[] = [];
+  if (featured || !i.pointsInHeadline) bits.push(`<b class="scp-nwp-fpts">${escapeHtml(fpts)}</b>`);
+  if (fin) bits.push(`<span class="scp-nwp-rank"><span class="scp-nw-sr">Finish: </span>${escapeHtml(fin)}</span>`);
+  for (const k of i.keyStats) bits.push(`<span>${escapeHtml(k)}</span>`);
+  return `<p class="scp-nwp-item-meta is-stats">${featured ? "" : phoneDay(i)}${bits.join(SEP)}</p>`;
+}
+
+/** The headline; a recap's links to its box score (the game page). */
+function rowHeadline(tag: "h3" | "h4", i: FeedItem): string {
+  const href = i.type === "game" ? i.boxHref ?? i.url : i.url;
+  const external = i.type === "game" ? false : i.external;
+  const inner = href
+    ? `<a href="${escapeHtml(href)}" data-cta="news-item-${i.type}"${external ? ` rel="noopener" target="_blank"` : ""}>${escapeHtml(i.headline)}${external ? OPENS_NEW : ""}</a>`
+    : escapeHtml(i.headline);
+  return `<${tag} class="scp-nwp-item-h">${inner}</${tag}>`;
+}
+
+/** Headline first, then one quieter line, then a summary only when it adds a fact. */
+function itemBody(i: FeedItem, tag: "h3" | "h4", summary: string, featured = false): string {
+  return (
+    `<div class="scp-nwp-item-body">` +
+    rowHeadline(tag, i) +
+    (i.type === "game" ? rowResult(i, featured) : rowMeta(i)) +
+    (summary && i.type !== "game" ? `<p class="scp-nwp-item-sum">${escapeHtml(summary)}</p>` : "") +
+    `</div>`
+  );
+}
+
+const filterAttrs = (i: FeedItem): string => ` data-type="${i.type}" data-impact="${i.impact}"` + (MOVES.includes(i.type) ? ` data-group="moves"` : "");
+
+/**
+ * One row: the day in a narrow left column, printed beside the first row of
+ * that day only (the client re-marks the first after a filter), then the
+ * body.
+ */
+function nwpRow(i: FeedItem, first: boolean, later: boolean): string {
+  const day = etDay(i.ms);
+  return (
+    `<li class="scp-nwp-item is-${i.impact}${first ? " is-first" : ""}${later ? " is-later" : ""}" data-scp-news-item data-day="${escapeHtml(shortDay(day))}"${filterAttrs(i)}>` +
+    `<span class="scp-nwp-item-date"><time datetime="${escapeHtml(day)}">${escapeHtml(shortDay(day))}</time></span>` +
+    itemBody(i, "h4", rowSummary(i)) +
+    `</li>`
+  );
+}
+
+/** The modest headshot beside the featured report. */
+function leadFace(data: PlayerPageData): string {
+  const img = headshotImg({
+    src: data.player.headshotUrl,
+    id: data.player.id,
+    className: "scp-nwp-lead-img",
+    alt: "",
+    variants: ["160"],
+    width: 88,
+    height: 88,
+    loading: "eager",
+    extra: ` aria-hidden="true"`,
+  });
+  return `<span class="scp-nwp-lead-face" aria-hidden="true">${img ?? ""}</span>`;
+}
+
+/**
+ * The featured report (mak, 2026-11-28): the headshot, the day, the headline
+ * and one line. A recap: "34.9 FPTS · RB1 · 111 rush yds · 3 rush TD", its
+ * headline linked to the box score, no impact badge and no takeaway
+ * sentence. A report: its source line, and its first sentence when it adds
+ * a fact the headline leaves out.
+ */
+function nwpLead(data: PlayerPageData, i: FeedItem): string {
+  const summary = rowSummary(i);
+  return (
+    `<article class="scp-nwp-lead is-${i.impact}" data-scp-news-lead${filterAttrs(i)}>` +
+    leadFace(data) +
+    `<div class="scp-nwp-lead-main"><p class="scp-nwp-lead-day">${escapeHtml(shortDay(etDay(i.ms)))}</p>${itemBody(i, "h3", summary, true)}</div>` +
+    `</article>`
+  );
+}
+
+/** No story this season: the most recent one from any season, featured. */
+function nwpFallback(data: PlayerPageData, item: NewsItem): string {
+  const ts = itemTimestamp(item);
+  const url = item.link ?? null;
+  const source = (item.source ?? "").trim();
+  return (
+    `<article class="scp-nwp-lead is-old">` +
+    leadFace(data) +
+    `<div class="scp-nwp-lead-main"><p class="scp-nwp-lead-day">${escapeHtml(`From ${ts ? etDay(ts).slice(0, 4) : "an earlier season"}`)}</p>` +
+    `<div class="scp-nwp-item-body">` +
+    `<p class="scp-nwp-item-meta">${ts ? `<time datetime="${escapeHtml(etDay(ts))}">${escapeHtml(shortDay(etDay(ts)))}</time>` : ""}${source ? `<span class="scp-nwp-sep" aria-hidden="true"> · </span><span class="scp-nwp-item-src">${link(url, source, "", true)}</span>` : ""}</p>` +
+    `<h3 class="scp-nwp-item-h">${url ? link(url, item.title, "", true) : escapeHtml(item.title)}</h3>` +
+    (item.summary ? `<p class="scp-nwp-item-sum">${escapeHtml(firstSentence(item.summary).first)}</p>` : "") +
+    `</div></div></article>`
+  );
+}
+
+/** The list, newest first, the day beside the first row of each day. */
+function nwpList(list: FeedItem[]): string {
+  let prev = "";
+  return (
+    `<ol class="scp-nwp-list is-flat">` +
+    list
+      .map((i, n) => {
+        const day = etDay(i.ms);
+        const first = day !== prev;
+        prev = day;
+        return nwpRow(i, first, n >= NWP_VISIBLE);
+      })
+      .join("") +
+    `</ol>`
+  );
+}
+
+/* -------------------------------------------------------------- the rail */
 
 const NWP_ICON: Record<string, string> = {
   injury: `<path d="M12 5v14M5 12h14" stroke-width="3"/>`,
@@ -313,111 +492,6 @@ const NWP_ICON: Record<string, string> = {
 const nwpSvg = (key: string, className: string): string =>
   `<svg class="${className}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${NWP_ICON[key] ?? NWP_ICON.news}</svg>`;
 
-/** The photo well's image: the band crop (16:9), or the empty well. */
-function nwpPhoto(src: string | null | undefined, id: string | null | undefined, featured: boolean): string {
-  const img = headshotImg({
-    src,
-    id,
-    className: "scp-nwp-photo",
-    alt: "",
-    variants: ["b350", ...CLUB_BAND_VARIANTS],
-    sizes: featured ? "(max-width: 700px) 100vw, 420px" : "(max-width: 700px) 100vw, 380px",
-    width: featured ? 640 : 480,
-    height: featured ? 360 : 270,
-    loading: "lazy",
-    extra: ` aria-hidden="true"`,
-  });
-  return img ?? `<span class="scp-nwp-photo-empty" aria-hidden="true"></span>`;
-}
-
-/** "GAME RECAP | NOV 1 · 9:15 AM ET": the category and the absolute date. */
-function nwpStamp(label: string, ms: number, hasTime: boolean): string {
-  const iso = hasTime ? new Date(ms).toISOString() : etDay(ms);
-  return (
-    `<p class="scp-nwp-news-meta"><span class="scp-nwp-news-kicker">${escapeHtml(label)}</span>` +
-    `<span class="scp-nwp-dot" aria-hidden="true"></span>` +
-    `<time datetime="${escapeHtml(iso)}">${escapeHtml(shortDay(etDay(ms)))}` +
-    (hasTime ? `<span class="scp-nwp-news-time"> · ${escapeHtml(easternParts(ms).time)}</span>` : "") +
-    `</time></p>`
-  );
-}
-
-/** The headline, the whole card its target; external stories open a new tab. */
-function nwpTitle(url: string | null, text: string, external: boolean): string {
-  if (!url) return `<h3 class="scp-nwp-title">${escapeHtml(text)}</h3>`;
-  return (
-    `<h3 class="scp-nwp-title"><a class="scp-nwp-link" href="${escapeHtml(url)}"` +
-    (external ? ` rel="noopener" target="_blank"` : "") +
-    `>${escapeHtml(text)}${external ? OPENS_NEW : ""}</a></h3>`
-  );
-}
-
-/** The ribbon over the photo: a recap's score, a report's source. */
-function nwpRibbon(i: FeedItem): string {
-  const game = i.type === "game";
-  const text = game ? i.group.result ?? "" : i.external ? i.source.name : "";
-  if (!text || text === "Source") return "";
-  const key = game ? "game" : category(i).key === "injury" ? "injury" : MOVES.includes(i.type) ? "swap" : "news";
-  return `<span class="scp-nwp-ribbon">${nwpSvg(key, "scp-nwp-ribbon-icon")}<span class="scp-nwp-ribbon-text">${escapeHtml(text)}</span></span>`;
-}
-
-function nwpCard(data: PlayerPageData, ctx: NewsContext, i: FeedItem, image: NewsItem | undefined, featured: boolean): string {
-  const game = i.type === "game";
-  const { fpts, fin } = pointsParts(i);
-  // A wire story's own image when it carries one, his headshot otherwise.
-  const photo = image?.image ? nwpPhoto(image.image, null, featured) : nwpPhoto(data.player.headshotUrl, data.player.id, featured);
-  const result =
-    game && i.pointsLine
-      ? `<div class="scp-nwp-badges">${finishPill(ctx.pos, fin)}<b class="scp-nwp-fpts">${escapeHtml(fpts)}</b>${impactRead(i)}</div>` +
-        (i.panel ? `<p class="scp-nwp-stats">${escapeHtml(timelineStats(i.panel.lines))}</p>` : "")
-      : i.impact !== "flat"
-        ? `<div class="scp-nwp-badges">${impactRead(i)}</div>`
-        : "";
-  const byline = game ? "" : `<p class="scp-nwp-byline"><span class="scp-nwp-source">${sourceBits(i)}</span></p>`;
-  const sentence = game ? i.takeaway ?? "" : firstSentence(i.summary).first || i.take;
-  // The headline's own destination again, for sighted readers only; a
-  // recap's Box score is a second destination and a real link.
-  const box = game && i.boxHref ? `<a class="scp-nwp-more is-box" href="${escapeHtml(i.boxHref)}" data-cta="news-boxscore">Box score <span class="scp-nwp-arrow" aria-hidden="true">→</span></a>` : "";
-  const read = i.url
-    ? `<a class="scp-nwp-more" href="${escapeHtml(i.url)}" tabindex="-1" aria-hidden="true" data-cta="news-readmore-${i.type}"${i.external ? ` rel="noopener" target="_blank"` : ""}>` +
-      `${game && !i.external ? "View game recap" : "Read report"} <span class="scp-nwp-arrow">→</span></a>`
-    : "";
-  return (
-    `<article class="scp-nwp-card${featured ? " is-featured" : ""} is-${i.impact}" data-type="${i.type}" data-impact="${i.impact}"` +
-    (MOVES.includes(i.type) ? ` data-group="moves"` : "") +
-    (featured ? "" : ` data-scp-news-item`) +
-    `>` +
-    `<div class="scp-nwp-well">${photo}${nwpRibbon(i)}<span class="scp-nwp-corner" aria-hidden="true"></span></div>` +
-    `<div class="scp-nwp-body">` +
-    (featured && data.team?.logo
-      ? `<img class="scp-nwp-watermark" src="${escapeHtml(data.team.logo)}" alt="" width="160" height="160" loading="lazy" decoding="async" aria-hidden="true">`
-      : "") +
-    nwpStamp(category(i).label, i.ms, i.hasTime) +
-    nwpTitle(i.url, i.headline, i.external) +
-    result +
-    byline +
-    (sentence ? `<p class="scp-nwp-sum">${escapeHtml(sentence)}</p>` : "") +
-    (box || read ? `<p class="scp-nwp-cta">${box}${read}</p>` : "") +
-    `</div>` +
-    `</article>`
-  );
-}
-
-/** No story this season: the most recent one from any season, featured. */
-function nwpFallback(data: PlayerPageData, item: NewsItem): string {
-  const ts = itemTimestamp(item);
-  const url = item.link ?? null;
-  return (
-    `<article class="scp-nwp-card is-featured is-old">` +
-    `<div class="scp-nwp-well">${item.image ? nwpPhoto(item.image, null, true) : nwpPhoto(data.player.headshotUrl, data.player.id, true)}<span class="scp-nwp-corner" aria-hidden="true"></span></div>` +
-    `<div class="scp-nwp-body">` +
-    nwpStamp(`From ${ts ? etDay(ts).slice(0, 4) : "an earlier season"}`, ts ?? Date.now(), ts !== null) +
-    nwpTitle(url, item.title, true) +
-    `<p class="scp-nwp-byline"><span class="scp-nwp-source">${link(url, (item.source ?? "").trim() || "Source", "", true)}</span></p>` +
-    (item.summary ? `<p class="scp-nwp-sum">${escapeHtml(firstSentence(item.summary).first)}</p>` : "") +
-    `</div></article>`
-  );
-}
 
 function nwpFilters(items: FeedItem[]): string {
   const types = new Set(items.map((i) => i.type));
@@ -425,6 +499,7 @@ function nwpFilters(items: FeedItem[]): string {
     ["all", "All", true],
     ["game", "Games", types.has("game")],
     ["status", "Status", types.has("status")],
+    ["analysis", "News", types.has("analysis")],
     ["moves", "Moves", MOVES.some((t) => types.has(t))],
   ];
   const shown = buttons.filter(([, , on]) => on);
@@ -507,33 +582,41 @@ function nwpMatesCard(data: PlayerPageData, ctx: NewsContext, options: PlayerRen
   );
 }
 
-function renderNewsPremium(data: PlayerPageData, ctx: NewsContext, items: FeedItem[], lead: FeedItem | null, options: PlayerRenderOptions): string {
-  const byId = new Map((data.news ?? []).map((n) => [n.id, n] as const));
-  const rest = items.filter((i) => i !== lead).sort((a, b) => b.ms - a.ms);
+function renderNewsPremium(data: PlayerPageData, ctx: NewsContext, items: FeedItem[], options: PlayerRenderOptions): string {
+  const sorted = [...items].sort((a, b) => b.ms - a.ms);
+  // The newest report is featured (mak, 2026-11-27), and left out of the list.
+  const lead = sorted[0] ?? null;
+  const rest = sorted.slice(1);
   const fallback = lead ? null : data.news?.[0] ?? null;
-  const featured = lead ? nwpCard(data, ctx, lead, byId.get(lead.id), true) : fallback ? nwpFallback(data, fallback) : "";
-  const grid = (list: FeedItem[]): string =>
-    list.length ? `<div class="scp-nwp-grid">${list.map((i) => nwpCard(data, ctx, i, byId.get(i.id), false)).join("")}</div>` : "";
-  const shown = rest.slice(0, NWP_VISIBLE);
-  const folded = rest.slice(NWP_VISIBLE);
-  const feed = rest.length
-    ? `<section class="scp-nwp-feed" aria-label="${escapeHtml(`More ${ctx.last} updates this season`)}">` +
-      nwpFilters(rest) +
-      grid(shown) +
-      (folded.length
-        ? `<details class="scp-nwp-fold"><summary class="scp-nwp-more-summary"><span>${escapeHtml(`View ${folded.length} more ${ctx.last} ${folded.length === 1 ? "update" : "updates"}`)}</span></summary>${grid(folded)}</details>`
-        : "") +
-      `</section>`
+  const featured = lead ? nwpLead(data, lead) : fallback ? nwpFallback(data, fallback) : "";
+  const later = rest.length > NWP_VISIBLE;
+  const list = rest.length
+    ? `<div class="scp-nwp-stream">` +
+      nwpList(rest) +
+      // The client shows the button (and applies the limit) only when it
+      // runs; without it every row stands.
+      `<button type="button" class="scp-nwp-more" data-scp-news-more hidden${later ? "" : " data-none"}>Show earlier updates</button>` +
+      `</div>`
     : "";
   const none = featured
     ? ""
     : `<div class="scp-nwp-none"><p class="scp-nwp-none-title">${escapeHtml(`No ${ctx.last} news yet this season.`)}</p>` +
       `<p class="scp-nwp-none-body">New reports, practice notes and game recaps appear here as they arrive.</p></div>`;
+  const feed =
+    featured || list
+      ? // Its own card and head, as the rail's (mak, 2026-11-28): "Latest
+        // {Last} News" over the filters, the featured report and the days.
+        // The filters sit at the right of the head row (mak, 2026-11-28).
+        `<section class="scp-nwp-feed scp-nwp-rail-card is-feed" aria-labelledby="scp-nw-feed-h">` +
+        `<div class="scp-nwp-head">${nwpSvg("news", "scp-nwp-icon")}<h3 class="scp-nwp-h3" id="scp-nw-feed-h">${escapeHtml(`Latest ${ctx.last} News`)}</h3>` +
+        `${lead ? nwpFilters(sorted) : ""}<span class="scp-nwp-slash" aria-hidden="true"></span></div>` +
+        `<div class="scp-nwp-rail-body scp-nwp-feed-body">${featured}${list}</div></section>`
+      : "";
   const rail = nwpTeamCard(data, options) + nwpMatesCard(data, ctx, options);
   if (!featured && !rest.length && !rail) return "";
   return (
     `<div class="scp-nwp-layout${rail ? "" : " is-solo"}">` +
-    `<div class="scp-nwp-main">${featured}${none}${feed}</div>` +
+    `<div class="scp-nwp-main">${feed}${none}</div>` +
     (rail ? `<aside class="scp-nwp-rail" aria-label="${escapeHtml(`${data.team?.nickname ?? "Team"} news and teammates`)}">${rail}</aside>` : "") +
     `</div>`
   );
@@ -551,7 +634,7 @@ export function renderNewsTabParts(data: PlayerPageData, options: PlayerRenderOp
   const { items } = buildFeed(ctx, data.news ?? []);
   const lead = pickLead(items);
 
-  const body = renderNewsPremium(data, ctx, items, lead, options);
+  const body = renderNewsPremium(data, ctx, items, options);
   if (!body) return null;
 
   // No sourcing/methodology footer (mak, 2026-10-02).
@@ -606,14 +689,18 @@ export function newsBriefItems(data: PlayerPageData, options: PlayerRenderOption
     .slice(0, limit);
 }
 
-export function renderNewsBrief(data: PlayerPageData, options: PlayerRenderOptions = {}, limit = 3): string {
+export function renderNewsBrief(
+  data: PlayerPageData,
+  options: PlayerRenderOptions = {},
+  limit = 3,
+  { fold = false }: { fold?: boolean } = {},
+): string {
   const shown = newsBriefItems(data, options, limit);
   if (shown.length === 0) return "";
   const prefix = options.playerPathPrefix ?? "/player/";
   const q = options.linkQuery ?? "";
   const href = `${prefix}${data.player.slug}/news/${q}`;
-  const rows = shown
-    .map((i) => {
+  const row = (i: FeedItem): string => {
       const sentence = firstSentence(i.summary).first;
       // The summary only when it says more than the headline does.
       const extra = sentence && !sentence.toLowerCase().includes(i.headline.toLowerCase().slice(0, 40)) ? sentence : "";
@@ -624,10 +711,25 @@ export function renderNewsBrief(data: PlayerPageData, options: PlayerRenderOptio
         (extra ? `<p class="scp-nw-dg-sum">${escapeHtml(extra)}</p>` : "") +
         `</li>`
       );
-    })
-    .join("");
+    };
+  if (fold) {
+    // The Overview (mak, 2026-11-27): the newest update with its summary,
+    // the older ones behind "Show N earlier updates", every timestamp kept
+    // (several practice reports can land the same day). The section's title
+    // row carries the "All news" link, so none is printed here.
+    const [first, ...older] = shown;
+    const n = older.length;
+    return (
+      `<div class="scp-nw scp-nw-dg is-fold"><ol class="scp-nw-digest">${row(first!)}</ol>` +
+      (n
+        ? `<details class="scp-nw-dg-more"><summary>${escapeHtml(`Show ${n} earlier ${n === 1 ? "update" : "updates"}`)}</summary>` +
+          `<ol class="scp-nw-digest">${older.map(row).join("")}</ol></details>`
+        : "") +
+      `</div>`
+    );
+  }
   return (
-    `<div class="scp-nw scp-nw-dg"><ol class="scp-nw-digest">${rows}</ol></div>` +
+    `<div class="scp-nw scp-nw-dg"><ol class="scp-nw-digest">${shown.map(row).join("")}</ol></div>` +
     `<a class="scp-ox-more" href="${escapeHtml(href)}">${escapeHtml(`All ${data.player.name} news and updates`)}</a>`
   );
 }

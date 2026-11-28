@@ -25,7 +25,7 @@
 import { escapeHtml } from "../render";
 import type { PlayerRenderOptions } from "../player-render";
 import type { PlayerPageData } from "./player-data";
-import { careerPremiumModel, type CareerSeasonBar } from "./stats-tab";
+import { careerPremiumModel, type CareerSeasonBar, type CareerSummary } from "./stats-tab";
 
 /** One decimal, a true minus sign for a negative (the house rule). */
 const one = (v: number): string => v.toFixed(1).replace(/^-/, "\u2212");
@@ -155,6 +155,63 @@ function chart(m: ReturnType<typeof careerPremiumModel> & object): string {
   );
 }
 
+/* ---------------------------------------------------------------- summary */
+
+/**
+ * The compact summary a young career (or a single season of stats) gets in
+ * place of the chart, the rate tiles and the read with its Redraft Command
+ * card (mak, 2026-11-28). It keeps the read's H2 id. The start/sit link
+ * sits at the right of the heading on desktop and under the takeaway on
+ * phones: it follows the text in the source and the grid lifts it.
+ */
+function summaryBlock(
+  m: ReturnType<typeof careerPremiumModel> & object,
+  sum: CareerSummary,
+): string {
+  // Since the editorial story (2026-11-28) the summary keeps only its
+  // compact season comparison for years 2 and 3; its heading, lines and link
+  // are the story's now.
+  if (!sum.seasons.length) return "";
+  return (
+    `<ul class="scp-cp-cmp" aria-label="${escapeHtml(`${m.scoring} points per game by season`)}">` +
+    sum.seasons
+      .map(
+        (s) =>
+          `<li class="scp-cp-cmp-item${s.inProgress ? " is-now" : ""}">` +
+          `<span class="scp-cp-cmp-season">${s.season}</span>` +
+          `<span class="scp-cp-cmp-v">${escapeHtml(one(s.ppg))}<small> PPG</small></span>` +
+          `<span class="scp-cp-cmp-sub">${escapeHtml(
+            [`${s.gp} GP`, s.finish ? `${m.pos}${s.finish}` : null, s.inProgress ? "in progress" : null]
+              .filter(Boolean)
+              .join(" · "),
+          )}</span>` +
+          `</li>`,
+      )
+      .join("") +
+    `</ul>`
+  );
+}
+
+/**
+ * The editorial summary (mak's brief, 2026-11-28; stats-story.ts): a
+ * headline that tells the story and one or two short paragraphs, left
+ * aligned at natural height, with the start/sit link as a compact action
+ * under the copy. The headline keeps the old read heading's id, so a link
+ * to #scp-st-read-h still lands here.
+ */
+function storyBlock(m: ReturnType<typeof careerPremiumModel> & object): string {
+  const st = m.story!;
+  return (
+    `<div class="scp-cp-story" data-angle="${escapeHtml(st.angle)}">` +
+    `<h3 class="scp-cp-story-h" id="scp-st-read-h">${escapeHtml(st.headline)}</h3>` +
+    st.paragraphs.map((p) => `<p>${st.html ? p : escapeHtml(p)}</p>`).join("") +
+    (m.redraft
+      ? `<a class="scp-cp-story-link" href="${escapeHtml(m.redraft.href)}" data-cta="startsit-stats-sidebar">${escapeHtml(m.redraft.cta)}<span class="scp-cp-rc-arrow" aria-hidden="true">${ICON.arrow}</span></a>`
+      : "") +
+    `</div>`
+  );
+}
+
 /* ------------------------------------------------------------------ block */
 
 export function renderPremiumCareer(data: PlayerPageData, options: PlayerRenderOptions = {}): string {
@@ -173,7 +230,9 @@ export function renderPremiumCareer(data: PlayerPageData, options: PlayerRenderO
     // <=560px), and "Career " / " PPG" are CSS ::before / ::after there,
     // never part of the heading text.
     `<h2 class="scp-ox-h2 scp-cp-bar-title" id="scp-st-arc-h"><span class="scp-stp-xs">${escapeHtml(m.name)} </span><span class="scp-cp-title-main">Fantasy<span class="scp-stp-xs"> Football Stats</span></span></h2>` +
-    `<p class="scp-cp-bar-sub">Fantasy points per game, every season.</p>` +
+    // The generic subtitle goes where the editorial headline speaks for the
+    // section (mak, 2026-11-28).
+    (m.story ? "" : `<p class="scp-cp-bar-sub">Fantasy points per game, every season.</p>`) +
     `</div>` +
     `<span class="scp-cp-bar-art" aria-hidden="true">${ICON.football}</span>` +
     `<span class="scp-cp-bar-stripes" aria-hidden="true"></span>` +
@@ -219,7 +278,11 @@ export function renderPremiumCareer(data: PlayerPageData, options: PlayerRenderO
       `</div>`
     : "";
 
-  const highs = m.highs.length
+  // One season of stats: every "career high" is that season's total, and the
+  // career table just above prints them, so the row would repeat it
+  // (mak, 2026-11-28).
+  const oneSeason = m.seasons.length === 1;
+  const highs = m.highs.length && !oneSeason
     ? `<div class="scp-cp-highs">` +
       `<h3 class="scp-cp-h is-highs">Career Highs</h3>` +
       `<ul class="scp-cp-high-list">` +
@@ -241,9 +304,11 @@ export function renderPremiumCareer(data: PlayerPageData, options: PlayerRenderO
     `<section class="scp-ox-sec scp-cp" aria-labelledby="scp-st-arc-h">` +
     head +
     `<div class="scp-cp-body">` +
-    chart(m) +
-    kpis +
-    read +
+    // The story first, under the heading; then the season comparison (years
+    // 1-3, one season) or the chart and cards (everyone else). The old read
+    // and its promo card render only when there is no story.
+    (m.story ? storyBlock(m) : "") +
+    (m.summary ? summaryBlock(m, m.summary) : chart(m) + kpis + (m.story ? "" : read)) +
     highs +
     `</div>` +
     `</section>`

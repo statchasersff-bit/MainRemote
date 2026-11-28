@@ -654,29 +654,99 @@ let hashListening = false;
  * "moves" matches the items carrying data-group="moves".
  */
 function wireNewsFilter(root: HTMLElement): void {
-  for (const group of Array.from(root.querySelectorAll<HTMLElement>("[data-scp-news-filter]"))) {
-    if (group.dataset.wired) continue;
-    group.dataset.wired = "1";
-    const scope = group.closest("section") ?? root;
-    const buttons = Array.from(group.querySelectorAll<HTMLButtonElement>("button[data-f]"));
+  for (const feed of Array.from(root.querySelectorAll<HTMLElement>(".scp-nwp-feed"))) {
+    if (feed.dataset.wired) continue;
+    feed.dataset.wired = "1";
+    const group = feed.querySelector<HTMLElement>("[data-scp-news-filter]");
+    const buttons = group ? Array.from(group.querySelectorAll<HTMLButtonElement>("button[data-f]")) : [];
+    const more = feed.querySelector<HTMLButtonElement>("[data-scp-news-more]");
+    const rows = Array.from(feed.querySelectorAll<HTMLElement>("[data-scp-news-item]"));
+    // The featured report (mak, 2026-11-27): the newest one matching the
+    // filter. The server's own lead is kept to restore; a filter it does not
+    // match borrows the newest matching row's body, and that row steps out
+    // of the list while it is featured.
+    const lead = feed.querySelector<HTMLElement>("[data-scp-news-lead]");
+    const leadMain = lead?.querySelector<HTMLElement>(".scp-nwp-lead-main") ?? null;
+    const original = leadMain?.innerHTML ?? "";
+    const matches = (el: HTMLElement, f: string): boolean => f === "all" || el.dataset.type === f || (el.dataset.group ?? "") === f;
+    // Five items with the featured report (mak, 2026-11-28), counted after
+    // the filter, then "Show earlier updates".
+    const VISIBLE = 4;
+    let filter = "all";
+    let expanded = false;
+    const apply = (): void => {
+      for (const item of rows) item.hidden = !matches(item, filter);
+      if (lead && leadMain) {
+        const promoted = matches(lead, filter) ? null : rows.find((r) => !r.hidden) ?? null;
+        if (promoted) {
+          promoted.hidden = true;
+          const body = promoted.querySelector<HTMLElement>(".scp-nwp-item-body");
+          leadMain.innerHTML = `<p class="scp-nwp-lead-day"></p>${body ? body.outerHTML : ""}`;
+          leadMain.querySelector(".scp-nwp-lead-day")!.textContent = promoted.dataset.day ?? "";
+          // The featured headline is the h3 the server prints there.
+          const h = leadMain.querySelector("h4.scp-nwp-item-h");
+          if (h) {
+            const h3 = document.createElement("h3");
+            h3.className = h.className;
+            h3.innerHTML = h.innerHTML;
+            h.replaceWith(h3);
+          }
+        } else {
+          leadMain.innerHTML = original;
+        }
+      }
+      const shown = rows.filter((r) => !r.hidden);
+      let prev = "";
+      shown.forEach((r, n) => {
+        const later = !expanded && n >= VISIBLE;
+        r.classList.toggle("is-later", later);
+        // The day prints beside the first row of each day still in view.
+        const first = !later && r.dataset.day !== prev;
+        r.classList.toggle("is-first", first);
+        if (!later) prev = r.dataset.day ?? "";
+      });
+      if (more) more.hidden = expanded || shown.length <= VISIBLE;
+    };
+    // Collapse only when the full list would run taller than the rail beside
+    // it (mak, 2026-11-28: "don't collapse it unless it's taller than the
+    // rail"). With no rail alongside (phones stack it below), the five-item
+    // limit stands. A reader who opened the list keeps it open.
+    const rail = root.querySelector<HTMLElement>(".scp-nwp-rail");
+    let opened = false;
+    const fit = (): void => {
+      expanded = true;
+      apply();
+      if (opened) return;
+      const railBox = rail?.getBoundingClientRect();
+      const feedBox = feed.getBoundingClientRect();
+      const beside = Boolean(railBox && railBox.height > 0 && railBox.top < feedBox.bottom && railBox.left >= feedBox.right - 1);
+      if (beside && feedBox.height <= railBox!.height + 1) return;
+      expanded = false;
+      apply();
+    };
     for (const button of buttons) {
       button.addEventListener("click", () => {
-        const f = button.dataset.f ?? "all";
-        let shown = 0;
+        filter = button.dataset.f ?? "all";
+        opened = false;
         for (const b of buttons) b.setAttribute("aria-pressed", String(b === button));
-        // The story cards (the team pages' News design, 2026-11-06); a match
-        // in the folded cards opens the fold.
-        for (const item of Array.from(scope.querySelectorAll<HTMLElement>("[data-scp-news-item]"))) {
-          const ok = f === "all" || item.dataset.type === f || (item.dataset.group ?? "") === f;
-          item.hidden = !ok;
-          if (ok) shown += 1;
-        }
-        const fold = scope.querySelector<HTMLDetailsElement>(".scp-nwp-fold");
-        if (fold && f !== "all" && fold.querySelector("[data-scp-news-item]:not([hidden])")) fold.open = true;
-        const empty = scope.querySelector<HTMLElement>("#scp-nw-empty");
-        if (empty) empty.hidden = shown > 0;
+        fit();
       });
     }
+    more?.addEventListener("click", () => {
+      opened = true;
+      expanded = true;
+      apply();
+    });
+    // The limit's CSS waits on this class: without the script every row shows.
+    feed.classList.add("is-js");
+    fit();
+    let resizeTimer = 0;
+    window.addEventListener("resize", () => {
+      window.clearTimeout(resizeTimer);
+      resizeTimer = window.setTimeout(fit, 150);
+    });
+    // Late images (headshots, crests) change both heights once they load.
+    window.addEventListener("load", fit, { once: true });
   }
 }
 

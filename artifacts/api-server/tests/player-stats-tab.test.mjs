@@ -140,7 +140,9 @@ describe("stats tab", () => {
       "Jacoby Brissett 2026 Stats",
       "Jacoby Brissett Fantasy Football Stats",
     ]);
-    assert.deepEqual([...doc.querySelectorAll("h2")].map((h) => h.id), ["scp-st-prod-h", "scp-st-arc-h", "scp-st-read-h"]);
+    // The read's H2 went with the editorial story (mak, 2026-11-28): the
+    // story's headline is an H3 that keeps its id.
+    assert.deepEqual([...doc.querySelectorAll("h2")].map((h) => h.id), ["scp-st-prod-h", "scp-st-arc-h"]);
     assert.equal(doc.querySelector("h2#scp-st-prod-h").className.includes("is-lead"), true);
     // The advanced metrics sit inside "2026 Stats" (mak, 2026-11-06); the
     // "Passing Stats" section, its H2 and its summary line are gone.
@@ -149,8 +151,8 @@ describe("stats tab", () => {
     assert.equal(doc.querySelector(".scp-stp-kpis"), null, "the KPI cards are gone when there are metrics");
     assert.equal(doc.querySelector("[data-scp-seg]"), null, "no totals / per-game toggle with nothing to switch");
     assert.ok(doc.querySelector(".scp-cp h2#scp-st-arc-h.scp-cp-bar-title"), "the career block's bar is the section's H2");
-    assert.ok(doc.querySelector(".scp-cp h2#scp-st-read-h.scp-cp-h"), "the read's H2 is in the career block");
-    assert.equal(text(doc.querySelector("#scp-st-arc-h + .scp-cp-bar-sub")), "Fantasy points per game, every season.");
+    assert.ok(doc.querySelector(".scp-cp h3#scp-st-read-h.scp-cp-story-h"), "the story's headline keeps the read's id");
+    assert.equal(doc.querySelector(".scp-cp-bar-sub"), null, "no generic subtitle where the story speaks");
     assert.equal(doc.querySelector(".scp-st-table caption"), null);
     // Not the panel heading: that one stays with the tab's original content.
     assert.equal(doc.querySelector(".scp-h2"), null);
@@ -312,8 +314,8 @@ describe("stats tab", () => {
     const weeks = [qb(1, 16, 12, "ARI", { gp: 1, gs: 1 }), idle, qb(3, 16, 12, "ARI", { gp: 1, gs: 1 })];
     const doc = render(state({ ...NO_ADV, logCareer: [{ season: 2026, weeks, finish: 20 }] }));
     assert.equal(text(doc.querySelector(".scp-stp-kpi:first-child .scp-stp-kpi-value")), "3");
-    assert.match(text(doc.querySelector(".scp-cp-x")), /3 GP/);
-    assert.match(text(doc.querySelector(".scp-cp-kpi")), /10\.7Career PPG3 games, 1 season · PPR/);
+    // The idle week is an appearance in the story too (mak, 2026-11-28).
+    assert.match(text(doc.querySelector(".scp-cp-story p")), /has appeared in three games through Week \d+, averaging 10\.7 PPR points/);
   });
 
   test("the chart: a zero-based scale, the latest full season green, the current one hatched, the average line, the club under each bar", () => {
@@ -340,17 +342,89 @@ describe("stats tab", () => {
 
   test("a traded season: the chart names both clubs", () => {
     const weeks = [qb(1, 10, 20, "NYJ"), qb(2, 10, 20, "NYJ"), qb(3, 10, 20, "ARI")];
-    const doc = render(state({ logCareer: [{ season: 2026, weeks, finish: 20 }] }));
-    assert.match(text(doc.querySelector(".scp-cp-x small")), /NYJ\/ARI/);
+    // Two seasons and no known experience: the full layout with its chart.
+    const doc = render(state({ logCareer: [{ season: 2026, weeks, finish: 20 }, state().logCareer[1]] }));
+    assert.match(text(doc.querySelector(".scp-cp-x:last-child small")), /NYJ\/ARI/);
   });
 
-  test("one NFL season: a single bar, no average line, no weekly swing", () => {
-    const doc = render(state({ logCareer: [state().logCareer[0]] }));
-    assert.equal(doc.querySelectorAll(".scp-cp-col").length, 1);
-    assert.equal(doc.querySelector(".scp-cp-chart.has-avg"), null);
-    assert.equal(doc.querySelector(".scp-cp-avg"), null);
-    assert.doesNotMatch(text(doc.querySelector(".scp-cp-kpis")), /Weekly swing/);
-    assert.doesNotMatch(text(doc.querySelector(".scp-cp-prose")), /without a top-12/);
+  // The editorial story (mak's brief, 2026-11-28; stats-story.ts): one
+  // headline and one or two paragraphs from his own numbers, under the
+  // section heading. Years 1-3 keep the compact season chips; one season of
+  // stats keeps no chart and no highs row.
+  const story = (doc) => ({
+    angle: doc.querySelector(".scp-cp-story").dataset.angle,
+    h: text(doc.querySelector(".scp-cp-story-h")),
+    p: [...doc.querySelectorAll(".scp-cp-story p")].map(text),
+  });
+
+  test("one season of stats: the story alone, no chart, no highs row, no chips", () => {
+    for (const years_exp of [undefined, 0, 6]) {
+      const doc = render(state({ player: { ...state().player, years_exp }, logCareer: [state().logCareer[0]] }));
+      const st = story(doc);
+      // Three games: the short account, his best game with the opponent.
+      assert.equal(st.angle, "small-sample");
+      assert.equal(st.h, "Brissett's best game so far came in Week 3");
+      assert.match(st.p[0], /^Jacoby Brissett has appeared in three games through Week 3, averaging 16\.5 PPR points\. In Week 3 against the Seahawks, he completed 20 of 30 passes for 200 yards and a touchdown, with one interception, and ran for 10 yards, good for 25\.6 PPR points\.$/);
+      assert.equal(doc.querySelector(".scp-cp-chart"), null);
+      assert.equal(doc.querySelector(".scp-cp-highs"), null);
+      assert.equal(doc.querySelector(".scp-cp-cmp"), null);
+      assert.equal(doc.querySelector(".scp-cp-rc"), null);
+    }
+  });
+
+  test("a recent workload change names both windows, never overlapping; a missing snap count drops the snap sentence", () => {
+    const weeks = [1, 2, 3].map((w) => qb(w, 10, 20, "ARI", { pass_att: 15 })).concat([4, 5, 6].map((w) => qb(w, 22, 6, "ARI", { pass_att: 35 })));
+    const doc = render(state({ player: { ...state().player, years_exp: 0 }, leagueWeek: 6, logCareer: [{ season: 2026, weeks, finish: 9 }] }));
+    const st = story(doc);
+    assert.equal(st.angle, "workload-up");
+    assert.equal(st.h, "The Cardinals are leaning on Brissett's arm");
+    assert.match(st.p[0], /^Jacoby Brissett has averaged 35\.0 pass attempts over his last three appearances, up from 15\.0 across his first three\.$/);
+    assert.doesNotMatch(st.p.join(" "), /snaps/, "no snap counts in the log: no snap sentence");
+    assert.match(st.p[1], /^The stretch produced 22\.0 PPR points a game\. Through Week \d+, the rookie is averaging 16\.0 PPR points across six appearances/);
+    // With snaps: both windows' shares.
+    const snapWeeks = weeks.map((e, i) => ({ ...e, stats: { ...e.stats, off_snp: i < 3 ? 20 : 60, tm_off_snp: 64 } }));
+    const withSnaps = story(render(state({ player: { ...state().player, years_exp: 0 }, leagueWeek: 6, logCareer: [{ season: 2026, weeks: snapWeeks, finish: 9 }] })));
+    assert.match(withSnaps.p[0], /He played 94% of the Cardinals' offensive snaps in those three games, after 31% before them\./);
+  });
+
+  test("a second-year player: this season against his rookie year, the workload with it; chips kept", () => {
+    const rookie = { season: 2025, weeks: Array.from({ length: 14 }, (_, i) => qb(i + 1, 12, 20, "ARI", { pass_att: 20 })), finish: 22 };
+    const now = { season: 2026, weeks: Array.from({ length: 5 }, (_, i) => qb(i + 1, 18, 8, "ARI", { pass_att: 34 })), finish: 9 };
+    const doc = render(state({ player: { ...state().player, years_exp: 1 }, leagueWeek: 5, logCareer: [now, rookie] }));
+    const st = story(doc);
+    assert.equal(st.angle, "season-up");
+    assert.equal(st.h, "Brissett has taken a step forward in his second season");
+    assert.match(st.p[0], /^Jacoby Brissett is averaging 18\.0 PPR points per game through Week \d+, up from 12\.0 in his rookie season in 2025\. His workload moved with it: 34\.0 pass attempts a game, against 20\.0 last season\.$/);
+    assert.deepEqual([...doc.querySelectorAll(".scp-cp-cmp-season")].map(text), ["2025", "2026"]);
+    assert.equal(doc.querySelector(".scp-cp-chart"), null);
+  });
+
+  test("zero appearances this season, on a roster: said briefly, with his last season", () => {
+    const doc = render(state({ leagueWeek: 9, logCareer: state().logCareer.slice(1) }));
+    const st = story(doc);
+    assert.equal(st.angle, "zero-this-season");
+    assert.equal(st.h, "Brissett has yet to play in 2026");
+    assert.match(st.p[0], /^Through Week \d+, Jacoby Brissett has not appeared in a game this season\. His last action came in 2025, when he averaged 16\.0 PPR points over 14 appearances, finishing QB16 in total PPR points\.$/);
+  });
+
+  test("no club: past tense, and no start/sit link", () => {
+    const doc = render(state({ team: null, upcoming: [], leagueWeek: 9, logCareer: state().logCareer.slice(1) }));
+    const st = story(doc);
+    assert.doesNotMatch(st.h, /yet to play|has /);
+    assert.equal(doc.querySelector(".scp-cp-story-link"), null);
+  });
+
+  test("a veteran with several seasons keeps the chart under the story", () => {
+    const doc = render(state({ player: { ...state().player, years_exp: 9 } }));
+    assert.ok(doc.querySelector(".scp-cp-story"));
+    assert.ok(doc.querySelector(".scp-cp-chart"));
+    assert.equal(doc.querySelector(".scp-cp-cmp"), null);
+  });
+
+  test("the story names the scoring format it uses", () => {
+    const half = story(render(state({ format: "half", logCareer: [state().logCareer[0]] })));
+    assert.match(half.p.join(" "), /half-PPR points/);
+    assert.doesNotMatch(half.p.join(" "), /(?<!half-)PPR points/);
   });
 
   test("preseason: last season's final line, no Card A, no striped bar", () => {
@@ -372,10 +446,11 @@ describe("stats tab", () => {
     assert.equal(st.renderStatsTab(state({ logCareer: [] })), "");
   });
 
-  test("the read names his targets from data, and the Redraft Command card opens his start/sit page", () => {
+  test("the story replaces the read and its promo card; the start/sit link sits under the copy", () => {
     const doc = render(state());
-    const prose = doc.querySelector(".scp-cp-prose");
-    assert.match(text(prose), /Trey McBride/);
+    assert.ok(doc.querySelector(".scp-cp-story"));
+    assert.equal(doc.querySelector(".scp-cp-prose"), null, "no generic read");
+    assert.equal(doc.querySelector(".scp-cp-rc"), null, "no tall promo card");
     // One link since the 2026-11-26 audit (WEB-017): the prose's "projected
     // rest-of-season rank and trade value" link opened Redraft Command's
     // player page, a noindex shell, and is gone; the card opens his weekly
@@ -384,13 +459,15 @@ describe("stats tab", () => {
     assert.deepEqual(ctas, [
       ["startsit-stats-sidebar", "https://statchasers.com/redraft-command/who-should-i-start/jacoby-brissett"],
     ]);
-    assert.ok(doc.querySelector("a.scp-cp-rc-btn[data-cta='startsit-stats-sidebar']"), "the sidebar's button");
-    // No week to start him in: no card.
-    assert.equal(render(state({ upcoming: [] })).querySelector(".scp-cp-rc"), null);
-    // The KPI cards sit under the chart, ahead of the read.
+    const link = doc.querySelector(".scp-cp-story > a.scp-cp-story-link[data-cta='startsit-stats-sidebar']");
+    assert.ok(link, "the compact action");
+    assert.equal(link.parentElement.lastElementChild, link, "under the copy");
+    // No week to start him in: no link.
+    assert.equal(render(state({ upcoming: [] })).querySelector(".scp-cp-story-link"), null);
+    // The story heads the section; the chart and the KPI cards follow it.
     const kpis = doc.querySelector(".scp-cp-kpis");
+    assert.ok(doc.querySelector("#scp-st-read-h").compareDocumentPosition(doc.querySelector(".scp-cp-chart")) & 4, "story before the chart");
     assert.ok(doc.querySelector(".scp-cp-chart").compareDocumentPosition(kpis) & 4, "cards after the chart");
-    assert.ok(kpis.compareDocumentPosition(doc.querySelector("#scp-st-read-h")) & 4, "cards before the read's heading");
     const tiles = [...doc.querySelectorAll(".scp-cp-kpi-label")].map(text);
     // "Games appeared in", not availability (2026-11-04, renamed 2026-11-06),
     // and the top-12 WEEKS counted out beside their share, over ranked weeks.
@@ -407,12 +484,6 @@ describe("stats tab", () => {
       assert.ok(def && def.hasAttribute("hidden") && text(def).length > 20, "a closed definition");
     }
     assert.match(doc.querySelector(".scp-cp-kpi:last-child").getAttribute("title"), /standard deviation/);
-    // The read says "season finish" so the two cannot be read against each other,
-    // and a thin season is not a trend.
-    const read = text(prose);
-    assert.match(read, /without a top-12 season finish\./);
-    assert.match(read, /So far in 2026 he has 3 games \(16\.5 a game\) against 14 appearances in 2025: too little on one side to call a trend\./);
-    assert.doesNotMatch(read, /up \d/);
     assert.equal(doc.querySelectorAll(".scp-cp-high").length, 4);
   });
 
@@ -486,10 +557,12 @@ describe("stats tab", () => {
     // read (mak's mobile brief, 2026-11-05); the hero's own is marked moved.
     assert.ok(doc.querySelector(".scp-stp-analysis-lede"));
     assert.ok(doc.querySelector(".scp-stp-bar-sub.is-moved"));
-    const paras = [...doc.querySelectorAll(".scp-cp-prose p")].map(text);
+    // The analyst's paragraphs replace the generated story's, under its headline.
+    assert.ok(doc.querySelector(".scp-cp-story h3"));
+    const paras = [...doc.querySelectorAll(".scp-cp-story p")].map(text);
     assert.deepEqual(paras.slice(0, 2), ["First.", "Second."]);
     assert.equal(paras.length, 2, "blank paragraphs dropped; no Redraft Command paragraph (2026-11-26 audit, WEB-017)");
-    assert.equal(doc.querySelector('.scp-cp-prose [data-cta]'), null);
+    assert.equal(doc.querySelector(".scp-cp-story p [data-cta]"), null);
     assert.equal(doc.querySelector(".scp-st-byline"), null, "an analyst's date prints no byline either");
     // A link to anything but http(s) or a root path stays text.
     const bad = render(state({ statsCopy: { prod_lede: "[x](javascript:alert(1))" } }));
@@ -554,7 +627,7 @@ describe("stats tab", () => {
   test("negative values use a true minus sign", () => {
     const weeks = [qb(1, -1.2, 60, "ARI", { rush_yd: -7 })];
     const doc = render(state({ logCareer: [{ season: 2026, weeks, finish: 60 }] }));
-    assert.match(text(doc.querySelector(".scp-cp-val")), /^−1\.2$/);
+    assert.match(text(doc.querySelector(".scp-cp-story p")), /finishing with −1\.2 PPR points\./);
   });
 });
 
@@ -628,12 +701,10 @@ describe("the career section (mak's briefs of 2026-11-05, approved the same day)
     for (const c of cols) assert.equal(c.getAttribute("tabindex"), "0", "keyboard-focusable");
   });
 
-  test("the Redraft Command card and the highs are the model's", () => {
+  test("the start/sit link and the highs are the model's", () => {
     const d = doc();
-    assert.equal(text(d.querySelector(".scp-cp-rc-h")), "Redraft Command");
-    assert.equal(d.querySelector(".scp-cp-rc-h").tagName, "H3");
-    assert.match(text(d.querySelector(".scp-cp-rc p")), /^Career stats tell you who he's been/);
-    assert.match(text(d.querySelector("a.scp-cp-rc-btn")), /^Should I start Brissett\?/);
+    assert.equal(d.querySelector(".scp-cp-rc"), null, "the promo card is gone (mak, 2026-11-28)");
+    assert.match(text(d.querySelector("a.scp-cp-story-link")), /^Should I start Brissett\?/);
     assert.deepEqual([...d.querySelectorAll(".scp-cp-high-l")].map(text).length, 4);
     assert.equal(d.querySelector(".scp-cp-h.is-highs").tagName, "H3");
   });

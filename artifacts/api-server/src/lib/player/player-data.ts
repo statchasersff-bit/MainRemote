@@ -1595,10 +1595,12 @@ export async function getPlayerPageData(
     rosterRow && shown ? { ...rosterRow, injuryStatus: shown, injuryBodyPart: status.injury ?? rosterRow.injuryBodyPart } : null;
 
   const production = houseProduction(productionSeasons(player.id, format), player, format, allPlayers);
-  const careerRows = careerStatRows(production, careerSeasons, season);
+  const rank = positionalFinish(player, season, format, allPlayers, true);
+  // The season in progress ranks by total points, as the header and the
+  // career chart do (mak, 2026-11-28; it was the per-game rank).
+  const careerRows = careerStatRows(production, careerSeasons, season, rank.total);
   const rowTotals = careerTotals(careerRows);
   const currentRow = careerRows.find((row) => row.season === season) ?? null;
-  const rank = positionalFinish(player, season, format, allPlayers, true);
   // One usage field for every share comparison on the page (WEB-035): the
   // Outlook, the Stats card's share rows and the Overview meters read it.
   const usage = playerUsage(player, team, leagueSeason);

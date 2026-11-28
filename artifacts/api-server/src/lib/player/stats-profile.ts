@@ -104,9 +104,11 @@ function fromCareerSeason(row: CareerSeasonStat): ProductionTotals {
  * The career table, newest season first.
  *
  * Every season the logs have is summed from them (one pipeline with the
- * chart and the rates). A finished season keeps the finish production filed
- * for it, by total points - the one figure the logs cannot supply; the
- * season in progress is ranked by rate, as the header ranks it. A season
+ * chart and the rates). Every season, the one in progress included, is
+ * ranked by total points (mak, 2026-11-28; the season in progress was ranked
+ * by rate until then, so the table said RB12 where the chart and header said
+ * RB26): the finish production files for it, else the live total-points rank,
+ * else the logs' own rank. A season
  * production has and the logs do not (none today: the logs reach 2009) is
  * taken from production whole.
  */
@@ -114,6 +116,7 @@ export function careerStatRows(
   production: ProductionSeason[],
   careerSeasons: CareerSeasonStat[],
   currentSeason: number,
+  currentTotalRank: number | null = null,
 ): CareerStatRow[] {
   const rows = new Map<number, CareerStatRow>();
   const filed = new Map(production.map((p) => [p.season, p]));
@@ -129,7 +132,7 @@ export function careerStatRows(
       totals: fromCareerSeason(entry),
       points: entry.points,
       ppg: entry.ppg,
-      finish: !inProgress && season?.posFinishTotal != null ? season.posFinishTotal : entry.posRank,
+      finish: season?.posFinishTotal ?? (inProgress ? currentTotalRank : null) ?? entry.posRank,
       topWeeks: entry.top_weeks,
       rankedWeeks: entry.ranked_weeks,
       bestWeek: entry.best_week,

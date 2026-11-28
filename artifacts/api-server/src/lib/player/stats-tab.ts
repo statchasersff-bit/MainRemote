@@ -42,6 +42,7 @@ import type { PlayerRenderOptions } from "../player-render";
 import { getTeamByAbbreviation } from "../team/teams";
 import type { PlayerPageData } from "./player-data";
 import { getEntryPoints, SCORING_SHORT } from "./scoring";
+import { composeStatsStory, type StatsStory, type StoryInput, type StoryWeek } from "./stats-story";
 import { passerRating } from "./stats-profile";
 import { collegeCard, type AdvCard, type AdvMetric, type CollegeCard, type LogSeason } from "./stats-tab-data";
 import type { GameLogEntry } from "./types";
@@ -970,6 +971,35 @@ export interface CareerPremiumModel {
   /** Null when he has no week to start him in (no start/sit page to open). */
   redraft: RedraftCard | null;
   highs: HighItem[];
+  /**
+   * The compact summary that replaces the chart, the rate tiles and the read
+   * for a player in his first three NFL seasons, or for a veteran with one
+   * season of stats (mak, 2026-11-28). Null: the full career layout.
+   */
+  summary: CareerSummary | null;
+  /**
+   * The editorial headline and paragraphs under the section heading (mak's
+   * brief, 2026-11-28; stats-story.ts). Null only when nothing was played.
+   */
+  story: StatsStory | null;
+}
+
+/** One season of the summary's compact comparison. */
+export interface CareerSummarySeason {
+  season: number;
+  ppg: number;
+  gp: number;
+  finish: number | null;
+  inProgress: boolean;
+}
+
+export interface CareerSummary {
+  kind: "rookie" | "second" | "trend" | "snapshot";
+  heading: string;
+  /** The comparison chips, oldest first; empty for a one-season summary. */
+  seasons: CareerSummarySeason[];
+  /** The takeaway, as HTML (escaped text, figures in <strong>). */
+  lines: string[];
 }
 
 /**
@@ -1016,7 +1046,207 @@ export function careerPremiumModel(data: PlayerPageData, options: PlayerRenderOp
     paragraphs: readParagraphs(data, c, options),
     redraft: redraftCard(data, options),
     highs: careerHighItems(c),
+    summary: careerSummary(data, c),
+    story: analystStory(data, composeStatsStory(storyInput(data, c))),
   };
+}
+
+/** An analyst's career paragraphs (stats_copy.json) replace the generated ones under the generated headline; they are HTML from copyHtml. */
+function analystStory(data: PlayerPageData, story: StatsStory | null): StatsStory | null {
+  const written = (data.statsCopy?.career_paragraphs ?? []).map(own).filter((p): p is string => p !== null).slice(0, 3);
+  if (!story || !written.length) return story;
+  return { ...story, angle: "analyst", paragraphs: written.map(copyHtml), html: true };
+}
+
+/** The story engine's input, from the same season rows the table and chart print. */
+export function storyInput(data: PlayerPageData, c: Career): StoryInput {
+  const num = (x: unknown): number => (typeof x === "number" && Number.isFinite(x) ? x : 0);
+  const opt = (x: unknown): number | null => (typeof x === "number" && Number.isFinite(x) && x > 0 ? x : null);
+  const week = (e: GameLogEntry): StoryWeek => {
+    const st = e.stats as unknown as Record<string, unknown>;
+    return {
+      week: e.week,
+      opp: e.opp,
+      team: clubCode(e.team),
+      pts: c.pts(e),
+      passAtt: num(st.pass_att), cmp: num(st.pass_cmp), passYd: num(st.pass_yd), passTd: num(st.pass_td), int: num(st.pass_int),
+      rushAtt: num(st.rush_att), rushYd: num(st.rush_yd), rushTd: num(st.rush_td),
+      tgt: num(st.rec_tgt), rec: num(st.rec), recYd: num(st.rec_yd), recTd: num(st.rec_td),
+      snaps: opt(st.off_snp),
+      teamSnaps: opt(st.tm_off_snp),
+      posRank: typeof e.pos_rank === "number" ? e.pos_rank : null,
+    };
+  };
+  const seasons = [...c.rows]
+    .sort((x, y) => x.season - y.season)
+    .map((r) => ({
+      season: r.season,
+      inProgress: r.inProgress,
+      weeks: [...r.weeks].sort((x, y) => x.week - y.week).map(week),
+      finish: r.finish ?? null,
+    }));
+  const exp = data.player.years_exp;
+  const yearsExp = typeof exp === "number" && exp >= 0 ? exp : null;
+  const first = seasons.length ? seasons[0]!.season : null;
+  // His first season is in the logs: the entry year from his experience.
+  const fullCareer = yearsExp !== null && first !== null && first <= c.leagueSeason - yearsExp;
+  const adv = data.statsAdvanced?.current ?? null;
+  const rz = adv && adv.season === c.leagueSeason ? adv.row["redZoneOpportunities"] : null;
+  return {
+    name: data.player.name,
+    last: lastName(data.player.name),
+    pos: c.pos,
+    yearsExp,
+    team: data.team?.code ?? null,
+    // On a roster = active (a player who last played in 2023 and is still
+    // signed "has yet to play" this season); no club = past tense.
+    active: Boolean(data.team),
+    format: data.format,
+    leagueSeason: c.leagueSeason,
+    leagueWeek: c.leagueWeek,
+    throughWeek: statsThroughWeek(data),
+    seasons,
+    fullCareer,
+    topN: topN(c.pos),
+    redZone: typeof rz === "number" && Number.isFinite(rz) ? { value: rz, throughWeek: adv!.throughWeek } : null,
+  };
+}
+
+/**
+ * The summary a young career gets in place of the career chart, tiles and
+ * read (mak, 2026-11-28). The heading follows his NFL experience
+ * (years_exp, the header's "Rookie" / "2nd Season"), not the number of
+ * seasons with stats:
+ *   year 1: "Rookie season so far" - points per game, appearances, and how
+ *           often he has reached a top-N weekly finish;
+ *   year 2: "Change since his rookie season" - this season's points per game
+ *           against his rookie year, plus one usage change when both
+ *           seasons have four games and it moved a full touch a game;
+ *   year 3: "Three-season trend" - points per game by season, plus the
+ *           clearest change in workload or weekly finishes.
+ * One season of stats otherwise (a veteran, unknown experience, or a
+ * year-2/3 player who missed a season): the neutral "Season snapshot".
+ * Anything else keeps the full layout (null).
+ */
+function careerSummary(data: PlayerPageData, c: Career): CareerSummary | null {
+  const { pos, rows, total } = c;
+  if (rows.length === 0 || total.gp === 0) return null;
+  const exp = data.player.years_exp;
+  const year = typeof exp === "number" && exp >= 0 ? exp + 1 : null;
+  const asc = [...rows].sort((x, y) => x.season - y.season);
+  const scoring = SCORING_SHORT[data.format] ?? "PPR";
+  const last = lastName(data.player.name);
+  const n12 = topN(pos);
+  const ppg = (t: Line): number => (t.gp ? t.pts / t.gp : 0);
+  const fig = (v: string): string => `<strong>${escapeHtml(v)}</strong>`;
+  const chip = (r: SeasonRow): CareerSummarySeason => ({
+    season: r.season,
+    ppg: ppg(r.line),
+    gp: r.line.gp,
+    finish: r.finish ?? null,
+    inProgress: r.inProgress,
+  });
+  const weekly = (r: SeasonRow[]): { top: number; ranked: number } => {
+    const ranked = r.flatMap((x) => x.weeks).filter((e) => typeof e.pos_rank === "number");
+    return { top: ranked.filter((e) => e.pos_rank! <= n12).length, ranked: ranked.length };
+  };
+  const pct = (a: number, b: number): number => Math.round((a / b) * 100);
+  // Per-game workload, by the position's own volume.
+  const volumes: Array<{ unit: string; of: (t: Line) => number }> =
+    pos === "QB"
+      ? [{ unit: "pass attempts", of: (t) => t.att }]
+      : pos === "RB"
+        ? [{ unit: "carries", of: (t) => t.rushAtt }, { unit: "targets", of: (t) => t.tgt }]
+        : [{ unit: "targets", of: (t) => t.tgt }];
+  const perGame = (t: Line, of: (t: Line) => number): number => (t.gp ? of(t) / t.gp : 0);
+  /** The biggest per-game workload move between two seasons, when both have four games and it is a full one a game. */
+  const workload = (from: SeasonRow, to: SeasonRow): { unit: string; a: number; b: number } | null => {
+    if (from.line.gp < 4 || to.line.gp < 4) return null;
+    const best = volumes
+      .map((v) => ({ unit: v.unit, a: perGame(from.line, v.of), b: perGame(to.line, v.of) }))
+      .sort((x, y) => Math.abs(y.b - y.a) - Math.abs(x.b - x.a))[0];
+    return best && Math.abs(best.b - best.a) >= 1 ? best : null;
+  };
+  const moved = (a: number, b: number): string => (b > a ? "rose" : "fell");
+
+  const oneSeason = (kind: "rookie" | "snapshot"): CareerSummary => {
+    const r = asc[asc.length - 1]!;
+    const { games } = careerTeamGames(data, c);
+    const lines = [
+      `${fig(one(ppg(r.line)))} ${escapeHtml(scoring)} points per game · ` +
+        escapeHtml(games > 0 ? `${plural(r.line.gp, "appearance")} in ${games} team games` : plural(r.line.gp, "appearance")),
+    ];
+    const w = weekly([r]);
+    if (w.ranked) {
+      lines.push(
+        escapeHtml(`${last} finished as a top-${n12} ${pos} in ${w.top} of ${plural(w.ranked, "ranked week")} `) +
+          `(${fig(`${pct(w.top, w.ranked)}%`)}).`,
+      );
+    }
+    const heading =
+      kind === "rookie" ? (r.inProgress ? "Rookie season so far" : "Rookie season") : "Season snapshot";
+    return { kind, heading, seasons: [], lines };
+  };
+
+  if (year === 1 && asc.length === 1) return oneSeason("rookie");
+  if (asc.length === 1) return oneSeason("snapshot");
+
+  if (year === 2 && asc.length === 2) {
+    const [rookie, now] = asc as [SeasonRow, SeasonRow];
+    const a = ppg(rookie.line);
+    const b = ppg(now.line);
+    const d = b - a;
+    const change = Math.abs(d) < 0.5 ? "level with" : d > 0 ? `up ${one(d)} from` : `down ${one(-d)} from`;
+    const lines = [
+      `${fig(one(b))} ${escapeHtml(`${scoring} points per game in ${now.season}${now.inProgress ? " so far" : ""}, ${change}`)} ` +
+        `${fig(one(a))} ${escapeHtml(`as a rookie in ${rookie.season}.`)}`,
+    ];
+    const w = workload(rookie, now);
+    if (w) {
+      lines.push(
+        escapeHtml(`His ${w.unit} per game ${moved(w.a, w.b)} from `) + fig(one(w.a)) + escapeHtml(" to ") + fig(one(w.b)) + ".",
+      );
+    }
+    return { kind: "second", heading: "Change since his rookie season", seasons: asc.map(chip), lines };
+  }
+
+  if (year === 3 && asc.length >= 2) {
+    const shown = asc.slice(-3);
+    const from = shown[0]!;
+    const to = shown[shown.length - 1]!;
+    const lines: string[] = [];
+    // The clearest change: a workload move, measured against the larger
+    // volume, or a 15-point swing in the top-N weekly rate, whichever is
+    // bigger. Four games a side, as the trend line elsewhere asks.
+    const w = workload(from, to);
+    const wf = weekly([from]);
+    const wt = weekly([to]);
+    const rate =
+      from.line.gp >= 4 && to.line.gp >= 4 && wf.ranked && wt.ranked
+        ? { a: pct(wf.top, wf.ranked), b: pct(wt.top, wt.ranked) }
+        : null;
+    const wScore = w ? Math.abs(w.b - w.a) / Math.max(w.a, w.b) : 0;
+    const rScore = rate && Math.abs(rate.b - rate.a) >= 15 ? Math.abs(rate.b - rate.a) / 100 : 0;
+    if (w && wScore >= rScore) {
+      lines.push(
+        escapeHtml(`His ${w.unit} per game ${moved(w.a, w.b)} from `) + fig(one(w.a)) +
+          escapeHtml(` in ${from.season} to `) + fig(one(w.b)) + escapeHtml(` in ${to.season}${to.inProgress ? " so far" : ""}.`),
+      );
+    } else if (rate && rScore > 0) {
+      lines.push(
+        escapeHtml(`He has finished as a top-${n12} ${pos} in `) + fig(`${rate.b}%`) +
+          escapeHtml(` of ranked weeks in ${to.season}${to.inProgress ? " so far" : ""}, ${rate.b > rate.a ? "up" : "down"} from `) +
+          fig(`${rate.a}%`) + escapeHtml(` in ${from.season}.`),
+      );
+    }
+    return {
+      kind: "trend",
+      heading: shown.length === 3 ? "Three-season trend" : "Season-by-season trend",
+      seasons: shown.map(chip),
+      lines,
+    };
+  }
+  return null;
 }
 
 /* ------------------------------------------------ the premium comparison */
@@ -1204,11 +1434,9 @@ export interface RateTile {
   tip: string;
 }
 
-function careerRateTiles(data: PlayerPageData, c: Career): RateTile[] {
-  const { pos, rows, total } = c;
-  if (rows.length === 0 || total.gp === 0) return [];
-  const ppg = (t: Line): number => (t.gp ? t.pts / t.gp : 0);
-  const n = rows.length;
+/** His teams' regular-season games from his first season through the latest: what "Games appeared in" divides by. */
+function careerTeamGames(data: PlayerPageData, c: Career): { games: number; first: number; lastSeason: number } {
+  const { rows } = c;
   const first = Math.min(...rows.map((r) => r.season));
   const lastSeason = c.leagueWeek > 0 ? c.leagueSeason : Math.max(...rows.map((r) => r.season));
   let games = 0;
@@ -1218,6 +1446,15 @@ function careerRateTiles(data: PlayerPageData, c: Career): RateTile[] {
       games += finals || Math.max(...(rows.find((r) => r.season === s)?.weeks.map((e) => e.week) ?? [c.leagueWeek]));
     } else games += teamGames(s);
   }
+  return { games, first, lastSeason };
+}
+
+function careerRateTiles(data: PlayerPageData, c: Career): RateTile[] {
+  const { pos, rows, total } = c;
+  if (rows.length === 0 || total.gp === 0) return [];
+  const ppg = (t: Line): number => (t.gp ? t.pts / t.gp : 0);
+  const n = rows.length;
+  const { games, first, lastSeason } = careerTeamGames(data, c);
   const allWeeks = rows.flatMap((r) => r.weeks);
   const ranked = allWeeks.filter((e) => typeof e.pos_rank === "number");
   const n12 = topN(pos);

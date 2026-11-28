@@ -124,7 +124,8 @@ describe("in season", () => {
       [
         "Jacoby Brissett Rest-of-Season Projection",
         "What Drives Jacoby Brissett's Fantasy Value?",
-        "What Could Change His Value",
+        // What Could Change His Value folds into the matchups footer when the
+        // matchups print (mak, 2026-11-27): no H2 of its own.
         "Jacoby Brissett Upcoming Matchups",
         "Jacoby Brissett Fantasy Outlook FAQ",
       ],
@@ -137,7 +138,9 @@ describe("in season", () => {
     const proj = doc.querySelector(".scp-olr-sec.is-proj");
     assert.equal(proj.getAttribute("aria-labelledby"), "scp-ol-take-h");
     assert.equal(doc.querySelectorAll("#scp-ol-take-h").length, 1, "the hero is not printed twice");
-    assert.ok(proj.querySelector(".scp-olr-side .scp-olr-rc"), "the sidebar rides inside it");
+    // 2026-11-27 (mak): one column, no sidebar; the start/sit link rides the verdict row.
+    assert.equal(proj.querySelector(".scp-olr-side, .scp-olr-rc"), null, "no sidebar, no promo card");
+    assert.ok(proj.querySelector(".scp-olr-verdict .scp-olr-btn.is-verdict"), "the start/sit link is in the verdict row");
     const own = [...doc.querySelectorAll(".scp-ol")];
     assert.equal(own.length, 1, "the tab's own in-season body is empty: one wrap, the FAQ's");
     assert.ok(own[0].querySelector(".scp-ol-faq"));
@@ -153,11 +156,11 @@ describe("in season", () => {
     assert.equal(doc.querySelector("#scp-ol-exp-h"), null, "no Preseason Projection vs. Reality heading");
   });
 
-  test("the sidebar: Redraft Command, then Best fit in place of the at-a-glance card", () => {
-    const aside = doc.querySelector(".scp-olr-side");
-    assert.deepEqual([...aside.querySelectorAll(".scp-olr-rc-h, .scp-olr-fit-h")].map((h) => h.textContent), ["Redraft Command", "Best fit"]);
-    assert.equal(aside.querySelector(".scp-ol-profile"), null, "no Outlook at a glance");
-    assert.ok(!aside.textContent.includes("Outlook at a glance"));
+  test("Best fit: one compact row under the read, the leagues and their calls (mak, 2026-11-27)", () => {
+    const aside = doc.querySelector(".scp-olr-fit.is-row");
+    assert.equal(aside.querySelector(".scp-olr-fit-h").textContent, "Best fit");
+    assert.equal(doc.querySelector(".scp-ol-profile"), null, "no Outlook at a glance");
+    assert.ok(!doc.body.textContent.includes("Outlook at a glance"));
     assert.deepEqual([...aside.querySelectorAll(".scp-olr-fit-row .scp-olr-pill")].map((c) => c.textContent), [
       "Weekly starter", "Streamer", "Streamer",
     ]);
@@ -190,7 +193,7 @@ describe("in season", () => {
     assert.match(lede, new RegExp(`^His ${volume.season} rank${volume.week ? ` through Week ${volume.week}` : ""} among the ${volume.of} quarterbacks`));
     // Our Take's second paragraph and the trigger evidence read the same season.
     assert.match(doc.body.textContent, volume.week ? new RegExp(`Through Week ${volume.week} he ranks`) : /Last season he ranked/);
-    assert.match(doc.querySelector(".scp-olp-sec.is-change").textContent, new RegExp(`in ${volume.season}\.`));
+    assert.match([...doc.querySelectorAll(".scp-olr-ob.is-change")].map((li) => li.textContent).join(" "), new RegExp(`in ${volume.season}\.`));
   });
 
   test("exactly one Redraft Command link: the projection card", () => {
@@ -224,17 +227,16 @@ describe("in season", () => {
     assert.ok(!claims.includes("Job security"), claims.join(" | "));
   });
 
-  test("every upside and risk bullet is a claim with its evidence as subtext", () => {
-    const items = [...doc.querySelectorAll(".scp-olp-items li")];
-    assert.ok(items.length >= 2);
+  test("every upside and risk line is a claim with its evidence (in the projection's read since 2026-11-28)", () => {
+    const items = [...doc.querySelectorAll(".scp-olr-ob.is-change")];
+    assert.ok(items.length >= 1);
     for (const li of items) {
-      // The claim line carries no period; the evidence under it keeps the
-      // number or the name (mak, 2026-10-01).
-      const claim = li.querySelector(".scp-olp-claim");
-      const evid = li.querySelector(".scp-olp-evid");
-      assert.ok(claim && evid, li.textContent);
-      assert.doesNotMatch(claim.textContent, /\.$/);
-      assert.match(evid.textContent, /\d|[A-Z][a-z]+ [A-Z]/, evid.textContent);
+      // "Claim: evidence", the evidence keeping the number or the name
+      // (mak, 2026-10-01); the claim carries no period of its own.
+      const claim = li.querySelector("b").textContent;
+      assert.match(claim, /[^.]:$/);
+      const evid = li.querySelector("p").textContent.slice(claim.length);
+      assert.match(evid, /\d|[A-Z][a-z]+ [A-Z]/, evid);
     }
   });
 
@@ -266,7 +268,7 @@ describe("edge states", () => {
     for (const chip of doc.querySelectorAll(".scp-olr-fit-row .scp-olr-pill")) {
       assert.match(chip.textContent, /Bench stash|Waiver wire/);
     }
-    assert.equal(doc.querySelector(".scp-olp-card.is-risk li .scp-olp-claim").textContent, "Injury");
+    assert.equal(doc.querySelector(".scp-olr-ob.is-change.is-risk b").textContent, "Injury:");
   });
 
   test("no advanced line: the drivers section is left out, the rest still renders", () => {
@@ -359,9 +361,10 @@ describe("the forward-looking rebuild (the brief, 2026-11-05)", () => {
   test("the quarterback is the listed starter, and a change is said as a change", () => {
     assert.doesNotMatch(text, /Brissett is his quarterback/);
     assert.match(text, /Gardner Minshew II is now the Cardinals' listed starting quarterback/);
-    assert.ok([...doc.querySelectorAll(".scp-olr-tag")].some((c) => c.textContent === "QB change"));
-    const risks = [...doc.querySelectorAll(".scp-olp-card.is-risk .scp-olp-claim")].map((c) => c.textContent);
-    assert.ok(risks.includes("A new quarterback"), risks.join(" | "));
+    // The status pills went 2026-11-27 (mak); the change is the risk line.
+    assert.equal(doc.querySelector(".scp-olr-tag"), null);
+    const risks = [...doc.querySelectorAll(".scp-olr-ob.is-change.is-risk b")].map((c) => c.textContent);
+    assert.ok(risks.includes("A new quarterback:"), risks.join(" | "));
     const qs = [...doc.querySelectorAll(".scp-ol-faq summary")].map((q) => q.textContent);
     assert.ok(qs.includes("Who is Michael Wilson's quarterback?"));
     // Suffixes drop from the surname: "Minshew", never "Minshew II's".
@@ -375,25 +378,39 @@ describe("the forward-looking rebuild (the brief, 2026-11-05)", () => {
   });
 
   test("a schedule of three tough matchups is a risk, never an upside", () => {
-    const up = [...doc.querySelectorAll(".scp-olp-card.is-up .scp-olp-claim")].map((c) => c.textContent);
-    const risks = [...doc.querySelectorAll(".scp-olp-card.is-risk .scp-olp-claim")].map((c) => c.textContent);
+    // The model's lists (the footer leaves the schedule items to the cards).
+    const m = ol.outlookPremiumModel(wr());
+    const up = m.triggers.up.map((i) => i.claim);
+    const risks = m.triggers.risk.map((i) => i.claim);
     assert.ok(!up.some((c) => /schedule|soft/i.test(c)), up.join(" | "));
     assert.ok(risks.includes("Tough matchups"), risks.join(" | "));
     // The way through: his volume, said beside the risk rather than as a contradiction.
-    assert.match(doc.querySelector(".scp-olp-card.is-risk").textContent, /25\.9% target share is the way through them/);
-    assert.ok([...doc.querySelectorAll(".scp-olr-tag")].some((c) => c.textContent === "Tough upcoming schedule"));
+    assert.match(m.triggers.risk.find((i) => i.claim === "Tough matchups").evidence, /25\.9% target share is the way through them/);
+    // On the page the matchup cards carry it: no footer line repeats it
+    // (mak, 2026-11-27), and the section's verdict says the stretch.
+    const lines = [...doc.querySelectorAll(".scp-olr-ob.is-change b")].map((c) => c.textContent);
+    assert.ok(!lines.includes("Tough matchups:"), lines.join(" | "));
   });
 
   test("a soft stretch is an upside, never a risk; a split is neither", () => {
-    const soft = render(wr({ upcoming: [game(9, "NYG", "Giants", 8), game(10, "DET", "Lions", 1, "home"), game(11, "LAR", "Rams", 20), game(12, "DEN", "Broncos", 22)] }));
-    const softUp = [...soft.querySelectorAll(".scp-olp-card.is-up .scp-olp-claim")].map((c) => c.textContent);
-    const softRisk = [...soft.querySelectorAll(".scp-olp-card.is-risk .scp-olp-claim")].map((c) => c.textContent);
+    const softState = wr({ upcoming: [game(9, "NYG", "Giants", 8), game(10, "DET", "Lions", 1, "home"), game(11, "LAR", "Rams", 20), game(12, "DEN", "Broncos", 22)] });
+    const softM = ol.outlookPremiumModel(softState);
+    const softUp = softM.triggers.up.map((i) => i.claim);
+    const softRisk = softM.triggers.risk.map((i) => i.claim);
     assert.ok(softUp.includes("A soft stretch"), softUp.join(" | "));
     assert.ok(!softRisk.some((c) => /matchup/i.test(c)), softRisk.join(" | "));
-    const split = render(wr({ upcoming: [game(9, "NYG", "Giants", 8), game(10, "SEA", "Seahawks", 32, "home"), game(11, "LAR", "Rams", 20), game(12, "DEN", "Broncos", 18)] }));
-    const claims = [...split.querySelectorAll(".scp-olp-items .scp-olp-claim")].map((c) => c.textContent);
+    // The cards show the stretch; the footer does not repeat it (2026-11-27).
+    const soft = render(softState);
+    assert.ok(![...soft.querySelectorAll(".scp-olr-ob.is-change b")].some((c) => /soft/i.test(c.textContent)));
+    // The stretch is said beside the heading (mak, 2026-11-28), no summary line under the cards.
+    assert.equal(soft.querySelector(".scp-olp-sec.is-schedule .scp-olp-bar-aside").textContent, "Two of the next four rank in the top 12 for WRs, one in the bottom 12");
+    assert.equal(soft.querySelector(".scp-olp-sec.is-schedule .scp-olp-read:not(.is-playoffs)"), null);
+    const splitState = wr({ upcoming: [game(9, "NYG", "Giants", 8), game(10, "SEA", "Seahawks", 32, "home"), game(11, "LAR", "Rams", 20), game(12, "DEN", "Broncos", 18)] });
+    const splitM = ol.outlookPremiumModel(splitState);
+    const claims = [...splitM.triggers.up, ...splitM.triggers.risk].map((i) => i.claim);
     assert.ok(!claims.some((c) => /matchup|soft/i.test(c)), claims.join(" | "));
-    assert.match(split.querySelector(".scp-olp-sec.is-schedule .scp-olp-read").textContent, /^A mixed stretch/);
+    const split = render(splitState);
+    assert.match(split.querySelector(".scp-olp-sec.is-schedule .scp-olp-bar-aside").textContent, /^One top-12 and one bottom-12 WR matchups in the next four$/);
   });
 
   test("Opportunity vs. Production leads with expected points against actual", () => {
@@ -402,29 +419,36 @@ describe("the forward-looking rebuild (the brief, 2026-11-05)", () => {
       "Michael Wilson Rest-of-Season Projection",
       "Opportunity vs. Production",
       "What Drives Michael Wilson's Fantasy Value?",
-      "What Could Change His Value",
       "Michael Wilson Upcoming Matchups",
       "Michael Wilson Fantasy Outlook FAQ",
     ]);
     const tiles = [...doc.querySelectorAll(".scp-olr-kpi")].map((t) => `${t.querySelector("dt").textContent}=${t.querySelector("dd").textContent}`);
-    assert.deepEqual(tiles.slice(0, 3), ["PPR points per game=13.6", "Expected points per game=19.4", "Points over expected=−5.8"]);
-    assert.ok(tiles.includes("First-read share=32.3%"));
-    // The read is the first takeaway row's sentence (one panel, not paragraphs).
-    const read = doc.querySelector(".scp-olr-sec.is-opp .scp-olr-read:first-child p").textContent;
-    assert.match(read, /averaging 19\.4 expected PPR points a game but producing 13\.6/);
-    assert.match(read, /does not guarantee improvement/);
+    // The primary row: actual, expected, the difference (mak, 2026-11-27).
+    assert.deepEqual(tiles, ["PPR points per game=13.6", "Expected points per game=19.4", "Points over expected=−5.8"]);
+    // The volume figures: one secondary row under it.
+    const vol = [...doc.querySelectorAll(".scp-olr-vol-item")].map((t) => `${t.querySelector("dt").textContent}=${t.querySelector("dd").textContent}`);
+    assert.ok(vol.includes("first-read share=32.3%"), vol.join(" | "));
+    // The production callout is one sentence on what the gap means; the
+    // figures it restated are the row above.
+    const read = doc.querySelector(".scp-olr-sec.is-opp .scp-olr-gap").textContent;
+    assert.doesNotMatch(read, /averaging 19\.4 expected PPR points a game but producing 13\.6/);
+    assert.match(read, /^His opportunity profile is stronger than his output/);
+    assert.match(read, /does not guarantee improvement\.$/);
     // The read opens on the same numbers.
     assert.match(doc.querySelector(".scp-olr-obs").textContent, /averaging just 13\.6 PPR points against 19\.4 expected/);
-    assert.ok([...doc.querySelectorAll(".scp-olr-tag")].some((c) => c.textContent === "Scoring under expected"));
+    assert.equal(doc.querySelector(".scp-olr-tag"), null, "no status pills");
     assert.match(doc.querySelector(".scp-olr-more a").getAttribute("href"), /\/arizona-cardinals\/usage\/$/);
   });
 
-  test("the drivers: target share, xFP, FPOE, first-read share, then air yards", () => {
+  test("the drivers: target share, first-read share, then air yards (xFP and FPOE are the row above)", () => {
     const labels = [...doc.querySelectorAll(".scp-olp-drv .scp-olp-h3")].map((h) => h.textContent);
-    assert.deepEqual(labels, ["Target share", "Expected points", "Points over expected", "First-read share", "Downfield role"]);
+    // Expected points and points over expected print in Opportunity vs.
+    // Production just above, so the drivers leave them out (mak, 2026-11-27).
+    assert.deepEqual(labels, ["Target share", "First-read share", "Downfield role"]);
     assert.ok(!labels.includes("Target volume"));
-    const fpoe = [...doc.querySelectorAll(".scp-olp-drv")].find((d) => d.querySelector("h3").textContent === "Points over expected");
-    assert.equal(fpoe.querySelector(".scp-olp-tier").textContent, "Under expected");
+    const rows = ol.outlookPremiumModel(wr()).drivers.rows;
+    const fpoe = rows.find((d) => d.label === "Points over expected");
+    assert.equal(fpoe.word, "Under expected", "the model still carries them");
     // WEB-035 (2026-11-26): the Downfield row ranks in the usage field like
     // the rest, so every row is out of one field and the lede names it and
     // its rule (it read "Each row names its field" over 97 and the advanced
@@ -436,9 +460,10 @@ describe("the forward-looking rebuild (the brief, 2026-11-05)", () => {
   });
 
   test("what could change: catalysts with evidence, the gap first", () => {
-    const up = [...doc.querySelectorAll(".scp-olp-card.is-up .scp-olp-claim")].map((c) => c.textContent);
+    const lines = [...doc.querySelectorAll(".scp-olr-ob.is-change.is-up")];
+    const up = lines.map((c) => c.querySelector("b").textContent.replace(/:$/, ""));
     assert.equal(up[0], "Room for the points to catch his role");
-    assert.match(doc.querySelector(".scp-olp-card.is-up .scp-olp-evid").textContent, /19\.4 expected PPR points a game against 13\.6 scored/);
+    assert.match(lines[0].textContent, /19\.4 expected PPR points a game against 13\.6 scored/);
     // With a catalyst present the strips are not restated as "upside".
     assert.ok(!up.includes("Heavy target share"), up.join(" | "));
   });
@@ -446,8 +471,9 @@ describe("the forward-looking rebuild (the brief, 2026-11-05)", () => {
   test("the hero: as-of line, tags, and what supports / threatens the value", () => {
     // No "Updated {date}" (mak, 2026-11-05), and no "Through Week N" either (2026-11-06).
     assert.equal(doc.querySelector(".is-proj .scp-olr-bar-sub"), null);
-    const tags = [...doc.querySelectorAll(".scp-olr-tag")].map((c) => c.textContent);
-    assert.equal(tags[0], "High-volume starter");
+    // The status pills went 2026-11-27 (mak): the verdict says it.
+    assert.equal(doc.querySelector(".scp-olr-tag"), null);
+    assert.ok(doc.querySelector(".scp-olr-verdict .scp-olr-thesis"));
     const cells = [...doc.querySelectorAll(".scp-olr-factor")].map((c) => c.textContent);
     assert.match(cells[0], /^What supports his valueHeavy target volume \(25\.9%, 10th of 97\)/);
     assert.match(cells[1], /Three difficult matchups in his next four and uncertainty over how targets are distributed with Minshew starting\./);
@@ -484,7 +510,7 @@ describe("the forward-looking rebuild (the brief, 2026-11-05)", () => {
     assert.equal(bare.querySelector("#scp-ol-opp-h"), null);
     assert.match(bare.querySelector(".scp-olr-obs").textContent.trim(), /^Through 8 games he's WR24 at 13\.6 PPR points per game/);
     assert.doesNotMatch(bare.body.textContent, /expected PPR points/);
-    assert.ok(bare.querySelector(".scp-olp-sec.is-change"), "the triggers still render");
+    assert.ok(bare.querySelector(".scp-olr-ob.is-change, .scp-olp-changes, .scp-olp-sec.is-change"), "the triggers still render");
   });
 });
 
@@ -499,7 +525,10 @@ describe("the premium comparison of the four closing sections (mak's brief, 2026
     const { orig, prm, model } = both(state());
     assert.ok(prm, "the premium block renders");
     assert.equal(prm.querySelector(".scp-olp-flag"), null, "no comparison flag: these are the tab's sections");
-    assert.deepEqual([...prm.querySelectorAll(".scp-olp-sec")].map((s) => s.className.replace("scp-olp-sec ", "")), ["is-drivers", "is-change", "is-schedule", "is-archive"]);
+    assert.deepEqual([...prm.querySelectorAll(".scp-olp-sec")].map((s) => s.className.replace("scp-olp-sec ", "")), ["is-drivers", "is-schedule", "is-archive"]);
+    // What Could Change rides the projection's read, not the matchups (mak,
+    // 2026-11-28): the playoff schedule sits directly under the cards.
+    assert.equal(prm.querySelector(".is-schedule .scp-olp-changes"), null);
     for (const sel of [".scp-ol-drv", ".scp-ol-ur", "#scp-ol-drv-h", "#scp-ol-sch-h", ".scp-ol-sec-prev", ".scp-ol-cta"]) {
       assert.equal(orig.querySelector(sel), null, `${sel} is gone from the tab body`);
     }
@@ -514,12 +543,14 @@ describe("the premium comparison of the four closing sections (mak's brief, 2026
     // The bottom "Compare them in Redraft Command" strip is gone (2026-11-26
     // audit, WEB-017): the projection card is the tab's one link to it.
     assert.equal(prm.querySelector(".scp-olp-cta-btn"), null);
-    // Matchups: four cards, each a week, an opponent, a rank and a difficulty word.
+    // Matchups: four two-line cards (mak, 2026-11-28), "Wk 13 · vs MIA" then
+    // "6th vs QBs · Favorable"; no week pill, no grade badge.
     const games = [...prm.querySelectorAll(".scp-olp-game")];
     assert.equal(games.length, 4);
     for (const g of games) {
-      assert.match(text(g.querySelector(".scp-olp-wk")), /^Wk \d+$/);
-      assert.match(text(g.querySelector(".scp-olp-chip")), /^(Favorable|Neutral|Tough)$/);
+      assert.match(text(g.querySelector(".scp-olp-g1")), /^Wk \d+ · (vs|at) [A-Z]{2,3}$/);
+      assert.match(text(g.querySelector(".scp-olp-g2")), /^\d+(st|nd|rd|th) vs [A-Z]{1,2}s · (Favorable|Neutral|Tough)$/);
+      assert.equal(g.querySelector(".scp-olp-chip"), null);
     }
     assert.equal(prm.querySelector(".scp-olp-prev").hasAttribute("open"), false);
     assert.doesNotMatch(prm.textContent, /—/);
@@ -561,15 +592,12 @@ describe("the projection and opportunity sections (mak's brief, 2026-11-05, no p
     assert.equal(prm.querySelector(".scp-olr-sec.is-opp").getAttribute("aria-labelledby"), "scp-ol-opp-h");
     assert.deepEqual([...prm.querySelectorAll(".scp-olr-bar-title")].map(text), ["Michael Wilson Rest-of-Season Projection", "Opportunity vs. Production"]);
     assert.equal(prm.querySelector(".is-proj .scp-olr-bar-sub"), null, "no as-of line (2026-11-06)");
-    // The badges are the hero's chips, same words, same colors.
-    const chips = model.chips.map((c) => `is-${c.kind}:${c.label}`);
-    const tags = [...prm.querySelectorAll(".scp-olr-tag")].map((c) => `${c.className.match(/is-\w+/)[0]}:${text(c)}`);
-    assert.deepEqual(tags, chips);
-    assert.ok(tags.length >= 2);
+    // No status pills (mak, 2026-11-27): they repeated the verdict.
+    assert.equal(prm.querySelector(".scp-olr-tag, .scp-olr-tags"), null);
     // The takeaway and the read's sentences, with the figures bolded.
     assert.equal(text(prm.querySelector(".scp-olr-thesis")), model.headline);
     const paras = model.paragraphs;
-    assert.deepEqual([...prm.querySelectorAll(".scp-olr-ob p")].map(text), paras);
+    assert.deepEqual([...prm.querySelectorAll(".scp-olr-ob:not(.is-change) p")].map(text), paras);
     assert.ok(prm.querySelector(".scp-olr-ob p strong"), "figures are bolded");
     assert.match(prm.querySelector(".scp-olr-ob p").innerHTML, /<strong>19\.4<\/strong>/);
     // Supports / threatens: the same sentences.
@@ -578,35 +606,41 @@ describe("the projection and opportunity sections (mak's brief, 2026-11-05, no p
       [[model.supports, model.supportsEmpty], [model.threatens, model.threatensEmpty]].map(([items, empty]) => (items.length ? `${cap(list(items))}.` : empty)),
     );
     assert.deepEqual([...prm.querySelectorAll(".scp-olr-factor-h")].map(text), ["What supports his value", "What threatens his value"]);
-    // Redraft Command: the same link, its own data-cta, the same copy.
-    const btn = prm.querySelector(".scp-olr-btn");
+    // The start/sit link: in the verdict row, its own data-cta; the promo
+    // card and its copy are gone (mak, 2026-11-27).
+    const btn = prm.querySelector(".scp-olr-verdict .scp-olr-btn");
     assert.equal(btn.getAttribute("href"), model.rc.href);
     assert.equal(btn.getAttribute("data-cta"), "startsit-outlook-projection-premium");
     assert.equal(text(btn), "Should I start Wilson?");
-    assert.equal(text(prm.querySelector(".scp-olr-rc p")), model.rc.copy);
+    assert.equal(prm.querySelector(".scp-olr-rc"), null);
     // Best fit: the same rows and chips, the same assumptions line.
     assert.deepEqual(
       [...prm.querySelectorAll(".scp-olr-fit-row")].map((r) => `${text(r.querySelector(".scp-olr-fit-league"))}=${text(r.querySelector(".scp-olr-pill"))}`),
       model.fits.leagues.map((l, i) => `${l}=${model.fits.chips[i].label}`),
     );
     assert.equal(text(prm.querySelector(".scp-olr-fit-note")), model.fits.note);
-    // Opportunity: the same six figures, split 3 + 3 into the two groups, the first gold.
-    const kpis = [...prm.querySelectorAll(".scp-olr-kpi")].map((t) => `${text(t.querySelector("dt"))}=${text(t.querySelector("dd"))}`);
+    // Opportunity (mak, 2026-11-27): the first three figures are the primary
+    // row (the first gold), the rest one secondary volume row.
+    const kpis = [...prm.querySelectorAll(".scp-olr-kpis.is-primary .scp-olr-kpi")].map((t) => `${text(t.querySelector("dt"))}=${text(t.querySelector("dd"))}`);
     const tiles = model.opportunity.tiles.map((t) => `${t.label}=${t.value}`);
-    assert.deepEqual(kpis, tiles);
-    assert.deepEqual([...prm.querySelectorAll(".scp-olr-group-label")].map(text), ["Production Efficiency", "Opportunity Share"]);
-    assert.equal(prm.querySelectorAll(".scp-olr-group.is-prod .scp-olr-kpi").length, 3);
-    assert.equal(prm.querySelectorAll(".scp-olr-group.is-opp .scp-olr-kpi").length, 3);
+    assert.deepEqual(kpis, tiles.slice(0, 3));
+    const vol = [...prm.querySelectorAll(".scp-olr-vol-item")].map((t) => `${text(t.querySelector("dt"))}=${text(t.querySelector("dd"))}`);
+    assert.deepEqual(vol, model.opportunity.tiles.slice(3).map((t) => `${t.label.charAt(0).toLowerCase()}${t.label.slice(1)}=${t.value}`));
     assert.ok(prm.querySelector(".scp-olr-kpi:first-child").classList.contains("is-lead"));
     assert.deepEqual(
-      [...prm.querySelectorAll(".scp-olr-kpi-sub")].map(text),
+      [...prm.querySelectorAll(".scp-olr-kpi-sub, .scp-olr-vol-sub")].map(text),
       model.opportunity.tiles.filter((t) => t.sub).map((t) => t.sub),
     );
     assert.equal(text(prm.querySelector(".scp-olr-lede")), model.opportunity.lede);
-    // The takeaway rows: the same claims and sentences.
+    // The production reading: its last sentence, what the gap means; the
+    // other readings keep their rows with the same claims and sentences.
+    const [gapTake, ...trend] = model.opportunity.takes;
+    assert.equal(text(prm.querySelector(".scp-olr-gap")), gapTake.meaning);
+    // A name with a period in it ("St. Brown") never splits the sentence.
+    assert.ok(gapTake.text.endsWith(gapTake.meaning));
     assert.deepEqual(
       [...prm.querySelectorAll(".scp-olr-read")].map((r) => `${text(r.querySelector(".scp-olr-read-claim"))} ${text(r.querySelector(".scp-olr-read-text"))}`),
-      model.opportunity.takes.map((t) => `${t.claim} ${t.text}`),
+      trend.map((t) => `${t.claim} ${t.text}`),
     );
     assert.equal(prm.querySelector(".scp-olr-more a").getAttribute("href"), model.opportunity.link.href);
     assert.match(prm.querySelector(".scp-olr-more a").getAttribute("href"), /^\/nfl\/teams\/arizona-cardinals\/usage\/$/);
@@ -622,9 +656,10 @@ describe("the projection and opportunity sections (mak's brief, 2026-11-05, no p
     const s = wr({ player: { id: "10232", slug: "michael-wilson", name: "Michael Wilson", position: "WR", injury_status: "Out" }, designation: { injury_status: "Out", injury_body_part: "Knee" } });
     const { orig, prm, model } = both(s);
     if (!prm) return; // the originals render nothing for this state either
-    assert.deepEqual([...prm.querySelectorAll(".scp-olr-ob p")].map(text), model.paragraphs);
-    const last = prm.querySelector(".scp-olr-ob:last-child");
-    if (prm.querySelectorAll(".scp-olr-ob").length > 1 && /out/i.test(text(last))) assert.ok(last.classList.contains("is-alert"));
+    assert.deepEqual([...prm.querySelectorAll(".scp-olr-ob:not(.is-change) p")].map(text), model.paragraphs);
+    const reads = prm.querySelectorAll(".scp-olr-ob:not(.is-change)");
+    const last = reads[reads.length - 1];
+    if (reads.length > 1 && /out/i.test(text(last))) assert.ok(last.classList.contains("is-alert"));
   });
 
   test("no usage row (the QB fixture): the projection renders, the opportunity section is left out as in the original; a position the spec does not cover, or the preseason, renders nothing", () => {
@@ -633,7 +668,7 @@ describe("the projection and opportunity sections (mak's brief, 2026-11-05, no p
     assert.ok(prm.querySelector(".scp-olr-sec.is-proj"));
     assert.equal(model.opportunity, null);
     assert.equal(prm.querySelector(".scp-olr-sec.is-opp"), null);
-    assert.deepEqual([...prm.querySelectorAll(".scp-olr-ob p")].map(text), model.paragraphs);
+    assert.deepEqual([...prm.querySelectorAll(".scp-olr-ob:not(.is-change) p")].map(text), model.paragraphs);
     assert.equal(olr.renderOutlookProjectionPremium(state({ player: { ...state().player, position: "K" } })), "");
     assert.equal(olr.renderOutlookProjectionPremium(state({ leagueWeek: 0, season: 2026 })), "");
   });
@@ -721,20 +756,24 @@ describe("rank basis, ROS freshness and an unavailable player (audit 2026-11-26)
   });
 
   test("on IR after playing: one predicate drops matchup risk and upside from the card, the FAQ and the FAQ schema; the schedule facts stay (mak, 2026-11-26)", () => {
-    const active = render(wr());
-    const onIr = render(wr({ designation: { injuryStatus: "IR", injuryBodyPart: "Back" }, currentStatus: { kind: "reserve", message: "On IR." } }));
-    const risks = (doc) => [...doc.querySelectorAll(".scp-olp-card.is-risk .scp-olp-claim")].map((c) => c.textContent);
+    const irState = wr({ designation: { injuryStatus: "IR", injuryBodyPart: "Back" }, currentStatus: { kind: "reserve", message: "On IR." } });
+    const onIr = render(irState);
+    // The risk list from the model: on the page the schedule items are left
+    // to the matchup cards (mak, 2026-11-27).
+    const risks = (st) => ol.outlookPremiumModel(st).triggers.risk.map((i) => i.claim);
+    const activeState = wr();
     const island = (doc) => [...doc.querySelectorAll("script.scp-faq-data")].map((x) => x.textContent).join(" ");
     const faq = (doc) => [...doc.querySelectorAll(".scp-ol-faq, .scp-tab-faq")].map((x) => x.textContent).join(" ");
     // Every FAQ candidate, before the 10-question cap: the visible FAQ and the schema are a selection of these.
     const pool = (st) => ol.outlookFaqCandidates(st, { playerPathPrefix: "/nfl/players/" }).map((c) => `${c.q} ${c.a}`).join(" ");
     // Active (the control): the advice is there.
-    assert.ok(risks(active).includes("Tough matchups"), risks(active).join(" | "));
+    assert.ok(risks(activeState).includes("Tough matchups"), risks(activeState).join(" | "));
     assert.match(pool(wr()), /tough matchups?/);
     assert.match(pool(wr()), /remaining fantasy schedule\?/);
     // On IR: not in the card, the visible FAQ or the schema island.
-    assert.ok(!risks(onIr).includes("Tough matchups"), risks(onIr).join(" | "));
-    assert.ok(risks(onIr).includes("Injury"), risks(onIr).join(" | "));
+    assert.ok(!risks(irState).includes("Tough matchups"), risks(irState).join(" | "));
+    assert.ok(risks(irState).includes("Injury"), risks(irState).join(" | "));
+    assert.ok([...onIr.querySelectorAll(".scp-olr-ob.is-change.is-risk b")].some((b) => b.textContent === "Injury:"));
     assert.doesNotMatch(faq(onIr), /tough matchups?|stingiest|remaining fantasy schedule\?|good fantasy playoff option\?/);
     assert.doesNotMatch(island(onIr), /tough matchups?|stingiest|remaining fantasy schedule|good fantasy playoff option/);
     assert.doesNotMatch(pool(wr({ designation: { injuryStatus: "IR", injuryBodyPart: "Back" }, currentStatus: { kind: "reserve", message: "On IR." } })), /tough matchups?|stingiest|remaining fantasy schedule\?|good fantasy playoff option\?|top-12 matchups?/);

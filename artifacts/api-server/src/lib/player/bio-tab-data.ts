@@ -193,6 +193,8 @@ export type BioStatus = "active" | "free-agent" | "former";
 export interface BioPageFacts {
   status: BioStatus;
   quick: QuickFact[];
+  /** The story's headline (bioStory); null when the facts support none. */
+  headline: string | null;
   paragraphs: string[];
   stops: BioStop[];
   /** Rail axis: one label per season from the first stop to the last. */
@@ -645,6 +647,274 @@ function buildStops(
   });
 }
 
+/* ------------------------------------------------------------ the story */
+
+/**
+ * The Bio & Career story (mak's brief, 2026-11-28): how he got to the NFL
+ * and what he has done since, in chronological order, under a headline the
+ * facts support. Its job is distinct from the tabs around it: no lineup
+ * advice or fantasy finishes (Outlook), no birth date, high school or
+ * jersey number (Player Profile), no guessed reasons for a transfer or a
+ * team change. Every figure is regular season, from the same weekly logs
+ * the stops sum, with its time frame named: "first" only when his whole
+ * career is in the logs, otherwise the seasons are named.
+ */
+interface BioStoryInput {
+  name: string;
+  last: string;
+  pos: string;
+  posWord: string | null;
+  status: BioStatus;
+  team: NflTeam | null;
+  colleges: string[];
+  draft: DraftFact | null;
+  undrafted: { year: number } | null;
+  stops: BioStop[];
+  trades: TradeFact[];
+  wikiTx: WikiTransaction[];
+  proBowls: number | null;
+  allPro: number | null;
+  rings: SuperBowlFact[];
+  logCareer: LogSeason[];
+  currentSeason: number;
+  /** His first season is in the logs, so "first" and career totals are true. */
+  fullCareer: boolean;
+}
+
+const n2w = (n: number): string => (n === 0 ? "zero" : NUMBER_WORDS[n] ?? String(n));
+const ROUND_WORDS = ["", "first", "second", "third", "fourth", "fifth", "sixth", "seventh"];
+
+/** "Denver" for a sentence's subject; the full name where the city is shared or the era is old. */
+function clubSubject(code: string, season: number): string {
+  const t = teamFor(code, season);
+  const city = t.name.endsWith(` ${t.nickname}`) ? t.name.slice(0, -t.nickname.length - 1) : null;
+  if (!city || /^(Los Angeles|New York|LA)$/.test(city)) return `The ${t.name}`;
+  return city;
+}
+
+/** A season line in the position's own terms; "" when he has nothing to show. */
+function productionLine(pos: string, es: GameLogEntry[], past: boolean, opts: { scrimmage?: boolean } = {}): string[] {
+  const v = (has: string, had: string): string => (past ? had : has);
+  const out: string[] = [];
+  if (pos === "QB") {
+    const att = sum(es, "pass_att");
+    if (!att) return out;
+    const td = sum(es, "pass_td");
+    const int = sum(es, "pass_int");
+    const tdInt = [td ? `${n2w(td)} ${td === 1 ? "touchdown" : "touchdowns"}` : null, int ? `${n2w(int)} ${int === 1 ? "interception" : "interceptions"}` : null].filter(Boolean) as string[];
+    out.push(`completed ${fmt(sum(es, "pass_cmp"))} of ${fmt(att)} passes for ${fmt(sum(es, "pass_yd"))} yards${tdInt.length ? `, with ${list(tdInt)}` : ""}`);
+    const ryd = sum(es, "rush_yd");
+    const rtd = sum(es, "rush_td");
+    if (ryd >= 100 || rtd >= 2) out.push(`${v("ran", "ran")} for ${fmt(ryd)} yards${rtd ? ` and ${n2w(rtd)} ${rtd === 1 ? "touchdown" : "touchdowns"}` : ""}`);
+    return out;
+  }
+  if (pos === "RB" || pos === "FB") {
+    const ryd = sum(es, "rush_yd");
+    const rtd = sum(es, "rush_td");
+    const rec = sum(es, "rec");
+    const recYd = sum(es, "rec_yd");
+    if (sum(es, "rush_att")) out.push(`rushed for ${fmt(ryd)} yards${rtd ? ` and ${n2w(rtd)} ${rtd === 1 ? "touchdown" : "touchdowns"}` : ""}`);
+    if (rec) {
+      out.push(
+        `caught ${fmt(rec)} ${rec === 1 ? "pass" : "passes"} for ${fmt(recYd)} yards` +
+          (opts.scrimmage && ryd > 0 ? `, bringing his total to ${fmt(ryd + recYd)} yards from scrimmage` : ""),
+      );
+    }
+    return out;
+  }
+  if (pos === "WR" || pos === "TE") {
+    const rec = sum(es, "rec");
+    const td = sum(es, "rec_td");
+    if (rec) out.push(`caught ${fmt(rec)} ${rec === 1 ? "pass" : "passes"} for ${fmt(sum(es, "rec_yd"))} yards${td ? ` and ${n2w(td)} ${td === 1 ? "touchdown" : "touchdowns"}` : ""}`);
+    return out;
+  }
+  if (pos === "K") {
+    const fga = sum(es, "fga");
+    if (fga) out.push(`made ${sum(es, "fgm")} of ${fga} field-goal attempts`);
+  }
+  return out;
+}
+
+/** The season that defines him by the position's own measure; null with fewer than two full seasons. */
+function definingSeason(pos: string, logCareer: LogSeason[]): { season: number; entries: GameLogEntry[]; value: number; label: string } | null {
+  const measure = (es: GameLogEntry[]): number =>
+    pos === "QB" ? sum(es, "pass_yd") : pos === "RB" || pos === "FB" ? sum(es, "rush_yd") + sum(es, "rec_yd") : pos === "K" ? sum(es, "fgm") : sum(es, "rec_yd");
+  const label = pos === "QB" ? "passing yards" : pos === "RB" || pos === "FB" ? "yards from scrimmage" : pos === "K" ? "field goals" : "receiving yards";
+  const full = logCareer.filter((s) => s.weeks.length >= 8);
+  if (full.length < 2) return null;
+  const best = full.map((s) => ({ season: s.season, entries: s.weeks, value: measure(s.weeks) })).sort((a, b) => b.value - a.value)[0]!;
+  return best.value > 0 ? { ...best, label } : null;
+}
+
+export function bioStory(input: BioStoryInput): { headline: string | null; paragraphs: string[] } {
+  const { last, pos, posWord, status, draft, undrafted, stops } = input;
+  const colleges = input.colleges.map((c) => c.replace(/\.+$/, (m) => (/\b(Univ|St|Inst|Coll)$/.test(c.slice(0, -m.length)) ? "." : "")));
+  const past = status === "former";
+  const paragraphs: string[] = [];
+  const all = input.logCareer.flatMap((s) => s.weeks);
+  const seasonsPlayed = input.logCareer.filter((s) => s.weeks.length > 0).sort((a, b) => a.season - b.season);
+  const clubs = [...new Set(stops.map((s) => s.code))];
+  const firstStop = stops[0] ?? null;
+  const lastStop = stops[stops.length - 1] ?? null;
+  const entryYear = draft?.year ?? undrafted?.year ?? null;
+
+  const signedUdfa = undrafted ? input.wikiTx.find((t) => t.type === "Signed" && Number(t.date.slice(0, 4)) === undrafted.year) : undefined;
+  const undraftedClub = undrafted
+    ? signedUdfa ? teamFor(signedUdfa.team, undrafted.year).name : stops.find((s) => s.from === undrafted.year)?.name ?? null
+    : null;
+  const udfaNick = undrafted
+    ? signedUdfa ? teamFor(signedUdfa.team, undrafted.year).nickname : (() => { const st = stops.find((x) => x.from === undrafted.year); return st ? teamFor(st.code, st.from).nickname : null; })()
+    : null;
+
+  /* ---- 1. the route into the league ---- */
+  const p1: string[] = [];
+  if (colleges.length === 1) p1.push(`${last} played college football at ${colleges[0]}.`);
+  else if (colleges.length === 2) p1.push(`${last} began his college career at ${colleges[0]} before transferring to ${colleges[1]}.`);
+  // Three or more schools: the data's order is not always the path (Hill:
+  // Garden City CC came first), so no order is claimed.
+  else if (colleges.length > 2) p1.push(`${last} played college football at ${list(colleges)}.`);
+  if (draft) {
+    const by = draft.team ? clubSubject(draft.team, draft.year) : "An NFL team";
+    const who = p1.length ? `the ${posWord ?? "player"}` : last;
+    p1.push(`${by} selected ${who} in the ${ROUND_WORDS[draft.round] ?? ordinal(draft.round)} round of the ${draft.year} NFL Draft with the ${ordinal(draft.pick)} overall pick.`);
+  } else if (undrafted) {
+    // The documented signing: a reviewed signing in his undrafted year, else
+    // the club whose roster he first appears on that year.
+    const club = undraftedClub;
+    p1.push(club ? `He went undrafted in ${undrafted.year} and signed with the ${club}.` : `He went undrafted in ${undrafted.year}.`);
+  } else if (firstStop) {
+    p1.push(`His first season on record is ${firstStop.from}, with the ${firstStop.name}.`);
+  }
+  if (p1.length) paragraphs.push(p1.join(" "));
+
+  /* ---- 2. what he has done since arriving ---- */
+  const p2: string[] = [];
+  const oneClub = clubs.length === 1 && firstStop !== null;
+  const rookieCareer = seasonsPlayed.length <= 1 && input.fullCareer;
+  if (all.length === 0) {
+    if (status === "active" && input.team && entryYear === input.currentSeason) p2.push(`He has yet to appear in a regular-season game.`);
+  } else if (rookieCareer) {
+    const club = firstStop ? ` with the ${teamFor(firstStop.code, firstStop.from).nickname}` : "";
+    const lines = productionLine(pos, all, past, { scrimmage: true });
+    const frame = all.length === 1 ? `In his first regular-season game${club}, ${last}` : `In his first ${n2w(all.length)} regular-season games${club}, ${last}`;
+    if (lines.length >= 2 && (pos === "RB" || pos === "FB")) p2.push(`${frame} ${lines[0]}. He also ${lines[1]}.`);
+    else if (lines.length) p2.push(`${frame} ${lines.join(", and ")}.`);
+    else p2.push(`${frame.replace(`, ${last}`, "")}, ${last} ${past ? "did" : "has"} not recorded a ${pos === "QB" ? "pass attempt" : "touch"}.`.replace(`In his first`, `Through his first`));
+  } else {
+    const games = all.length;
+    const first = seasonsPlayed[0]!.season;
+    const lastSeason = seasonsPlayed[seasonsPlayed.length - 1]!.season;
+    const span = first === lastSeason ? `in ${first}` : input.fullCareer ? `since ${first}` : `from ${first} through ${lastSeason}`;
+    if (oneClub) {
+      const nick = teamFor(firstStop!.code, firstStop!.from).nickname;
+      const seasons = seasonsPlayed.length;
+      p2.push(
+        input.fullCareer
+          ? `${last} ${past ? "spent" : "has spent"} all ${n2w(seasons)} of his NFL seasons with the ${nick}, appearing in ${games} regular-season games.`
+          : `${last} appeared in ${games} regular-season games for the ${nick} ${span}.`,
+      );
+    } else {
+      // The chronology of clubs: consecutive stops in one clause, a return
+      // or the current club with its own verb; trades with their dates.
+      const segs: string[] = [];
+      const seen = new Set<string>();
+      let run: string[] = [];
+      const flush = (): void => {
+        if (run.length) segs.push(`played for the ${list(run)}`);
+        run = [];
+      };
+      stops.forEach((st, i) => {
+        const back = seen.has(st.code);
+        seen.add(st.code);
+        // Before 2009 the logs cannot date his first club: "through 2022".
+        const yrs =
+          i === 0 && !input.fullCareer && draft?.team === st.code
+            ? `THROUGH${st.to}`
+            : st.from === st.to ? `${st.from}` : `${st.from} to ${st.to}`;
+        // A trade into his first club is a draft-day pick trade, not his.
+        const trade = i > 0 ? input.trades.find((t) => t.to === st.code && Number(t.date.slice(0, 4)) >= st.from - 1 && Number(t.date.slice(0, 4)) <= st.from) : undefined;
+        if (trade) {
+          flush();
+          segs.push(`was traded to the ${st.name} in ${Number(trade.date.slice(0, 4))}`);
+        } else if (back) {
+          flush();
+          segs.push(`returned to the ${st.name} in ${st.from}`);
+        } else if (st.current && !past && i > 0) {
+          flush();
+          segs.push(`joined the ${st.name} in ${st.from}`);
+        } else {
+          run.push(yrs.startsWith("THROUGH") ? `${st.name} through ${yrs.slice(7)}` : `${st.name} (${yrs})`);
+        }
+      });
+      flush();
+      p2.push(`${last} ${list(segs)}.`);
+      p2.push(`${past ? "He appeared" : "He has appeared"} in ${games} regular-season games ${span}.`);
+    }
+    const peak = definingSeason(pos, input.logCareer);
+    if (peak) {
+      const lines = productionLine(pos, peak.entries, true);
+      const club = (() => {
+        const codes = [...new Set(peak.entries.map((e) => String(e.team ?? "").toUpperCase()).filter(Boolean))];
+        return codes.length === 1 && !oneClub ? ` with the ${teamFor(codes[0]!, peak.season).nickname}` : "";
+      })();
+      if (lines.length) {
+        p2.push(
+          `${input.fullCareer ? "His most productive season" : `His most productive season in that span`} came in ${peak.season}${club}, when he ${lines.join(", and ")} in ${peak.entries.length} games.`,
+        );
+      }
+    }
+  }
+  if (p2.length) paragraphs.push(p2.join(" "));
+
+  /* ---- 3. honors, when there are any ---- */
+  const p3: string[] = [];
+  const rings = [...input.rings].sort((a, b) => a.season - b.season);
+  if (rings.length) {
+    p3.push(
+      rings.length === 1
+        ? `He won Super Bowl ${superBowlName(rings[0]!.season)} with the ${teamFor(rings[0]!.team, rings[0]!.season).nickname} after the ${rings[0]!.season} season.`
+        : new Set(rings.map((r) => r.team)).size === 1
+          ? `${past ? "He won" : "He has won"} Super Bowls ${list(rings.map((r) => superBowlName(r.season)))} with the ${teamFor(rings[0]!.team, rings[0]!.season).nickname}.`
+          : `${past ? "He won" : "He has won"} ${n2w(rings.length)} Super Bowls: ${list(rings.map((r) => `${superBowlName(r.season)} with the ${teamFor(r.team, r.season).nickname}`))}.`,
+    );
+  }
+  const honors: string[] = [];
+  if (input.proBowls) honors.push(`${input.proBowls === 1 ? "a Pro Bowl" : `${n2w(input.proBowls)} Pro Bowls`}`);
+  if (input.allPro) honors.push(`${input.allPro === 1 ? "an All-Pro team" : `${n2w(input.allPro)} All-Pro teams`}`);
+  if (honors.length) p3.push(`He ${past ? "was" : "has been"} named to ${list(honors)}.`);
+  if (p3.length) paragraphs.push(p3.join(" "));
+
+  /* ---- the headline: the angle with the clearest facts ---- */
+  let headline: string | null = null;
+  const draftClub = draft?.team ? clubSubject(draft.team, draft.year).replace(/^The /, "the ") : null;
+  const nickOf = (st: BioStop | null): string | null => (st ? teamFor(st.code, st.from).nickname : null);
+  if (rings.length >= 2) headline = `${cap(n2w(rings.length))} Super Bowl titles${new Set(rings.map((r) => r.team)).size === 1 ? ` with the ${teamFor(rings[0]!.team, rings[0]!.season).nickname}` : ""}`;
+  else if (input.proBowls && input.proBowls >= 3) headline = `${/^(eight|eleven|18)/.test(n2w(input.proBowls)) ? "An" : "A"} ${n2w(input.proBowls)}-time Pro Bowl ${posWord ?? "selection"}`;
+  else if (rings.length === 1) headline = `A Super Bowl champion with the ${teamFor(rings[0]!.team, rings[0]!.season).nickname}`;
+  else if (draft && draft.round >= 3 && input.proBowls && posWord) headline = `A ${ROUND_WORDS[draft.round] ?? ordinal(draft.round)}-round pick turned Pro Bowl ${posWord}`;
+  else if (colleges.length >= 2 && colleges.length <= 2 && draftClub && seasonsPlayed.length <= 3) headline = `From ${colleges.join(" to ")} and on to ${draftClub}`;
+  else if (oneClub && input.fullCareer && seasonsPlayed.length >= 5) headline = `${cap(n2w(seasonsPlayed.length))} seasons, all with the ${nickOf(firstStop)}`;
+  else if (clubs.length >= 4 && input.fullCareer && firstStop && lastStop) headline = `${cap(n2w(clubs.length))} clubs in ${n2w(lastStop.to - firstStop.from + 1)} seasons`;
+  else if (lastStop && lastStop.current && !past && stops.slice(0, -1).some((x) => x.code === lastStop.code))
+    headline = `Back with the ${nickOf(lastStop)} in ${lastStop.from}`;
+  else if (undrafted && all.length > 0 && nickOf(lastStop)) headline = `From undrafted free agent to the ${nickOf(lastStop)}`;
+  else if (undrafted && all.length === 0 && udfaNick) headline = `An undrafted signing with the ${udfaNick}`;
+  else if (clubs.length >= 2 && clubs.length <= 3 && input.fullCareer && firstStop && lastStop && seasonsPlayed.length > 3 && lastStop.code !== firstStop.code)
+    headline = `From the ${nickOf(firstStop)} to the ${nickOf(lastStop)}`;
+  else if (draft && draft.round === 1 && colleges.length) headline = `A first-round pick out of ${colleges[colleges.length - 1]}`;
+  else if (colleges.length === 1 && draftClub && seasonsPlayed.length <= 3) headline = `From ${colleges[0]} to ${draftClub}`;
+  else if (input.trades.length && clubs.length >= 2) {
+    // The trade's own destination and year, never the club he is with now.
+    const t = [...input.trades].sort((a, b) => a.date.localeCompare(b.date)).at(-1)!;
+    const yr = Number(t.date.slice(0, 4));
+    if (!draft || yr > draft.year) headline = `Traded to the ${teamFor(t.to, yr).nickname} in ${yr}`;
+  }
+  // A school name that ends in an abbreviation ("Univ.") ends its sentence.
+  return { headline, paragraphs: paragraphs.map((x) => x.replace(/\.\./g, ".")) };
+}
+
+const cap = (x: string): string => x.charAt(0).toUpperCase() + x.slice(1);
+
 /* ----------------------------------------------------------------- page */
 
 export function buildBioPage(input: BioPageInput): BioPageFacts | null {
@@ -734,80 +1004,28 @@ export function buildBioPage(input: BioPageInput): BioPageFacts | null {
   if (proBowls) quick.push({ label: "Pro Bowls", value: String(proBowls) });
   if (allPro) quick.push({ label: "All-Pro", value: String(allPro) });
 
-  /* ---- the bio text: fixed sentence frames, each only when its facts exist ---- */
-  const paragraphs: string[] = [];
-  const p1: string[] = [];
-  if (status === "active" && posWord && input.team) {
-    p1.push(`${input.name} is a ${posWord} for the ${input.team.fullName}${input.number ? `, where he wears No. ${input.number}` : ""}.`);
-  } else if (status === "free-agent" && posWord) {
-    p1.push(`${input.name} is a free-agent ${posWord}.`);
-  } else if (posWord && stops.length && gameSeasons.length && fromLogs) {
-    const first = Math.min(...gameSeasons);
-    p1.push(
-      `${input.name} is a ${posWord} who played ${gameSeasons.length} NFL ${gameSeasons.length === 1 ? "season" : "seasons"}` +
-        ` (${first === lastGameSeason ? first : `${first}–${lastGameSeason}`}) for the ${list([...new Set(stops.map((s) => s.name))])}.`,
-    );
-  }
-  const school = colleges?.length ? (colleges.length === 1 ? colleges[0] : `${colleges.slice(0, -1).join(", ")} and then ${colleges[colleges.length - 1]}`) : null;
-  const origin = [hs ? `attended ${hs.replace(/\s*\(([A-Z]{2})\)$/, "")}` : null, school ? `played college football at ${school}` : null].filter(Boolean) as string[];
-  if (born && origin.length) p1.push(`Born ${born.long}${birthPlace ? `, in ${birthPlace}` : ""}, he ${list(origin)}.`);
-  else if (born) p1.push(`He was born ${born.long}${birthPlace ? `, in ${birthPlace}` : ""}.`);
-  else if (origin.length) p1.push(`He ${list(origin)}.`);
-  if (!p1[0]?.startsWith(input.name) && posWord && status === "former") p1.unshift(`${input.name} is a former NFL ${posWord}.`);
-  if (p1.length) paragraphs.push(p1.join(" "));
-
-  const p2: string[] = [];
-  if (draft) {
-    const by = draft.team ? teamFor(draft.team, draft.year).name : null;
-    p2.push(`${by ? `The ${by}` : "An NFL team"} selected ${last} in round ${draft.round}, pick ${draft.pick}, of the ${draft.year} NFL Draft.`);
-  } else if (undrafted) {
-    const firstStop = stops.find((s) => s.from === undrafted.year);
-    p2.push(`He entered the NFL as an undrafted free agent${firstStop ? ` with the ${firstStop.name}` : ""} in ${undrafted.year}.`);
-  }
-  const later = stops.slice(entryYear !== null && stops[0]?.from === entryYear ? 1 : 0);
-  for (const t of trades) {
-    const d = dateWords(t.date);
-    if (d) p2.push(`He was traded to the ${teamFor(t.to, Number(t.date.slice(0, 4))).name} on ${d.long}.`);
-  }
-  if (later.length && fromLogs) {
-    // "played for the Colts (2017–2020) and Dolphins (2021), returned to the
-    // Patriots in 2024 and joined the Cardinals in 2025": consecutive plain
-    // stops share one "played for", a return or the current club gets its own verb.
-    const seen = new Set(stops.slice(0, stops.length - later.length).map((s) => s.code));
-    const segments: string[] = [];
-    let run: string[] = [];
-    const flush = () => {
-      if (run.length) segments.push(`played for the ${list(run)}`);
-      run = [];
-    };
-    for (const s of later) {
-      const back = seen.has(s.code);
-      seen.add(s.code);
-      if (back || s.current) {
-        flush();
-        segments.push(`${back ? "returned to" : "joined"} the ${s.name} in ${s.from}`);
-      } else {
-        run.push(`${s.name} (${s.from === s.to ? s.from : `${s.from}–${s.to}`})`);
-      }
-    }
-    flush();
-    p2.push(`${later.length < stops.length ? "Since then, " : ""}${last} ${list(segments)}.`);
-  }
-  if (p2.length) paragraphs.push(p2.join(" "));
-
-  const p3: string[] = [];
-  const all = input.logCareer.flatMap((s) => s.weeks);
-  if (all.length && gameSeasons.length) {
-    const since = Math.min(...gameSeasons);
-    const g = all.length;
-    const lead = status === "former" ? `In ${g} regular-season games from ${since}, he` : `In ${g} regular-season games since ${since}, he has`;
-    const verb = (has: string, had: string) => (status === "former" ? had : has);
-    if (pos === "QB") p3.push(`${lead} ${verb("thrown", "threw")} for ${fmt(sum(all, "pass_yd"))} yards and ${sum(all, "pass_td")} touchdowns.`);
-    else if (pos === "RB") p3.push(`${lead} ${verb("run", "ran")} for ${fmt(sum(all, "rush_yd"))} yards and ${sum(all, "rush_td")} rushing touchdowns and ${verb("caught", "caught")} ${sum(all, "rec")} passes.`);
-    else if (pos === "WR" || pos === "TE") p3.push(`${lead} ${verb("caught", "caught")} ${sum(all, "rec")} passes for ${fmt(sum(all, "rec_yd"))} yards and ${sum(all, "rec_td")} receiving touchdowns.`);
-    else if (pos === "K") p3.push(`${lead} ${verb("made", "made")} ${sum(all, "fgm")} of ${sum(all, "fga")} field goals.`);
-  }
-  if (p3.length) paragraphs.push(p3.join(" "));
+  /* ---- the bio story (mak's brief, 2026-11-28): bioStory() above ---- */
+  const story = bioStory({
+    name: input.name,
+    last,
+    pos,
+    posWord,
+    status,
+    team: input.team,
+    colleges: colleges ?? [],
+    draft,
+    undrafted,
+    stops,
+    trades,
+    wikiTx,
+    proBowls,
+    allPro,
+    rings: ringsKnown ? superBowls : [],
+    logCareer: input.logCareer.filter((s) => s.weeks.length > 0),
+    currentSeason: input.currentSeason,
+    fullCareer: fromLogs,
+  });
+  const paragraphs = story.paragraphs;
 
   /* ---- transactions (spec 2.7, as amended by mak 2026-09-30) ----
    * Every row is dated as precisely as its source allows, never more: a trade
@@ -930,6 +1148,7 @@ export function buildBioPage(input: BioPageInput): BioPageFacts | null {
     indexable: bioIndexable(input.team !== null, entry),
     status,
     quick,
+    headline: story.headline,
     paragraphs,
     stops,
     axis,

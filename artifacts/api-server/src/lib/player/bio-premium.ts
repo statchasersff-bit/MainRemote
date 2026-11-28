@@ -1,26 +1,26 @@
 /**
- * The Bio tab's "{Name} Bio and Career" block (mak's brief "Exact Premium NFL
- * Player Bio Tab Redesign", 2026-11-05, built to attached_assets/bio1.png;
- * the tab's own design since the same day, when mak said "remove the older
- * version"): a navy title banner with the club's crest, the four-cell
- * identity strip, the Career Overview prose, the Career Timeline
- * (team-colored blocks aligned to a year axis), then "What Happened at Each
- * Stop" as a vertical timeline beside the Quick Facts, Redraft Command and
- * "More on {last}" cards. The transactions log (bio-tab.ts) and the FAQ
- * follow it.
+ * The Bio tab's "{Name} Bio and Career" block. The 2026-11-05 premium brief
+ * gave it a navy banner, a fact strip, a team-colored Career Timeline, stop
+ * cards and three sidebar cards; mak's 2026-11-28 brief made it adapt to the
+ * career instead, in one card: the banner, then the biography (its headline
+ * and story, bioStory in bio-tab-data.ts) with the NFL team history under it
+ * for a player with more than one stint, or career milestones for a
+ * one-stint player whose data has at least two distinct events; an unboxed
+ * Player Details list beside it; one row of links across the foot. The
+ * transactions log (bio-tab.ts) and the FAQ follow it.
  *
- * Every word and number is BioPageFacts (bio-tab-data.ts): the prose, quick
- * facts, stops, axis and college; moreOnRows() and collegeCrest() from
- * bio-tab.ts give the links and the school's crest. Nothing here is computed
- * afresh and nothing is written for one player.
+ * Every word and number is BioPageFacts: the story, quick facts, stops and
+ * honors; moreOnRows() and redraftCommandHref() from bio-tab.ts give the
+ * links. Nothing here is computed afresh and nothing is written for one
+ * player.
  *
- * Fantasy wording stays in the tab's marked places: the Redraft Command card
- * carries `.is-rc` and the best-season line `.scp-bo-best`, the classes the
+ * Fantasy wording stays in the tab's marked places: the start/sit link
+ * carries `.is-rc` and the best-season chip `.scp-bo-best`, the classes the
  * fantasy-wording test allows (tests/player.test.mjs).
  *
- * Markup is `scp-bop-` prefixed; every rule in player.css starts
- * `.scp .scp-bop`. The banner title is an h2 (the page H1 stays the hero's
- * "{Name} Bio"); the section bars are h2s, the cards h3s.
+ * Markup is `scp-bop-` prefixed. The banner title is an h2 (the page H1
+ * stays the hero's "{Name} Bio"); the story headline and the column titles
+ * are h3s.
  */
 
 import { escapeHtml } from "../render";
@@ -28,40 +28,14 @@ import { phoneHeading } from "./phone-heading";
 import type { PlayerRenderOptions } from "../player-render";
 import type { PlayerPageData } from "./player-data";
 import { lastName } from "./header";
-import { positionWord, type BioPageFacts, type BioStop } from "./bio-tab-data";
-import { collegeCrest, moreOnRows, redraftCommandHref } from "./bio-tab";
+import type { BioPageFacts, BioStop } from "./bio-tab-data";
+import { moreOnRows, redraftCommandHref } from "./bio-tab";
 import { headArt, headIcon } from "./tab-head";
 
 const e = escapeHtml;
 
-const svg = (body: string): string =>
-  `<svg class="scp-bop-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${body}</svg>`;
-const ICON = {
-  jersey: svg(`<path d="M8 4l-5 3 2 4 2-1v10h10V10l2 1 2-4-5-3a3 3 0 0 1-8 0z"/>`),
-  calendar: svg(`<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>`),
-  ruler: svg(`<path d="M3 17L17 3l4 4L7 21z"/><path d="M8 12l2 2M11 9l2 2M14 6l2 2"/>`),
-  cap: svg(`<path d="M2 9l10-4 10 4-10 4z"/><path d="M6 11v4c0 1.5 3 3 6 3s6-1.5 6-3v-4"/><path d="M22 9v5"/>`),
-  bars: svg(`<path d="M5 20v-6M12 20V9M19 20V4"/>`),
-  pin: svg(`<path d="M12 21s-6-5.5-6-11a6 6 0 0 1 12 0c0 5.5-6 11-6 11z"/><circle cx="12" cy="10" r="2.5"/>`),
-  info: svg(`<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>`),
-  trend: svg(`<path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/>`),
-  list: svg(`<path d="M8 6h13M8 12h13M8 18h13"/><path d="M3 6h.01M3 12h.01M3 18h.01"/>`),
-  arrow: svg(`<path d="M5 12h14M13 6l6 6-6 6"/>`),
-};
-
 /** "2009 – 2022", "2025 – now" (or "present"), "2024" for a one-season stop. */
 const years = (s: BioStop, now: string): string => (s.current ? `${s.from} – ${now}` : s.from === s.to ? String(s.from) : `${s.from} – ${s.to}`);
-
-/** The section bar: gold icon, the h2, the gold diagonals. */
-function bar(icon: string, title: string, id: string): string {
-  return (
-    `<header class="scp-bop-bar">` +
-    `<span class="scp-bop-bar-icon">${icon}</span>` +
-    `<h2 class="scp-bop-bar-title" id="${id}">${e(title)}</h2>` +
-    `<span class="scp-bop-stripes" aria-hidden="true"></span>` +
-    `</header>`
-  );
-}
 
 /* ------------------------------------------------------------------ header */
 
@@ -93,233 +67,159 @@ function renderHeader(data: PlayerPageData): string {
   );
 }
 
-/* -------------------------------------------------------------- fact strip */
-
-/**
- * The four identity cells: Position, Born, Height / Weight, College. Each is
- * the Quick Facts' own value, joined the way the mockup joins them; a cell
- * with no fact behind it is left out rather than printed empty.
- */
-function renderFacts(data: PlayerPageData, page: BioPageFacts): string {
-  const quick = (label: string): string | null => page.quick.find((f) => f.label === label)?.value ?? null;
-  const cells: { icon: string; label: string; value: string }[] = [];
-
-  const pos = positionWord(data.player.position);
-  if (pos) cells.push({ icon: ICON.jersey, label: "Position", value: pos.replace(/\b\w/g, (c) => c.toUpperCase()) });
-
-  const born = quick("Born");
-  const age = quick("Age");
-  if (born) cells.push({ icon: ICON.calendar, label: "Born", value: age ? `${born} (Age ${age})` : born });
-
-  const height = quick("Height");
-  const weight = quick("Weight");
-  if (height || weight) {
-    cells.push({ icon: ICON.ruler, label: height && weight ? "Height / Weight" : height ? "Height" : "Weight", value: [height, weight].filter(Boolean).join(" / ") });
-  }
-
-  const college = quick("College") ?? quick("Colleges");
-  // "College" whatever the count: the cell names the education path, as the mockup does.
-  if (college) cells.push({ icon: ICON.cap, label: "College", value: college });
-
-  if (cells.length === 0) return "";
-  return (
-    `<dl class="scp-bop-facts" aria-label="Player facts">` +
-    cells
-      .map(
-        (c) =>
-          `<div class="scp-bop-fact"><span class="scp-bop-fact-icon">${c.icon}</span>` +
-          `<div><dt>${e(c.label)}</dt><dd>${e(c.value)}</dd></div></div>`,
-      )
-      .join("") +
-    `</dl>`
-  );
-}
-
 /* ---------------------------------------------------------------- overview */
 
 function renderOverview(page: BioPageFacts): string {
   if (page.paragraphs.length === 0) return "";
   return (
     // No visible "Career Overview" heading (mak, 2026-11-06): the prose sits
-    // straight under the fact strip in the intro card.
+    // straight under the fact strip in the intro card. Since 2026-11-28 the
+    // story opens with its own headline when the facts support one (bioStory).
     `<section class="scp-bop-sec is-overview" aria-label="Career overview">` +
+    (page.headline ? `<h3 class="scp-bop-story-h">${e(page.headline)}</h3>` : "") +
     `<div class="scp-bop-prose">${page.paragraphs.map((p) => `<p>${e(p)}</p>`).join("")}</div>` +
     `</section>`
   );
 }
 
-/* ---------------------------------------------------------------- timeline */
+/* ----------------------------------------------------------- team history */
 
 /**
- * The team-colored blocks over a year axis in the same columns. Each stop's
- * column is as wide as its stop was long, with a floor so a two-season stop
- * still has room for its totals, and its seasons are spread inside the
- * column, so the labels stay under the block that covers them (the mockup
- * does the same). A season no stop covers is an empty column in both rows.
- * Below the floor widths the box scrolls sideways rather than squeezing.
+ * The NFL team history, multi-stint players only (mak, 2026-11-28): one
+ * compact row a stint, "Years · Team · one detail", oldest first, a return to
+ * a club its own row. "present" only on the stop the roster data marks
+ * current. When the logs begin after his career did, the list says it holds
+ * the stops since then rather than claiming the whole career.
  */
-function renderTimeline(page: BioPageFacts): string {
-  const stops = page.stops;
-  if (stops.length === 0) return "";
-  const STOP_MIN = 200;
-  const GAP_MIN = 28;
-  const YEAR_MIN = 46;
-
-  const cols: string[] = [];
-  const blocks: string[] = [];
-  const axis: string[] = [];
-  let minWidth = (stops.length - 1) * 10;
-  const yearCell = (from: number, to: number): string => {
-    const years: string[] = [];
-    for (let y = from; y <= to; y += 1) years.push(`<span>${y}</span>`);
-    return `<span class="scp-bop-axis-years" style="grid-template-columns:repeat(${years.length},1fr)">${years.join("")}</span>`;
-  };
-  stops.forEach((s, i) => {
-    const prev = stops[i - 1];
-    if (prev && s.from > prev.to + 1) {
-      const n = s.from - prev.to - 1;
-      cols.push(`minmax(${GAP_MIN}px, ${n}fr)`);
-      blocks.push(`<div class="scp-bop-gap" aria-hidden="true"></div>`);
-      axis.push(`<li class="scp-bop-axis-cell is-gap">${yearCell(prev.to + 1, s.from - 1)}</li>`);
-      minWidth += Math.max(GAP_MIN, n * YEAR_MIN) + 10;
-    }
-    cols.push(`minmax(${STOP_MIN}px, ${s.width}fr)`);
-    minWidth += Math.max(STOP_MIN, (s.to - s.from + 1) * YEAR_MIN);
-    const logo = s.team?.logo
-      ? `<img class="scp-bop-seg-logo" src="${e(s.team.logo)}" alt="" width="40" height="40" loading="lazy" decoding="async">`
-      : `<span class="scp-bop-seg-logo" aria-hidden="true"></span>`;
-    const label = s.team?.nickname ?? s.short;
-    blocks.push(
-      `<div class="scp-bop-seg${s.current ? " is-cur" : ""}" role="listitem" style="--c:${e(s.primary)};--a:${e(s.accent)}">` +
-        `<div class="scp-bop-seg-head">${logo}<div class="scp-bop-seg-t">` +
-        `<span class="scp-bop-seg-name">${e(label)}<span class="scp-bop-sr">${e(` (${s.name})`)}</span></span>` +
-        `<span class="scp-bop-seg-years">${e(years(s, "now"))}</span></div></div>` +
-        `<div class="scp-bop-seg-body">` +
-        `<b class="scp-bop-seg-big">${e(s.rail.big)}</b>` +
-        `<span class="scp-bop-seg-rest">${e(s.rail.rest)}</span>` +
-        // One of the bio's three marked fantasy spots (the class is the
-        // fantasy-wording test's allowance), the same line the block above prints.
-        (s.best ? `<span class="scp-bo-best scp-bop-best">${e(`Best: ${s.best.points.toFixed(1)} pts (${s.best.season})`)}</span>` : "") +
-        `</div></div>`,
-    );
-    axis.push(
-      `<li class="scp-bop-axis-cell" style="--c:${e(s.primary)}"><span class="scp-bop-axis-bar" aria-hidden="true"></span>${yearCell(s.from, s.to)}</li>`,
-    );
-  });
-  const grid = `grid-template-columns:${cols.join(" ")};min-width:${minWidth}px`;
-  return (
-    `<section class="scp-bop-sec is-timeline" aria-labelledby="scp-bop-tl-h">` +
-    bar(ICON.bars, "Career Timeline", "scp-bop-tl-h") +
-    `<div class="scp-bop-tl">` +
-    `<div class="scp-bop-segs" role="list" style="${grid}">${blocks.join("")}</div>` +
-    `<ol class="scp-bop-axis" aria-label="Seasons" style="${grid}">${axis.join("")}</ol>` +
-    `</div></section>`
-  );
+function stopDetail(s: BioStop): string {
+  const champs = s.sentences.find((t) => /Super Bowl/.test(t));
+  if (champs) return champs;
+  return s.sentences.find((t) => /^He was /.test(t)) ?? s.sentences[0] ?? "";
 }
 
-/* ------------------------------------------------------- stops + sidebar */
-
-function renderStops(page: BioPageFacts): string {
+function renderHistory(page: BioPageFacts): string {
   const stops = page.stops;
-  if (stops.length === 0 && !page.college) return "";
-  const items = [...stops].reverse().map((s) => {
+  if (stops.length < 2) return "";
+  const rows = stops.map((s) => {
     const tag = s.spell > 1 ? `, ${["", "", "second", "third", "fourth"][s.spell] ?? `${s.spell}th`} stint` : "";
-    const crest = s.team?.logo
-      ? `<img src="${e(s.team.logo)}" alt="" width="44" height="44" loading="lazy" decoding="async">`
-      : "";
+    const logo = s.team?.logo ? `<img class="scp-bop-hist-logo" src="${e(s.team.logo)}" alt="" width="20" height="20" loading="lazy" decoding="async">` : `<span class="scp-bop-hist-logo" aria-hidden="true"></span>`;
+    const detail = stopDetail(s);
     return (
-      `<li class="scp-bop-stop${s.current ? " is-cur" : ""}" style="--c:${e(s.primary)}">` +
-      `<span class="scp-bop-node" aria-hidden="true"></span>` +
-      `<div class="scp-bop-card">` +
-      `<div class="scp-bop-card-head"><span class="scp-bop-card-crest" aria-hidden="true">${crest}</span>` +
-      `<h3 class="scp-bop-card-h">${e(s.name)}</h3>` +
-      (s.current ? `<span class="scp-bop-chip">Current team</span>` : "") +
-      `<span class="scp-bop-card-years">${e(years(s, "present") + tag)}</span></div>` +
-      (s.sentences.length ? `<p class="scp-bop-card-p">${e(s.sentences.join(" "))}</p>` : "") +
-      `</div></li>`
+      `<li class="scp-bop-hist-row${s.current ? " is-cur" : ""}">` +
+      `<span class="scp-bop-hist-years">${e(years(s, "present") + tag)}</span>` +
+      `<span class="scp-bop-hist-team">${logo}<span>${e(s.name)}</span></span>` +
+      (detail ? `<span class="scp-bop-hist-detail">${e(detail)}</span>` : "") +
+      `</li>`
     );
   });
-  if (page.college) {
-    items.push(
-      `<li class="scp-bop-stop is-college">` +
-        `<span class="scp-bop-node" aria-hidden="true"></span>` +
-        `<div class="scp-bop-card"><div class="scp-bop-card-head">` +
-        `<span class="scp-bop-card-crest" aria-hidden="true">${collegeCrest(page, "scp-bop-college")}</span>` +
-        `<h3 class="scp-bop-card-h">${e(`College: ${page.college.names.join(", ")}`)}</h3>` +
-        `</div></div></li>`,
-    );
-  }
+  const note = page.coversCareer ? "" : `<p class="scp-bop-hist-note">${e(`Stops since ${page.axis[0]}; earlier seasons are not in the data.`)}</p>`;
   return (
-    `<section class="scp-bop-sec is-stops" aria-labelledby="scp-bop-st-h">` +
-    bar(ICON.pin, "What Happened at Each Stop", "scp-bop-st-h") +
-    `<ol class="scp-bop-stops">${items.join("")}</ol>` +
+    `<section class="scp-bop-history" aria-labelledby="scp-bop-hist-h">` +
+    `<h3 class="scp-bop-sub-h" id="scp-bop-hist-h">NFL Team History</h3>` +
+    `<ol class="scp-bop-hist">${rows.join("")}</ol>` +
+    note +
     `</section>`
   );
 }
 
-function card(cls: string, icon: string, title: string, body: string, label = ""): string {
+/* ------------------------------------------------------------- milestones */
+
+/**
+ * Career milestones for a one-stint player (mak, 2026-11-28): a year and a
+ * specific event each, only events the data vouches for (Super Bowl wins,
+ * his best season), and only when there are at least two of them.
+ */
+function renderMilestones(page: BioPageFacts): string {
+  if (page.stops.length > 1) return "";
+  const stop = page.stops[0];
+  const rows: { year: number; html: string }[] = page.superBowls.map((sb) => ({
+    year: sb.season,
+    html: e(`Won Super Bowl ${sb.name} with the ${sb.team}`),
+  }));
+  if (stop?.best && page.seasonsPlayed >= 3) {
+    // One of the bio's marked fantasy spots: the chip carries .scp-bo-best.
+    rows.push({
+      year: stop.best.season,
+      html: `Career-best season <span class="scp-bo-best scp-bop-best">${e(`Best: ${stop.best.points.toFixed(1)} pts (${stop.best.season})`)}</span>`,
+    });
+  }
+  if (rows.length < 2) return "";
+  rows.sort((a, b) => a.year - b.year);
   return (
-    `<div class="scp-bop-card-side ${cls}"${label ? ` aria-label="${e(label)}"` : ""}>` +
-    `<h3 class="scp-bop-side-h"><span class="scp-bop-side-icon">${icon}</span>${e(title)}</h3>` +
-    body +
-    `</div>`
+    `<section class="scp-bop-history is-milestones" aria-labelledby="scp-bop-ms-h">` +
+    `<h3 class="scp-bop-sub-h" id="scp-bop-ms-h">Career Milestones</h3>` +
+    `<ol class="scp-bop-hist">${rows.map((r) => `<li class="scp-bop-hist-row"><span class="scp-bop-hist-years">${r.year}</span><span class="scp-bop-hist-detail">${r.html}</span></li>`).join("")}</ol>` +
+    `</section>`
   );
 }
 
-function renderSidebar(data: PlayerPageData, page: BioPageFacts, options: PlayerRenderOptions): string {
+/* --------------------------------------------------------- player details */
+
+/**
+ * Player Details (mak, 2026-11-28): a compact, unboxed list beside the
+ * biography. Birth date with age, height, weight, high school, jersey, the
+ * draft and any honors; the biography carries the college path, and "Teams"
+ * is dropped.
+ */
+const DETAIL_ORDER = ["Born", "Height", "Weight", "High school", "Jersey", "Drafted", "Super Bowl", "Super Bowls", "Pro Bowls", "All-Pro"];
+
+function renderDetails(page: BioPageFacts): string {
+  const quick = new Map(page.quick.map((f) => [f.label, f.value]));
+  const rows = DETAIL_ORDER.filter((label) => quick.has(label)).map((label) => {
+    let value = quick.get(label)!;
+    if (label === "Born" && quick.has("Age")) value = `${value} (age ${quick.get("Age")})`;
+    return `<div class="scp-bop-row"><dt>${e(label)}</dt><dd>${e(value)}</dd></div>`;
+  });
+  if (rows.length === 0) return "";
+  return (
+    `<aside class="scp-bop-details" aria-labelledby="scp-bop-det-h">` +
+    `<h3 class="scp-bop-sub-h" id="scp-bop-det-h">Player Details</h3>` +
+    `<dl class="scp-bop-dl">${rows.join("")}</dl>` +
+    `</aside>`
+  );
+}
+
+/* ------------------------------------------------------------------ links */
+
+/**
+ * One row of links under the biography (mak, 2026-11-28): Career stats ·
+ * Game log · Injury history · {season} outlook, then his start/sit page as a
+ * text link. The start/sit link is one of the bio's marked fantasy spots
+ * (.is-rc).
+ */
+function renderLinks(data: PlayerPageData, page: BioPageFacts, options: PlayerRenderOptions): string {
   const last = lastName(data.player.name);
-  const facts = page.quick.map((f) => `<div class="scp-bop-row"><dt>${e(f.label)}</dt><dd>${e(f.value)}</dd></div>`).join("");
-  const quick = facts ? card("is-facts", ICON.info, "Quick Facts", `<dl class="scp-bop-dl">${facts}</dl>`) : "";
-
-  // One of the bio's three marked fantasy spots: `.is-rc`, as on the card above.
-  // His start/sit page (2026-11-26 audit, WEB-017); the card promised his
-  // rest-of-season value on Redraft Command's player page, a noindex shell.
+  const links = moreOnRows(data, page, options)
+    .filter((r) => r.label !== "Team")
+    .map((r) => `<a href="${e(r.href)}">${e(r.label)}</a>`);
   const rcHref = page.status === "active" ? redraftCommandHref(data) : "";
-  const rc = rcHref
-    ? card(
-        "is-rc",
-        ICON.trend,
-        "Redraft Command",
-        `<p class="scp-bop-rc-p">${e(`Is ${last} a start this week? His start/sit page has the projection, the matchup and a verdict.`)}</p>` +
-          `<a class="scp-bop-btn" href="${e(rcHref)}" data-cta="startsit-bio-premium">${e(`Should I start ${last}?`)}<span class="scp-bop-btn-icon">${ICON.arrow}</span></a>`,
-      )
-    : "";
-
-  const rows = moreOnRows(data, page, options);
-  const more = rows.length
-    ? card(
-        "is-more",
-        ICON.list,
-        `More on ${last}`,
-        `<dl class="scp-bop-dl is-links">${rows.map((r) => `<div class="scp-bop-row"><dt>${e(r.label)}</dt><dd><a href="${e(r.href)}">${e(r.text)}</a></dd></div>`).join("")}</dl>`,
-      )
-    : "";
-
-  if (!quick && !rc && !more) return "";
-  return `<aside class="scp-bop-side" aria-label="${e(`More on ${last}`)}">${quick}${rc}${more}</aside>`;
+  if (rcHref) links.push(`<span class="is-rc"><a href="${e(rcHref)}" data-cta="startsit-bio-premium">${e(`Should I start ${last}?`)}</a></span>`);
+  if (links.length === 0) return "";
+  return `<nav class="scp-bop-links" aria-label="${e(`More on ${last}`)}">${links.join(`<span class="scp-bop-sep" aria-hidden="true">·</span>`)}</nav>`;
 }
 
 /* ------------------------------------------------------------------ public */
 
+/**
+ * The tab (mak, 2026-11-28): one card. The banner, then the biography (its
+ * headline and story) with the team history or milestones under it when the
+ * career has them, Player Details beside it, and one row of links across
+ * the foot. Phones stack biography, details, links. The Career Timeline,
+ * the stop cards, the fact strip and the sidebar cards are gone.
+ */
 export function renderBioPremium(data: PlayerPageData, options: PlayerRenderOptions = {}): string {
   const page = data.bioPage;
   if (!page) return "";
-  const stops = renderStops(page);
-  const side = renderSidebar(data, page, options);
-  const lower = stops || side ? `<div class="scp-bop-lower">${stops}${side}</div>` : "";
+  const details = renderDetails(page);
   return (
     `<div class="scp-bop" aria-labelledby="scp-bop-title">` +
-    // The banner, fact strip and Career Overview share one card, the way the
-    // Outlook tab's Rest-of-Season Projection holds its navy bar and body
-    // (mak, 2026-11-06).
     `<section class="scp-bop-intro" aria-labelledby="scp-bop-title">` +
     renderHeader(data) +
-    `<div class="scp-bop-intro-body">` +
-    renderFacts(data, page) +
-    renderOverview(page) +
+    `<div class="scp-bop-intro-body scp-bop-grid${details ? "" : " is-solo"}">` +
+    `<div class="scp-bop-main">${renderOverview(page)}${renderHistory(page)}${renderMilestones(page)}</div>` +
+    details +
+    renderLinks(data, page, options) +
     `</div></section>` +
-    renderTimeline(page) +
-    lower +
     `</div>`
   );
 }

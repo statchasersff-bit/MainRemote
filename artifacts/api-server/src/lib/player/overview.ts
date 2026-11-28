@@ -48,6 +48,7 @@ import type { PlayerPageData } from "./player-data";
 import { getEntryPoints, SCORING_SHORT } from "./scoring";
 import type { GameLogEntry } from "./types";
 import { renderNewsBrief } from "./news-tab";
+import { statLines } from "./news-tab-data";
 import { seasonTotals, tableCols } from "./season-line";
 import type { UpcomingGame } from "./upcoming";
 import {
@@ -55,9 +56,11 @@ import {
   designationSeverity,
   lastName,
   matchupBand,
+  startSitHref,
   teamInk,
 } from "./header";
 import { headArt, headIcon } from "./tab-head";
+import { REDRAFT_COMMAND_URL, TRADE_CALCULATOR_URL } from "../matchup/recap";
 import { SOFT_MAX_RANK, TOUGH_MIN_RANK } from "../fpa/matchup-bands";
 import { matchupAdviceOff, publishedRank, rankBasisWords, type PublishedRank } from "./season-phase";
 
@@ -93,12 +96,13 @@ const ICON = {
  * .scp-olr-bar, Bio's .scp-bop-bar) over a card body (mak, 2026-11-06).
  * Close with SECTION_END.
  */
-function sectionOpen(id: string, heading: string, cls = "", icon: keyof typeof ICON = "stats", name = ""): string {
+function sectionOpen(id: string, heading: string, cls = "", icon: keyof typeof ICON = "stats", name = "", link = ""): string {
   return (
     `<section class="scp-ox-sec scp-ovp-sec${cls ? ` ${cls}` : ""}" aria-labelledby="${id}">` +
     `<header class="scp-ovp-bar">` +
     `<span class="scp-ovp-bar-icon">${ICON[icon]}</span>` +
     `<h2 class="scp-ovp-bar-title" id="${id}">${phoneHeading(titleCase(heading), name)}</h2>` +
+    link +
     `<span class="scp-ovp-bar-grid" aria-hidden="true"></span>` +
     `<span class="scp-ovp-bar-stripes" aria-hidden="true"></span>` +
     `</header>` +
@@ -127,6 +131,19 @@ function tabHref(data: PlayerPageData, options: PlayerRenderOptions, seg: string
 
 function more(href: string, text: string, attrs = ""): string {
   return `<a class="scp-ox-more" href="${escapeHtml(href)}"${attrs}>${escapeHtml(text)}</a>`;
+}
+
+/**
+ * A section's link in its title row, right-aligned ("Full stats", "Full game
+ * log", "All news"; mak, 2026-11-27, in place of the footer link rows). The
+ * short words show; the player's name rides along for screen readers so the
+ * link still says whose page it opens. The arrow is drawn by CSS.
+ */
+function headLink(href: string, text: string, name: string, attrs = ""): string {
+  return (
+    `<a class="scp-ox-more is-head" href="${escapeHtml(href)}"${attrs}>${escapeHtml(text)}` +
+    `<span class="scp-sr">${escapeHtml(`: ${name}`)}</span></a>`
+  );
 }
 
 /**
@@ -217,6 +234,8 @@ interface Season {
   weeks: WeekCell[];
   /** The next four games, with the bye in its place when it falls among them. */
   next: Array<UpcomingGame | { bye: number }>;
+  /** The next five weeks, the bye included. */
+  strip: Array<UpcomingGame | { bye: number }>;
 }
 
 function season(data: PlayerPageData): Season {
@@ -320,7 +339,18 @@ function season(data: PlayerPageData): Season {
     next.splice(next.findIndex((g) => "week" in g && g.week > bye), 0, { bye });
   }
 
-  return { pos, leagueSeason, leagueWeek, current, played, pts, weeks, next };
+  // The next five weeks, the bye in its place (mak, 2026-11-27): the compact
+  // strip a short season's card ends with.
+  const ahead5 = [...(data.upcoming?.length ? data.upcoming : data.upcomingStrip ?? [])]
+    .filter((g) => g.week > doneThrough)
+    .sort((x, y) => x.week - y.week)
+    .slice(0, 5);
+  const strip: Season["strip"] = [...ahead5];
+  if (bye !== null && bye > doneThrough && ahead5.length && bye < ahead5[ahead5.length - 1]!.week) {
+    strip.splice(strip.findIndex((g) => "week" in g && g.week > bye), 0, { bye });
+  }
+
+  return { pos, leagueSeason, leagueWeek, current, played, pts, weeks, next, strip: strip.slice(0, 5) };
 }
 
 /* ------------------------------------------------- 1. season stats */
@@ -332,29 +362,208 @@ function season(data: PlayerPageData): Season {
  */
 function renderSeasonStats(data: PlayerPageData, s: Season, options: PlayerRenderOptions): string {
   if (!s.current || s.played.length === 0) return "";
-  const cols = tableCols(s.pos, SCORING_SHORT[data.format]).filter((c) => c.label !== "PPG");
-  if (cols.length === 0) return "";
+  const all = tableCols(s.pos, SCORING_SHORT[data.format]).filter((c) => c.label !== "PPG");
+  if (all.length === 0) return "";
   const totals = seasonTotals(s.played, s.pts);
   // The format beside the total ("PPR FPTS"), not only in the header (2026-11-27).
   const label = (c: { label: string }): string => (/ PTS$/.test(c.label) ? c.label.replace(/ PTS$/, " FPTS") : c.label);
+  const cell = (dt: string, title: string, dd: string, cls = ""): string =>
+    `<div class="scp-ox-stat${cls}"><dt><abbr title="${escapeHtml(title)}">${escapeHtml(dt)}</abbr></dt><dd>${escapeHtml(dd)}</dd></div>`;
+  let cells: string[];
+  if (s.pos === "QB") {
+    // A quarterback's eight, in mak's order (2026-11-27): PPR FPTS, GP,
+    // CMP/ATT, PASS YDS, PASS TD, INT, RUSH YDS, RUSH TD. Completions and
+    // attempts are one cell at every width; one desktop row, 4 + 4 on phones.
+    const by = (l: string) => all.find((c) => c.label === l);
+    const fpts = all.find((c) => / PTS$/.test(c.label));
+    const cmp = by("CMP");
+    const att = by("ATT");
+    cells = [
+      fpts ? cell(label(fpts), "Fantasy points", fpts.of(totals), " is-fpts") : "",
+      ...["GP"].map((l) => (by(l) ? cell(l, by(l)!.title, by(l)!.of(totals)) : "")),
+      cmp && att ? cell("CMP/ATT", "Completions / pass attempts", `${cmp.of(totals)}/${att.of(totals)}`) : "",
+      ...["PASS YDS", "PASS TD", "INT", "RUSH YDS", "RUSH TD"].map((l) => (by(l) ? cell(l, by(l)!.title, by(l)!.of(totals)) : "")),
+    ].filter(Boolean);
+  } else {
+    cells = all.map((c) => cell(label(c), c.title, c.of(totals), / PTS$/.test(c.label) ? " is-fpts" : ""));
+  }
   const href = `${options.playerPathPrefix ?? "/player/"}${data.player.slug}/stats/${options.linkQuery ?? ""}`;
+  // A short season (five games or fewer) carries its game log and the next
+  // five weeks in this same card (mak, 2026-11-27); the weekly section then
+  // does not print.
+  const short = shortSeason(s);
   return (
-    sectionOpen("scp-ox-season-h", `${data.player.name} ${s.leagueSeason} season stats`, "", "stats", data.player.name) +
-    `<dl class="scp-ox-season is-c${cols.length >= 9 ? 5 : 4}" style="--n:${cols.length}">` +
-    cols
-      .map(
-        (c) =>
-          `<div class="scp-ox-stat${/ PTS$/.test(c.label) ? " is-fpts" : ""}">` +
-          `<dt><abbr title="${escapeHtml(/ PTS$/.test(c.label) && s.pos === "QB" ? "Fantasy points" : c.title)}">${escapeHtml(label(c))}</abbr></dt>` +
-          `<dd>${escapeHtml(c.of(totals))}</dd></div>`,
-      )
-      .join("") +
+    sectionOpen(
+      "scp-ox-season-h",
+      // "Season Overview" (mak, 2026-11-28): the banner opens the Overview
+      // tab, so it names the tab's purpose rather than the stats strip.
+      `${data.player.name} ${s.leagueSeason} season overview`,
+      short ? "is-log" : "",
+      "stats",
+      data.player.name,
+      // One clear way to everything else (WEB-044, 2026-11-26), in the title
+      // row since 2026-11-27 (mak): no footer row under the numbers.
+      hasStatsTab(data) ? headLink(href, "Full stats", data.player.name, ` data-cta="full-stats-overview"`) : "",
+    ) +
+    `<dl class="scp-ox-season${s.pos === "QB" ? " is-qb" : ` is-c${cells.length >= 9 ? 5 : 4}`}" style="--n:${cells.length}">` +
+    cells.join("") +
     `</dl>` +
-    // One clear way to everything else (WEB-044, 2026-11-26): shown at every
-    // width, phones included, since the block is the headline numbers only.
-    (hasStatsTab(data) ? more(href, `Full ${data.player.name} stats`, ` data-cta="full-stats-overview"`) : "") +
-    SECTION_END
+    (short ? renderGameTable(data, s, options) + renderStrip(data, s) : "") +
+    SECTION_END +
+    // A short season's schedule lives in this card, so the trade strip
+    // follows it, as its own section (mak, 2026-11-28).
+    (short && renderStrip(data, s) ? renderTradeCta(data, s) : "")
   );
+}
+
+/** Five games or fewer, for a position the game table reads. */
+function shortSeason(s: Season): boolean {
+  return s.current && s.played.length > 0 && s.played.length <= GAME_ROWS_MAX && ["QB", "RB", "WR", "TE"].includes(s.pos);
+}
+
+/* ------------------------------------------------ the short season's log */
+
+const n0 = (v: number | null | undefined): number => (typeof v === "number" ? v : 0);
+const yds = (v: number): string => `${v} ${Math.abs(v) === 1 ? "yd" : "yds"}`;
+
+/** "11/18, 108 yds, 0 TD, 2 INT" and its kin, per column. */
+function logCells(pos: string, e: GameLogEntry): Record<string, string> {
+  const st = e.stats;
+  const passing = `${n0(st.pass_cmp)}/${n0(st.pass_att)}, ${yds(n0(st.pass_yd))}, ${n0(st.pass_td)} TD, ${n0(st.pass_int)} INT`;
+  const rushing = n0(st.rush_att) || n0(st.rush_yd) || n0(st.rush_td)
+    ? `${n0(st.rush_att)} car, ${yds(n0(st.rush_yd))}${n0(st.rush_td) ? `, ${n0(st.rush_td)} TD` : ""}`
+    : DASH;
+  const receiving = n0(st.rec_tgt) || n0(st.rec)
+    ? `${n0(st.rec)}/${n0(st.rec_tgt)} rec, ${yds(n0(st.rec_yd))}${n0(st.rec_td) ? `, ${n0(st.rec_td)} TD` : ""}`
+    : DASH;
+  void pos;
+  return { Passing: passing, Rushing: rushing, Receiving: receiving };
+}
+
+/** The stat columns a position's log reads, in order. */
+const LOG_COLS: Record<string, string[]> = {
+  QB: ["Passing", "Rushing"],
+  RB: ["Rushing", "Receiving"],
+  WR: ["Receiving", "Rushing"],
+  TE: ["Receiving", "Rushing"],
+};
+
+/**
+ * The game log as a real table (mak, 2026-11-27): Week, Opponent, Result,
+ * the position's stat columns, the points and his finish. On phones each
+ * row stacks and every value carries its column's name (data-label).
+ */
+function renderGameTable(data: PlayerPageData, s: Season, options: PlayerRenderOptions): string {
+  const games = s.weeks.filter((c) => c.kind === "played" && c.entry && c.pts !== null);
+  if (games.length === 0) return "";
+  const pts = SCORING_SHORT[data.format] ?? "PPR";
+  let cols = LOG_COLS[s.pos] ?? [];
+  // A second stat column nobody filled (a receiver who never ran) is dropped.
+  cols = cols.filter((c, i) => i === 0 || games.some((g) => logCells(s.pos, g.entry!)[c] !== DASH));
+  const head = ["Week", "Opponent", "Result", ...cols, pts, "Finish"];
+  const td = (labelText: string, value: string, cls = ""): string =>
+    `<td data-label="${escapeHtml(labelText)}"${cls ? ` class="${cls}"` : ""}>${escapeHtml(value)}</td>`;
+  const rows = games
+    .map((c) => {
+      const e = c.entry!;
+      const vals = logCells(s.pos, e);
+      const team = c.opp?.code ?? c.oppCode;
+      const opp = c.homeAway === "away" ? `@ ${team}` : c.homeAway === "home" ? `vs ${team}` : team;
+      const result = c.result ? `${c.result} ${(c.score ?? "").replace("-", "–")}`.trim() : DASH;
+      const rank = e.pos_rank ?? null;
+      return (
+        `<tr>` +
+        `<th scope="row" data-label="Week">${c.week}</th>` +
+        td("Opponent", opp) +
+        td("Result", result, c.result === "W" ? "is-w" : c.result === "L" ? "is-l" : "") +
+        cols.map((col) => td(col, vals[col] ?? DASH, "is-line")).join("") +
+        td(pts, one(c.pts!), "is-pts") +
+        td("Finish", rank !== null ? `${s.pos}${rank}` : DASH, "is-fin") +
+        `</tr>`
+      );
+    })
+    .join("");
+  const href = tabHref(data, options, "game-log");
+  return (
+    `<div class="scp-ox-gl">` +
+    `<div class="scp-ox-gl-head"><h3 class="scp-ow-h3" id="scp-ox-gl-h">${escapeHtml(`${s.leagueSeason} Game Log`)}</h3>` +
+    (href ? `<a class="scp-ox-more is-head" href="${escapeHtml(href)}">Full game log<span class="scp-sr">${escapeHtml(`: ${data.player.name}`)}</span></a>` : "") +
+    `</div>` +
+    `<div class="scp-ox-gl-wrap"><table class="scp-ox-gl-t" aria-labelledby="scp-ox-gl-h">` +
+    `<thead><tr>${head.map((h) => `<th scope="col">${escapeHtml(h)}</th>`).join("")}</tr></thead>` +
+    `<tbody>${rows}</tbody></table></div>` +
+    `</div>`
+  );
+}
+
+/**
+ * The next five weeks as one compact strip under the log (mak, 2026-11-27):
+ * the bye kept in its place, the opponent's rank against the position and
+ * its grade; the week he is ruled out reads Out.
+ */
+function renderStrip(data: PlayerPageData, s: Season): string {
+  if (s.strip.length === 0) return "";
+  const out = outWeek(data);
+  const cells = s.strip
+    .map((g) => {
+      if ("bye" in g) {
+        return `<li class="scp-ox-up is-bye"><span class="scp-ox-up-w">${escapeHtml(`Week ${g.bye}`)}</span><span class="scp-ox-up-o">Bye</span></li>`;
+      }
+      const m = g.matchup;
+      const band = m ? matchupBand(m.rank) : null;
+      const chip = out && out.week === g.week
+        ? `<span class="scp-ox-chip is-bad">${escapeHtml(out.label)}</span>`
+        : band
+          ? `<span class="scp-ox-chip ${CHIP_WORD[band].cls}">${escapeHtml(titleCase(CHIP_WORD[band].word))}</span>`
+          : "";
+      const logo = g.opponent?.logo
+        ? `<img class="scp-ow-logo" src="${escapeHtml(g.opponent.logo)}" alt="" width="20" height="20" loading="lazy" decoding="async" />`
+        : "";
+      const code = escapeHtml(g.opponent?.code ?? g.opponentCode);
+      const where = g.homeAway === "away" ? `<span aria-hidden="true">@ </span><span class="scp-sr">at </span>` : "vs ";
+      return (
+        `<li class="scp-ox-up">` +
+        `<span class="scp-ox-up-w">${escapeHtml(`Week ${g.week}`)}</span>` +
+        `<span class="scp-ox-up-o">${logo}${where}${code}</span>` +
+        (m ? `<span class="scp-ox-up-r">${escapeHtml(`${ordinal(m.rank)} vs ${s.pos}`)}</span>` : "") +
+        chip +
+        `</li>`
+      );
+    })
+    .join("");
+  const through = data.upcomingMatchupMode ?? "";
+  const note =
+    `Rank = ${scoringWord(s.pos, data.format)} points allowed to ${s.pos}s` +
+    (/^Week/.test(through) ? ` through ${through}` : through ? ` (${through.toLowerCase()})` : "") +
+    `. 1st allows the most. 1st-${ordinal(SOFT_MAX_RANK)} favorable, ${ordinal(TOUGH_MIN_RANK)}-32nd tough.`;
+  return (
+    `<div class="scp-ox-upnext">` +
+    `<h3 class="scp-ow-h3">Upcoming</h3>` +
+    `<ol class="scp-ox-ups" role="list">${cells.replaceAll("<li ", '<li role="listitem" ')}</ol>` +
+    `<p class="scp-ow-note">${escapeHtml(note)}</p>` +
+    `</div>`
+  );
+}
+
+/**
+ * The week he is confirmed unavailable (current-status.ts, the official
+ * report for his next game, or a reserve list), or null. "Pending" is not
+ * out: no game status has been reported yet.
+ */
+function outWeek(data: PlayerPageData): { week: number; label: string } | null {
+  const cs = data.currentStatus;
+  if (!cs) {
+    // A state with no normalized status (tests, old snapshots): the raw
+    // designation, applied to the next game.
+    const raw = (data.designation?.injuryStatus ?? "").trim();
+    const week = [...(data.upcoming ?? [])].sort((a, b) => a.week - b.week)[0]?.week ?? null;
+    if (!raw || week === null || designationSeverity(raw) !== "out") return null;
+    return { week, label: /^ir\b|injured reserve/i.test(raw) ? "On IR" : "Out" };
+  }
+  if (cs.week === null) return null;
+  if (cs.kind === "out") return { week: cs.week, label: "Out" };
+  if (cs.kind === "reserve") return { week: cs.week, label: cs.rosterStatus ? `On ${cs.rosterStatus}` : "Out" };
+  return null;
 }
 
 /* ------------------------------------ 2. weekly performance + schedule */
@@ -509,16 +718,94 @@ function renderNext(data: PlayerPageData, s: Season): string {
   );
 }
 
+/**
+ * Five games or fewer: one row per game in place of the chart (mak,
+ * 2026-11-27: "adapt the template to the player's game count"). A weekly
+ * chart reads a season; for a player with a game or two, the box score line
+ * says more. Week, opponent and result, the stat line, the fantasy points
+ * and his finish that week, from the same weeks the chart would draw.
+ */
+export const GAME_ROWS_MAX = 5;
+
+function renderGameRows(data: PlayerPageData, s: Season): string {
+  const games = s.weeks.filter((c) => c.kind === "played" && c.entry && c.pts !== null);
+  if (games.length === 0) return "";
+  const word = scoringWord(s.pos, data.format);
+  const unit = word === "fantasy" ? "fantasy pts" : `${word} pts`;
+  const rows = games
+    .map((c) => {
+      const rank = c.entry!.pos_rank ?? null;
+      const result = c.result ? `${c.result} ${c.score ?? ""}`.trim() : "";
+      return (
+        `<li class="scp-ow-row">` +
+        `<span class="scp-ow-row-wk">${escapeHtml(`Week ${c.week}`)}</span>` +
+        `<span class="scp-ow-row-opp">${escapeHtml(fixtureWords(c))}${result ? ` <small>${escapeHtml(result)}</small>` : ""}</span>` +
+        `<span class="scp-ow-row-line">${statLines(s.pos, c.entry!).map((l) => `<span>${escapeHtml(l)}</span>`).join("")}</span>` +
+        `<span class="scp-ow-row-pts"><b>${escapeHtml(one(c.pts!))}</b> <small>${escapeHtml(unit)}</small>` +
+        (rank !== null ? `<i>${escapeHtml(`${s.pos}${rank}`)}</i>` : "") +
+        `</span></li>`
+      );
+    })
+    .join("");
+  return `<ol class="scp-ow-rows" role="list" aria-label="${escapeHtml(`${data.player.name} games this season`)}">${rows.replaceAll("<li ", '<li role="listitem" ')}</ol>`;
+}
+
+/**
+ * The Trade Calculator strip (mak, 2026-11-28): after his production and the
+ * next opponents, "What would be a fair trade for {Name}?" is the next
+ * question. Dressed as the matchup pages' Redraft Command strip (recap-body.ts
+ * renderRedraftStrip: navy, the gold ring, the tools named in one sentence,
+ * one button with a note under it), its own section right under the card.
+ * Redraft Command's calculator has no supported way to preselect a player
+ * from a link (its prefill is the app's own localStorage), so the button
+ * opens its standard entry page; the calculator needs no league (its Quick
+ * mode), which the note says. Fantasy positions with a club only.
+ */
+const TRADE_POSITIONS = new Set(["QB", "RB", "WR", "TE"]);
+
+function renderTradeCta(data: PlayerPageData, s: Season): string {
+  if (!data.team || !TRADE_POSITIONS.has(s.pos)) return "";
+  const last = lastName(data.player.name);
+  const startSit = startSitHref(data, {});
+  const a = (href: string, text: string, cta: string): string => `<a href="${escapeHtml(href)}" data-cta="${cta}">${escapeHtml(text)}</a>`;
+  return (
+    `<section class="scp-ox-trade" aria-labelledby="scp-ox-trade-h">` +
+    `<span class="scp-ox-trade-ring" aria-hidden="true"></span>` +
+    `<div class="scp-ox-trade-pitch">` +
+    `<h3 class="scp-ox-trade-title" id="scp-ox-trade-h">${escapeHtml(`What would be a fair trade for ${data.player.name}?`)}</h3>` +
+    `<p class="scp-ox-trade-text">` +
+    `Compare ${escapeHtml(possessive(last))} value in the ${a(TRADE_CALCULATOR_URL, "Fantasy Trade Calculator", "trade-strip-calculator")}` +
+    (startSit ? `, check his next matchup with the ${a(startSit, "Start/Sit Tool", "trade-strip-startsit")},` : "") +
+    ` or connect your league for personalized advice in ${a(REDRAFT_COMMAND_URL, "Redraft Command", "trade-strip-redraft")}.` +
+    `</p></div>` +
+    `<div class="scp-ox-trade-act">` +
+    `<a class="scp-ox-trade-btn" href="${escapeHtml(TRADE_CALCULATOR_URL)}" data-cta="trade-calculator-overview">Open Trade Calculator</a>` +
+    `<p class="scp-ox-trade-note">No league needed. Connect one for your real rosters.</p>` +
+    `</div></section>`
+  );
+}
+
 function renderWeekly(data: PlayerPageData, s: Season, options: PlayerRenderOptions): string {
-  const chart = s.current ? renderChart(data, s, options) : "";
+  // A short season's log and next five weeks live in the season card.
+  if (shortSeason(s)) return "";
+  const rows = s.current && s.played.length > 0 && s.played.length <= GAME_ROWS_MAX;
+  const chart = s.current ? (rows ? renderGameRows(data, s) : renderChart(data, s, options)) : "";
   const next = renderNext(data, s);
   if (!chart && !next) return "";
   const href = tabHref(data, options, "game-log");
   return (
-    sectionOpen("scp-ox-weekly-h", `${data.player.name} weekly performance & upcoming schedule`, "scp-ox-weekly", "weekly") +
-    `<div class="scp-ow${chart && next ? "" : " is-one"}">${chart}${next}</div>` +
-    (chart && href ? more(href, "View full game log") : "") +
-    SECTION_END
+    sectionOpen(
+      "scp-ox-weekly-h",
+      `${data.player.name} weekly performance & upcoming schedule`,
+      "scp-ox-weekly",
+      "weekly",
+      "",
+      chart && href ? headLink(href, "Full game log", data.player.name) : "",
+    ) +
+    `<div class="scp-ow${chart && next ? "" : " is-one"}${rows ? " is-rows" : ""}">${chart}${next}</div>` +
+    SECTION_END +
+    // Its own section under the card (mak, 2026-11-28), not inside it.
+    renderTradeCta(data, s)
   );
 }
 
@@ -601,7 +888,18 @@ function outlookParagraph(data: PlayerPageData, s: Season, ranked: PublishedRank
   // ruled out gets his status instead: the schedule is moot until he returns.
   const status = (data.designation?.injuryStatus ?? "").trim();
   const ahead = s.next.filter((g): g is UpcomingGame => !("bye" in g) && Boolean(g.matchup));
-  if (matchupAdviceOff(data) || (status && designationSeverity(status) === "out")) {
+  const outNow = outWeek(data);
+  const outGame = outNow ? weekGame(s, outNow.week) : null;
+  if (outNow && outNow.label === "Out" && outGame?.matchup) {
+    // Ruled out for one game: the week's lead says so (weekLead), and the
+    // matchup stays only as team context, never as advice for him.
+    const band = matchupBand(outGame.matchup.rank);
+    const club = data.team ? `the ${possessive(data.team.nickname)}` : "his club's";
+    sentences.push(
+      `${place(outGame)} allows the ${ordinal(outGame.matchup.rank)}-most ${scoring} points to ${pos}s, ` +
+        `${band === "soft" ? "a favorable" : band === "tough" ? "a tough" : "a neutral"} draw for ${club} ${pos === "QB" ? "passing game" : "offense"}.`,
+    );
+  } else if (matchupAdviceOff(data) || (status && designationSeverity(status) === "out")) {
     const listed = !status ? "on a reserve list" : /^ir\b/i.test(status) || /injured reserve/i.test(status) ? "on injured reserve" : `listed ${status.toLowerCase()}`;
     sentences.push(`He is ${listed}, so his value rests on the timing of his return.`);
   } else if (ahead.length >= 2) {
@@ -628,6 +926,14 @@ function outlookParagraph(data: PlayerPageData, s: Season, ranked: PublishedRank
   return kept.join(" ");
 }
 
+/**
+ * The efficiency table (mak, 2026-11-28): an "Efficiency · Value ·
+ * Percentile" header row, one 26-28px row per metric with a short bar right
+ * before the rank (every bar starts at the same x), and the qualification
+ * note folded into "How percentiles are calculated" under it, closed by
+ * default. Divs with table roles, not a <table>: Divi's table rules bleed
+ * into the embed (divi-theme-bleed).
+ */
 function renderMeters(data: PlayerPageData, s: Season): string {
   const m = data.meters;
   if (!m?.meters?.length || s.played.length === 0) return "";
@@ -637,21 +943,30 @@ function renderMeters(data: PlayerPageData, s: Season): string {
       const tone = p >= 70 ? "good" : p >= 30 ? "mid" : "bad";
       const words = p >= 70 ? "above average" : p >= 40 ? "about average" : p >= 20 ? "below average" : "near the bottom";
       return (
-        `<li class="scp-ox-eff">` +
-        `<span class="scp-ox-eff-l">${escapeHtml(meter.label)}</span>` +
-        `<b class="scp-ox-eff-v">${escapeHtml(meter.value)}</b>` +
+        `<div class="scp-ox-eff" role="row">` +
+        `<span class="scp-ox-eff-l" role="rowheader">${escapeHtml(meter.label)}</span>` +
+        `<b class="scp-ox-eff-v" role="cell">${escapeHtml(meter.value)}</b>` +
+        `<span class="scp-ox-eff-pc" role="cell">` +
         `<span class="scp-ox-eff-bar" aria-hidden="true"><i class="is-${tone}" style="width:${Math.max(2, p)}%"></i></span>` +
-        `<span class="scp-ox-eff-p">${escapeHtml(`${ordinal(p)} pct`)}<span class="scp-sr">ile</span><span class="scp-ox-eff-w">${escapeHtml(`, ${words}`)}</span></span>` +
-        `</li>`
+        `<span class="scp-ox-eff-p">${escapeHtml(ordinal(p))}<span class="scp-sr"> percentile</span><span class="scp-ox-eff-w">${escapeHtml(`, ${words}`)}</span></span>` +
+        `</span>` +
+        `</div>`
       );
     })
     .join("");
   const note = m.note ?? `Percentile vs. every ${m.position} with at least ${m.threshold} ${m.unit} in ${m.season}.`;
   return (
     `<div class="scp-ox-effs">` +
-    `<h3 class="scp-ow-h3">Efficiency</h3>` +
-    `<ul class="scp-ox-eff-list" role="list">${rows}</ul>` +
+    `<h3 class="scp-sr">Efficiency</h3>` +
+    `<div class="scp-ox-eff-t" role="table" aria-label="Efficiency">` +
+    `<div class="scp-ox-eff-hd" role="row">` +
+    `<span role="columnheader">Efficiency</span><span role="columnheader">Value</span><span role="columnheader">Percentile</span>` +
+    `</div>` +
+    rows +
+    `</div>` +
+    `<details class="scp-ox-eff-how"><summary>How percentiles are calculated</summary>` +
     `<p class="scp-ow-note">${escapeHtml(note)}</p>` +
+    `</details>` +
     `</div>`
   );
 }
@@ -681,6 +996,33 @@ function preseasonMonth(o: PlayerPageData["fantasyOutlook2026"]): string | null 
   const at = raw ? Date.parse(raw) : NaN;
   if (!Number.isFinite(at)) return null;
   return new Date(at).toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "America/New_York" });
+}
+
+/** His club's game in a given week, from the upcoming weeks. */
+function weekGame(s: Season, week: number): UpcomingGame | null {
+  for (const g of [...s.strip, ...s.next]) if (!("bye" in g) && g.week === week) return g;
+  return null;
+}
+
+/** "Washington"; a shared city reads the nickname ("Rams", "Jets"). */
+function place(g: UpcomingGame): string {
+  const t = g.opponent;
+  if (!t) return g.opponentName;
+  return /^(Los Angeles|New York)$/.test(t.city) ? t.nickname : t.city;
+}
+
+/**
+ * The current week first when he is confirmed out (mak, 2026-11-27):
+ * "Week 12: Out vs. Washington. Josh Johnson will start." The next man is
+ * the depth chart's, and only named when he is the starter being replaced.
+ */
+function weekLead(data: PlayerPageData, s: Season): string | null {
+  const out = outWeek(data);
+  if (!out) return null;
+  const g = weekGame(s, out.week);
+  const where = g ? ` ${g.homeAway === "away" ? "at" : "vs."} ${place(g)}` : "";
+  const next = data.depth && data.depth.order === 1 && data.depth.next ? ` ${data.depth.next.name} will start.` : "";
+  return `Week ${out.week}: ${out.label}${where}.${next}`;
 }
 
 function renderOutlook(data: PlayerPageData, s: Season, _options: PlayerRenderOptions): string {
@@ -716,10 +1058,17 @@ function renderOutlook(data: PlayerPageData, s: Season, _options: PlayerRenderOp
       // The label is the rank's own sort key (WEB-030): by points per game
       // from four games, by total points until then.
       const basis = rank.basis === "ppg" ? "by points per game" : "by total points";
+      // Ruled out this week: the call is his season-long value, said so, and
+      // the week's status leads (no start/sit word for a game he will miss).
+      const out = outWeek(data) !== null;
       call =
-        `<p class="scp-ox-call is-${c.tone}"><span class="scp-sr">Recommendation: </span>${escapeHtml(c.label)} ` +
+        `<p class="scp-ox-call is-${c.tone}"><span class="scp-sr">Recommendation: </span>` +
+        (out ? `<span class="scp-ox-call-k">Season-long: </span>` : "") +
+        `${escapeHtml(c.label)} ` +
         `<span class="scp-ox-call-sub">${escapeHtml(`${pos}${rank.rank} ${basis}, ${plural(s.played.length, "game")}`)}</span></p>`;
     }
+    const lead = weekLead(data, s);
+    if (lead) call = `<p class="scp-ox-week is-out">${escapeHtml(lead)}</p>` + call;
     para = escapeHtml(outlookParagraph(data, s, rank));
   }
 
@@ -746,9 +1095,12 @@ function renderOutlook(data: PlayerPageData, s: Season, _options: PlayerRenderOp
 /* ------------------------------------------------------- 4. latest news */
 
 function renderNews(data: PlayerPageData, options: PlayerRenderOptions): string {
-  const brief = renderNewsBrief(data, options, 3);
+  // The newest update open with its summary, the older ones folded, the
+  // "All news" link in the title row (mak, 2026-11-27).
+  const brief = renderNewsBrief(data, options, 3, { fold: true });
   if (!brief) return "";
-  return sectionOpen("scp-ox-news-h", `${data.player.name} latest news`, "", "news") + brief + SECTION_END;
+  const href = tabHref(data, options, "news");
+  return sectionOpen("scp-ox-news-h", `${data.player.name} latest news`, "", "news", "", headLink(href, "All news", data.player.name)) + brief + SECTION_END;
 }
 
 /* ------------------------------------------------ 5. career + background */
@@ -808,55 +1160,48 @@ function renderBackground(data: PlayerPageData, s: Season, options: PlayerRender
   // No Stats tab (kickers): the link would 302 back to this page.
   const statsHref = hasStatsTab(data) ? tabHref(data, options, "stats") : null;
   const bioHref = tabHref(data, options, "bio");
-  // Two cards side by side (mak's brief, 2026-11-06): navy heads with a gold
-  // icon, rule and diagonals; the honors as gold pills over the career
-  // totals; the background facts in a two-column grid, each with its icon.
-  const card = (kind: string, icon: string, id: string, title: string, body: string): string =>
-    `<section class="scp-ox-bgc is-${kind}" aria-labelledby="${id}">` +
-    `<header class="scp-ox-bgc-head"><span class="scp-ox-bgc-icon" aria-hidden="true">${BG_ICON[icon]}</span>` +
-    `<span class="scp-ox-bgc-rule" aria-hidden="true"></span><h3 class="scp-ox-bgc-h" id="${id}">${escapeHtml(title)}</h3>` +
-    `<span class="scp-ox-bgc-slash" aria-hidden="true"></span></header>` +
-    `<div class="scp-ox-bgc-body">${body}</div></section>`;
+  // One Player Profile card (mak, 2026-11-27; it was two cards side by side,
+  // "Career highlights" and "Background", since 2026-11-06): the honors and
+  // the career line when they add something, the background facts in a
+  // compact grid, the career-stats and biography links inside the card.
+  // The career line is left out when it is only this season's games: the
+  // season stats at the top of the tab already say that.
+  const careerAdds = career !== null && !(s.current && career.span === `${s.leagueSeason}-${s.leagueSeason}`);
   const highlights =
-    honors.length || career
-      ? card(
-          "career",
-          "trophy",
-          "scp-ox-hl-h",
-          "Career highlights",
-          (honors.length
-            ? `<ul class="scp-ox-honors" role="list">${honors.map((h) => `<li><span class="scp-ox-honor-star" aria-hidden="true">${BG_ICON.star}</span>${escapeHtml(h)}</li>`).join("")}</ul>`
-            : "") +
-            (career
-              ? `<div class="scp-ox-career-line"><span class="scp-ox-bgc-ficon" aria-hidden="true">${BG_ICON.bars}</span>` +
-                `<p><span class="scp-ox-bgc-k">Career</span> <b class="scp-ox-bgc-total">${escapeHtml(career.totals)}</b> ` +
-                `<span class="scp-ox-bgc-span">(${escapeHtml(career.span)})</span></p></div>`
-              : ""),
+    (honors.length
+      ? `<ul class="scp-ox-honors" role="list">${honors.map((h) => `<li><span class="scp-ox-honor-star" aria-hidden="true">${BG_ICON.star}</span>${escapeHtml(h)}</li>`).join("")}</ul>`
+      : "") +
+    (careerAdds
+      ? `<div class="scp-ox-career-line"><span class="scp-ox-bgc-ficon" aria-hidden="true">${BG_ICON.bars}</span>` +
+        `<p><span class="scp-ox-bgc-k">Career</span> <b class="scp-ox-bgc-total">${escapeHtml(career!.totals)}</b> ` +
+        `<span class="scp-ox-bgc-span">(${escapeHtml(career!.span)})</span></p></div>`
+      : "");
+  const about = facts.length
+    ? `<dl class="scp-ox-about">` +
+      facts
+        .map(
+          ([dt, dd]) =>
+            `<div class="scp-ox-bgc-fact"><dt><span class="scp-ox-bgc-ficon" aria-hidden="true">${BG_ICON[factIcon(dt)]}</span>${escapeHtml(dt)}</dt><dd>${escapeHtml(dd)}</dd></div>`,
         )
-      : "";
-  const background = facts.length
-    ? card(
-        "bg",
-        "person",
-        "scp-ox-bgf-h",
-        "Background",
-        `<dl class="scp-ox-about">` +
-          facts
-            .map(
-              ([dt, dd]) =>
-                `<div class="scp-ox-bgc-fact"><dt><span class="scp-ox-bgc-ficon" aria-hidden="true">${BG_ICON[factIcon(dt)]}</span>${escapeHtml(dt)}</dt><dd>${escapeHtml(dd)}</dd></div>`,
-            )
-            .join("") +
-          `</dl>`,
-      )
+        .join("") +
+      `</dl>`
     : "";
+  if (!highlights && !about) return "";
+  const links =
+    statsHref || bioHref
+      ? `<p class="scp-ox-links">` +
+        (statsHref ? more(statsHref, "Full career stats") : "") +
+        (bioHref ? more(bioHref, `${possessive(lastName(player.name))} timeline and biography`) : "") +
+        `</p>`
+      : "";
   return (
     sectionOpenBare("scp-ox-about-h", `${player.name} career & background`, "scp-ox-bg") +
-    `<div class="scp-ox-bgc-grid${highlights && background ? "" : " is-one"}">${highlights}${background}</div>` +
-    `<p class="scp-ox-links">` +
-    (statsHref ? more(statsHref, "Full career stats") : "") +
-    (bioHref ? more(bioHref, `${possessive(lastName(player.name))} timeline and biography`) : "") +
-    `</p>` +
+    `<section class="scp-ox-bgc is-profile" aria-labelledby="scp-ox-profile-h">` +
+    `<header class="scp-ox-bgc-head"><span class="scp-ox-bgc-icon" aria-hidden="true">${BG_ICON.person}</span>` +
+    `<span class="scp-ox-bgc-rule" aria-hidden="true"></span><h3 class="scp-ox-bgc-h" id="scp-ox-profile-h">Player Profile</h3>` +
+    `<span class="scp-ox-bgc-slash" aria-hidden="true"></span></header>` +
+    `<div class="scp-ox-bgc-body">${highlights ? `<div class="scp-ox-profile-hl">${highlights}</div>` : ""}${about}${links}</div>` +
+    `</section>` +
     SECTION_END
   );
 }
@@ -897,7 +1242,6 @@ function factIcon(label: string): string {
 function leadHead(data: PlayerPageData, s: Season, html: string): string {
   const name = lastName(data.player.name);
   const DEK: Record<string, string> = {
-    "scp-ox-season-h": `${possessive(name)} ${s.leagueSeason} season so far: games, volume, touchdowns and fantasy points.`,
     "scp-ox-weekly-h": `Fantasy points by week and his next four matchups.`,
     "scp-ox-read-h": `Where he ranks, what it means for your lineup, and how efficient he has been.`,
     "scp-ox-news-h": `The latest reports on ${name}, newest first.`,
@@ -921,6 +1265,17 @@ function renderFaq(data: PlayerPageData, options: PlayerRenderOptions): string {
   return renderFaqSection("overview", data, selectFaq(overviewPool(data, options)), options);
 }
 
+/**
+ * Latest News and the Player Profile share one row on desktop, news on the
+ * left at 60/40, top-aligned so unfolding older news grows only the news
+ * card; stacked news-first on narrow screens (mak, 2026-11-28). Either one
+ * alone keeps the full width.
+ */
+function newsAndProfile(news: string, profile: string): string {
+  if (!news || !profile) return news + profile;
+  return `<div class="scp-ox-pair">${news}${profile}</div>`;
+}
+
 /* ------------------------------------------------------------ the tab */
 
 /**
@@ -941,8 +1296,7 @@ export function renderOverviewSections(
     renderSeasonStats(data, s, options) +
       renderWeekly(data, s, options) +
       renderOutlook(data, s, options) +
-      renderNews(data, options) +
-      renderBackground(data, s, options),
+      newsAndProfile(renderNews(data, options), renderBackground(data, s, options)),
   );
   const faq = renderFaq(data, options);
   return (

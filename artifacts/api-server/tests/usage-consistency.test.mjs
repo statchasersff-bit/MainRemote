@@ -89,16 +89,21 @@ async function figures(slug) {
   const meter = [...ov.querySelectorAll(".scp-ox-eff")].find((li) => text(li.querySelector(".scp-ox-eff-l")) === "Target share");
   const statRow = (label) =>
     [...st.querySelectorAll(".scp-stp-row")].find((li) => text(li.querySelector(".scp-stp-row-label")) === label);
-  const kpi = (label) => [...ol.querySelectorAll(".scp-olr-kpi")].find((k) => text(k.querySelector("dt")) === label);
+  // Since 2026-11-27 (mak) the first three figures are Opportunity vs.
+  // Production's primary tiles and the rest one volume row, labels in lower
+  // case; both carry the value in a dd and the rank in a sub line.
+  const kpi = (label) =>
+    [...ol.querySelectorAll(".scp-olr-kpi, .scp-olr-vol-item")].find((k) => text(k.querySelector("dt")).toLowerCase() === label.toLowerCase());
   const driver = [...ol.querySelectorAll(".scp-olp-drv")].find((d) => text(d.querySelector(".scp-olp-h3")) === "Target share");
-  const adv = [...ol.querySelectorAll(".scp-olp-adv-cell")].find((c) => text(c.querySelector("dt")) === "Snap share");
+  // The advanced strip, or (nothing ranked yet, 2026-11-27) the drivers grid.
+  const adv = [...ol.querySelectorAll(".scp-olp-adv-cell, .scp-olp-cell")].find((c) => text(c.querySelector("dt")) === "Snap share");
   return {
     header: pctNum(text(ov.querySelector(".scp-pboard .scp-pstat.is-lead b"))),
     overviewTs: pctNum(text(meter?.querySelector(".scp-ox-eff-v"))),
     statsTs: pctNum(text(statRow("Target share")?.querySelector(".scp-stp-row-value"))),
     statsSnap: pctNum(text(statRow("Snap share")?.querySelector(".scp-stp-row-value"))),
     tileTs: pctNum(text(kpi("Target share")?.querySelector("dd"))),
-    tileTsRank: text(kpi("Target share")?.querySelector(".scp-olr-kpi-sub")),
+    tileTsRank: text(kpi("Target share")?.querySelector(".scp-olr-kpi-sub, .scp-olr-vol-sub")),
     tileSnap: pctNum(text(kpi("Snap share")?.querySelector("dd"))),
     tilePpg: pctNum(text(kpi("PPR points per game")?.querySelector("dd"))),
     driverTs: pctNum(text(driver?.querySelector(".scp-olp-drv-value strong"))),
